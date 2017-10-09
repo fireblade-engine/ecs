@@ -5,26 +5,26 @@
 //  Created by Christian Treffs on 08.10.17.
 //
 
-struct EntityCreated: ECSEvent {
+public struct EntityCreated: Event {
 	let entity: Entity
 }
 
-struct EntityDestroyed: ECSEvent {
+public struct EntityDestroyed: Event {
 	let entity: Entity
 }
 
-struct ComponentAdded: ECSEvent {
+public struct ComponentAdded: Event {
 	let component: Component
 	let to: Entity
 }
 
-struct ComponentUpdated: ECSEvent {
+public struct ComponentUpdated: Event {
 	let component: Component
 	let previous: Component
 	let at: Entity
 }
 
-struct ComponentRemoved: ECSEvent {
+public struct ComponentRemoved: Event {
 	let component: Component
 	let from: Entity
 }

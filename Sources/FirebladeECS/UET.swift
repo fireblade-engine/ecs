@@ -9,15 +9,15 @@
 /// Unique Event Type
 public struct UET {
 	let objectIdentifier: ObjectIdentifier
-	let type: ECSEvent.Type
+	let type: Event.Type
 
-	init(_ eventType: ECSEvent.Type) {
+	init(_ eventType: Event.Type) {
 		objectIdentifier = ObjectIdentifier(eventType)
 		type = eventType
 	}
 
-	init(_ event: ECSEvent) {
-		let eventType: ECSEvent.Type = event.uet.type
+	init(_ event: Event) {
+		let eventType: Event.Type = event.uet.type
 		self.init(eventType)
 	}
 }

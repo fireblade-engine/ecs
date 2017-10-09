@@ -8,19 +8,17 @@
 public final class Entity: UniqueEntityIdentifiable {
 	public let uei: UEI
 
+	fileprivate var eventDispatcher: EventDispatcher
+
 	fileprivate var componentMap: [UCT:Component]
 
-	private init(uei: UEI) {
+	init(uei: UEI, dispatcher: EventDispatcher) {
 		self.uei = uei
+		self.eventDispatcher = dispatcher
 		componentMap = [UCT: Component]()
 		componentMap.reserveCapacity(2)
-	}
-
-	convenience public init() {
-		let uei: UEI = UEI.next
-		self.init(uei: uei)
 		defer {
-			notify(init: unownedRef)
+			notifyInit()
 		}
 	}
 
@@ -56,7 +54,7 @@ public extension Entity {
 
 }
 
-// MARK: - push component(s)
+// MARK: - add/push component(s)
 public extension Entity {
 
 	@discardableResult
@@ -68,6 +66,11 @@ public extension Entity {
 			notify(add: component)
 		}
 		return self
+	}
+
+	@discardableResult
+	public final func add<C: Component>(component: C) -> Entity {
+		return push(component: component)
 	}
 
 	@discardableResult
@@ -154,56 +157,85 @@ extension Entity {
 	final func destroy() {
 		removeAll()
 		UEI.free(uei)
-		notify(destroyed: unownedRef)
+		notifyDestoryed()
 	}
 }
 
-extension Entity: EventSender {
-
-	private unowned var unownedRef: Entity {
-		return self
+extension Entity: EventDispatcher {
+	public func dispatch<E>(_ event: E) where E : Event {
+		eventDispatcher.dispatch(event)
 	}
 
-	private func notify(init: Entity) {
-		dispatch(event: EntityCreated(entity: unownedRef))
+	fileprivate func unowned(_ closure: @escaping (Entity) -> Void) {
+		#if DEBUG
+			let preActionCount: Int = retainCount(self)
+		#endif
+		let unownedClosure = { [unowned self] in
+			closure(self)
+		}
+		unownedClosure()
+		#if DEBUG
+			let postActionCount: Int = retainCount(self)
+			assert(postActionCount == preActionCount, "retain count missmatch [\(preActionCount)] -> [\(postActionCount)]")
+		#endif
+	}
+
+	private func notifyInit() {
+		unowned {
+			$0.dispatch(EntityCreated(entity: $0))
+		}
 	}
 
 	private func notify<C: Component>(add component: C) {
-		dispatch(event: ComponentAdded(component: component, to: unownedRef))
+		unowned {
+			$0.dispatch(ComponentAdded(component: component, to: $0))
+		}
 	}
 
 	private func notify<C: Component>(update newComponent: C, previous previousComponent: C) {
-		dispatch(event: ComponentUpdated(component: newComponent, previous: previousComponent, at: unownedRef))
+		unowned {
+			$0.dispatch(ComponentUpdated(component: newComponent, previous: previousComponent, at: $0))
+		}
 	}
 
 	private func notify<C: Component>(removed component: C) {
-		dispatch(event: ComponentRemoved(component: component, from: unownedRef))
+		unowned {
+			$0.dispatch(ComponentRemoved(component: component, from: $0))
+		}
 	}
 
 	private func notify(removed component: Component) {
-		dispatch(event: ComponentRemoved(component: component, from: unownedRef))
+		//unowned { /* this keeps a reference since we need it */
+		dispatch(ComponentRemoved(component: component, from: self))
+		//}
 	}
 
-	private func notify(destroyed: Entity) {
-		dispatch(event: EntityDestroyed(entity: unownedRef))
+	private func notifyDestoryed() {
+		//unowned {
+			//$0.dispatch(event: EntityDestroyed(entity: $0))
+			//TODO: here entity is already dead
+		//}
 	}
 
 }
 
 // MARK: - debugging and string representation
-/*
-extension Entity: CustomStringConvertible, CustomDebugStringConvertible {
-	public var description: String { return "Entity\(stringifyLabel())[\(uid)]" }
-	public var debugDescription: String {
-		let comps: String = self.componentMap.map { (_: ComponentType, comp: Component) in
-			return comp.debugDescription
-			}.joined(separator: ",")
-		return "\(self.description){ \(comps) }"
+
+extension Entity: CustomStringConvertible {
+
+	fileprivate var componentsString: String {
+		let compTypes: [String] = componentMap.map { String(describing: $0.value.uct.type) }
+		return compTypes.joined(separator: ",")
 	}
+
+	public var description: String {
+		return "Entity[\(uei)][\(numComponents):\(componentsString)]"
+	}
+
 }
+
 extension Entity: CustomPlaygroundQuickLookable {
 	public var customPlaygroundQuickLook: PlaygroundQuickLook {
-		return .text(self.debugDescription)
+		return .text(self.description)
 	}
 }
-*/

@@ -12,33 +12,51 @@ public class EntityHub: EventHandler {
 
 	private(set) var entites: Set<Entity>
 	//private(set) var entites: [UEI:Entity] = [:]
-	private(set) var families: Set<Family>
+	private(set) var families: [FamilyTraits:Family]
 
 	public init() {
 		entites = Set<Entity>()
 		entites.reserveCapacity(512)
 
-		families = Set<Family>()
+		families = [FamilyTraits: Family]()
 		families.reserveCapacity(64)
 
 		self.delegate = eventHub
 
 		subscribe(event: handleEntityCreated)
-		subscribe(event: handleFamilyCreated)
+		subscribe(event: handleEntityDestroyed)
+
 		subscribe(event: handleComponentAdded)
+		subscribe(event: handleComponentUpdated)
+		subscribe(event: handleComponentRemoved)
+
+		subscribe(event: handleFamilyCreated)
 		subscribe(event: handleFamilyMemberAdded)
+		subscribe(event: handleFamilyMemberUpdated)
+		subscribe(event: handleFamilyMemberRemoved)
+		subscribe(event: handleFamilyDestroyed)
 	}
+
 	deinit {
 		unsubscribe(event: handleEntityCreated)
-		unsubscribe(event: handleFamilyCreated)
+		unsubscribe(event: handleEntityDestroyed)
+
 		unsubscribe(event: handleComponentAdded)
+		unsubscribe(event: handleComponentUpdated)
+		unsubscribe(event: handleComponentRemoved)
+
+		unsubscribe(event: handleFamilyCreated)
+		unsubscribe(event: handleFamilyMemberUpdated)
 		unsubscribe(event: handleFamilyMemberAdded)
+		unsubscribe(event: handleFamilyMemberRemoved)
+		unsubscribe(event: handleFamilyDestroyed)
 	}
 
 }
 
-// MARK: - creators
+// MARK: - creator entity
 extension EntityHub {
+
 	public func createEntity() -> Entity {
 		let newEntity = Entity(uei: UEI.next, dispatcher: eventHub)
 		// ^ dispatches entity creation event here ^
@@ -48,13 +66,35 @@ extension EntityHub {
 		return newEntity
 	}
 
-	public func createFamily(with traits: FamilyTraits) -> Family {
+}
+
+// MARK: - create/get family
+extension EntityHub {
+
+	@discardableResult
+	public func family(with traits: FamilyTraits) -> (new: Bool, family: Family) {
+
+		if let existingFamily: Family = families[traits] {
+			return (new: false, family: existingFamily)
+		}
+
 		let newFamily = Family(traits: traits, eventHub: eventHub)
 		// ^ dispatches family creation event here ^
-		let (success, _) = families.insert(newFamily)
-		assert(success == true, "Family with the exact traits already exists")
+		let replaced = families.updateValue(newFamily, forKey: traits)
+		assert(replaced == nil, "Family with the exact traits already exists")
 
-		return newFamily
+		refreshFamilyCache()
+
+		return (new: true, family: newFamily)
+	}
+
+	fileprivate func onFamilyCreated(_ newFamily: Family) {
+		let previousEntities = entites
+		newFamily.update(membership: previousEntities)
+	}
+
+	fileprivate func refreshFamilyCache() {
+		// TODO: 
 	}
 
 }
@@ -62,8 +102,20 @@ extension EntityHub {
 // MARK: - event handler
 extension EntityHub {
 	func handleEntityCreated(_ e: EntityCreated) { print(e) }
-	func handleFamilyCreated(_ e: FamilyCreated) { print(e) }
+	func handleEntityDestroyed(_ e: EntityDestroyed) { print(e) }
 
 	func handleComponentAdded(_ e: ComponentAdded) { print(e) }
+	func handleComponentUpdated(_ e: ComponentUpdated) { print(e) }
+	func handleComponentRemoved(_ e: ComponentRemoved) { print(e) }
+
+	func handleFamilyCreated(_ e: FamilyCreated) {
+		print(e)
+		let newFamily: Family = e.family
+		onFamilyCreated(newFamily)
+
+	}
 	func handleFamilyMemberAdded(_ e: FamilyMemberAdded) { print(e) }
+	func handleFamilyMemberUpdated(_ e: FamilyMemberUpdated) { print(e) }
+	func handleFamilyMemberRemoved(_ e: FamilyMemberRemoved) { print(e) }
+	func handleFamilyDestroyed(_ e: FamilyDestroyed) { print(e) }
 }

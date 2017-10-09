@@ -19,6 +19,7 @@ public final class Family {
 	public init(traits: FamilyTraits, eventHub: EventHub & EventDispatcher) {
 
 		members = Set<Entity>()
+		members.reserveCapacity(64)
 
 		self.traits = traits
 
@@ -52,6 +53,13 @@ public final class Family {
 
 // MARK: - update family membership
 extension Family {
+
+	func update<C: Collection>(membership entites: C) where C.Iterator.Element == Entity {
+		var entityIterator = entites.makeIterator()
+		while let entity: Entity = entityIterator.next() {
+			update(membership: entity)
+		}
+	}
 
 	fileprivate func update(membership entity: Entity) {
 		let isMatch: Bool = traits.isMatch(entity)
@@ -143,21 +151,17 @@ extension Family: EventDispatcher {
 extension Family: EventHandler {
 
 	fileprivate final func handleComponentAddedToEntity(event: ComponentAdded) {
-		//let newComponent: Component = event.component
-		let entity: Entity = event.to
+		unowned let entity: Entity = event.to
 		update(membership: entity)
 	}
 
 	fileprivate final func handleComponentUpdatedAtEntity(event: ComponentUpdated) {
-		//let newComponent: Component = event.component
-		//let oldComponent: Component = event.previous
-		let entity: Entity = event.at
+		unowned let entity: Entity = event.at
 		update(membership: entity)
 	}
 
 	fileprivate final func handleComponentRemovedFromEntity(event: ComponentRemoved) {
-		//let removedComponent: Component = event.component
-		let entity: Entity = event.from
+		unowned let entity: Entity = event.from
 		update(membership: entity)
 	}
 

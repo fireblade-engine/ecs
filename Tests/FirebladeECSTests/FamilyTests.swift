@@ -14,14 +14,23 @@ class FamilyTests: XCTestCase {
 
 	func testFamily() {
 
+		let e1 = entityHub.createEntity()
+		e1 += EmptyComponent()
+		let e2 = entityHub.createEntity()
+		e2 += EmptyComponent()
+
 		let traits = FamilyTraits(hasAll: [EmptyComponent.uct], hasAny: [], hasNone: [])
 
-		let simpleFamily = entityHub.createFamily(with: traits)
+		let (new, _) = entityHub.family(with: traits)
+		XCTAssert(new == true)
 
-		let e = entityHub.createEntity()
-		e += EmptyComponent()
+		let (new2, _) = entityHub.family(with: traits)
+		XCTAssert(new2 == false)
 
-		e.remove(EmptyComponent.self)
+		let e3 = entityHub.createEntity()
+		e3 += EmptyComponent()
+
+		e2.remove(EmptyComponent.self)
 
 	}
 }

@@ -5,41 +5,65 @@
 //  Created by Christian Treffs on 09.10.17.
 //
 
-class EntityHub: EventHandler {
-	weak var delegate: EventHub?
-	lazy var eventCenter: DefaultEventHub = { return DefaultEventHub() }()
+public class EntityHub: EventHandler {
+	public weak var delegate: EventHub?
 
-	private(set) var entites: [UEI:Entity] = [:]
+	public lazy var eventHub: DefaultEventHub = { return DefaultEventHub() }()
 
-	init() {
-		self.delegate = eventCenter
+	private(set) var entites: Set<Entity>
+	//private(set) var entites: [UEI:Entity] = [:]
+	private(set) var families: Set<Family>
+
+	public init() {
+		entites = Set<Entity>()
+		entites.reserveCapacity(512)
+
+		families = Set<Family>()
+		families.reserveCapacity(64)
+
+		self.delegate = eventHub
 
 		subscribe(event: handleEntityCreated)
+		subscribe(event: handleFamilyCreated)
 		subscribe(event: handleComponentAdded)
+		subscribe(event: handleFamilyMemberAdded)
 	}
 	deinit {
 		unsubscribe(event: handleEntityCreated)
+		unsubscribe(event: handleFamilyCreated)
 		unsubscribe(event: handleComponentAdded)
+		unsubscribe(event: handleFamilyMemberAdded)
 	}
 
-	func createEntity() -> Entity {
-		let newEntity = Entity(uei: UEI.next, dispatcher: eventCenter)
+}
+
+// MARK: - creators
+extension EntityHub {
+	public func createEntity() -> Entity {
+		let newEntity = Entity(uei: UEI.next, dispatcher: eventHub)
 		// ^ dispatches entity creation event here ^
-		let prevEntity: Entity? = entites.updateValue(newEntity, forKey: newEntity.uei)
-		assert(prevEntity == nil)
+		let (success, _) = entites.insert(newEntity)
+		assert(success == true, "Entity with the exact identifier already exists")
 
 		return newEntity
+	}
+
+	public func createFamily(with traits: FamilyTraits) -> Family {
+		let newFamily = Family(traits: traits, eventHub: eventHub)
+		// ^ dispatches family creation event here ^
+		let (success, _) = families.insert(newFamily)
+		assert(success == true, "Family with the exact traits already exists")
+
+		return newFamily
 	}
 
 }
 
 // MARK: - event handler
 extension EntityHub {
-	func handleEntityCreated(_ ec: EntityCreated) {
-		print(ec)
-	}
+	func handleEntityCreated(_ e: EntityCreated) { print(e) }
+	func handleFamilyCreated(_ e: FamilyCreated) { print(e) }
 
-	func handleComponentAdded(_ ca: ComponentAdded) {
-		print(ca)
-	}
+	func handleComponentAdded(_ e: ComponentAdded) { print(e) }
+	func handleFamilyMemberAdded(_ e: FamilyMemberAdded) { print(e) }
 }

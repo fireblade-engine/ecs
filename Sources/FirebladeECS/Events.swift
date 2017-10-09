@@ -14,31 +14,41 @@ public struct EntityDestroyed: Event {
 }
 
 public struct ComponentAdded: Event {
-	let component: Component
+	//let component: Component
 	let to: Entity
 }
 
 public struct ComponentUpdated: Event {
-	let component: Component
-	let previous: Component
+	//let component: Component
+	//let previous: Component
 	let at: Entity
 }
 
 public struct ComponentRemoved: Event {
-	let component: Component
+	//let component: Component
 	let from: Entity
 }
 
-/*
-public enum ECSEvent {
-
-	case entityCreated(Entity)
-	case entityDestroyed(Entity)
-
-	case componentAdded(Component, to: Entity)
-	case componentUpdated(Component, previous: Component, at: Entity)
-	case componentRemoved(Component, from: Entity)
-
-
+struct FamilyMemberAdded: Event {
+	let member: Entity
+	let to: Family
 }
-*/
+
+struct FamilyMemberUpdated: Event {
+	let newMember: Entity
+	let oldMember: Entity
+	let `in`: Family
+}
+
+struct FamilyMemberRemoved: Event {
+	let member: Entity
+	let from: Family
+}
+
+struct FamilyCreated: Event {
+	let family: Family
+}
+
+struct FamilyDestroyed: Event {
+	let family: Family
+}

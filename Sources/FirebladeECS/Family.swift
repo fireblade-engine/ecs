@@ -4,116 +4,159 @@
 //
 //  Created by Christian Treffs on 08.10.17.
 //
-/*
-// TODO: is this needed?
-struct FamilyMemberAdded: Event {
-	let entity: Entity
-	let family: Family
-}
-// TODO: is this needed?
-struct FamilyMemberRemoved: Event {
-	let entity: Entity
-	let family: Family
-}
 
-struct FamilyCreated: Event {
-	let family: Family
-}
+// MARK: - family
+public final class Family {
 
-struct FamilyDestroyed: Event {
-	//TODO: family
-}
+	public var delegate: EventHub?
+	fileprivate var dispatcher: EventDispatcher
 
-public final class Family: EventSender, EventHandler {
+	// members of this Family must conform to these traits
+	public let traits: FamilyTraits
 
-	// members of this Family must conform to:
-	let required: Set<ComponentType>
-	let excluded: Set<ComponentType>
+	public private(set) var members: Set<Entity>
 
-	public private(set) var members: ContiguousArray<Entity>
+	public init(traits: FamilyTraits, eventHub: EventHub & EventDispatcher) {
 
-	public convenience init(requiresAll required: ComponentType...) {
-		self.init(requiresAll: required, excludesAll: [])
-	}
+		members = Set<Entity>()
 
-	public init(requiresAll required: [ComponentType], excludesAll excluded: [ComponentType]) {
-		self.required = Set<ComponentType>(required)
-		self.excluded = Set<ComponentType>(excluded)
+		self.traits = traits
 
-		self.members = []
+		delegate = eventHub
+		dispatcher = eventHub
 
 		subscribe(event: handleComponentAddedToEntity)
 		subscribe(event: handleComponentRemovedFromEntity)
 
-		dispatch(event: FamilyCreated(family: self))
+		defer {
+			notifyCreated()
+		}
+
 	}
 
 	deinit {
 
-		//TODO: optimize for large sets
-		//TODO: dispatch entity removed event
-		self.members.removeAll()
+		members.removeAll()
 
 		unsubscribe(event: handleComponentAddedToEntity)
 		unsubscribe(event: handleComponentRemovedFromEntity)
 
-		dispatch(event: FamilyDestroyed())
+		defer {
+			notifyDestroyed()
+		}
+
 	}
+}
 
-	final func handleComponentAddedToEntity(event: ComponentAdded) {
-		//TODO: optimize by more specific comparison
-		self.update(familyMembership: event.toEntity)
-	}
-	final func handleComponentRemovedFromEntity(event: ComponentRemoved) {
-		//TODO: optimize by more specific comparison
-		self.update(familyMembership: event.fromEntity)
-	}
+// MARK: update family membership
+extension Family {
 
-	final func matches(familyRequirements entity: Entity) -> Bool {
-		return entity.contains(all: required) && entity.contains(none: excluded)
-	}
-
-	final func contains(entity: Entity) -> Bool {
-		return self.members.contains(where: { $0.uid == entity.uid })
-	}
-	final func indexOf(entity: Entity) -> Int? {
-		return self.members.index(where: { $0.uid == entity.uid })
-	}
-
-	final func update(familyMemberships entities: ContiguousArray<Entity>) {
-		//TODO: optimize for large sets
-		entities.forEach { self.update(familyMembership:$0) }
-	}
-
-	private final func update(familyMembership entity: Entity) {
-
-		let NEW: Int = -1
-		let isMatch: Bool = matches(familyRequirements: entity)
-		let index: Int = indexOf(entity: entity) ?? NEW
-		let isNew: Bool = index == NEW
-
-		switch (isMatch, isNew) {
-		case (true, true): // isMatch && new -> add
-			add(toFamily: entity)
-			return
-
-		case (false, false): // noMatch && isPart -> remove
-			remove(entityAtIndex: index)
-			return
-
-		default:
-			return
+	fileprivate func update(membership entity: Entity) {
+		let isMatch: Bool = traits.isMatch(entity)
+		switch isMatch {
+		case true:
+			push(entity)
+		case false:
+			remove(entity)
 		}
 	}
 
-	private final func add(toFamily entity: Entity) {
-		self.members.append(entity)
-		dispatch(event: FamilyMemberAdded(entity: entity, family: self))
+	fileprivate func push(_ entity: Entity) {
+		let (added, member) = members.insert(entity)
+		switch added {
+		case true:
+			notify(added: member)
+		case false:
+			notify(update: entity, previous: member)
+		}
 	}
 
-	private final func remove(entityAtIndex index: Int) {
-		let removedEntity: Entity = self.members.remove(at: index)
-		dispatch(event: FamilyMemberRemoved(entity: removedEntity, family: self))
+	fileprivate func remove(_ entity: Entity) {
+		let removed: Entity? = members.remove(entity)
+		assert(removed != nil)
+		if let removedEntity: Entity = removed {
+			notify(removed: removedEntity)
+		}
 	}
 }
-*/
+
+// MARK: - Equatable
+extension Family: Equatable {
+	public static func ==(lhs: Family, rhs: Family) -> Bool {
+		return lhs.traits == rhs.traits
+	}
+}
+
+// MARK: - Hashable
+extension Family: Hashable {
+	public var hashValue: Int {
+		return traits.hashValue
+	}
+}
+
+// MARK: - event dispatcher
+extension Family: EventDispatcher {
+	public func dispatch<E>(_ event: E) where E : Event {
+		dispatcher.dispatch(event)
+	}
+
+	fileprivate func unowned(closure: @escaping (Family) -> Void) {
+		let unownedClosure = { [unowned self] in
+			closure(self)
+		}
+		unownedClosure()
+	}
+
+	fileprivate func notifyCreated() {
+		unowned {
+			$0.dispatch(FamilyCreated(family: $0))
+		}
+	}
+
+	fileprivate func notify(added newEntity: Entity) {
+		unowned { [unowned newEntity] in
+			$0.dispatch(FamilyMemberAdded(member: newEntity, to: $0))
+		}
+	}
+
+	fileprivate func notify(update newEntity: Entity, previous oldEntity: Entity) {
+		unowned { [unowned newEntity, unowned oldEntity] in
+			$0.dispatch(FamilyMemberUpdated(newMember: newEntity, oldMember: oldEntity, in: $0) )
+		}
+	}
+
+	fileprivate func notify(removed removedEntity: Entity) {
+		unowned { [unowned removedEntity] in
+			$0.dispatch(FamilyMemberRemoved(member: removedEntity, from: $0))
+		}
+	}
+
+	fileprivate func notifyDestroyed() {
+		//dispatch(event: FamilyDestroyed())
+		// dispatch(FamilyDestroyed(family: self))
+	}
+}
+
+// MARK: - event handler
+extension Family: EventHandler {
+
+	fileprivate final func handleComponentAddedToEntity(event: ComponentAdded) {
+		//let newComponent: Component = event.component
+		let entity: Entity = event.to
+		update(membership: entity)
+	}
+
+	fileprivate final func handleComponentUpdatedAtEntity(event: ComponentUpdated) {
+		//let newComponent: Component = event.component
+		//let oldComponent: Component = event.previous
+		let entity: Entity = event.at
+		update(membership: entity)
+	}
+
+	fileprivate final func handleComponentRemovedFromEntity(event: ComponentRemoved) {
+		//let removedComponent: Component = event.component
+		let entity: Entity = event.from
+		update(membership: entity)
+	}
+
+}

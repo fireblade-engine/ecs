@@ -47,7 +47,7 @@ public extension Entity {
 	}
 
 	public final func has(_ component: UCT) -> Bool {
-		fatalError()
+		return componentMap[component] != nil
 	}
 
 	public final var hasComponents: Bool { return !componentMap.isEmpty }
@@ -188,25 +188,25 @@ extension Entity: EventDispatcher {
 
 	private func notify<C: Component>(add component: C) {
 		unowned {
-			$0.dispatch(ComponentAdded(component: component, to: $0))
+			$0.dispatch(ComponentAdded(to: $0))
 		}
 	}
 
 	private func notify<C: Component>(update newComponent: C, previous previousComponent: C) {
 		unowned {
-			$0.dispatch(ComponentUpdated(component: newComponent, previous: previousComponent, at: $0))
+			$0.dispatch(ComponentUpdated(at: $0))
 		}
 	}
 
 	private func notify<C: Component>(removed component: C) {
 		unowned {
-			$0.dispatch(ComponentRemoved(component: component, from: $0))
+			$0.dispatch(ComponentRemoved(from: $0))
 		}
 	}
 
 	private func notify(removed component: Component) {
 		//unowned { /* this keeps a reference since we need it */
-		dispatch(ComponentRemoved(component: component, from: self))
+		dispatch(ComponentRemoved(from: self))
 		//}
 	}
 

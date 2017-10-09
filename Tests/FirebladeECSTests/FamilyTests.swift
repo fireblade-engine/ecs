@@ -36,8 +36,12 @@ class FamilyTests: XCTestCase {
 
 		let e3 = entityHub.createEntity()
 		e3 += EmptyComponent()
+		e3 += Name(name: "Michael")
 
 		e2.remove(EmptyComponent.self)
 
+		family.components { (name: Name, empty: EmptyComponent) in
+			print(name, empty)
+		}
 	}
 }

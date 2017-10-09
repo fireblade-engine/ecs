@@ -90,21 +90,36 @@ extension Family {
 	}
 }
 
-// MARK: - Iterator
+// MARK: - entity accessors
 extension Family {
-
-	func forEach(_ body: (Entity) -> Void ) {
-		members.forEach(body)
+	public func entities(_ apply: (Entity) -> Void ) {
+		members.lazy.forEach(apply)
 	}
 
-	func reduce<Result>(_ initialResult: Result, _ nextPartialResult: (Result, Entity) throws -> Result) rethrows -> Result {
-		return try members.reduce(initialResult, nextPartialResult)
+	public func reduce<Result>(_ initialResult: Result, _ nextPartialResult: (Result, Entity) throws -> Result) rethrows -> Result {
+		return try members.lazy.reduce(initialResult, nextPartialResult)
 	}
+}
 
-	func zip(_ componentTypes: Component.Type) {
-
-		let a = members.map { $0.componentMap.values }
-
+// MARK: - component accessors
+extension Family {
+	public func component<A: Component>(_ apply: (A) -> Void) {
+		members.lazy.forEach { $0.component(apply) }
+	}
+	public func components<A: Component, B: Component>(_ apply: (A, B) -> Void) {
+		members.lazy.forEach { $0.components(apply) }
+	}
+	public func components<A: Component, B: Component, C: Component>(_ apply: (A, B, C) -> Void) {
+		members.lazy.forEach { $0.components(apply) }
+	}
+	public func components<A: Component, B: Component, C: Component, D: Component>(_ apply: (A, B, C, D) -> Void) {
+		members.lazy.forEach { $0.components(apply) }
+	}
+	public func components<A: Component, B: Component, C: Component, D: Component, E: Component>(_ apply: (A, B, C, D, E) -> Void) {
+		members.lazy.forEach { $0.components(apply) }
+	}
+	public func components<A: Component, B: Component, C: Component, D: Component, E: Component, F: Component>(_ apply: (A, B, C, D, E, F) -> Void) {
+		members.lazy.forEach { $0.components(apply) }
 	}
 
 }

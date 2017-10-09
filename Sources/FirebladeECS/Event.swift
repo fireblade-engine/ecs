@@ -21,6 +21,10 @@ extension ECSEvent {
 
 extension EventHandler {
 
+	unowned var listenerRef: EventHandler {
+		return self
+	}
+
 	/// Subscribe with an event handler closure to receive events of type T
 	///
 	/// - Parameter eventHandler: event handler closure

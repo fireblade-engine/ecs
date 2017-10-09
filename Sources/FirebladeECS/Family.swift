@@ -26,6 +26,7 @@ public final class Family {
 		dispatcher = eventHub
 
 		subscribe(event: handleComponentAddedToEntity)
+		subscribe(event: handleComponentUpdatedAtEntity)
 		subscribe(event: handleComponentRemovedFromEntity)
 
 		defer {
@@ -39,6 +40,7 @@ public final class Family {
 		members.removeAll()
 
 		unsubscribe(event: handleComponentAddedToEntity)
+		unsubscribe(event: handleComponentUpdatedAtEntity)
 		unsubscribe(event: handleComponentRemovedFromEntity)
 
 		defer {
@@ -48,7 +50,7 @@ public final class Family {
 	}
 }
 
-// MARK: update family membership
+// MARK: - update family membership
 extension Family {
 
 	fileprivate func update(membership entity: Entity) {

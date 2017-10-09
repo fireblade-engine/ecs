@@ -9,6 +9,10 @@ import FirebladeECS
 
 struct EmptyComponent: Component { }
 
+struct Name: Component {
+	let name: String
+}
+
 class DebugEventHandler: EventHandler {
 
 	let eventHub = DefaultEventHub()

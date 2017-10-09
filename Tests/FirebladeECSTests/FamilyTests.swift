@@ -18,10 +18,17 @@ class FamilyTests: XCTestCase {
 		e1 += EmptyComponent()
 		let e2 = entityHub.createEntity()
 		e2 += EmptyComponent()
+		e1 += Name(name: "Sarah")
+
+		let (empty, name) =  e1.components(EmptyComponent.self, Name.self)
+
+		e1.components { (empty: EmptyComponent, name: Name) in
+			print(empty, name)
+		}
 
 		let traits = FamilyTraits(hasAll: [EmptyComponent.uct], hasAny: [], hasNone: [])
 
-		let (new, _) = entityHub.family(with: traits)
+		let (new, family) = entityHub.family(with: traits)
 		XCTAssert(new == true)
 
 		let (new2, _) = entityHub.family(with: traits)

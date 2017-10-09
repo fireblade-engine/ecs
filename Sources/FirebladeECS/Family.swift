@@ -90,6 +90,25 @@ extension Family {
 	}
 }
 
+// MARK: - Iterator
+extension Family {
+
+	func forEach(_ body: (Entity) -> Void ) {
+		members.forEach(body)
+	}
+
+	func reduce<Result>(_ initialResult: Result, _ nextPartialResult: (Result, Entity) throws -> Result) rethrows -> Result {
+		return try members.reduce(initialResult, nextPartialResult)
+	}
+
+	func zip(_ componentTypes: Component.Type) {
+
+		let a = members.map { $0.componentMap.values }
+
+	}
+
+}
+
 // MARK: - Equatable
 extension Family: Equatable {
 	public static func ==(lhs: Family, rhs: Family) -> Bool {

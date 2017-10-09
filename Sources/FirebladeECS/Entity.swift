@@ -10,7 +10,7 @@ public final class Entity: UniqueEntityIdentifiable {
 
 	fileprivate var eventDispatcher: EventDispatcher
 
-	fileprivate var componentMap: [UCT:Component]
+	public private(set) var componentMap: [UCT:Component]
 
 	init(uei: UEI, dispatcher: EventDispatcher) {
 		self.uei = uei
@@ -109,7 +109,6 @@ public extension Entity {
 	}
 
 }
-
 // MARK: - remove component(s)
 public extension Entity {
 
@@ -212,8 +211,8 @@ extension Entity: EventDispatcher {
 
 	private func notifyDestoryed() {
 		//unowned {
-			//$0.dispatch(event: EntityDestroyed(entity: $0))
-			//TODO: here entity is already dead
+		//$0.dispatch(event: EntityDestroyed(entity: $0))
+		//TODO: here entity is already dead
 		//}
 	}
 
@@ -237,5 +236,87 @@ extension Entity: CustomStringConvertible {
 extension Entity: CustomPlaygroundQuickLookable {
 	public var customPlaygroundQuickLook: PlaygroundQuickLook {
 		return .text(self.description)
+	}
+}
+
+// MARK: - component tuple access
+public extension Entity {
+
+	public func component<A: Component>(_: A.Type) -> A {
+		guard let a: A = componentMap[A.uct] as? A else {
+			fatalError("Component Mapping Error: '\(A.self)' component was not found in entity '\(self)'")
+		}
+		return a
+
+	}
+	public func components<A: Component, B: Component>(_: A.Type, _: B.Type) -> (A, B) {
+		let a: A = component(A.self)
+		let b: B = component(B.self)
+		return (a, b)
+	}
+	public func components<A: Component, B: Component, C: Component>(_: A.Type, _: B.Type, _: C.Type) -> (A, B, C) {
+		let a: A = component(A.self)
+		let b: B = component(B.self)
+		let c: C = component(C.self)
+		return (a, b, c)
+	}
+	public func components<A: Component, B: Component, C: Component, D: Component>(_: A.Type, _: B.Type, _: C.Type, _: D.Type) -> (A, B, C, D) {
+		let a: A = component(A.self)
+		let b: B = component(B.self)
+		let c: C = component(C.self)
+		let d: D = component(D.self)
+		return (a, b, c, d)
+	}
+	public func components<A: Component, B: Component, C: Component, D: Component, E: Component>(_: A.Type, _: B.Type, _: C.Type, _: D.Type, _: E.Type) -> (A, B, C, D, E) {
+		let a: A = component(A.self)
+		let b: B = component(B.self)
+		let c: C = component(C.self)
+		let d: D = component(D.self)
+		let e: E = component(E.self)
+		return (a, b, c, d, e)
+	}
+	public func components<A: Component, B: Component, C: Component, D: Component, E: Component, F: Component>(_: A.Type, _: B.Type, _: C.Type, _: D.Type, _: E.Type, _: F.Type) -> (A, B, C, D, E, F) {
+		let a: A = component(A.self)
+		let b: B = component(B.self)
+		let c: C = component(C.self)
+		let d: D = component(D.self)
+		let e: E = component(E.self)
+		let f: F = component(F.self)
+		return (a, b, c, d, e, f)
+	}
+}
+
+// MARK: - component closure access
+public extension Entity {
+
+	public func component<R, A: Component>(_ closure: (A) -> R) -> R { return closure(component(A.self)) }
+	public func components<R, A: Component, B: Component>(_ closure: (A, B) -> R) -> R {
+		return closure(component(A.self), component(B.self))
+	}
+	public func components<R, A: Component, B: Component, C: Component>(_ closure: (A, B, C) -> R) -> R {
+		return closure(component(A.self), component(B.self), component(C.self))
+	}
+	public func components<R, A: Component, B: Component, C: Component, D: Component>(_ closure: (A, B, C, D) -> R) -> R {
+		return closure(component(A.self),
+					   component(B.self),
+					   component(C.self),
+					   component(D.self))
+	}
+
+	public func components<R, A: Component, B: Component, C: Component, D: Component, E: Component>(_ closure: (A, B, C, D, E) -> R) -> R {
+		return closure(component(A.self),
+					   component(B.self),
+					   component(C.self),
+					   component(D.self),
+					   component(E.self))
+	}
+
+	public func components<R, A: Component, B: Component, C: Component, D: Component, E: Component, F: Component>(_ closure: (A, B, C, D, E, F) -> R) -> R {
+		return closure(component(A.self),
+					   component(B.self),
+					   component(C.self),
+					   component(D.self),
+					   component(E.self),
+					   component(F.self) )
 	}
 }

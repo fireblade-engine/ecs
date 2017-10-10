@@ -22,6 +22,8 @@ class FamilyTests: XCTestCase {
 
 		let (empty, name) =  e1.components(EmptyComponent.self, Name.self)
 
+		print(empty, name)
+
 		e1.components { (empty: EmptyComponent, name: Name) in
 			print(empty, name)
 		}

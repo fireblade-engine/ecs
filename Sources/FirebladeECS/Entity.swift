@@ -8,9 +8,12 @@
 public final class Entity: UniqueEntityIdentifiable {
 	public let uei: UEI
 
+	public var name: String?
+
+	@available(*, deprecated: 0.1, message: "replace this with core/context concept")
 	fileprivate var eventDispatcher: EventDispatcher
 
-	public private(set) var componentMap: [UCT:Component]
+	public private(set) var componentMap: [UCT: Component]
 
 	init(uei: UEI, dispatcher: EventDispatcher) {
 		self.uei = uei
@@ -161,7 +164,7 @@ extension Entity {
 }
 
 extension Entity: EventDispatcher {
-	public func dispatch<E>(_ event: E) where E : Event {
+	public func dispatch<E>(_ event: E) where E: Event {
 		eventDispatcher.dispatch(event)
 	}
 

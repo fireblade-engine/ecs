@@ -54,9 +54,8 @@ public final class Family {
 // MARK: - update family membership
 extension Family {
 
-	func update<C: Collection>(membership entites: C) where C.Iterator.Element == Entity {
-		var entityIterator = entites.makeIterator()
-		while let entity: Entity = entityIterator.next() {
+	func update(membership entities: AnyIterator<Entity>) {
+		while let entity: Entity = entities.next() {
 			update(membership: entity)
 		}
 	}
@@ -140,7 +139,7 @@ extension Family: Hashable {
 
 // MARK: - event dispatcher
 extension Family: EventDispatcher {
-	public func dispatch<E>(_ event: E) where E : Event {
+	public func dispatch<E>(_ event: E) where E: Event {
 		dispatcher.dispatch(event)
 	}
 

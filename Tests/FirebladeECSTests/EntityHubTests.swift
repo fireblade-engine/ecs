@@ -21,8 +21,8 @@ class EntityHubTests: XCTestCase {
 		let newEntity: Entity = entityHub.createEntity()
 
 		XCTAssert(newEntity.hasComponents == false)
-		//TODO: XCTAssert(entityHub.entites[newEntity.uei] == newEntity)
-		//TODO: XCTAssert(entityHub.entites[newEntity.uei] === newEntity)
+		//TODO: XCTAssert(entityHub.entities[newEntity.uei] == newEntity)
+		//TODO: XCTAssert(entityHub.entities[newEntity.uei] === newEntity)
 	}
 
 	func testCreateEntityAndAddComponent() {
@@ -35,8 +35,8 @@ class EntityHubTests: XCTestCase {
 		XCTAssert(newEntity.hasComponents)
 		XCTAssert(newEntity.numComponents == 1)
 
-		//TODO: XCTAssert(entityHub.entites[newEntity.uei] == newEntity)
-		//TODO: XCTAssert(entityHub.entites[newEntity.uei] === newEntity)
+		//TODO: XCTAssert(entityHub.entities[newEntity.uei] == newEntity)
+		//TODO: XCTAssert(entityHub.entities[newEntity.uei] === newEntity)
 
 	}
 
@@ -51,7 +51,7 @@ extension EntityHubTests: EventSniffer {
 
 	}
 
-	public func dispatched<E>(event: E) where E : Event {
+	public func dispatched<E>(event: E) where E: Event {
 
 	}
 

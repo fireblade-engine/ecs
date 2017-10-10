@@ -10,16 +10,13 @@ public class EntityHub: EventHandler {
 
 	public lazy var eventHub: DefaultEventHub = { return DefaultEventHub() }()
 
-	private(set) var entites: Set<Entity>
-	//private(set) var entites: [UEI:Entity] = [:]
-	private(set) var families: [FamilyTraits:Family]
+	private(set) var entities: EntityStorage
+	private(set) var families: FamilyStorage
 
 	public init() {
-		entites = Set<Entity>()
-		entites.reserveCapacity(512)
+		entities = DefaultEntityStorage()
 
-		families = [FamilyTraits: Family]()
-		families.reserveCapacity(64)
+		families = DefaultFamilyStorage()
 
 		self.delegate = eventHub
 
@@ -60,7 +57,7 @@ extension EntityHub {
 	public func createEntity() -> Entity {
 		let newEntity = Entity(uei: UEI.next, dispatcher: eventHub)
 		// ^ dispatches entity creation event here ^
-		let (success, _) = entites.insert(newEntity)
+		let success: Bool = entities.add(newEntity)
 		assert(success == true, "Entity with the exact identifier already exists")
 
 		return newEntity
@@ -80,8 +77,8 @@ extension EntityHub {
 
 		let newFamily = Family(traits: traits, eventHub: eventHub)
 		// ^ dispatches family creation event here ^
-		let replaced = families.updateValue(newFamily, forKey: traits)
-		assert(replaced == nil, "Family with the exact traits already exists")
+		let success = families.add(newFamily)
+		assert(success, "Family with the exact traits already exists")
 
 		refreshFamilyCache()
 
@@ -89,8 +86,8 @@ extension EntityHub {
 	}
 
 	fileprivate func onFamilyCreated(_ newFamily: Family) {
-		let previousEntities = entites
-		newFamily.update(membership: previousEntities)
+
+		newFamily.update(membership: entities.iterator)
 	}
 
 	fileprivate func refreshFamilyCache() {

@@ -8,30 +8,28 @@
 // MARK: - family
 public final class Family {
 
-	public var delegate: EventHub?
-	fileprivate var dispatcher: EventDispatcher
+	public var nexus: Nexus
 
 	// members of this Family must conform to these traits
 	public let traits: FamilyTraits
 
-	public private(set) var members: Set<Entity>
+	public private(set) var members: ContiguousArray<EntityIdentifier>
 
-	public init(traits: FamilyTraits, eventHub: EventHub & EventDispatcher) {
+	public init(_ nexus: Nexus, traits: FamilyTraits) {
 
-		members = Set<Entity>()
+		members = ContiguousArray<EntityIdentifier>()
 		members.reserveCapacity(64)
 
 		self.traits = traits
 
-		delegate = eventHub
-		dispatcher = eventHub
+		self.nexus = nexus
 
-		subscribe(event: handleComponentAddedToEntity)
+		/*subscribe(event: handleComponentAddedToEntity)
 		subscribe(event: handleComponentUpdatedAtEntity)
 		subscribe(event: handleComponentRemovedFromEntity)
-
+*/
 		defer {
-			notifyCreated()
+			//notifyCreated()
 		}
 
 	}
@@ -40,12 +38,12 @@ public final class Family {
 
 		members.removeAll()
 
-		unsubscribe(event: handleComponentAddedToEntity)
+		/*unsubscribe(event: handleComponentAddedToEntity)
 		unsubscribe(event: handleComponentUpdatedAtEntity)
-		unsubscribe(event: handleComponentRemovedFromEntity)
+		unsubscribe(event: handleComponentRemovedFromEntity)*/
 
 		defer {
-			notifyDestroyed()
+			// notifyDestroyed()
 		}
 
 	}
@@ -54,73 +52,87 @@ public final class Family {
 // MARK: - update family membership
 extension Family {
 
+	func update(membership entityIds: AnyIterator<EntityIdentifier>) {
+		while let entityId: EntityIdentifier = entityIds.next() {
+			update(membership: entityId)
+		}
+	}
+
 	func update(membership entities: AnyIterator<Entity>) {
 		while let entity: Entity = entities.next() {
 			update(membership: entity)
 		}
 	}
 
+	fileprivate func update(membership entityId: EntityIdentifier) {
+		guard let entity = nexus.get(entity: entityId) else {
+			fatalError("no entity with id \(entityId) in \(nexus)")
+		}
+		update(membership: entity)
+	}
+
 	fileprivate func update(membership entity: Entity) {
 		let isMatch: Bool = traits.isMatch(entity)
 		switch isMatch {
 		case true:
-			push(entity)
+			push(entity.identifier)
 		case false:
-			remove(entity)
+			remove(entity.identifier)
 		}
 	}
 
-	fileprivate func push(_ entity: Entity) {
-		let (added, member) = members.insert(entity)
-		switch added {
-		case true:
-			notify(added: member)
-		case false:
-			notify(update: entity, previous: member)
-		}
+	fileprivate func push(_ entityId: EntityIdentifier) {
+		assert(!members.contains(entityId), "entity with id \(entityId) already in family")
+		members.append(entityId)
+		// TODO: notify(added: entityId)
 	}
 
-	fileprivate func remove(_ entity: Entity) {
-		let removed: Entity? = members.remove(entity)
+	fileprivate func remove(_ entityId: EntityIdentifier) {
+		guard let index: Int = members.index(of: entityId) else {
+			fatalError("removing entity id \(entityId) that is not in family")
+		}
+		let removed: EntityIdentifier? = members.remove(at: index)
 		assert(removed != nil)
-		if let removedEntity: Entity = removed {
-			notify(removed: removedEntity)
+		if let removedEntity: EntityIdentifier = removed {
+			// TODO: notify(removed: removedEntity)
 		}
 	}
 }
 
-// MARK: - entity accessors
+// MARK: - member iterator
 extension Family {
-	public func entities(_ apply: (Entity) -> Void ) {
-		members.lazy.forEach(apply)
+	func makeIterator<A>() -> AnyIterator<(Entity, A)> where A: Component {
+		var members = self.members.makeIterator()
+		return AnyIterator<(Entity, A)> { [unowned self] in
+			let entityId: EntityIdentifier = members.next()!
+			let entity: Entity = self.nexus.get(entity: entityId)!
+			let a: A = entity.get()!
+			return (entity, a)
+		}
 	}
 
-	public func reduce<Result>(_ initialResult: Result, _ nextPartialResult: (Result, Entity) throws -> Result) rethrows -> Result {
-		return try members.lazy.reduce(initialResult, nextPartialResult)
-	}
-}
-
-// MARK: - component accessors
-extension Family {
-	public func component<A: Component>(_ apply: (A) -> Void) {
-		members.lazy.forEach { $0.component(apply) }
-	}
-	public func components<A: Component, B: Component>(_ apply: (A, B) -> Void) {
-		members.lazy.forEach { $0.components(apply) }
-	}
-	public func components<A: Component, B: Component, C: Component>(_ apply: (A, B, C) -> Void) {
-		members.lazy.forEach { $0.components(apply) }
-	}
-	public func components<A: Component, B: Component, C: Component, D: Component>(_ apply: (A, B, C, D) -> Void) {
-		members.lazy.forEach { $0.components(apply) }
-	}
-	public func components<A: Component, B: Component, C: Component, D: Component, E: Component>(_ apply: (A, B, C, D, E) -> Void) {
-		members.lazy.forEach { $0.components(apply) }
-	}
-	public func components<A: Component, B: Component, C: Component, D: Component, E: Component, F: Component>(_ apply: (A, B, C, D, E, F) -> Void) {
-		members.lazy.forEach { $0.components(apply) }
+	func makeIterator<A, B>() -> AnyIterator<(Entity, A, B)> where A: Component, B: Component {
+		var members = self.members.makeIterator()
+		return AnyIterator<(Entity, A, B)> { [unowned self] in
+			let entityId: EntityIdentifier = members.next()!
+			let entity: Entity = self.nexus.get(entity: entityId)!
+			let a: A = entity.get()!
+			let b: B = entity.get()!
+			return (entity, a, b)
+		}
 	}
 
+	func makeIterator<A, B, C>() -> AnyIterator<(Entity, A, B, C)> where A: Component, B: Component, C: Component {
+		var members = self.members.makeIterator()
+		return AnyIterator<(Entity, A, B, C)> { [unowned self] in
+			let entityId: EntityIdentifier = members.next()!
+			let entity: Entity = self.nexus.get(entity: entityId)!
+			let a: A = entity.get()!
+			let b: B = entity.get()!
+			let c: C = entity.get()!
+			return (entity, a, b, c)
+		}
+	}
 }
 
 // MARK: - Equatable
@@ -137,46 +149,27 @@ extension Family: Hashable {
 	}
 }
 
+/*
 // MARK: - event dispatcher
 extension Family: EventDispatcher {
 	public func dispatch<E>(_ event: E) where E: Event {
 		dispatcher.dispatch(event)
 	}
 
-	fileprivate func unowned(closure: @escaping (Family) -> Void) {
-		let unownedClosure = { [unowned self] in
-			closure(self)
-		}
-		unownedClosure()
-	}
-
 	fileprivate func notifyCreated() {
-		unowned {
-			$0.dispatch(FamilyCreated(family: $0))
-		}
+		dispatch(FamilyCreated(family: traits))
 	}
 
-	fileprivate func notify(added newEntity: Entity) {
-		unowned { [unowned newEntity] in
-			$0.dispatch(FamilyMemberAdded(member: newEntity, to: $0))
-		}
+	fileprivate func notify(added newEntity: EntityIdentifier) {
+		dispatch(FamilyMemberAdded(member: newEntity, to: traits))
 	}
 
-	fileprivate func notify(update newEntity: Entity, previous oldEntity: Entity) {
-		unowned { [unowned newEntity, unowned oldEntity] in
-			$0.dispatch(FamilyMemberUpdated(newMember: newEntity, oldMember: oldEntity, in: $0) )
-		}
-	}
-
-	fileprivate func notify(removed removedEntity: Entity) {
-		unowned { [unowned removedEntity] in
-			$0.dispatch(FamilyMemberRemoved(member: removedEntity, from: $0))
-		}
+	fileprivate func notify(removed removedEntity: EntityIdentifier) {
+		dispatch(FamilyMemberRemoved(member: removedEntity, from: traits))
 	}
 
 	fileprivate func notifyDestroyed() {
-		//dispatch(event: FamilyDestroyed())
-		// dispatch(FamilyDestroyed(family: self))
+		dispatch(FamilyDestroyed(family: traits))
 	}
 }
 
@@ -184,18 +177,16 @@ extension Family: EventDispatcher {
 extension Family: EventHandler {
 
 	fileprivate final func handleComponentAddedToEntity(event: ComponentAdded) {
-		unowned let entity: Entity = event.to
-		update(membership: entity)
+		update(membership: event.to)
 	}
 
 	fileprivate final func handleComponentUpdatedAtEntity(event: ComponentUpdated) {
-		unowned let entity: Entity = event.at
-		update(membership: entity)
+		update(membership: event.at)
 	}
 
 	fileprivate final func handleComponentRemovedFromEntity(event: ComponentRemoved) {
-		unowned let entity: Entity = event.from
-		update(membership: entity)
+		update(membership: event.from)
 	}
 
 }
+*/

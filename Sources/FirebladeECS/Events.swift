@@ -6,49 +6,41 @@
 //
 
 public struct EntityCreated: Event {
-	unowned let entity: Entity
+	let entityId: EntityIdentifier
 }
 
 public struct EntityDestroyed: Event {
-	unowned let entity: Entity
+	let entityId: EntityIdentifier
 }
 
 public struct ComponentAdded: Event {
-	//let component: Component
-	unowned let to: Entity
+	let component: ComponentIdentifier
+	let to: EntityIdentifier
 }
 
 public struct ComponentUpdated: Event {
-	//let component: Component
-	//let previous: Component
-	unowned let at: Entity
+	let at: EntityIdentifier
 }
 
 public struct ComponentRemoved: Event {
-	//let component: Component
-	unowned let from: Entity
+	let component: ComponentIdentifier
+	let from: EntityIdentifier
 }
 
 struct FamilyMemberAdded: Event {
-	unowned let member: Entity
-	unowned let to: Family
-}
-
-struct FamilyMemberUpdated: Event {
-	unowned let newMember: Entity
-	unowned let oldMember: Entity
-	unowned let `in`: Family
+	let member: EntityIdentifier
+	let to: FamilyTraits
 }
 
 struct FamilyMemberRemoved: Event {
-	unowned let member: Entity
-	unowned let from: Family
+	let member: EntityIdentifier
+	let from: FamilyTraits
 }
 
 struct FamilyCreated: Event {
-	unowned let family: Family
+	let family: FamilyTraits
 }
 
 struct FamilyDestroyed: Event {
-	unowned let family: Family
+	let family: FamilyTraits
 }

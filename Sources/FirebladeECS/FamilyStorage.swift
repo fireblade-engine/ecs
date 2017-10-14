@@ -22,7 +22,7 @@ public protocol FamilyStorage {
 	func clear()
 }
 
-class DefaultFamilyStorage: FamilyStorage {
+class GeneralFamilyStorage: FamilyStorage {
 
 	fileprivate typealias Index = Dictionary<FamilyTraits, Family>.Index
 	fileprivate var families: [FamilyTraits: Family] = [:]

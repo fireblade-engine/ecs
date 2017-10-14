@@ -14,7 +14,3 @@ public protocol System: class {
 	func startup()
 	func shutdown()
 }
-
-public protocol EntitySystem: System {
-	//TODO: var systemFamily: Family { get }
-}

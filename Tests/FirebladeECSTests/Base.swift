@@ -13,6 +13,15 @@ struct Name: Component {
 	let name: String
 }
 
+struct Position: Component {
+	let x: Int
+	let y: Int
+}
+
+struct Velocity: Component {
+	let a: Float
+}
+
 class DebugEventHandler: EventHandler {
 
 	let eventHub = DefaultEventHub()

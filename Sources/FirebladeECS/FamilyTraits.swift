@@ -7,20 +7,20 @@
 
 // trait/predicate/characteristic
 public struct FamilyTraits {
-	let hasAll: Set<UCT>
-	let hasAny: Set<UCT>
-	let hasNone: Set<UCT>
+	let hasAll: Set<ComponentIdentifier>
+	let hasAny: Set<ComponentIdentifier>
+	let hasNone: Set<ComponentIdentifier>
 
-	public init(hasAll: Set<UCT>, hasAny: Set<UCT>, hasNone: Set<UCT>) {
+	public init(hasAll: Set<ComponentIdentifier>, hasAny: Set<ComponentIdentifier>, hasNone: Set<ComponentIdentifier>) {
 		self.hasAll = hasAll
 		self.hasAny = hasAny
 		self.hasNone = hasNone
 		assert(isValid)
 	}
 
-	fileprivate var iteratorAll: SetIterator<UCT> { return hasAll.makeIterator() }
-	fileprivate var iteratorAny: SetIterator<UCT> { return hasAny.makeIterator() }
-	fileprivate var iteratorNone: SetIterator<UCT> { return hasNone.makeIterator() }
+	fileprivate var iteratorAll: SetIterator<ComponentIdentifier> { return hasAll.makeIterator() }
+	fileprivate var iteratorAny: SetIterator<ComponentIdentifier> { return hasAny.makeIterator() }
+	fileprivate var iteratorNone: SetIterator<ComponentIdentifier> { return hasNone.makeIterator() }
 }
 extension FamilyTraits {
 	var isValid: Bool {
@@ -35,7 +35,7 @@ extension FamilyTraits {
 
 	fileprivate func matches(all entity: Entity) -> Bool {
 		var all = iteratorAll
-		while let uct: UCT = all.next() {
+		while let uct: ComponentIdentifier = all.next() {
 			guard entity.has(uct) else { return false }
 		}
 		return true
@@ -43,7 +43,7 @@ extension FamilyTraits {
 
 	fileprivate func matches(none entity: Entity) -> Bool {
 		var none = iteratorNone
-		while let uct: UCT = none.next() {
+		while let uct: ComponentIdentifier = none.next() {
 			guard !entity.has(uct) else { return false }
 		}
 		return true
@@ -52,7 +52,7 @@ extension FamilyTraits {
 	fileprivate func matches(any entity: Entity) -> Bool {
 		guard !hasAny.isEmpty else { return true }
 		var any = iteratorAny
-		while let uct: UCT = any.next() {
+		while let uct: ComponentIdentifier = any.next() {
 			if entity.has(uct) {
 				return true
 			}
@@ -92,9 +92,9 @@ extension FamilyTraits: Hashable {
 extension FamilyTraits: CustomStringConvertible {
 
 	public var description: String {
-		let all: String = hasAll.map { "\($0.type)" }.joined(separator: " AND ")
-		let any: String = hasAny.map { "\($0.type)" }.joined(separator: " OR ")
-		let none: String = hasNone.map { "!\($0.type)"}.joined(separator: " NOT ")
+		let all: String = hasAll.map { "\($0.self)" }.joined(separator: " AND ")
+		let any: String = hasAny.map { "\($0.self)" }.joined(separator: " OR ")
+		let none: String = hasNone.map { "!\($0.self)"}.joined(separator: " NOT ")
 		let out: String = ["\(all)", "\(any)", "\(none)"].joined(separator: " AND ")
 		//TODO: nicer
 		return "FamilyTraits(\(out))"

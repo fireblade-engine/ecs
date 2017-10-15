@@ -7,18 +7,49 @@
 
 extension Nexus {
 
+	fileprivate func nextEntityIdx() -> EntityIndex {
+		guard let nextReused: EntityIdentifier = freeEntities.popLast() else {
+			return entities.count
+		}
+		return nextReused.index
+	}
+
 	public func create(entity name: String? = nil) -> Entity {
-		let newEntityIndex: EntityIndex = entities.count // TODO: use free entity index
+		let newEntityIndex: EntityIndex = nextEntityIdx()
 		let newEntityIdentifier: EntityIdentifier = newEntityIndex.identifier
-		let newEntity = Entity(nexus: self, id: newEntityIdentifier, name: name)
-		entities.insert(newEntity, at: newEntityIndex)
-		notify(EntityCreated(entityId: newEntityIdentifier))
-		return newEntity
+		if entities.count > newEntityIndex {
+			let reusedEntity: Entity = entities[newEntityIndex]
+			assert(reusedEntity.identifier == EntityIdentifier.invalid, "Stil valid entity \(reusedEntity)")
+			reusedEntity.identifier = newEntityIdentifier
+			reusedEntity.name = name
+			notify(EntityCreated(entityId: newEntityIdentifier))
+			return reusedEntity
+		} else {
+			let newEntity = Entity(nexus: self, id: newEntityIdentifier, name: name)
+			entities.insert(newEntity, at: newEntityIndex)
+			notify(EntityCreated(entityId: newEntityIdentifier))
+			return newEntity
+		}
+	}
+
+
+	/// Number of entities in nexus.
+	public var count: Int {
+		return entities.count - freeEntities.count
+	}
+
+	func isValid(entity: Entity) -> Bool {
+		return isValid(entity: entity.identifier)
+	}
+
+	func isValid(entity entitiyId: EntityIdentifier) -> Bool {
+		return entitiyId != EntityIdentifier.invalid &&
+			entitiyId.index >= 0 &&
+			entitiyId.index < entities.count
 	}
 
 	public func has(entity entityId: EntityIdentifier) -> Bool {
-		return entities.count > entityId.index // TODO: reuse free index
-
+		return isValid(entity: entityId) // TODO: reuse free index
 	}
 
 	public func get(entity entityId: EntityIdentifier) -> Entity? {
@@ -27,7 +58,8 @@ extension Nexus {
 	}
 
 	@discardableResult
-	public func destroy(entity entityId: EntityIdentifier) -> Bool {
+	public func destroy(entity: Entity) -> Bool {
+		let entityId: EntityIdentifier = entity.identifier
 		guard has(entity: entityId) else {
 			assert(false, "EntityRemove failure: no entity \(entityId) to remove")
 			return false
@@ -35,8 +67,13 @@ extension Nexus {
 
 		clear(componentes: entityId)
 
-		// FIXME: this is wrong since it removes the entity that should be reused
-		entities.remove(at: entityId.index)
+		entity.invalidate()
+
+		// replace with "new" invalid entity to keep capacity of array
+		let invalidEntity = Entity(nexus: self, id: EntityIdentifier.invalid)
+		entities[entityId.index] = invalidEntity
+
+		freeEntities.append(entityId)
 
 		notify(EntityDestroyed(entityId: entityId))
 		return true

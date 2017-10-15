@@ -7,7 +7,7 @@
 
 public final class Entity: UniqueEntityIdentifiable {
 
-	public let identifier: EntityIdentifier
+	internal(set) public var identifier: EntityIdentifier = EntityIdentifier.invalid
 	public var name: String?
 
 	fileprivate let nexus: Nexus
@@ -18,6 +18,20 @@ public final class Entity: UniqueEntityIdentifiable {
 		self.name = name
 	}
 
+}
+
+// MARK: - Invalidate
+extension Entity {
+
+	public var isValid: Bool {
+		return nexus.isValid(entity: self)
+	}
+
+	func invalidate() {
+		assert(nexus.isValid(entity: identifier), "Invalid entity \(self) is being invalidated.")
+		identifier = EntityIdentifier.invalid
+		name = nil
+	}
 }
 
 // MARK: - Equatable
@@ -53,19 +67,19 @@ public extension Entity {
 public extension Entity {
 
 	@discardableResult
-	public final func add<C>(_ component: C) -> Entity where C: Component {
-		nexus.add(component: component, to: identifier)
+	public final func assign<C>(_ component: C) -> Entity where C: Component {
+		nexus.assign(component: component, to: identifier)
 		return self
 	}
 
 	@discardableResult
 	public static func += <C>(lhs: Entity, rhs: C) -> Entity where C: Component {
-		return lhs.add(rhs)
+		return lhs.assign(rhs)
 	}
 
 	@discardableResult
 	public static func << <C>(lhs: Entity, rhs: C) -> Entity where C: Component {
-		return lhs.add(rhs)
+		return lhs.assign(rhs)
 	}
 }
 
@@ -118,8 +132,7 @@ public extension Entity {
 // MARK: - destroy/deinit entity
 extension Entity {
 	final func destroy() {
-		clear()
-		//TODO: notifyDestoryed()
+		nexus.destroy(entity: self)
 	}
 }
 

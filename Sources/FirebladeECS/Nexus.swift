@@ -30,11 +30,14 @@ public class Nexus {
 
 	var componentIdsByEntityIdx: [EntityIndex: ComponentIdentifiers]
 
+	var freeEntities: ContiguousArray<EntityIdentifier>
+
 	public init() {
 		entities = Entities()
 		componentsByType = [:]
 		componentIndexByEntityComponentHash = [:]
 		componentIdsByEntityIdx = [:]
+		freeEntities = ContiguousArray<EntityIdentifier>()
 	}
 
 
@@ -44,6 +47,11 @@ extension Nexus {
 
 	func notify(_ event: Event) {
 		Log.debug(event)
+		// TODO: implement
+	}
+
+	func report(_ message: String) {
+		Log.warn(message)
 		// TODO: implement
 	}
 }

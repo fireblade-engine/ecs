@@ -25,7 +25,7 @@ extension Nexus {
 		}
 	}
 
-	public func add<C>(component: C, to entityId: EntityIdentifier) where C: Component {
+	public func assign<C>(component: C, to entityId: EntityIdentifier) where C: Component {
 		let componentId = C.identifier
 		let entityIdx = entityId.index
 		let hash: EntityComponentHash = componentId.hashValue(using: entityIdx)
@@ -76,18 +76,26 @@ extension Nexus {
 		let hash: EntityComponentHash = componentId.hashValue(using: entityId.index)
 
 		guard let componentIdx: ComponentIndex = componentIndexByEntityComponentHash.removeValue(forKey: hash) else {
-			assert(false, "ComponentRemove failure: entity \(entityId) has no component \(componentId)")
+			report("ComponentRemove failure: entity \(entityId) has no component \(componentId)")
 			return false
 		}
 
 		guard componentsByType[componentId]?.remove(at: componentIdx) != nil else {
 			assert(false, "ComponentRemove failure: no component instance for \(componentId) with the given index \(componentIdx)")
+			report("ComponentRemove failure: no component instance for \(componentId) with the given index \(componentIdx)")
 			return false
 		}
 
 		// FIXME: this is expensive
-		if let removeIndex: Int = get(components: entityId)?.index(where: { $0 == componentId }) {
-			componentIdsByEntityIdx[entityId.index]?.remove(at: removeIndex)
+		guard let removeIndex: Int = get(components: entityId)?.index(where: { $0 == componentId }) else {
+			assert(false, "ComponentRemove failure: no component found to be removed")
+			report("ComponentRemove failure: no component found to be removed")
+			return false
+		}
+		guard componentIdsByEntityIdx[entityId.index]?.remove(at: removeIndex) != nil else {
+			assert(false, "ComponentRemove failure: nothing was removed")
+			report("ComponentRemove failure: nothing was removed")
+			return false
 		}
 
 

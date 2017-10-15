@@ -136,7 +136,6 @@ extension Entity {
 	}
 }
 
-
 // MARK: - component tuple access
 public extension Entity {
 

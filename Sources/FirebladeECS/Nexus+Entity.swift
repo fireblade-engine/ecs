@@ -32,7 +32,6 @@ extension Nexus {
 		}
 	}
 
-
 	/// Number of entities in nexus.
 	public var count: Int {
 		return entities.count - freeEntities.count
@@ -78,6 +77,5 @@ extension Nexus {
 		notify(EntityDestroyed(entityId: entityId))
 		return true
 	}
-
 
 }

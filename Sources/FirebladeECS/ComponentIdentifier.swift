@@ -24,4 +24,3 @@ public protocol UniqueComponentIdentifiable {
 	static var identifier: ComponentIdentifier { get }
 	var identifier: ComponentIdentifier { get }
 }
-

@@ -10,8 +10,6 @@ import XCTest
 
 class NexusTests: XCTestCase {
 
-
-
 	override func setUp() {
 		super.setUp()
 	}
@@ -20,6 +18,18 @@ class NexusTests: XCTestCase {
 		super.tearDown()
 	}
 
+	func testEntityIdentifierAndIndex() {
+
+		let min: EntityIndex = EntityIdentifier(UInt64.min).index
+		XCTAssert(EntityIndex(min).identifier == min)
+
+		let rand: EntityIndex = EntityIdentifier(UInt64(arc4random())).index
+		XCTAssert(EntityIndex(rand).identifier == rand)
+
+		let max: EntityIndex = EntityIdentifier(UInt64.max).index
+		XCTAssert(EntityIndex(max).identifier == max)
+
+	}
 
 	func testCreateEntity() {
 		let nexus: Nexus = Nexus()
@@ -113,7 +123,6 @@ class NexusTests: XCTestCase {
 
 		e0.remove(Name.self)
 
-
 		XCTAssert(e0.numComponents == 0)
 		XCTAssert(!e0.hasComponents)
 
@@ -144,6 +153,37 @@ class NexusTests: XCTestCase {
 
 	}
 
+	func testComponentUniqueness() {
+		let nexus = Nexus()
+		let a = nexus.create()
+		let b = nexus.create()
+		let c = nexus.create()
 
+		XCTAssert(nexus.count == 3)
+
+		let p = Position(x: 0, y: 0)
+
+		a.assign(p)
+		b.assign(p)
+		c.assign(p)
+
+		var pA: Position = a.component(Position.self)
+		let pB: Position = b.component(Position.self)
+
+		pA.x = 23
+		pA.y = 32
+
+		XCTAssert(pB.x != pA.x)
+		XCTAssert(pB.y != pA.y)
+
+	}
+
+	func testComponentStorage() {
+		let nexus = Nexus()
+		let a = nexus.create()
+		let b = nexus.create()
+		let c = nexus.create()
+
+	}
 
 }

@@ -15,11 +15,6 @@ extension Component {
 	public var identifier: ComponentIdentifier { return Self.identifier }
 }
 
-// MARK: Equatable
-public func ==<A: Component, B: Component>(lhs: A, rhs: B) -> Bool {
-	return A.identifier == B.identifier // FIXME: this may be wrong
-}
-
 // MARK: - entity component hashable
 public extension Component {
 

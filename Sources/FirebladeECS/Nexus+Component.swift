@@ -46,13 +46,11 @@ extension Nexus {
 			componentIdsByEntityIdx[entityIdx]!.append(componentId)
 		}
 
-
 		// assign entity / component to index
 		componentIndexByEntityComponentHash[hash] = newComponentIndex
 
 		notify(ComponentAdded(component: componentId, to: entityId))
 	}
-
 
 	public func get<C>(component componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> C? where C: Component {
 		let hash: EntityComponentHash = componentId.hashValue(using: entityId.index)
@@ -97,7 +95,6 @@ extension Nexus {
 			report("ComponentRemove failure: nothing was removed")
 			return false
 		}
-
 
 		notify(ComponentRemoved(component: componentId, from: entityId))
 		return true

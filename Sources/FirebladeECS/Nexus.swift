@@ -40,7 +40,6 @@ public class Nexus {
 		freeEntities = ContiguousArray<EntityIdentifier>()
 	}
 
-
 }
 
 extension Nexus {

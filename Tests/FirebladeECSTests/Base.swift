@@ -10,16 +10,16 @@ import FirebladeECS
 struct EmptyComponent: Component { }
 
 struct Name: Component {
-	let name: String
+	var name: String
 }
 
 struct Position: Component {
-	let x: Int
-	let y: Int
+	var x: Int
+	var y: Int
 }
 
 struct Velocity: Component {
-	let a: Float
+	var a: Float
 }
 
 class DebugEventHandler: EventHandler {

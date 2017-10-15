@@ -20,9 +20,8 @@ public extension EntityIdentifier {
 }
 
 public extension EntityIndex {
-	public var identifier: EntityIdentifier { return EntityIdentifier(self & -0xffffffff) } // shifts entity identifier by -UInt32.max
+	public var identifier: EntityIdentifier { return EntityIdentifier(self & 0xffffffff ) } // shifts entity identifier by UInt32.max
 }
-
 
 // MARK: Unique Entity Identifiable
 public protocol UniqueEntityIdentifiable: Hashable {
@@ -32,4 +31,3 @@ public protocol UniqueEntityIdentifiable: Hashable {
 public extension UniqueEntityIdentifiable {
 	public var hashValue: Int { return identifier.hashValue }
 }
-

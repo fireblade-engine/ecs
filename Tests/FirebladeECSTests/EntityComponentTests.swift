@@ -8,17 +8,9 @@
 import XCTest
 /*@testable */import FirebladeECS
 
-
 class EntityComponentTests: XCTestCase {
 
 	func testComponentAccess() {
 
-
-
-		
-
-
 	}
 }
-
-

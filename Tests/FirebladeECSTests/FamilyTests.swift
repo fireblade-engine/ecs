@@ -10,5 +10,4 @@ import XCTest
 
 class FamilyTests: XCTestCase {
 
-	
 }

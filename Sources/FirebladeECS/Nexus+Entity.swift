@@ -60,7 +60,7 @@ extension Nexus {
 	public func destroy(entity: Entity) -> Bool {
 		let entityId: EntityIdentifier = entity.identifier
 		guard has(entity: entityId) else {
-			assert(false, "EntityRemove failure: no entity \(entityId) to remove")
+			report("EntityRemove failure: no entity \(entityId) to remove")
 			return false
 		}
 

@@ -15,7 +15,11 @@ extension ComponentIdentifier {
 	/// - Parameter entityIdx: entity index
 	/// - Returns: combinded entity component hash
 	func hashValue(using entityIdx: EntityIndex) -> EntityComponentHash {
-		return self.hashValue ^ entityIdx
+		return hashValue(using: entityIdx.identifier)
+	}
+
+	func hashValue(using entityId: EntityIdentifier) -> EntityComponentHash {
+		return EntityComponentHash.compose(entityId: entityId, componentTypeHash: hashValue)
 	}
 }
 

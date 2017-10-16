@@ -12,6 +12,7 @@ public extension ComponentIndex {
 	static let invalid: ComponentIndex = Int.min
 }
 public typealias ComponentIdsByEntityIndex = Int
+public typealias ComponentTypeHash = Int // component object identifier hash value
 
 public typealias UniformComponents = ContiguousArray<Component>
 public typealias ComponentIdentifiers = ContiguousArray<ComponentIdentifier>

@@ -21,13 +21,13 @@ class NexusTests: XCTestCase {
 
 	func testEntityIdentifierAndIndex() {
 
-		let min: EntityIndex = EntityIdentifier(UInt64.min).index
+		let min: EntityIndex = EntityIdentifier(EntityIdentifier.min).index
 		XCTAssert(EntityIndex(min).identifier == min)
 
-		let rand: EntityIndex = EntityIdentifier(UInt64(arc4random())).index
+		let rand: EntityIndex = EntityIdentifier(EntityIdentifier(arc4random())).index
 		XCTAssert(EntityIndex(rand).identifier == rand)
 
-		let max: EntityIndex = EntityIdentifier(UInt64.max).index
+		let max: EntityIndex = EntityIdentifier(EntityIdentifier.max).index
 		XCTAssert(EntityIndex(max).identifier == max)
 
 	}

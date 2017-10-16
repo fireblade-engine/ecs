@@ -48,7 +48,7 @@ extension Nexus {
 	}
 
 	public func has(entity entityId: EntityIdentifier) -> Bool {
-		return isValid(entity: entityId) // TODO: reuse free index
+		return isValid(entity: entityId)
 	}
 
 	public func get(entity entityId: EntityIdentifier) -> Entity? {

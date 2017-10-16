@@ -39,6 +39,7 @@ public class Nexus {
 	/// - Value: each element is an index pointing to the component identifier per entity in the componentIdsByEntity map
 	var componentIdsByEntityLookup: [EntityComponentHash: ComponentIdsByEntityIndex]
 
+	/// - Values: entity ids that are currently not used
 	var freeEntities: ContiguousArray<EntityIdentifier>
 
 	public init() {

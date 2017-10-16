@@ -103,7 +103,7 @@ extension Nexus {
 		}
 
 		// relocate remaining indices pointing in the componentsByEntity map
-		if let remainingComponents = componentIdsByEntity[entityId.index] {
+		if let remainingComponents: ComponentIdentifiers = componentIdsByEntity[entityId.index] {
 			// FIXME: may be expensive but is cheap for small entities
 			for (index, compId) in remainingComponents.enumerated() {
 				let cHash: EntityComponentHash = compId.hashValue(using: entityId.index)
@@ -115,13 +115,14 @@ extension Nexus {
 		return true
 	}
 
-	public func clear(componentes entityId: EntityIdentifier) {
-
-		guard let componentIds = get(components: entityId) else { return }
-
-		componentIds.forEach { (componentId: ComponentIdentifier) in
-			remove(component: componentId, from: entityId)
+	@discardableResult
+	public func clear(componentes entityId: EntityIdentifier) -> Bool {
+		guard let allComponents: ComponentIdentifiers = get(components: entityId) else {
+			report("clearing components form entity \(entityId) with no components")
+			return true
 		}
+		let removedAll: Bool = allComponents.reduce(true, { $0 && remove(component: $1, from: entityId) })
+		return removedAll
 	}
 
 }

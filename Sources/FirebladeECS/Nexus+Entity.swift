@@ -64,7 +64,8 @@ extension Nexus {
 			return false
 		}
 
-		clear(componentes: entityId)
+		let cleared: Bool = clear(componentes: entityId)
+		assert(cleared, "Could not clear all components form entity \(entityId)")
 
 		entity.invalidate()
 

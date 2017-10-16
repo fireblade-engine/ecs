@@ -5,6 +5,7 @@
 //  Created by Christian Treffs on 09.10.17.
 //
 
+import Darwin.C.stdlib
 import XCTest
 @testable import FirebladeECS
 

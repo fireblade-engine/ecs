@@ -17,7 +17,7 @@ extension Nexus {
 	}
 
 	public func count(components entityId: EntityIdentifier) -> Int {
-		switch componentIdsByEntityIdx[entityId.index] {
+		switch componentIdsByEntity[entityId.index] {
 		case .some(let componentIds):
 			return componentIds.count
 		case .none:
@@ -39,11 +39,15 @@ extension Nexus {
 			componentsByType[componentId] = UniformComponents(arrayLiteral: component)
 		}
 
-		if componentIdsByEntityIdx[entityIdx] != nil {
-			componentIdsByEntityIdx[entityIdx]!.append(componentId)
+		// assigns the component id to the entity id
+		if componentIdsByEntity[entityIdx] != nil {
+			let newIndex = componentIdsByEntity[entityIdx]!.count
+			componentIdsByEntity[entityIdx]!.insert(componentId, at: newIndex)
+			componentIdsByEntityLookup[hash] = newIndex
 		} else {
-			componentIdsByEntityIdx[entityIdx] = ComponentIdentifiers()
-			componentIdsByEntityIdx[entityIdx]!.append(componentId)
+			componentIdsByEntity[entityIdx] = ComponentIdentifiers()
+			componentIdsByEntity[entityIdx]!.insert(componentId, at: 0)
+			componentIdsByEntityLookup[hash] = 0
 		}
 
 		// assign entity / component to index
@@ -66,13 +70,14 @@ extension Nexus {
 	}
 
 	public func get(components entityId: EntityIdentifier) -> ComponentIdentifiers? {
-		return componentIdsByEntityIdx[entityId.index]
+		return componentIdsByEntity[entityId.index]
 	}
 
 	@discardableResult
 	public func remove(component componentId: ComponentIdentifier, from entityId: EntityIdentifier) -> Bool {
 		let hash: EntityComponentHash = componentId.hashValue(using: entityId.index)
 
+		// MARK: delete component instance
 		guard let componentIdx: ComponentIndex = componentIndexByEntityComponentHash.removeValue(forKey: hash) else {
 			report("ComponentRemove failure: entity \(entityId) has no component \(componentId)")
 			return false
@@ -84,16 +89,26 @@ extension Nexus {
 			return false
 		}
 
-		// FIXME: this is expensive
-		guard let removeIndex: Int = get(components: entityId)?.index(where: { $0 == componentId }) else {
+		// MARK: unassign component
+		guard let removeIndex: ComponentIdsByEntityIndex = componentIdsByEntityLookup.removeValue(forKey: hash) else {
 			assert(false, "ComponentRemove failure: no component found to be removed")
 			report("ComponentRemove failure: no component found to be removed")
 			return false
 		}
-		guard componentIdsByEntityIdx[entityId.index]?.remove(at: removeIndex) != nil else {
+
+		guard componentIdsByEntity[entityId.index]?.remove(at: removeIndex) != nil else {
 			assert(false, "ComponentRemove failure: nothing was removed")
 			report("ComponentRemove failure: nothing was removed")
 			return false
+		}
+
+		// relocate remaining indices pointing in the componentsByEntity map
+		if let remainingComponents = componentIdsByEntity[entityId.index] {
+			// FIXME: may be expensive but is cheap for small entities
+			for (index, compId) in remainingComponents.enumerated() {
+				let cHash: EntityComponentHash = compId.hashValue(using: entityId.index)
+				componentIdsByEntityLookup[cHash] = index
+			}
 		}
 
 		notify(ComponentRemoved(component: componentId, from: entityId))

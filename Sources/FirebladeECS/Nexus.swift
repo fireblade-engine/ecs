@@ -4,11 +4,14 @@
 //
 //  Created by Christian Treffs on 09.10.17.
 //
+
+/// entity id ^ component identifier hash
 public typealias EntityComponentHash = Int
 public typealias ComponentIndex = Int
 public extension ComponentIndex {
 	static let invalid: ComponentIndex = Int.min
 }
+public typealias ComponentIdsByEntityIndex = Int
 
 public typealias UniformComponents = ContiguousArray<Component>
 public typealias ComponentIdentifiers = ContiguousArray<ComponentIdentifier>
@@ -28,7 +31,13 @@ public class Nexus {
 	///	- Value: each element is an index pointing to the component instance index in the componentsByType map.
 	var componentIndexByEntityComponentHash: [EntityComponentHash: ComponentIndex]
 
-	var componentIdsByEntityIdx: [EntityIndex: ComponentIdentifiers]
+	/// - Key: entity id as index
+	/// - Value: each element is a component identifier associated with this entity
+	var componentIdsByEntity: [EntityIndex: ComponentIdentifiers]
+
+	/// - Key 'entity id' - 'component type' hash that uniquely links both
+	/// - Value: each element is an index pointing to the component identifier per entity in the componentIdsByEntity map
+	var componentIdsByEntityLookup: [EntityComponentHash: ComponentIdsByEntityIndex]
 
 	var freeEntities: ContiguousArray<EntityIdentifier>
 
@@ -36,7 +45,8 @@ public class Nexus {
 		entities = Entities()
 		componentsByType = [:]
 		componentIndexByEntityComponentHash = [:]
-		componentIdsByEntityIdx = [:]
+		componentIdsByEntity = [:]
+		componentIdsByEntityLookup = [:]
 		freeEntities = ContiguousArray<EntityIdentifier>()
 	}
 

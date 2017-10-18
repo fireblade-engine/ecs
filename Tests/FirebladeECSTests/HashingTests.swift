@@ -38,6 +38,35 @@ class HashingTests: XCTestCase {
 			XCTAssert(EntityComponentHash.decompose(h, with: entityId) == cH)
 		}
 	}
+
+	func testMeasureCombineHash() {
+		let a: Set<Int> = Set<Int>.init([1, 2, 3, 4, 5, 6])
+		let b: Set<Int> = Set<Int>.init([10, 9, 8, 7, 6])
+		let c: Set<Int> = Set<Int>.init([10, 9, 12, 7, 6])
+
+		let input: ContiguousArray<Int> = ContiguousArray<Int>(arrayLiteral: a.hashValue, b.hashValue, c.hashValue)
+		measure {
+			for _ in 0..<1_000_000 {
+				let hashRes: Int = FirebladeECS.hash(combine: input)
+				_ = hashRes
+			}
+		}
+	}
+
+	func testMeasureSetOfSetHash() {
+		let a: Set<Int> = Set<Int>.init([1, 2, 3, 4, 5, 6])
+		let b: Set<Int> = Set<Int>.init([10, 9, 8, 7, 6])
+		let c: Set<Int> = Set<Int>.init([10, 9, 12, 7, 6])
+
+		let input = Set<Set<Int>>(arrayLiteral: a, b, c)
+		measure {
+			for _ in 0..<1_000_000 {
+				let hash: Int = input.hashValue
+				_ = hash
+			}
+		}
+	}
+
 }
 
 // MARK: - helper

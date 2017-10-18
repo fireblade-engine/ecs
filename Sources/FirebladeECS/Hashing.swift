@@ -13,7 +13,7 @@
 ///   - seed: seed hash.
 ///   - value: value to be combined with seed hash.
 /// - Returns: combined hash value.
-func hash(combine seed: Int, _ value: Int) -> Int {
+public func hash(combine seed: Int, _ value: Int) -> Int {
 	/// http://www.boost.org/doc/libs/1_65_1/doc/html/hash/combine.html
 	/// http://www.boost.org/doc/libs/1_65_1/doc/html/hash/reference.html#boost.hash_combine
 	/// http://www.boost.org/doc/libs/1_65_1/boost/functional/hash/hash.hpp
@@ -40,7 +40,7 @@ func hash(combine seed: Int, _ value: Int) -> Int {
 /// Is sensitive to the order of the elements.
 /// - Parameter hashValues: sequence of hash values to combine.
 /// - Returns: combined hash value.
-func hash<S: Sequence>(combine hashValues: S) -> Int where S.Element == Int {
+public func hash<S: Sequence>(combine hashValues: S) -> Int where S.Element == Int {
 	/// http://www.boost.org/doc/libs/1_65_1/doc/html/hash/reference.html#boost.hash_range_idp517643120
 	return hashValues.reduce(0, { hash(combine: $0, $1) })
 }
@@ -49,7 +49,7 @@ func hash<S: Sequence>(combine hashValues: S) -> Int where S.Element == Int {
 /// Is sensitive to the order of the elements.
 /// - Parameter hashValues: sequence of hash values to combine.
 /// - Returns: combined hash value.
-func hash<H: Sequence>(combine hashables: H) -> Int where H.Element == Hashable {
+public func hash<H: Sequence>(combine hashables: H) -> Int where H.Element == Hashable {
 	/// http://www.boost.org/doc/libs/1_65_1/doc/html/hash/reference.html#boost.hash_range_idp517643120
 	return hashables.reduce(0, { hash(combine: $0, $1.hashValue) })
 }

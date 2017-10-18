@@ -11,7 +11,7 @@ import XCTest
 
 class HashingTests: XCTestCase {
 
-	func test() {
+	func testCollisionsInCritialRange() {
 
 		var hashSet: Set<Int> = Set<Int>()
 

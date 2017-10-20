@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 08.10.17.
 //
 
-public protocol Component: UniqueComponentIdentifiable {}
+public protocol Component: class, UniqueComponentIdentifiable {}
 
 // MARK: UCI
 extension Component {

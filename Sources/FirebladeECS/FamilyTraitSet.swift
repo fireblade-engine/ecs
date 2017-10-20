@@ -1,0 +1,141 @@
+//
+//  FamilyTraitSet.swift
+//  FirebladeECS
+//
+//  Created by Christian Treffs on 09.10.17.
+//
+
+public struct FamilyTraitSet {
+
+	fileprivate let requiresAll: ComponentSet
+	fileprivate let excludesAll: ComponentSet
+	fileprivate let needsAtLeastOne: ComponentSet
+	fileprivate let _hash: Int
+	fileprivate let isEmptyAny: Bool
+
+	public init(requiresAll: [Component.Type], excludesAll: [Component.Type], needsAtLeastOne: [Component.Type] = []) {
+
+		let all = ComponentSet(requiresAll.map { $0.identifier })
+		let none = ComponentSet(excludesAll.map { $0.identifier })
+		let one = ComponentSet(needsAtLeastOne.map { $0.identifier })
+
+		let valid: Bool = FamilyTraitSet.isValid(requiresAll: all, excludesAll: none, atLeastOne: one)
+		assert(valid, "invalid family trait created - requiresAll: \(all), excludesAll: \(none), atLeastOne: \(one)")
+
+		isEmptyAny = one.isEmpty
+
+		_hash = hash(combine: [all, one, none])
+
+		self.requiresAll = all
+		self.needsAtLeastOne = one
+		self.excludesAll = none
+	}
+
+}
+
+// MARK: - match
+extension FamilyTraitSet {
+	public func isMatch(components: ComponentSet) -> Bool {
+		return hasAll(components) && hasNone(components) && hasOne(components)
+	}
+
+	fileprivate func hasAll(_ components: ComponentSet) -> Bool {
+		return requiresAll.isSubset(of: components)
+	}
+
+	fileprivate func hasNone(_ components: ComponentSet) -> Bool {
+		return excludesAll.isDisjoint(with: components)
+	}
+
+	fileprivate func hasOne(_ components: ComponentSet) -> Bool {
+		if needsAtLeastOne.isEmpty { return true }
+		return !needsAtLeastOne.intersection(components).isEmpty
+	}
+}
+
+// MARK: - valid
+extension FamilyTraitSet {
+	fileprivate static func isValid(requiresAll: ComponentSet,
+									excludesAll: ComponentSet,
+									atLeastOne: ComponentSet) -> Bool {
+		return validAtLeastOneNonEmpty(requiresAll, atLeastOne) &&
+			requiresAll.isDisjoint(with: atLeastOne) &&
+			requiresAll.isDisjoint(with: excludesAll) &&
+			atLeastOne.isDisjoint(with: excludesAll)
+	}
+
+	fileprivate static func validAtLeastOneNonEmpty(_ requiresAll: ComponentSet, _ atLeastOne: ComponentSet) -> Bool {
+		return !requiresAll.isEmpty || !atLeastOne.isEmpty
+	}
+
+}
+
+extension FamilyTraitSet {
+
+	/*/// needs to have all of the given components
+	fileprivate func matches(all entity: Entity) -> Bool {
+		var all = requiresAll
+		while let compId: ComponentIdentifier = all.next() {
+			guard entity.has(compId) else { return false }
+		}
+		return true
+	}
+
+	/// needs to have none of the given (excluded) components
+	fileprivate func matches(none entity: Entity) -> Bool {
+		var none = excludesAll
+		while let compId: ComponentIdentifier = none.next() {
+			guard !entity.has(compId) else { return false }
+		}
+		return true
+	}
+
+	/// needs to have at lease one of the given components
+	fileprivate func matches(any entity: Entity) -> Bool {
+		guard !isEmptyAny else { return true }
+		var any = needsAtLeastOne
+		while let compId: ComponentIdentifier = any.next() {
+			if entity.has(compId) {
+				return true
+			}
+		}
+		return false
+	}
+
+	func isMatch(_ entity: Entity) -> Bool {
+		guard matches(all: entity) else { return false }
+		guard matches(none: entity) else { return false }
+		guard matches(any: entity) else { return false }
+		return true
+	}*/
+
+}
+
+// MARK: - Equatable
+extension FamilyTraitSet: Equatable {
+	public static func ==(lhs: FamilyTraitSet, rhs: FamilyTraitSet) -> Bool {
+		return lhs._hash == rhs._hash
+	}
+}
+
+// MARK: - Hashable
+extension FamilyTraitSet: Hashable {
+	public var hashValue: Int {
+		return _hash
+	}
+}
+
+// MARK: - description
+/*extension FamilyTraits: CustomStringConvertible {
+
+	public var description: String {
+		let all: String = hasAll.map { "\($0.self)" }.joined(separator: " AND ")
+		let any: String = hasAny.map { "\($0.self)" }.joined(separator: " OR ")
+		let none: String = hasNone.map { "!\($0.self)"}.joined(separator: " NOT ")
+		let out: String = ["\(all)", "\(any)", "\(none)"].joined(separator: " AND ")
+		//TODO: nicer
+		return "FamilyTraits(\(out))"
+	}
+
+}
+*/

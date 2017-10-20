@@ -25,11 +25,11 @@ extension Nexus {
 		}
 	}
 
-	public func assign<C>(component: C, to entityId: EntityIdentifier) where C: Component {
-		let componentId = C.identifier
-		let entityIdx = entityId.index
+	public func assign(component: Component, to entity: Entity) {
+		let componentId = component.identifier
+		let entityIdx = entity.identifier.index
 		let hash: EntityComponentHash = componentId.hashValue(using: entityIdx)
-		assert(!has(hash), "ComponentAdd collision: \(entityId) already has a component \(component)")
+		assert(!has(hash), "ComponentAdd collision: \(entityIdx) already has a component \(component)")
 		var newComponentIndex: ComponentIndex = ComponentIndex.invalid
 		if componentsByType[componentId] != nil {
 			newComponentIndex = componentsByType[componentId]!.count // TODO: get next free index
@@ -41,11 +41,17 @@ extension Nexus {
 
 		// assigns the component id to the entity id
 		if componentIdsByEntity[entityIdx] != nil {
+			let (inserted, _) = componentIdsSetByEntity[entityIdx]!.insert(componentId)
+			assert(inserted)
 			let newIndex = componentIdsByEntity[entityIdx]!.count
 			componentIdsByEntity[entityIdx]!.insert(componentId, at: newIndex)
 			componentIdsByEntityLookup[hash] = newIndex
 		} else {
+			componentIdsSetByEntity[entityIdx] = Set<ComponentIdentifier>(minimumCapacity: 2)
+			let (inserted, _) = componentIdsSetByEntity[entityIdx]!.insert(componentId)
+			assert(inserted)
 			componentIdsByEntity[entityIdx] = ComponentIdentifiers()
+			componentIdsByEntity.reserveCapacity(1)
 			componentIdsByEntity[entityIdx]!.insert(componentId, at: 0)
 			componentIdsByEntityLookup[hash] = 0
 		}
@@ -53,7 +59,11 @@ extension Nexus {
 		// assign entity / component to index
 		componentIndexByEntityComponentHash[hash] = newComponentIndex
 
-		notify(ComponentAdded(component: componentId, to: entityId))
+		notify(ComponentAdded(component: componentId, to: entity.identifier))
+	}
+
+	public func assign<C>(component: C, to entity: Entity) where C: Component {
+		assign(component: component, to: entity)
 	}
 
 	public func get<C>(component componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> C? where C: Component {
@@ -62,6 +72,7 @@ extension Nexus {
 	}
 
 	fileprivate func get<C>(_ hash: EntityComponentHash) -> C? where C: Component {
+		Log.info("GETTING: \(C.self)")
 		let componentId: ComponentIdentifier = C.identifier
 		guard let componentIdx: ComponentIndex = componentIndexByEntityComponentHash[hash] else { return nil }
 		guard let uniformComponents: UniformComponents = componentsByType[componentId] else { return nil }
@@ -90,6 +101,13 @@ extension Nexus {
 		}
 
 		// MARK: unassign component
+
+		guard componentIdsSetByEntity[entityId.index]?.remove(componentId) != nil else {
+			assert(false, "ComponentRemove failure: no component found to be removed in set")
+			report("ComponentRemove failure: no component found to be removed in set")
+			return false
+		}
+
 		guard let removeIndex: ComponentIdsByEntityIndex = componentIdsByEntityLookup.removeValue(forKey: hash) else {
 			assert(false, "ComponentRemove failure: no component found to be removed")
 			report("ComponentRemove failure: no component found to be removed")

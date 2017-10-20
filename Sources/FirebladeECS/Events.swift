@@ -29,18 +29,18 @@ public struct ComponentRemoved: Event {
 
 struct FamilyMemberAdded: Event {
 	let member: EntityIdentifier
-	let to: FamilyTraits
+	let to: FamilyTraitSet
 }
 
 struct FamilyMemberRemoved: Event {
 	let member: EntityIdentifier
-	let from: FamilyTraits
+	let from: FamilyTraitSet
 }
 
 struct FamilyCreated: Event {
-	let family: FamilyTraits
+	let family: FamilyTraitSet
 }
 
 struct FamilyDestroyed: Event {
-	let family: FamilyTraits
+	let family: FamilyTraitSet
 }

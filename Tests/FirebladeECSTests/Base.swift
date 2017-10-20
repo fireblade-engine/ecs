@@ -7,19 +7,33 @@
 
 import FirebladeECS
 
-struct EmptyComponent: Component { }
+class EmptyComponent: Component { }
 
-struct Name: Component {
+class Name: Component {
 	var name: String
+	init(name: String) {
+		self.name = name
+	}
 }
 
-struct Position: Component {
+class Position: Component {
 	var x: Int
 	var y: Int
+	init(x: Int, y: Int) {
+		self.x = x
+		self.y = y
+	}
 }
 
-struct Velocity: Component {
+class Velocity: Component {
 	var a: Float
+	init(a: Float) {
+		self.a = a
+	}
+}
+
+class Party: Component {
+
 }
 
 class DebugEventHandler: EventHandler {

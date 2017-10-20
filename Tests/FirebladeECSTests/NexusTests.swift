@@ -100,7 +100,7 @@ class NexusTests: XCTestCase {
 		XCTAssert(e0.hasComponents)
 		XCTAssert(e0.numComponents == 1)
 
-		let rP0: Position = e0.component(Position.self)
+		let rP0: Position = e0.component(Position.self)!
 		XCTAssert(rP0.x == 1)
 		XCTAssert(rP0.y == 2)
 	}
@@ -162,14 +162,12 @@ class NexusTests: XCTestCase {
 
 		XCTAssert(nexus.count == 3)
 
-		let p = Position(x: 0, y: 0)
+		a.assign(Position(x: 0, y: 0))
+		b.assign(Position(x: 0, y: 0))
+		c.assign(Position(x: 0, y: 0))
 
-		a.assign(p)
-		b.assign(p)
-		c.assign(p)
-
-		var pA: Position = a.component(Position.self)
-		let pB: Position = b.component(Position.self)
+		let pA: Position = a.component()!
+		let pB: Position = b.component()!
 
 		pA.x = 23
 		pA.y = 32

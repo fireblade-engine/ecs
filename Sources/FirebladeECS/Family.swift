@@ -7,100 +7,37 @@
 
 // MARK: - family
 public final class Family {
-
-	public var nexus: Nexus
-
+	internal var nexus: Nexus
 	// members of this Family must conform to these traits
-	public let traits: FamilyTraits
+	public let traits: FamilyTraitSet
 
-	public private(set) var members: ContiguousArray<EntityIdentifier>
-
-	public init(_ nexus: Nexus, traits: FamilyTraits) {
-
-		members = ContiguousArray<EntityIdentifier>()
-		members.reserveCapacity(64)
-
-		self.traits = traits
-
+	internal init(_ nexus: Nexus, traits: FamilyTraitSet) {
 		self.nexus = nexus
-
-		/*subscribe(event: handleComponentAddedToEntity)
-		subscribe(event: handleComponentUpdatedAtEntity)
-		subscribe(event: handleComponentRemovedFromEntity)
-*/
-		defer {
-			//notifyCreated()
-		}
-
+		self.traits = traits
 	}
 
 	deinit {
 
-		members.removeAll()
-
-		/*unsubscribe(event: handleComponentAddedToEntity)
-		unsubscribe(event: handleComponentUpdatedAtEntity)
-		unsubscribe(event: handleComponentRemovedFromEntity)*/
-
-		defer {
-			// notifyDestroyed()
-		}
-
 	}
 }
 
-// MARK: - update family membership
 extension Family {
-
-	func update(membership entityIds: AnyIterator<EntityIdentifier>) {
-		while let entityId: EntityIdentifier = entityIds.next() {
-			update(membership: entityId)
-		}
+	public final func canBecomeMember(_ entity: Entity) -> Bool {
+		return nexus.canBecomeMember(entity, in: self)
 	}
 
-	func update(membership entities: AnyIterator<Entity>) {
-		while let entity: Entity = entities.next() {
-			update(membership: entity)
-		}
+	public final func isMember(_ entity: Entity) -> Bool {
+		return nexus.isMember(entity, in: self)
 	}
 
-	fileprivate func update(membership entityId: EntityIdentifier) {
-		guard let entity = nexus.get(entity: entityId) else {
-			fatalError("no entity with id \(entityId) in \(nexus)")
-		}
-		update(membership: entity)
-	}
-
-	fileprivate func update(membership entity: Entity) {
-		let isMatch: Bool = traits.isMatch(entity)
-		switch isMatch {
-		case true:
-			push(entity.identifier)
-		case false:
-			remove(entity.identifier)
-		}
-	}
-
-	fileprivate func push(_ entityId: EntityIdentifier) {
-		assert(!members.contains(entityId), "entity with id \(entityId) already in family")
-		members.append(entityId)
-		// TODO: notify(added: entityId)
-	}
-
-	fileprivate func remove(_ entityId: EntityIdentifier) {
-		guard let index: Int = members.index(of: entityId) else {
-			fatalError("removing entity id \(entityId) that is not in family")
-		}
-		let removed: EntityIdentifier? = members.remove(at: index)
-		assert(removed != nil)
-		if let removedEntity: EntityIdentifier = removed {
-			// TODO: notify(removed: removedEntity)
-		}
+	internal var members: EntitySet {
+		return nexus.members(of: self)
 	}
 }
 
 // MARK: - member iterator
 extension Family {
+	/*
 	func makeIterator<A>() -> AnyIterator<(Entity, A)> where A: Component {
 		var members = self.members.makeIterator()
 		return AnyIterator<(Entity, A)> { [unowned self] in
@@ -133,8 +70,10 @@ extension Family {
 			return (entity, a, b, c)
 		}
 	}
+	*/
 }
 
+/*
 // MARK: - Equatable
 extension Family: Equatable {
 	public static func ==(lhs: Family, rhs: Family) -> Bool {
@@ -148,7 +87,7 @@ extension Family: Hashable {
 		return traits.hashValue
 	}
 }
-
+*/
 /*
 // MARK: - event dispatcher
 extension Family: EventDispatcher {

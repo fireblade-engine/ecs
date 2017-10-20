@@ -16,7 +16,10 @@ public typealias ComponentTypeHash = Int // component object identifier hash val
 
 public typealias UniformComponents = ContiguousArray<Component>
 public typealias ComponentIdentifiers = ContiguousArray<ComponentIdentifier>
+public typealias ComponentSet = Set<ComponentIdentifier>
 public typealias Entities = ContiguousArray<Entity>
+public typealias EntitySet = Set<EntityIdentifier>
+public typealias FamilyTraitSetHash = Int
 
 public class Nexus {
 
@@ -43,13 +46,20 @@ public class Nexus {
 	/// - Values: entity ids that are currently not used
 	var freeEntities: ContiguousArray<EntityIdentifier>
 
+	var familiyByTraitHash: [FamilyTraitSetHash: Family]
+	var familyMembersByTraitHash: [FamilyTraitSetHash: EntitySet]
+	var componentIdsSetByEntity: [EntityIndex: ComponentSet]
+
 	public init() {
 		entities = Entities()
 		componentsByType = [:]
 		componentIndexByEntityComponentHash = [:]
 		componentIdsByEntity = [:]
+		componentIdsSetByEntity = [:]
 		componentIdsByEntityLookup = [:]
 		freeEntities = ContiguousArray<EntityIdentifier>()
+		familiyByTraitHash = [:]
+		familyMembersByTraitHash = [:]
 	}
 
 }

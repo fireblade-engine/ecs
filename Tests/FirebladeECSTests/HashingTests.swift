@@ -40,9 +40,9 @@ class HashingTests: XCTestCase {
 	}
 
 	func testMeasureCombineHash() {
-		let a: Set<Int> = Set<Int>.init([1, 2, 3, 4, 5, 6])
-		let b: Set<Int> = Set<Int>.init([10, 9, 8, 7, 6])
-		let c: Set<Int> = Set<Int>.init([10, 9, 12, 7, 6])
+		let a: Set<Int> = Set<Int>.init([14561291, 26451562, 34562182, 488972556, 5128426962, 68211812])
+		let b: Set<Int> = Set<Int>.init([1083838, 912312, 83333, 71234555, 4343234])
+		let c: Set<Int> = Set<Int>.init([3410346899765, 90000002, 12212321, 71, 6123345676543])
 
 		let input: ContiguousArray<Int> = ContiguousArray<Int>(arrayLiteral: a.hashValue, b.hashValue, c.hashValue)
 		measure {
@@ -54,9 +54,9 @@ class HashingTests: XCTestCase {
 	}
 
 	func testMeasureSetOfSetHash() {
-		let a: Set<Int> = Set<Int>.init([1, 2, 3, 4, 5, 6])
-		let b: Set<Int> = Set<Int>.init([10, 9, 8, 7, 6])
-		let c: Set<Int> = Set<Int>.init([10, 9, 12, 7, 6])
+		let a: Set<Int> = Set<Int>.init([14561291, 26451562, 34562182, 488972556, 5128426962, 68211812])
+		let b: Set<Int> = Set<Int>.init([1083838, 912312, 83333, 71234555, 4343234])
+		let c: Set<Int> = Set<Int>.init([3410346899765, 90000002, 12212321, 71, 6123345676543])
 
 		let input = Set<Set<Int>>(arrayLiteral: a, b, c)
 		measure {

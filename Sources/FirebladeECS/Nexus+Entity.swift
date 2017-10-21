@@ -51,9 +51,7 @@ extension Nexus {
 		return isValid(entity: entityId)
 	}
 
-	public func get(entity entityId: EntityIdentifier) -> Entity? {
-		Log.info("GETTING ENTITY: \(entityId)")
-		guard has(entity: entityId) else { return nil }
+	public func get(entity entityId: EntityIdentifier) -> Entity {
 		return entities[entityId.index]
 	}
 

@@ -18,7 +18,7 @@ public typealias UniformComponents = ContiguousArray<Component>
 public typealias ComponentIdentifiers = ContiguousArray<ComponentIdentifier>
 public typealias ComponentSet = Set<ComponentIdentifier>
 public typealias Entities = ContiguousArray<Entity>
-public typealias EntitySet = Set<EntityIdentifier>
+public typealias EntityIdSet = Set<EntityIdentifier>
 public typealias FamilyTraitSetHash = Int
 
 public class Nexus {
@@ -47,7 +47,7 @@ public class Nexus {
 	var freeEntities: ContiguousArray<EntityIdentifier>
 
 	var familiyByTraitHash: [FamilyTraitSetHash: Family]
-	var familyMembersByTraitHash: [FamilyTraitSetHash: EntitySet]
+	var familyMembersByTraitHash: [FamilyTraitSetHash: EntityIdSet]
 	var componentIdsSetByEntity: [EntityIndex: ComponentSet]
 
 	public init() {
@@ -67,7 +67,7 @@ public class Nexus {
 extension Nexus {
 
 	func notify(_ event: Event) {
-		Log.debug(event)
+		//Log.debug(event)
 		// TODO: implement
 	}
 

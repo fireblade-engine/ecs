@@ -33,9 +33,13 @@ extension Nexus {
 		return family.traits.isMatch(components: componentSet)
 	}
 
-	public func members(of family: Family) -> EntitySet {
+	public func members(of family: Family) -> EntityIdSet {
 		let traitHash: FamilyTraitSetHash = family.traits.hashValue
 		return familyMembersByTraitHash[traitHash] ?? [] // FIXME: fail?
+	}
+
+	public func members(of family: Family) -> LazyMapCollection<LazyFilterCollection<LazyMapCollection<EntityIdSet, Entity?>>, Entity> {
+		return members(of: family).lazy.flatMap { self.get(entity: $0) }
 	}
 
 	public func isMember(_ entity: Entity, in family: Family) -> Bool {
@@ -82,7 +86,7 @@ extension Nexus {
 			let (inserted, _) = familyMembersByTraitHash[traitHash]!.insert(entityId)
 			assert(inserted, "entity with id \(entityId) already in family")
 		} else {
-			familyMembersByTraitHash[traitHash] = EntitySet(minimumCapacity: 2)
+			familyMembersByTraitHash[traitHash] = EntityIdSet(minimumCapacity: 2)
 			familyMembersByTraitHash[traitHash]!.insert(entityId)
 		}
 

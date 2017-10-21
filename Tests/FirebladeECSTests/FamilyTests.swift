@@ -77,11 +77,12 @@ class FamilyTests: XCTestCase {
 
 		var index: Int = 0
 
-		family.forEachMember { (e: Entity, p: () -> Position!, v: () -> Velocity!, n: () -> Name?) in
+		family.iterate { (e: () -> Entity, p: () -> Position!, v: () -> Velocity!, n: () -> Name?) in
 
-			p()!.x = 10
+			let pos: Position = p()
+			pos.x = 10
 
-			print(e, p(), n())
+			print(e(), pos, n())
 			if index == 0 {
 				print(v())
 			}
@@ -89,9 +90,19 @@ class FamilyTests: XCTestCase {
 			index += 1
 		}
 
-		family.forEachMember { (e: Entity, p: () -> Position!, v: () -> Velocity!, n: () -> Name?) in
+		family.iterate(components: Position.self, Velocity.self, Name.self) { (_, pos, vel, nm) in
+			let position: Position = pos()!
+			let velocity: Velocity = vel()!
+			let name: Name? = nm()
 
-			print(e, p().x, n())
+			_ = position
+			_ = velocity
+			_ = name
+		}
+
+		family.iterate { (e: () -> Entity, p: () -> Position!, v: () -> Velocity!, n: () -> Name?) in
+
+			print(e(), p().x, n())
 			if index == 0 {
 				print(v())
 			}
@@ -99,6 +110,85 @@ class FamilyTests: XCTestCase {
 			index += 1
 		}
 
+	}
+
+	func testMeasureFamilyIteration() {
+		let nexus = Nexus()
+		let number: Int = 10_000
+
+		for i in 0..<number {
+			nexus.create(entity: "\(i)").assign(Position(x: 1+i, y: 2+i), Name(name: "myName\(i)"), Velocity(a: 3.14), EmptyComponent())
+		}
+
+		let family = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [Party.self], needsAtLeastOne: [Name.self, EmptyComponent.self])
+
+		nexus.entities.forEach { nexus.update(membership: family, for: $0) }
+
+		XCTAssert(family.members.count == number)
+		XCTAssert(family.memberIds.count == number)
+		XCTAssert(nexus.entities.count == number)
+
+		measure {
+			family.iterate(components: Position.self, Velocity.self, Name.self) { (_, pos, vel, nm) in
+				let position: Position = pos()!
+				let velocity: Velocity = vel()!
+				let name: Name? = nm()
+
+				_ = position
+				_ = velocity
+				_ = name
+			}
+		}
+
+	}
+
+	func testMeasureFamilyIteration2() {
+		let nexus = Nexus()
+		let number: Int = 10_000
+
+		for i in 0..<number {
+			nexus.create(entity: "\(i)").assign(Position(x: 1+i, y: 2+i), Name(name: "myName\(i)"), Velocity(a: 3.14), EmptyComponent())
+		}
+
+		let family = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [Party.self], needsAtLeastOne: [Name.self, EmptyComponent.self])
+
+		nexus.entities.forEach { nexus.update(membership: family, for: $0) }
+
+		XCTAssert(family.members.count == number)
+		XCTAssert(family.memberIds.count == number)
+		XCTAssert(nexus.entities.count == number)
+
+		measure {
+			family.iterate { (_: () -> Entity, pos: () -> Position!, vel: () -> Velocity!, nm: () -> Name?) in
+				let name: Name? = nm()
+				let velocity: Velocity = vel()!
+				let position: Position = pos()!
+
+				_ = position
+				_ = velocity
+				_ = name
+			}
+		}
+
+	}
+
+	func testMeasureEntityIteration() {
+		let nexus = Nexus()
+		let number: Int = 10_000
+
+		for i in 0..<number {
+			nexus.create(entity: "\(i)").assign(Position(x: 1+i, y: 2+i), Name(name: "myName\(i)"), Velocity(a: 3.14), EmptyComponent())
+		}
+
+		let family = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [Party.self], needsAtLeastOne: [Name.self, EmptyComponent.self])
+
+		nexus.entities.forEach { nexus.update(membership: family, for: $0) }
+
+		measure {
+			family.memberIds.forEach { (e) in
+				_ = e
+			}
+		}
 	}
 
 }

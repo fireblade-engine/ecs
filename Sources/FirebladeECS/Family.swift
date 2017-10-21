@@ -30,7 +30,10 @@ extension Family {
 		return nexus.isMember(entity, in: self)
 	}
 
-	internal var members: EntitySet {
+	internal var members: LazyMapCollection<LazyFilterCollection<LazyMapCollection<EntityIdSet, Entity?>>, Entity> {
+		return nexus.members(of: self)
+	}
+	internal var memberIds: EntityIdSet {
 		return nexus.members(of: self)
 	}
 }

@@ -47,7 +47,7 @@ class NexusTests: XCTestCase {
 		XCTAssert(e0.name == nil)
 		XCTAssert(e1.name == "Named e1")
 
-		let rE0 = nexus.get(entity: e0.identifier)!
+		let rE0 = nexus.get(entity: e0.identifier)
 		XCTAssert(rE0.name == e0.name)
 		XCTAssert(rE0.identifier == e0.identifier)
 	}
@@ -109,7 +109,7 @@ class NexusTests: XCTestCase {
 		let nexus = Nexus()
 		let identifier: EntityIdentifier = nexus.create(entity: "e0").identifier
 
-		let e0 = nexus.get(entity: identifier)!
+		let e0 = nexus.get(entity: identifier)
 
 		XCTAssert(e0.numComponents == 0)
 		e0.remove(Position.self)

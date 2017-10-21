@@ -71,6 +71,13 @@ extension Nexus {
 		return get(hash)
 	}
 
+	public func get(component componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
+		let hash: EntityComponentHash = componentId.hashValue(using: entityId.index)
+		guard let componentIdx: ComponentIndex = componentIndexByEntityComponentHash[hash] else { return nil }
+		guard let uniformComponents: UniformComponents = componentsByType[componentId] else { return nil }
+		return uniformComponents[componentIdx]
+	}
+
 	fileprivate func get<C>(_ hash: EntityComponentHash) -> C? where C: Component {
 		Log.info("GETTING: \(C.self)")
 		let componentId: ComponentIdentifier = C.identifier

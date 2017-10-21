@@ -33,5 +33,8 @@ class Velocity: Component {
 }
 
 class Party: Component {
-
+	var partying: Bool
+	init(partying: Bool) {
+		self.partying = partying
+	}
 }

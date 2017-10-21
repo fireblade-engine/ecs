@@ -37,10 +37,12 @@ class NexusTests: XCTestCase {
 		XCTAssert(nexus.count == 0)
 
 		let e0 = nexus.create()
+		XCTAssert(e0.identifier.index == 0)
 		XCTAssert(nexus.isValid(entity: e0))
 		XCTAssert(nexus.count == 1)
 
 		let e1 = nexus.create(entity: "Named e1")
+		XCTAssert(e1.identifier.index == 1)
 		XCTAssert(nexus.isValid(entity: e1))
 		XCTAssert(nexus.count == 2)
 

@@ -43,8 +43,12 @@ extension Nexus {
 	}
 
 	public func isMember(_ entity: Entity, in family: Family) -> Bool {
+		return isMember(entity.identifier, in: family)
+	}
+
+	public func isMember(_ entityId: EntityIdentifier, in family: Family) -> Bool {
 		let traitHash: FamilyTraitSetHash = family.traits.hashValue
-		let entityId = entity.identifier
+		// FIXME: this may be costly for many entities in family
 		return familyMembersByTraitHash[traitHash]?.contains(entityId) ?? false
 	}
 
@@ -58,8 +62,13 @@ extension Nexus {
 		let family = Family(self, traits: traits)
 		let replaced = familiyByTraitHash.updateValue(family, forKey: traitHash)
 		assert(replaced == nil, "Family with exact trait hash already exists: \(traitHash)")
+
+		// FIXME: this is costly for many entities
+		entities.forEach {
+			update(membership: family, for: $0.identifier)
+		}
+
 		notify(FamilyCreated(family: traits))
-		// FIXME: update memberships for prior entites
 		return family
 	}
 
@@ -67,21 +76,23 @@ extension Nexus {
 
 	// MARK: - update family membership
 
-	func update(membership family: Family, for entity: Entity) {
-		let entityIdx: EntityIndex = entity.identifier.index
+	func update(membership family: Family, for entityId: EntityIdentifier) {
+		let entityIdx: EntityIndex = entityId.index
 		guard let componentsSet: ComponentSet = componentIdsSetByEntity[entityIdx] else { return }
+		let isMember: Bool = family.isMember(entityId)
 		let isMatch: Bool = family.traits.isMatch(components: componentsSet)
-		switch isMatch {
-		case true:
-			add(to: family, entity: entity)
-		case false:
-			remove(from: family, entity: entity)
+		switch (isMatch, isMember) {
+		case (true, false):
+			add(to: family, entityId: entityId)
+		case (false, true):
+			remove(from: family, entityId: entityId)
+		default:
+			break
 		}
 	}
 
-	fileprivate func add(to family: Family, entity: Entity) {
+	fileprivate func add(to family: Family, entityId: EntityIdentifier) {
 		let traitHash: FamilyTraitSetHash = family.traits.hashValue
-		let entityId: EntityIdentifier = entity.identifier
 		if familyMembersByTraitHash[traitHash] != nil {
 			let (inserted, _) = familyMembersByTraitHash[traitHash]!.insert(entityId)
 			assert(inserted, "entity with id \(entityId) already in family")
@@ -93,9 +104,8 @@ extension Nexus {
 		notify(FamilyMemberAdded(member: entityId, to: family.traits))
 	}
 
-	fileprivate func remove(from family: Family, entity: Entity) {
+	fileprivate func remove(from family: Family, entityId: EntityIdentifier) {
 		let traitHash: FamilyTraitSetHash = family.traits.hashValue
-		let entityId: EntityIdentifier = entity.identifier
 
 		guard let removed = familyMembersByTraitHash[traitHash]?.remove(entityId) else {
 			assert(false, "removing entity id \(entityId) that is not in family \(family)")

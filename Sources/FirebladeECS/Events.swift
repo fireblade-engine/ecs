@@ -4,7 +4,7 @@
 //
 //  Created by Christian Treffs on 08.10.17.
 //
-
+protocol Event { }
 public struct EntityCreated: Event {
 	let entityId: EntityIdentifier
 }

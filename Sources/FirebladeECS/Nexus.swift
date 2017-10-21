@@ -69,32 +69,10 @@ extension Nexus {
 	func notify(_ event: Event) {
 		//Log.debug(event)
 		// TODO: implement
+
 	}
 
 	func report(_ message: String) {
-		Log.warn(message)
 		// TODO: implement
 	}
 }
-
-/*
-// MARK: - event handler
-extension Nexus {
-	func handleEntityCreated(_ e: EntityCreated) { print(e) }
-	func handleEntityDestroyed(_ e: EntityDestroyed) { print(e) }
-
-	func handleComponentAdded(_ e: ComponentAdded) { print(e) }
-	func handleComponentUpdated(_ e: ComponentUpdated) { print(e) }
-	func handleComponentRemoved(_ e: ComponentRemoved) { print(e) }
-
-	func handleFamilyCreated(_ e: FamilyCreated) {
-		print(e)
-		let newFamily: Family = e.family
-		onFamilyCreated(newFamily)
-
-	}
-	func handleFamilyMemberAdded(_ e: FamilyMemberAdded) { print(e) }
-	func handleFamilyMemberRemoved(_ e: FamilyMemberRemoved) { print(e) }
-	func handleFamilyDestroyed(_ e: FamilyDestroyed) { print(e) }
-}
-*/

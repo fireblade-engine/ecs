@@ -59,6 +59,12 @@ extension Nexus {
 		// assign entity / component to index
 		componentIndexByEntityComponentHash[hash] = newComponentIndex
 
+		// FIXME: this is costly for many families
+		let entityId: EntityIdentifier = entity.identifier
+		familiyByTraitHash.forEach { (_, family) in
+			update(membership: family, for: entityId)
+		}
+
 		notify(ComponentAdded(component: componentId, to: entity.identifier))
 	}
 
@@ -79,7 +85,6 @@ extension Nexus {
 	}
 
 	fileprivate func get<C>(_ hash: EntityComponentHash) -> C? where C: Component {
-		Log.info("GETTING: \(C.self)")
 		let componentId: ComponentIdentifier = C.identifier
 		guard let componentIdx: ComponentIndex = componentIndexByEntityComponentHash[hash] else { return nil }
 		guard let uniformComponents: UniformComponents = componentsByType[componentId] else { return nil }
@@ -134,6 +139,11 @@ extension Nexus {
 				let cHash: EntityComponentHash = compId.hashValue(using: entityId.index)
 				componentIdsByEntityLookup[cHash] = index
 			}
+		}
+
+		// FIXME: this is costly for many families
+		familiyByTraitHash.forEach { (_, family) in
+			update(membership: family, for: entityId)
 		}
 
 		notify(ComponentRemoved(component: componentId, from: entityId))

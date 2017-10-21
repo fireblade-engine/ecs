@@ -70,47 +70,6 @@ extension FamilyTraitSet {
 
 }
 
-extension FamilyTraitSet {
-
-	/*/// needs to have all of the given components
-	fileprivate func matches(all entity: Entity) -> Bool {
-		var all = requiresAll
-		while let compId: ComponentIdentifier = all.next() {
-			guard entity.has(compId) else { return false }
-		}
-		return true
-	}
-
-	/// needs to have none of the given (excluded) components
-	fileprivate func matches(none entity: Entity) -> Bool {
-		var none = excludesAll
-		while let compId: ComponentIdentifier = none.next() {
-			guard !entity.has(compId) else { return false }
-		}
-		return true
-	}
-
-	/// needs to have at lease one of the given components
-	fileprivate func matches(any entity: Entity) -> Bool {
-		guard !isEmptyAny else { return true }
-		var any = needsAtLeastOne
-		while let compId: ComponentIdentifier = any.next() {
-			if entity.has(compId) {
-				return true
-			}
-		}
-		return false
-	}
-
-	func isMatch(_ entity: Entity) -> Bool {
-		guard matches(all: entity) else { return false }
-		guard matches(none: entity) else { return false }
-		guard matches(any: entity) else { return false }
-		return true
-	}*/
-
-}
-
 // MARK: - Equatable
 extension FamilyTraitSet: Equatable {
 	public static func ==(lhs: FamilyTraitSet, rhs: FamilyTraitSet) -> Bool {

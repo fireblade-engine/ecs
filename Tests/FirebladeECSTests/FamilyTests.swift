@@ -67,13 +67,10 @@ class FamilyTests: XCTestCase {
 
 		let nexus = Nexus()
 
-		let a = nexus.create(entity: "a").assign(Position(x: 1, y: 2), Name(name: "myName"), Velocity(a: 3.14), EmptyComponent())
-		let b = nexus.create(entity: "b").assign(Position(x: 3, y: 4), Velocity(a: 5.23), EmptyComponent())
+		nexus.create(entity: "a").assign(Position(x: 1, y: 2), Name(name: "myName"), Velocity(a: 3.14), EmptyComponent())
+		nexus.create(entity: "b").assign(Position(x: 3, y: 4), Velocity(a: 5.23), EmptyComponent())
 
 		let family = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [Party.self], needsAtLeastOne: [Name.self, EmptyComponent.self])
-
-		nexus.update(membership: family, for: a)
-		nexus.update(membership: family, for: b)
 
 		var index: Int = 0
 
@@ -122,8 +119,6 @@ class FamilyTests: XCTestCase {
 
 		let family = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [Party.self], needsAtLeastOne: [Name.self, EmptyComponent.self])
 
-		nexus.entities.forEach { nexus.update(membership: family, for: $0) }
-
 		XCTAssert(family.members.count == number)
 		XCTAssert(family.memberIds.count == number)
 		XCTAssert(nexus.entities.count == number)
@@ -152,8 +147,6 @@ class FamilyTests: XCTestCase {
 
 		let family = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [Party.self], needsAtLeastOne: [Name.self, EmptyComponent.self])
 
-		nexus.entities.forEach { nexus.update(membership: family, for: $0) }
-
 		XCTAssert(family.members.count == number)
 		XCTAssert(family.memberIds.count == number)
 		XCTAssert(nexus.entities.count == number)
@@ -181,8 +174,6 @@ class FamilyTests: XCTestCase {
 		}
 
 		let family = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [Party.self], needsAtLeastOne: [Name.self, EmptyComponent.self])
-
-		nexus.entities.forEach { nexus.update(membership: family, for: $0) }
 
 		measure {
 			family.memberIds.forEach { (e) in

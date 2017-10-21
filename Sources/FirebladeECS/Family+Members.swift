@@ -130,7 +130,8 @@ extension Family {
 		}
 	}
 
-	public func iterate<A, B, C, D, E, F>(_ apply: @escaping (() -> Entity, () -> A?, () -> B?, () -> C?, () -> D?, () -> E?, () -> F?) -> Void) where A: Component, B: Component, C: Component, D: Component, E: Component, F: Component {
+	public func iterate<A, B, C, D, E, F>(_ apply: @escaping (() -> Entity, () -> A?, () -> B?, () -> C?, () -> D?, () -> E?, () -> F?) -> Void)
+		where A: Component, B: Component, C: Component, D: Component, E: Component, F: Component {
 		iterateMembers { (entityId, getEntityInstance) in
 			func getComponent<Z>() -> Z? where Z: Component {
 				return self.nexus.get(component: Z.identifier, for: entityId) as? Z

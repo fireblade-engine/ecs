@@ -16,14 +16,14 @@ extension Component {
 }
 
 // MARK: - entity component hashable
-public extension Component {
+internal extension Component {
 
 	/// Provides XOR hash value from component identifier (aka type) and entity index.
 	/// Is only stable for app runtime.
 	///
 	/// - Parameter entityIdx: entity index
 	/// - Returns: combinded entity component hash
-	static func hashValue(using entityIdx: EntityIndex) -> EntityComponentHash {
+	internal static func hashValue(using entityIdx: EntityIndex) -> EntityComponentHash {
 		return Self.identifier.hashValue(using: entityIdx)
 	}
 
@@ -32,7 +32,7 @@ public extension Component {
 	///
 	/// - Parameter entityIdx: entity index
 	/// - Returns: combinded entity component hash
-	func hashValue(using entityIdx: EntityIndex) -> EntityComponentHash {
+	internal func hashValue(using entityIdx: EntityIndex) -> EntityComponentHash {
 		return Self.hashValue(using: entityIdx)
 	}
 }

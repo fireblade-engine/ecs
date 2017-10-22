@@ -7,7 +7,7 @@
 
 import Darwin.C.stdlib
 import XCTest
-@testable import FirebladeECS
+import FirebladeECS
 
 class NexusTests: XCTestCase {
 
@@ -19,31 +19,18 @@ class NexusTests: XCTestCase {
 		super.tearDown()
 	}
 
-	func testEntityIdentifierAndIndex() {
-
-		let min: EntityIndex = EntityIdentifier(EntityIdentifier.min).index
-		XCTAssert(EntityIndex(min).identifier == min)
-
-		let rand: EntityIndex = EntityIdentifier(EntityIdentifier(arc4random())).index
-		XCTAssert(EntityIndex(rand).identifier == rand)
-
-		let max: EntityIndex = EntityIdentifier(EntityIdentifier.max).index
-		XCTAssert(EntityIndex(max).identifier == max)
-
-	}
-
 	func testCreateEntity() {
 		let nexus: Nexus = Nexus()
 		XCTAssert(nexus.count == 0)
 
 		let e0 = nexus.create()
 		XCTAssert(e0.identifier.index == 0)
-		XCTAssert(nexus.isValid(entity: e0))
+		XCTAssert(e0.isValid)
 		XCTAssert(nexus.count == 1)
 
 		let e1 = nexus.create(entity: "Named e1")
 		XCTAssert(e1.identifier.index == 1)
-		XCTAssert(nexus.isValid(entity: e1))
+		XCTAssert(e1.isValid)
 		XCTAssert(nexus.count == 2)
 
 		XCTAssert(e0.name == nil)
@@ -57,22 +44,20 @@ class NexusTests: XCTestCase {
 	func testDestroyAndReuseEntity() {
 		let nexus: Nexus = Nexus()
 		XCTAssert(nexus.count == 0)
-		XCTAssert(nexus.freeEntities.count == 0)
 
 		let e0 = nexus.create(entity: "e0")
-		XCTAssert(nexus.isValid(entity: e0))
+		XCTAssert(e0.isValid)
 		XCTAssert(nexus.count == 1)
 
 		let e1 = nexus.create(entity: "e1")
-		XCTAssert(nexus.isValid(entity: e1))
+		XCTAssert(e1.isValid)
 		XCTAssert(nexus.count == 2)
 
 		e0.destroy()
 
-		XCTAssert(!nexus.isValid(entity: e0))
-		XCTAssert(nexus.isValid(entity: e1))
+		XCTAssert(!e0.isValid)
+		XCTAssert(e1.isValid)
 		XCTAssert(nexus.count == 1)
-		XCTAssert(nexus.freeEntities.count == 1)
 
 		let e2 = nexus.create(entity: "e2")
 		XCTAssert(!e0.isValid)
@@ -80,7 +65,6 @@ class NexusTests: XCTestCase {
 		XCTAssert(e2.isValid)
 
 		XCTAssert(nexus.count == 2)
-		XCTAssert(nexus.freeEntities.count == 0)
 
 		XCTAssert(!(e0 == e2))
 		XCTAssert(!(e0 === e2))
@@ -89,8 +73,6 @@ class NexusTests: XCTestCase {
 	func testComponentCreation() {
 		let nexus: Nexus = Nexus()
 		XCTAssert(nexus.count == 0)
-		XCTAssert(nexus.freeEntities.isEmpty)
-		XCTAssert(nexus.componentsByType.isEmpty)
 
 		let e0: Entity = nexus.create(entity: "e0")
 
@@ -102,7 +84,7 @@ class NexusTests: XCTestCase {
 		XCTAssert(e0.hasComponents)
 		XCTAssert(e0.numComponents == 1)
 
-		let rP0: Position = e0.component(Position.self)!
+		let rP0: Position = e0.get(component: Position.self)!
 		XCTAssert(rP0.x == 1)
 		XCTAssert(rP0.y == 2)
 	}
@@ -143,7 +125,7 @@ class NexusTests: XCTestCase {
 		e0.assign(p0)
 
 		XCTAssert(e0.numComponents == 2)
-		let (name, position) = e0.components(Name.self, Position.self)
+		let (name, position) = e0.get(components: Name.self, Position.self)
 
 		XCTAssert(name.name == "myName")
 		XCTAssert(position.x == 99)
@@ -168,8 +150,8 @@ class NexusTests: XCTestCase {
 		b.assign(Position(x: 0, y: 0))
 		c.assign(Position(x: 0, y: 0))
 
-		let pA: Position = a.component()!
-		let pB: Position = b.component()!
+		let pA: Position = a.get()!
+		let pB: Position = b.get()!
 
 		pA.x = 23
 		pA.y = 32

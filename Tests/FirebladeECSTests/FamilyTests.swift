@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import FirebladeECS
+import FirebladeECS
 
 class FamilyTests: XCTestCase {
 
@@ -74,14 +74,17 @@ class FamilyTests: XCTestCase {
 
 		var index: Int = 0
 
-		family.iterate { (e: () -> Entity, p: () -> Position!, v: () -> Velocity!, n: () -> Name?) in
+		family.iterate { (_: () -> Entity, pos: () -> Position!, vel: () -> Velocity!, nm: () -> Name?) in
 
-			let pos: Position = p()
-			pos.x = 10
+			let position: Position = pos()!
+			let name: Name? = nm()
 
-			print(e(), pos, n())
+			_ = position
+			_ = name
+
 			if index == 0 {
-				print(v())
+				let velocity: Velocity = vel()!
+				_ = velocity
 			}
 			// bla
 			index += 1
@@ -119,9 +122,8 @@ class FamilyTests: XCTestCase {
 
 		let family = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [Party.self], needsAtLeastOne: [Name.self, EmptyComponent.self])
 
-		XCTAssert(family.members.count == number)
-		XCTAssert(family.memberIds.count == number)
-		XCTAssert(nexus.entities.count == number)
+		XCTAssert(family.count == number)
+		XCTAssert(nexus.count == number)
 
 		measure {
 			family.iterate(components: Position.self, Velocity.self, Name.self) { (_, pos, vel, nm) in
@@ -147,9 +149,8 @@ class FamilyTests: XCTestCase {
 
 		let family = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [Party.self], needsAtLeastOne: [Name.self, EmptyComponent.self])
 
-		XCTAssert(family.members.count == number)
-		XCTAssert(family.memberIds.count == number)
-		XCTAssert(nexus.entities.count == number)
+		XCTAssert(family.count == number)
+		XCTAssert(nexus.count == number)
 
 		measure {
 			family.iterate { (_: () -> Entity, pos: () -> Position!, vel: () -> Velocity!, nm: () -> Name?) in
@@ -163,23 +164,6 @@ class FamilyTests: XCTestCase {
 			}
 		}
 
-	}
-
-	func testMeasureEntityIteration() {
-		let nexus = Nexus()
-		let number: Int = 10_000
-
-		for i in 0..<number {
-			nexus.create(entity: "\(i)").assign(Position(x: 1+i, y: 2+i), Name(name: "myName\(i)"), Velocity(a: 3.14), EmptyComponent())
-		}
-
-		let family = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [Party.self], needsAtLeastOne: [Name.self, EmptyComponent.self])
-
-		measure {
-			family.memberIds.forEach { (e) in
-				_ = e
-			}
-		}
 	}
 
 }

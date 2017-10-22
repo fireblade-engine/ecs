@@ -22,6 +22,11 @@ public final class Family {
 }
 
 extension Family {
+
+	public var count: Int {
+		return nexus.members(of: self).count
+	}
+
 	public final func canBecomeMember(_ entity: Entity) -> Bool {
 		return nexus.canBecomeMember(entity, in: self)
 	}
@@ -34,7 +39,7 @@ extension Family {
 		return nexus.isMember(entityId, in: self)
 	}
 
-	internal var members: LazyMapCollection<LazyFilterCollection<LazyMapCollection<EntityIdSet, Entity?>>, Entity> {
+	public var members: LazyMapCollection<LazyFilterCollection<LazyMapCollection<EntityIdSet, Entity?>>, Entity> {
 		return nexus.members(of: self)
 	}
 	internal var memberIds: EntityIdSet {

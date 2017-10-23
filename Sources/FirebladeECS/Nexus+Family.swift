@@ -33,14 +33,14 @@ extension Nexus {
 		return family.traits.isMatch(components: componentSet)
 	}
 
-	public func members(of family: Family) -> EntityIdSet {
+	public func members(of family: Family) -> EntityIds {
 		let traitHash: FamilyTraitSetHash = family.traits.hashValue
 		return familyMembersByTraitHash[traitHash] ?? [] // FIXME: fail?
 	}
 
-	public func members(of family: Family) -> LazyMapCollection<LazyFilterCollection<LazyMapCollection<EntityIdSet, Entity?>>, Entity> {
+	/*public func members(of family: Family) -> LazyMapCollection<LazyFilterCollection<LazyMapCollection<EntityIdSet, Entity?>>, Entity> {
 		return members(of: family).lazy.flatMap { self.get(entity: $0) }
-	}
+	}*/
 
 	public func isMember(_ entity: Entity, in family: Family) -> Bool {
 		return isMember(entity.identifier, in: family)
@@ -91,14 +91,22 @@ extension Nexus {
 		}
 	}
 
+	// TODO: move
+	fileprivate func calculateTrash(traitHash: FamilyTraitSetHash, entityId: EntityIdentifier) -> TraitEntityIdHash {
+		return hash(combine: traitHash, entityId.index)
+	}
+
 	fileprivate func add(to family: Family, entityId: EntityIdentifier) {
 		let traitHash: FamilyTraitSetHash = family.traits.hashValue
+		let trash: TraitEntityIdHash = calculateTrash(traitHash: traitHash, entityId: entityId)
+
 		if familyMembersByTraitHash[traitHash] != nil {
-			let (inserted, _) = familyMembersByTraitHash[traitHash]!.insert(entityId)
-			assert(inserted, "entity with id \(entityId) already in family")
+			let newIndex: Int = familyMembersByTraitHash[traitHash]!.count
+			trashMap[trash] = newIndex
+			familyMembersByTraitHash[traitHash]!.append(entityId)
 		} else {
-			familyMembersByTraitHash[traitHash] = EntityIdSet(minimumCapacity: 2)
-			familyMembersByTraitHash[traitHash]!.insert(entityId)
+			familyMembersByTraitHash[traitHash] = EntityIds(arrayLiteral: entityId)
+			trashMap[trash] = 0
 		}
 
 		notify(FamilyMemberAdded(member: entityId, to: family.traits))
@@ -106,8 +114,15 @@ extension Nexus {
 
 	fileprivate func remove(from family: Family, entityId: EntityIdentifier) {
 		let traitHash: FamilyTraitSetHash = family.traits.hashValue
+		let trash: TraitEntityIdHash = calculateTrash(traitHash: traitHash, entityId: entityId)
 
-		guard let removed = familyMembersByTraitHash[traitHash]?.remove(entityId) else {
+		guard let index: EntityIdInFamilyIndex = trashMap[trash] else {
+			assert(false, "removing entity id \(entityId) that is not in family \(family)")
+			report("removing entity id \(entityId) that is not in family \(family)")
+			return
+		}
+
+		guard let removed: EntityIdentifier = familyMembersByTraitHash[traitHash]?.remove(at: index) else {
 			assert(false, "removing entity id \(entityId) that is not in family \(family)")
 			report("removing entity id \(entityId) that is not in family \(family)")
 			return

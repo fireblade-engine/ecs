@@ -6,7 +6,7 @@
 //
 
 import XCTest
-import FirebladeECS
+@testable import FirebladeECS
 
 class FamilyTests: XCTestCase {
 
@@ -63,56 +63,7 @@ class FamilyTests: XCTestCase {
 		}
 	}
 
-	func testIterateFamilyMembers() {
-
-		let nexus = Nexus()
-
-		nexus.create(entity: "a").assign(Position(x: 1, y: 2), Name(name: "myName"), Velocity(a: 3.14), EmptyComponent())
-		nexus.create(entity: "b").assign(Position(x: 3, y: 4), Velocity(a: 5.23), EmptyComponent())
-
-		let family = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [Party.self], needsAtLeastOne: [Name.self, EmptyComponent.self])
-
-		var index: Int = 0
-
-		family.iterate { (_: () -> Entity, pos: () -> Position!, vel: () -> Velocity!, nm: () -> Name?) in
-
-			let position: Position = pos()!
-			let name: Name? = nm()
-
-			_ = position
-			_ = name
-
-			if index == 0 {
-				let velocity: Velocity = vel()!
-				_ = velocity
-			}
-			// bla
-			index += 1
-		}
-
-		family.iterate(components: Position.self, Velocity.self, Name.self) { (_, pos, vel, nm) in
-			let position: Position = pos()!
-			let velocity: Velocity = vel()!
-			let name: Name? = nm()
-
-			_ = position
-			_ = velocity
-			_ = name
-		}
-
-		family.iterate { (e: () -> Entity, p: () -> Position!, v: () -> Velocity!, n: () -> Name?) in
-
-			print(e(), p().x, n())
-			if index == 0 {
-				print(v())
-			}
-			// bla
-			index += 1
-		}
-
-	}
-
-	func testMeasureFamilyIteration() {
+	func testMeasureIterateMembers() {
 		let nexus = Nexus()
 		let number: Int = 10_000
 
@@ -126,20 +77,13 @@ class FamilyTests: XCTestCase {
 		XCTAssert(nexus.count == number)
 
 		measure {
-			family.iterate(components: Position.self, Velocity.self, Name.self) { (_, pos, vel, nm) in
-				let position: Position = pos()!
-				let velocity: Velocity = vel()!
-				let name: Name? = nm()
-
-				_ = position
-				_ = velocity
-				_ = name
-			}
+			family.iterateMembers({ (entityId) in
+				_ = entityId
+			})
 		}
-
 	}
 
-	func testMeasureFamilyIteration2() {
+	func testMeasureFamilyIterationOne() {
 		let nexus = Nexus()
 		let number: Int = 10_000
 
@@ -153,12 +97,33 @@ class FamilyTests: XCTestCase {
 		XCTAssert(nexus.count == number)
 
 		measure {
-			family.iterate { (_: () -> Entity, pos: () -> Position!, vel: () -> Velocity!, nm: () -> Name?) in
-				let name: Name? = nm()
-				let velocity: Velocity = vel()!
-				let position: Position = pos()!
+			family.iterate(components: Velocity.self) { (_, vel) in
+				let velocity: Velocity = vel!
+				_ = velocity
+			}
+		}
 
-				_ = position
+	}
+	func testMeasureFamilyIterationThree() {
+		let nexus = Nexus()
+		let number: Int = 10_000
+
+		for i in 0..<number {
+			nexus.create(entity: "\(i)").assign(Position(x: 1+i, y: 2+i), Name(name: "myName\(i)"), Velocity(a: 3.14), EmptyComponent())
+		}
+
+		let family = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [Party.self], needsAtLeastOne: [Name.self, EmptyComponent.self])
+
+		XCTAssert(family.count == number)
+		XCTAssert(nexus.count == number)
+
+		measure {
+			family.iterate(components: Position.self, Velocity.self, Name.self) { (entityId, pos, vel, nm) in
+				let position: Position = pos!
+				let velocity: Velocity = vel!
+				let name: Name? = nm
+
+				position.x += entityId.index
 				_ = velocity
 				_ = name
 			}

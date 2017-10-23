@@ -14,6 +14,7 @@ public final class Family {
 	internal init(_ nexus: Nexus, traits: FamilyTraitSet) {
 		self.nexus = nexus
 		self.traits = traits
+
 	}
 
 	deinit {
@@ -39,10 +40,10 @@ extension Family {
 		return nexus.isMember(entityId, in: self)
 	}
 
-	public var members: LazyMapCollection<LazyFilterCollection<LazyMapCollection<EntityIdSet, Entity?>>, Entity> {
+	/*public var members: LazyMapCollection<LazyFilterCollection<LazyMapCollection<EntityIdSet, Entity?>>, Entity> {
 		return nexus.members(of: self)
-	}
-	internal var memberIds: EntityIdSet {
+	}*/
+	internal var memberIds: EntityIds {
 		return nexus.members(of: self)
 	}
 }

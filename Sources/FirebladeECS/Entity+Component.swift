@@ -9,11 +9,11 @@
 public extension Entity {
 
 	public final func get<C>() -> C? where C: Component {
-		return nexus.get(component: C.identifier, for: identifier)
+		return nexus.get(for: identifier)
 	}
 
 	public func get<A>(component compType: A.Type = A.self) -> A? where A: Component {
-		return nexus.get(component: A.identifier, for: identifier)
+		return nexus.get(for: identifier)
 	}
 
 	public func getComponent<A>() -> () -> A? where A: Component {

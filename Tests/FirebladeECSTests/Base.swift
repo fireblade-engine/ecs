@@ -38,3 +38,25 @@ class Party: Component {
 		self.partying = partying
 	}
 }
+
+class ExampleSystem {
+	private let family: Family
+
+	init(nexus: Nexus) {
+		family = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [EmptyComponent.self])
+	}
+
+	func update(deltaT: Double) {
+		family.iterate(components: Position.self, Velocity.self, Name.self) { (_, positionGetter, velocityGetter, nameGetter) in
+
+			let position: Position = positionGetter!
+			let velocity: Velocity = velocityGetter!
+			let name: Name? = nameGetter
+
+			position.x *= 2
+			velocity.a *= 2
+
+		}
+	}
+
+}

@@ -33,13 +33,14 @@ extension Nexus {
 		var newComponentIndex: ComponentIndex = ComponentIndex.invalid
 		if componentsByType[componentId] != nil {
 			newComponentIndex = componentsByType[componentId]!.count // TODO: get next free index
-			componentsByType[componentId]!.insert(component, at: newComponentIndex)
+			componentsByType[componentId]!.append(component) // Amortized O(1)
 		} else {
 			newComponentIndex = 0
 			componentsByType[componentId] = UniformComponents(arrayLiteral: component)
 		}
 
 		// assigns the component id to the entity id
+		// FIXME: expensive
 		if componentIdsByEntity[entityIdx] != nil {
 			let (inserted, _) = componentIdsSetByEntity[entityIdx]!.insert(componentId)
 			assert(inserted)
@@ -50,9 +51,7 @@ extension Nexus {
 			componentIdsSetByEntity[entityIdx] = Set<ComponentIdentifier>(minimumCapacity: 2)
 			let (inserted, _) = componentIdsSetByEntity[entityIdx]!.insert(componentId)
 			assert(inserted)
-			componentIdsByEntity[entityIdx] = ComponentIdentifiers()
-			componentIdsByEntity.reserveCapacity(1)
-			componentIdsByEntity[entityIdx]!.insert(componentId, at: 0)
+			componentIdsByEntity[entityIdx] = ComponentIdentifiers(arrayLiteral: componentId)
 			componentIdsByEntityLookup[hash] = 0
 		}
 
@@ -72,11 +71,6 @@ extension Nexus {
 		assign(component: component, to: entity)
 	}
 
-	public func get<C>(component componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> C? where C: Component {
-		let hash: EntityComponentHash = componentId.hashValue(using: entityId.index)
-		return get(hash)
-	}
-
 	public func get(component componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
 		let hash: EntityComponentHash = componentId.hashValue(using: entityId.index)
 		guard let componentIdx: ComponentIndex = componentIndexByEntityComponentHash[hash] else { return nil }
@@ -84,12 +78,16 @@ extension Nexus {
 		return uniformComponents[componentIdx]
 	}
 
-	fileprivate func get<C>(_ hash: EntityComponentHash) -> C? where C: Component {
+	public func get<C>(for entityId: EntityIdentifier) -> C? where C: Component {
 		let componentId: ComponentIdentifier = C.identifier
+		let hash: EntityComponentHash = componentId.hashValue(using: entityId)
+		return get(componentId: componentId, hash: hash)
+	}
+
+	fileprivate func get<C>(componentId: ComponentIdentifier, hash: EntityComponentHash) -> C? where C: Component {
 		guard let componentIdx: ComponentIndex = componentIndexByEntityComponentHash[hash] else { return nil }
 		guard let uniformComponents: UniformComponents = componentsByType[componentId] else { return nil }
-		guard let typedComponent: C = uniformComponents[componentIdx] as? C else { return nil }
-		return typedComponent
+		return uniformComponents[componentIdx] as? C
 	}
 
 	public func get(components entityId: EntityIdentifier) -> ComponentIdentifiers? {

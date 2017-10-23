@@ -18,8 +18,12 @@ public typealias UniformComponents = ContiguousArray<Component>
 public typealias ComponentIdentifiers = ContiguousArray<ComponentIdentifier>
 public typealias ComponentSet = Set<ComponentIdentifier>
 public typealias Entities = ContiguousArray<Entity>
+public typealias EntityIds = ContiguousArray<EntityIdentifier>
 public typealias EntityIdSet = Set<EntityIdentifier>
 public typealias FamilyTraitSetHash = Int
+public typealias TraitEntityIdHash = Int
+public typealias EntityIdInFamilyIndex = Int
+public typealias TraitEntityIdHashSet = [TraitEntityIdHash: EntityIdInFamilyIndex]
 
 public class Nexus {
 
@@ -47,7 +51,8 @@ public class Nexus {
 	var freeEntities: ContiguousArray<EntityIdentifier>
 
 	var familiyByTraitHash: [FamilyTraitSetHash: Family]
-	var familyMembersByTraitHash: [FamilyTraitSetHash: EntityIdSet]
+	var trashMap: TraitEntityIdHashSet
+	var familyMembersByTraitHash: [FamilyTraitSetHash: EntityIds]
 	var componentIdsSetByEntity: [EntityIndex: ComponentSet]
 
 	public init() {
@@ -60,6 +65,7 @@ public class Nexus {
 		freeEntities = ContiguousArray<EntityIdentifier>()
 		familiyByTraitHash = [:]
 		familyMembersByTraitHash = [:]
+		trashMap = [:]
 	}
 
 }

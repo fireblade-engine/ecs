@@ -29,7 +29,12 @@ extension Nexus {
 		let componentId = component.identifier
 		let entityIdx = entity.identifier.index
 		let hash: EntityComponentHash = componentId.hashValue(using: entityIdx)
-		assert(!has(hash), "ComponentAdd collision: \(entityIdx) already has a component \(component)")
+		/// test if component is already assigned
+		guard !has(hash) else {
+			report("ComponentAdd collision: \(entityIdx) already has a component \(component)")
+			// TODO: replace component?! copy properties?!
+			return
+		}
 		var newComponentIndex: ComponentIndex = ComponentIndex.invalid
 		if componentsByType[componentId] != nil {
 			newComponentIndex = componentsByType[componentId]!.count // TODO: get next free index
@@ -40,17 +45,11 @@ extension Nexus {
 		}
 
 		// assigns the component id to the entity id
-		// FIXME: expensive
 		if componentIdsByEntity[entityIdx] != nil {
-			let (inserted, _) = componentIdsSetByEntity[entityIdx]!.insert(componentId)
-			assert(inserted)
-			let newIndex = componentIdsByEntity[entityIdx]!.count
-			componentIdsByEntity[entityIdx]!.insert(componentId, at: newIndex)
-			componentIdsByEntityLookup[hash] = newIndex
+			let endIndex: Int = componentIdsByEntity[entityIdx]!.count
+			componentIdsByEntity[entityIdx]!.append(componentId) // Amortized O(1)
+			componentIdsByEntityLookup[hash] = endIndex
 		} else {
-			componentIdsSetByEntity[entityIdx] = Set<ComponentIdentifier>(minimumCapacity: 2)
-			let (inserted, _) = componentIdsSetByEntity[entityIdx]!.insert(componentId)
-			assert(inserted)
 			componentIdsByEntity[entityIdx] = ComponentIdentifiers(arrayLiteral: componentId)
 			componentIdsByEntityLookup[hash] = 0
 		}
@@ -60,7 +59,7 @@ extension Nexus {
 
 		// FIXME: this is costly for many families
 		let entityId: EntityIdentifier = entity.identifier
-		familiyByTraitHash.forEach { (_, family) in
+		for (_, family) in familiyByTraitHash {
 			update(membership: family, for: entityId)
 		}
 
@@ -111,13 +110,6 @@ extension Nexus {
 		}
 
 		// MARK: unassign component
-
-		guard componentIdsSetByEntity[entityId.index]?.remove(componentId) != nil else {
-			assert(false, "ComponentRemove failure: no component found to be removed in set")
-			report("ComponentRemove failure: no component found to be removed in set")
-			return false
-		}
-
 		guard let removeIndex: ComponentIdsByEntityIndex = componentIdsByEntityLookup.removeValue(forKey: hash) else {
 			assert(false, "ComponentRemove failure: no component found to be removed")
 			report("ComponentRemove failure: no component found to be removed")
@@ -140,7 +132,7 @@ extension Nexus {
 		}
 
 		// FIXME: this is costly for many families
-		familiyByTraitHash.forEach { (_, family) in
+		for (_, family) in familiyByTraitHash {
 			update(membership: family, for: entityId)
 		}
 

@@ -68,7 +68,9 @@ public extension Entity {
 
 	@discardableResult
 	public final func assign(_ components: Component...) -> Entity {
-		components.forEach { assign($0) }
+		for component: Component in components {
+			assign(component)
+		}
 		return self
 	}
 

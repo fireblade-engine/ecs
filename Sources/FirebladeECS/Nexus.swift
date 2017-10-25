@@ -53,14 +53,12 @@ public class Nexus {
 	var familiyByTraitHash: [FamilyTraitSetHash: Family]
 	var trashMap: TraitEntityIdHashSet
 	var familyMembersByTraitHash: [FamilyTraitSetHash: EntityIds]
-	var componentIdsSetByEntity: [EntityIndex: ComponentSet]
 
 	public init() {
 		entities = Entities()
 		componentsByType = [:]
 		componentIndexByEntityComponentHash = [:]
 		componentIdsByEntity = [:]
-		componentIdsSetByEntity = [:]
 		componentIdsByEntityLookup = [:]
 		freeEntities = ContiguousArray<EntityIdentifier>()
 		familiyByTraitHash = [:]

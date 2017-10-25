@@ -79,6 +79,7 @@ class NexusTests: XCTestCase {
 		let p0 = Position(x: 1, y: 2)
 
 		e0.assign(p0)
+		e0.assign(p0)
 
 		XCTAssert(e0.isValid)
 		XCTAssert(e0.hasComponents)

@@ -14,10 +14,14 @@ extension Nexus {
 	///   - noneComponents: none component type may appear in this family.
 	///   - oneComponents: at least one of component types must appear in this family.
 	/// - Returns: family with given traits.
-	public func family(requiresAll allComponents: [Component.Type], excludesAll noneComponents: [Component.Type], needsAtLeastOne oneComponents: [Component.Type] = []) -> Family {
-
+	public func family(requiresAll allComponents: [Component.Type],
+					   excludesAll noneComponents: [Component.Type],
+					   needsAtLeastOne oneComponents: [Component.Type] = []) -> Family {
 		let traits = FamilyTraitSet(requiresAll: allComponents, excludesAll: noneComponents, needsAtLeastOne: oneComponents)
+		return family(with: traits)
+	}
 
+	public func family(with traits: FamilyTraitSet) -> Family {
 		guard let family: Family = get(family: traits) else {
 			return create(family: traits)
 		}
@@ -26,10 +30,12 @@ extension Nexus {
 
 	public func canBecomeMember(_ entity: Entity, in family: Family) -> Bool {
 		let entityIdx: EntityIndex = entity.identifier.index
-		guard let componentSet: ComponentSet = componentIdsSetByEntity[entityIdx] else {
+		guard let componentIds: ComponentIdentifiers = componentIdsByEntity[entityIdx] else {
 			assert(false, "no component set defined for entity: \(entity)")
 			return false
 		}
+		// FIXME: may be a bottle neck
+		let componentSet: ComponentSet = ComponentSet.init(componentIds)
 		return family.traits.isMatch(components: componentSet)
 	}
 
@@ -64,8 +70,8 @@ extension Nexus {
 		assert(replaced == nil, "Family with exact trait hash already exists: \(traitHash)")
 
 		// FIXME: this is costly for many entities
-		entities.forEach {
-			update(membership: family, for: $0.identifier)
+		for entity: Entity in entities {
+			update(membership: family, for: entity.identifier)
 		}
 
 		notify(FamilyCreated(family: traits))
@@ -78,7 +84,9 @@ extension Nexus {
 
 	func update(membership family: Family, for entityId: EntityIdentifier) {
 		let entityIdx: EntityIndex = entityId.index
-		guard let componentsSet: ComponentSet = componentIdsSetByEntity[entityIdx] else { return }
+		guard let componentIds: ComponentIdentifiers = componentIdsByEntity[entityIdx] else { return }
+		// FIXME: bottle neck
+		let componentsSet: ComponentSet = ComponentSet.init(componentIds)
 		let isMember: Bool = family.isMember(entityId)
 		let isMatch: Bool = family.traits.isMatch(components: componentsSet)
 		switch (isMatch, isMember) {

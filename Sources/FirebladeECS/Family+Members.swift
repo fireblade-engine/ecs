@@ -7,7 +7,7 @@
 
 extension Family {
 	public func iterateMembers(_ apply: @escaping (EntityIdentifier) -> Void) {
-		memberIds.forEach { (entityId: EntityIdentifier) -> Void in
+		for entityId in memberIds {
 			apply(entityId)
 		}
 	}
@@ -17,8 +17,7 @@ extension Family {
 
 	public func iterate<A>(components _: A.Type, _ apply: @escaping (EntityIdentifier, A?) -> Void)
 		where A: Component {
-			var iter = memberIds.makeIterator()
-			while let entityId: EntityIdentifier = iter.next() {
+			for entityId in memberIds {
 				let a: A? = self.nexus.get(for: entityId)
 				apply(entityId, a)
 			}
@@ -26,8 +25,7 @@ extension Family {
 
 	public func iterate<A, B>(components _: A.Type, _: B.Type, _ apply: @escaping (EntityIdentifier, A?, B?) -> Void)
 		where A: Component, B: Component {
-			var iter = memberIds.makeIterator()
-			while let entityId: EntityIdentifier = iter.next() {
+			for entityId in memberIds {
 				let a: A? = self.nexus.get(for: entityId)
 				let b: B? = self.nexus.get(for: entityId)
 				apply(entityId, a, b)
@@ -36,8 +34,7 @@ extension Family {
 
 	public func iterate<A, B, C>(components _: A.Type, _: B.Type, _: C.Type, _ apply: @escaping (EntityIdentifier, A?, B?, C?) -> Void)
 		where A: Component, B: Component, C: Component {
-			var iter = memberIds.makeIterator()
-			while let entityId: EntityIdentifier = iter.next() {
+			for entityId in memberIds {
 				let a: A? = self.nexus.get(for: entityId)
 				let b: B? = self.nexus.get(for: entityId)
 				let c: C? = self.nexus.get(for: entityId)
@@ -47,8 +44,7 @@ extension Family {
 
 	public func iterate<A, B, C, D>(components _: A.Type, _: B.Type, _: C.Type, _: D.Type, _ apply: @escaping (EntityIdentifier, A?, B?, C?, D?) -> Void)
 		where A: Component, B: Component, C: Component, D: Component {
-			var iter = memberIds.makeIterator()
-			while let entityId: EntityIdentifier = iter.next() {
+			for entityId in memberIds {
 				let a: A? = self.nexus.get(for: entityId)
 				let b: B? = self.nexus.get(for: entityId)
 				let c: C? = self.nexus.get(for: entityId)
@@ -58,8 +54,7 @@ extension Family {
 	}
 	public func iterate<A, B, C, D, E>(components _: A.Type, _: B.Type, _: C.Type, _: D.Type, _: E.Type, _ apply: @escaping (EntityIdentifier, A?, B?, C?, D?, E?) -> Void)
 		where A: Component, B: Component, C: Component, D: Component, E: Component {
-			var iter = memberIds.makeIterator()
-			while let entityId: EntityIdentifier = iter.next() {
+			for entityId in memberIds {
 				let a: A? = self.nexus.get(for: entityId)
 				let b: B? = self.nexus.get(for: entityId)
 				let c: C? = self.nexus.get(for: entityId)
@@ -72,8 +67,7 @@ extension Family {
 	public func iterate<A, B, C, D, E, F>(components _: A.Type, _: B.Type, _: C.Type, _: D.Type, _: E.Type, _: F.Type,
 										  _ apply: @escaping (EntityIdentifier, A?, B?, C?, D?, E?, F?) -> Void)
 		where A: Component, B: Component, C: Component, D: Component, E: Component, F: Component {
-			var iter = memberIds.makeIterator()
-			while let entityId: EntityIdentifier = iter.next() {
+			for entityId in memberIds {
 				let a: A? = self.nexus.get(for: entityId)
 				let b: B? = self.nexus.get(for: entityId)
 				let c: C? = self.nexus.get(for: entityId)

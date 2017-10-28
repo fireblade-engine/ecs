@@ -7,13 +7,9 @@
 
 extension Nexus {
 
-	public func has(component: ComponentIdentifier, entity: EntityIdentifier) -> Bool {
-		let hash: EntityComponentHash = component.hashValue(using: entity.index)
-		return has(hash)
-	}
-
-	fileprivate func has(_ hash: EntityComponentHash) -> Bool {
-		return componentIndexByEntityComponentHash[hash] != nil
+	public func has(componentId: ComponentIdentifier, entityIdx: EntityIndex) -> Bool {
+		guard let uniforms = componentsByType[componentId] else { return false }
+		return uniforms.has(entityIdx)
 	}
 
 	public func count(components entityId: EntityIdentifier) -> Int {
@@ -30,18 +26,16 @@ extension Nexus {
 		let entityIdx = entity.identifier.index
 		let hash: EntityComponentHash = componentId.hashValue(using: entityIdx)
 		/// test if component is already assigned
-		guard !has(hash) else {
+		guard !has(componentId: componentId, entityIdx: entityIdx) else {
 			report("ComponentAdd collision: \(entityIdx) already has a component \(component)")
 			// TODO: replace component?! copy properties?!
 			return
 		}
-		var newComponentIndex: ComponentIndex = ComponentIndex.invalid
 		if componentsByType[componentId] != nil {
-			newComponentIndex = componentsByType[componentId]!.count // TODO: get next free index
-			componentsByType[componentId]!.append(component) // Amortized O(1)
+			componentsByType[componentId]!.insert(component, at: entityIdx)
 		} else {
-			newComponentIndex = 0
-			componentsByType[componentId] = UniformComponents(arrayLiteral: component)
+			componentsByType[componentId] = UniformComponents(minEntityCount: entities.count)
+			componentsByType[componentId]!.insert(component, at: entityIdx)
 		}
 
 		// assigns the component id to the entity id
@@ -53,9 +47,6 @@ extension Nexus {
 			componentIdsByEntity[entityIdx] = ComponentIdentifiers(arrayLiteral: componentId)
 			componentIdsByEntityLookup[hash] = 0
 		}
-
-		// assign entity / component to index
-		componentIndexByEntityComponentHash[hash] = newComponentIndex
 
 		// FIXME: this is costly for many families
 		let entityId: EntityIdentifier = entity.identifier
@@ -71,22 +62,18 @@ extension Nexus {
 	}
 
 	public func get(component componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
-		let hash: EntityComponentHash = componentId.hashValue(using: entityId.index)
-		guard let componentIdx: ComponentIndex = componentIndexByEntityComponentHash[hash] else { return nil }
 		guard let uniformComponents: UniformComponents = componentsByType[componentId] else { return nil }
-		return uniformComponents[componentIdx]
+		return uniformComponents.get(at: entityId.index)
 	}
 
 	public func get<C>(for entityId: EntityIdentifier) -> C? where C: Component {
 		let componentId: ComponentIdentifier = C.identifier
-		let hash: EntityComponentHash = componentId.hashValue(using: entityId)
-		return get(componentId: componentId, hash: hash)
+		return get(componentId: componentId, entityIdx: entityId.index)
 	}
 
-	fileprivate func get<C>(componentId: ComponentIdentifier, hash: EntityComponentHash) -> C? where C: Component {
-		guard let componentIdx: ComponentIndex = componentIndexByEntityComponentHash[hash] else { return nil }
+	fileprivate func get<C>(componentId: ComponentIdentifier, entityIdx: EntityIndex) -> C? where C: Component {
 		guard let uniformComponents: UniformComponents = componentsByType[componentId] else { return nil }
-		return uniformComponents[componentIdx] as? C
+		return uniformComponents.get(at: entityIdx) as? C
 	}
 
 	public func get(components entityId: EntityIdentifier) -> ComponentIdentifiers? {
@@ -98,20 +85,10 @@ extension Nexus {
 		let hash: EntityComponentHash = componentId.hashValue(using: entityId.index)
 
 		// MARK: delete component instance
-		guard let componentIdx: ComponentIndex = componentIndexByEntityComponentHash.removeValue(forKey: hash) else {
-			report("ComponentRemove failure: entity \(entityId) has no component \(componentId)")
-			return false
-		}
-
-		guard componentsByType[componentId]?.remove(at: componentIdx) != nil else {
-			assert(false, "ComponentRemove failure: no component instance for \(componentId) with the given index \(componentIdx)")
-			report("ComponentRemove failure: no component instance for \(componentId) with the given index \(componentIdx)")
-			return false
-		}
+		componentsByType[componentId]?.remove(at: entityId.index)
 
 		// MARK: unassign component
 		guard let removeIndex: ComponentIdsByEntityIndex = componentIdsByEntityLookup.removeValue(forKey: hash) else {
-			assert(false, "ComponentRemove failure: no component found to be removed")
 			report("ComponentRemove failure: no component found to be removed")
 			return false
 		}
@@ -127,6 +104,7 @@ extension Nexus {
 			// FIXME: may be expensive but is cheap for small entities
 			for (index, compId) in remainingComponents.enumerated() {
 				let cHash: EntityComponentHash = compId.hashValue(using: entityId.index)
+				assert(cHash != hash)
 				componentIdsByEntityLookup[cHash] = index
 			}
 		}

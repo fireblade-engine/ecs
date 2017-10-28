@@ -43,7 +43,7 @@ extension Family {
 	/*public var members: LazyMapCollection<LazyFilterCollection<LazyMapCollection<EntityIdSet, Entity?>>, Entity> {
 		return nexus.members(of: self)
 	}*/
-	internal var memberIds: EntityIds {
+	internal var memberIds: EntityIdSet {
 		return nexus.members(of: self)
 	}
 }

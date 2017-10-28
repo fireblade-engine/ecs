@@ -7,18 +7,13 @@
 
 /// entity id ^ component identifier hash
 public typealias EntityComponentHash = Int
-public typealias ComponentIndex = Int
-public extension ComponentIndex {
-	static let invalid: ComponentIndex = Int.min
-}
 public typealias ComponentIdsByEntityIndex = Int
 public typealias ComponentTypeHash = Int // component object identifier hash value
 
-public typealias UniformComponents = ContiguousArray<Component>
+public typealias UniformComponents = ContiguousComponentArray
 public typealias ComponentIdentifiers = ContiguousArray<ComponentIdentifier>
 public typealias ComponentSet = Set<ComponentIdentifier>
 public typealias Entities = ContiguousArray<Entity>
-public typealias EntityIds = ContiguousArray<EntityIdentifier>
 public typealias EntityIdSet = Set<EntityIdentifier>
 public typealias FamilyTraitSetHash = Int
 public typealias TraitEntityIdHash = Int
@@ -35,10 +30,6 @@ public class Nexus {
 	/// - Value: each element is a component instance of the same type (uniform). New component instances are appended.
 	var componentsByType: [ComponentIdentifier: UniformComponents]
 
-	/// - Key: 'entity id' - 'component type' hash that uniquely links both
-	///	- Value: each element is an index pointing to the component instance index in the componentsByType map.
-	var componentIndexByEntityComponentHash: [EntityComponentHash: ComponentIndex]
-
 	/// - Key: entity id as index
 	/// - Value: each element is a component identifier associated with this entity
 	var componentIdsByEntity: [EntityIndex: ComponentIdentifiers]
@@ -51,19 +42,16 @@ public class Nexus {
 	var freeEntities: ContiguousArray<EntityIdentifier>
 
 	var familiyByTraitHash: [FamilyTraitSetHash: Family]
-	var trashMap: TraitEntityIdHashSet
-	var familyMembersByTraitHash: [FamilyTraitSetHash: EntityIds]
+	var familyMembersByTraitHash: [FamilyTraitSetHash: EntityIdSet]
 
 	public init() {
 		entities = Entities()
 		componentsByType = [:]
-		componentIndexByEntityComponentHash = [:]
 		componentIdsByEntity = [:]
 		componentIdsByEntityLookup = [:]
 		freeEntities = ContiguousArray<EntityIdentifier>()
 		familiyByTraitHash = [:]
 		familyMembersByTraitHash = [:]
-		trashMap = [:]
 	}
 
 }

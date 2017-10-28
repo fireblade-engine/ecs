@@ -54,7 +54,7 @@ public extension Entity {
 	}
 
 	public final func has(_ uct: ComponentIdentifier) -> Bool {
-		return nexus.has(component: uct, entity: identifier)
+		return nexus.has(componentId: uct, entityIdx: identifier.index)
 	}
 
 	public final var hasComponents: Bool {

@@ -39,7 +39,7 @@ extension Nexus {
 		return family.traits.isMatch(components: componentSet)
 	}
 
-	public func members(of family: Family) -> EntityIds {
+	public func members(of family: Family) -> EntityIdSet {
 		let traitHash: FamilyTraitSetHash = family.traits.hashValue
 		return familyMembersByTraitHash[traitHash] ?? [] // FIXME: fail?
 	}
@@ -99,22 +99,13 @@ extension Nexus {
 		}
 	}
 
-	// TODO: move
-	fileprivate func calculateTrash(traitHash: FamilyTraitSetHash, entityId: EntityIdentifier) -> TraitEntityIdHash {
-		return hash(combine: traitHash, entityId.index)
-	}
-
 	fileprivate func add(to family: Family, entityId: EntityIdentifier) {
 		let traitHash: FamilyTraitSetHash = family.traits.hashValue
-		let trash: TraitEntityIdHash = calculateTrash(traitHash: traitHash, entityId: entityId)
 
 		if familyMembersByTraitHash[traitHash] != nil {
-			let newIndex: Int = familyMembersByTraitHash[traitHash]!.count
-			trashMap[trash] = newIndex
-			familyMembersByTraitHash[traitHash]!.append(entityId)
+			familyMembersByTraitHash[traitHash]?.insert(entityId)
 		} else {
-			familyMembersByTraitHash[traitHash] = EntityIds(arrayLiteral: entityId)
-			trashMap[trash] = 0
+			familyMembersByTraitHash[traitHash] = EntityIdSet(arrayLiteral: entityId)
 		}
 
 		notify(FamilyMemberAdded(member: entityId, to: family.traits))
@@ -122,15 +113,8 @@ extension Nexus {
 
 	fileprivate func remove(from family: Family, entityId: EntityIdentifier) {
 		let traitHash: FamilyTraitSetHash = family.traits.hashValue
-		let trash: TraitEntityIdHash = calculateTrash(traitHash: traitHash, entityId: entityId)
 
-		guard let index: EntityIdInFamilyIndex = trashMap[trash] else {
-			assert(false, "removing entity id \(entityId) that is not in family \(family)")
-			report("removing entity id \(entityId) that is not in family \(family)")
-			return
-		}
-
-		guard let removed: EntityIdentifier = familyMembersByTraitHash[traitHash]?.remove(at: index) else {
+		guard let removed: EntityIdentifier = familyMembersByTraitHash[traitHash]?.remove(entityId) else {
 			assert(false, "removing entity id \(entityId) that is not in family \(family)")
 			report("removing entity id \(entityId) that is not in family \(family)")
 			return

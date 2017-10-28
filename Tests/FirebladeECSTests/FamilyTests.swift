@@ -56,7 +56,7 @@ class FamilyTests: XCTestCase {
 		let isMatch = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [Party.self], needsAtLeastOne: [Name.self, EmptyComponent.self])
 
 		measure {
-			for _ in 0..<1_000_000 {
+			for _ in 0..<10_000 {
 				let success = isMatch.canBecomeMember(a)
 				XCTAssert(success)
 			}
@@ -128,6 +128,37 @@ class FamilyTests: XCTestCase {
 				_ = name
 			}
 		}
+
+	}
+
+	func testFamilyExchange() {
+		let nexus = Nexus()
+		let number: Int = 10
+
+		for i in 0..<number {
+			nexus.create(entity: "\(i)").assign(Position(x: i+1, y: i+2))
+		}
+
+		let familyA = nexus.family(requiresAll: [Position.self], excludesAll: [Velocity.self])
+		let familyB = nexus.family(requiresAll: [Velocity.self], excludesAll: [Position.self])
+
+		var countA: Int = 0
+		familyA.iterate(components: Position.self) { (entityId, _) in
+			let e = nexus.get(entity: entityId)
+			e.assign(Velocity(a: 3.14))
+			e.remove(Position.self)
+			countA += 1
+		}
+		XCTAssert(countA == number)
+
+		var countB: Int = 0
+		familyB.iterate(components: Velocity.self) { (eId, velocity) in
+			let e = nexus.get(entity: eId)
+			e.assign(Position(x: 1, y: 2))
+			e.remove(velocity!)
+			countB += 1
+		}
+		XCTAssert(countB == number)
 
 	}
 

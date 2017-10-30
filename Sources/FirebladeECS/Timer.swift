@@ -7,13 +7,13 @@
 
 import Darwin.Mach.mach_time
 
-struct Timer {
+public struct Timer {
 	private let numerator: UInt64
 	private let denominator: UInt64
 	private var startTime: UInt64 = 0
 	private var stopTime: UInt64 = 0
 
-	init() {
+	public init() {
 		var timeBaseInfo = mach_timebase_info.init(numer: 0, denom: 0 )
 		let success: kern_return_t = mach_timebase_info(&timeBaseInfo)
 		assert(KERN_SUCCESS == success)
@@ -21,30 +21,30 @@ struct Timer {
 		denominator = UInt64(timeBaseInfo.denom)
 	}
 
-	mutating func start() {
+	public mutating func start() {
 		startTime = mach_absolute_time()
 	}
-	mutating func stop() {
+	public mutating func stop() {
 		stopTime = mach_absolute_time()
 	}
-	mutating func reset() {
+	public mutating func reset() {
 		startTime = 0
 		stopTime = 0
 	}
 
-	var nanoSeconds: UInt64 {
+	public var nanoSeconds: UInt64 {
 		return ((stopTime - startTime) * numerator) / denominator
 	}
 
-	var microSeconds: Double {
+	public var microSeconds: Double {
 		return Double(nanoSeconds) / 1.0e3
 	}
 
-	var milliSeconds: Double {
+	public var milliSeconds: Double {
 		return Double(nanoSeconds) / 1.0e6
 	}
 
-	var seconds: Double {
+	public var seconds: Double {
 		return Double(nanoSeconds) / 1.0e9
 	}
 }

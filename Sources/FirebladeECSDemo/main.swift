@@ -1,6 +1,7 @@
 import CSDL2
 import FirebladeECS
-
+var tSetup = Timer()
+tSetup.start()
 if SDL_Init(SDL_INIT_VIDEO) != 0 {
 	fatalError("could not init video")
 }
@@ -130,10 +131,31 @@ let positionResetSystem = PositionResetSystem()
 let renderSystem = RenderSystem(hWin: hWin)
 let colorSystem = ColorSystem()
 
-createScene()
+func printHelp() {
+	let help: String = """
+	================ FIREBLADE ECS DEMO ===============
+	press:
+	ESC		quit
+	c		change all colors (random)
+	r		reset all positions (to center)
+	s		stop movement
+	+		increase movement speed
+	-		reduce movement speed
+	space	reset to default movement speed
+	"""
+	print(help)
+}
 
+createScene()
+tSetup.stop()
+print("[SETUP]: took \(tSetup.milliSeconds)ms")
+var tRun = Timer()
+printHelp()
+
+tRun.start()
 var event: SDL_Event = SDL_Event()
 var quit: Bool = false
+print("================ RUNNING ================")
 while quit == false {
 	while SDL_PollEvent(&event) == 1 {
 		switch SDL_EventType(rawValue: event.type) {
@@ -172,3 +194,5 @@ while quit == false {
 
 SDL_DestroyWindow(hWin)
 SDL_Quit()
+tRun.stop()
+print("[RUN]: took \(tRun.seconds)s")

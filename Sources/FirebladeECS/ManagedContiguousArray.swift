@@ -17,6 +17,7 @@ public protocol ManagedContiguousArrayProtocol: class {
 	associatedtype Element
 	static var chunkSize: Int { get }
 	init(minCount: Int)
+	var count: Int { get }
 	func insert(_ element: Element, at index: Int)
 	func has(_ index: Int) -> Bool
 	func get(at index: Int) -> Element?
@@ -27,14 +28,22 @@ public class ManagedContiguousArray: ManagedContiguousArrayProtocol {
 	public static var chunkSize: Int = 4096
 
 	public typealias Element = Any
+	var _count: Int = 0
 	var _store: ContiguousArray<Element?> = []
 	public required init(minCount: Int = chunkSize) {
 		_store = ContiguousArray<Element?>(repeating: nil, count: minCount)
 	}
 
+	public var count: Int {
+		return _count
+	}
+
 	public func insert(_ element: Element, at index: Int) {
 		if needsToGrow(index) {
 			grow(including: index)
+		}
+		if _store[index] == nil {
+			_count += 1
 		}
 		_store[index] = element
 	}
@@ -48,6 +57,9 @@ public class ManagedContiguousArray: ManagedContiguousArrayProtocol {
 	}
 
 	public func remove(at index: Int) {
+		if _store[index] != nil {
+			_count -= 1
+		}
 		return _store[index] = nil
 	}
 

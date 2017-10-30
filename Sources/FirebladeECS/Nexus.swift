@@ -24,7 +24,7 @@ public class Nexus {
 
 	/// - Index: index value matching entity identifier shifted to Int
 	/// - Value: each element is a entity instance
-	var entities: Entities
+	var entityStorage: Entities
 
 	/// - Key: component type identifier
 	/// - Value: each element is a component instance of the same type (uniform). New component instances are appended.
@@ -42,11 +42,11 @@ public class Nexus {
 	var freeEntities: ContiguousArray<EntityIdentifier>
 
 	var familiyByTraitHash: [FamilyTraitSetHash: Family]
-	var familyMembersByTraitHash: [FamilyTraitSetHash: [EntityIdentifier]]
+	var familyMembersByTraitHash: [FamilyTraitSetHash: [EntityIdentifier]] // SparseSet for EntityIdentifier
 	var familyContainsEntityId: [TraitEntityIdHash: Bool]
 
 	public init() {
-		entities = Entities()
+		entityStorage = Entities()
 		componentsByType = [:]
 		componentIdsByEntity = [:]
 		componentIdsByEntityLookup = [:]

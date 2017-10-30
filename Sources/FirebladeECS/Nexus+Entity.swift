@@ -7,9 +7,13 @@
 
 extension Nexus {
 
+	public var entities: [Entity] {
+		return entityStorage.filter { $0.isValid }
+	}
+
 	fileprivate func nextEntityIdx() -> EntityIndex {
 		guard let nextReused: EntityIdentifier = freeEntities.popLast() else {
-			return entities.count
+			return entityStorage.count
 		}
 		return nextReused.index
 	}
@@ -17,8 +21,8 @@ extension Nexus {
 	public func create(entity name: String? = nil) -> Entity {
 		let newEntityIndex: EntityIndex = nextEntityIdx()
 		let newEntityIdentifier: EntityIdentifier = newEntityIndex.identifier
-		if entities.count > newEntityIndex {
-			let reusedEntity: Entity = entities[newEntityIndex]
+		if entityStorage.count > newEntityIndex {
+			let reusedEntity: Entity = entityStorage[newEntityIndex]
 			assert(reusedEntity.identifier == EntityIdentifier.invalid, "Stil valid entity \(reusedEntity)")
 			reusedEntity.identifier = newEntityIdentifier
 			reusedEntity.name = name
@@ -26,15 +30,15 @@ extension Nexus {
 			return reusedEntity
 		} else {
 			let newEntity = Entity(nexus: self, id: newEntityIdentifier, name: name)
-			entities.insert(newEntity, at: newEntityIndex)
+			entityStorage.insert(newEntity, at: newEntityIndex)
 			notify(EntityCreated(entityId: newEntityIdentifier))
 			return newEntity
 		}
 	}
 
 	/// Number of entities in nexus.
-	public var count: Int {
-		return entities.count - freeEntities.count
+	public var numEntities: Int {
+		return entityStorage.count - freeEntities.count
 	}
 
 	func isValid(entity: Entity) -> Bool {
@@ -44,7 +48,7 @@ extension Nexus {
 	func isValid(entity entitiyId: EntityIdentifier) -> Bool {
 		return entitiyId != EntityIdentifier.invalid &&
 			entitiyId.index >= 0 &&
-			entitiyId.index < entities.count
+			entitiyId.index < entityStorage.count
 	}
 
 	public func has(entity entityId: EntityIdentifier) -> Bool {
@@ -52,7 +56,7 @@ extension Nexus {
 	}
 
 	public func get(entity entityId: EntityIdentifier) -> Entity {
-		return entities[entityId.index]
+		return entityStorage[entityId.index]
 	}
 
 	@discardableResult
@@ -70,7 +74,7 @@ extension Nexus {
 
 		// replace with "new" invalid entity to keep capacity of array
 		let invalidEntity = Entity(nexus: self, id: EntityIdentifier.invalid)
-		entities[entityId.index] = invalidEntity
+		entityStorage[entityId.index] = invalidEntity
 
 		freeEntities.append(entityId)
 

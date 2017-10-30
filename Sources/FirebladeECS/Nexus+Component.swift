@@ -7,6 +7,14 @@
 
 extension Nexus {
 
+	public var numComponents: Int {
+		var count = 0
+		for (_, value) in componentsByType {
+			count += value._count
+		}
+		return count
+	}
+
 	public func has(componentId: ComponentIdentifier, entityIdx: EntityIndex) -> Bool {
 		guard let uniforms = componentsByType[componentId] else { return false }
 		return uniforms.has(entityIdx)

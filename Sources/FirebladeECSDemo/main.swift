@@ -1,13 +1,23 @@
 import CSDL2
 import FirebladeECS
+var tFrame = Timer()
 var tSetup = Timer()
 tSetup.start()
 if SDL_Init(SDL_INIT_VIDEO) != 0 {
 	fatalError("could not init video")
 }
+
+var frameCount: UInt = 0
+var fps: Double = 0
+let nexus = Nexus()
+
+var windowTitle: String {
+	return "Fireblade ECS demo: [entities: \(nexus.numEntities), components: \(nexus.numComponents)] @ [FPS: \(fps), frames: \(frameCount)]"
+}
 let width: Int32 = 640
 let height: Int32 = 480
-let hWin = SDL_CreateWindow("Fireblade ECS demo", 100, 100, width, height, SDL_WINDOW_SHOWN.rawValue)
+let hWin = SDL_CreateWindow(windowTitle, 100, 100, width, height, SDL_WINDOW_SHOWN.rawValue)
+
 if hWin == nil {
 	SDL_Quit()
 	fatalError("could not crate window")
@@ -21,8 +31,6 @@ func randNorm() -> Double {
 func randColor() -> UInt8 {
 	return UInt8(randNorm() * 254) + 1
 }
-
-let nexus = Nexus()
 
 class Position: Component {
 	var x: Int32 = width/2
@@ -39,20 +47,43 @@ func createScene() {
 	let numEntities: Int = 10_000
 
 	for i in 0..<numEntities {
-		let e = nexus.create(entity: "\(i)")
-		e.assign(Position())
-		e.assign(Color())
+		createDefaultEntity(name: "\(i)")
 	}
+}
+
+func batchCreateEntities(count: Int) {
+	for _ in 0..<count {
+		createDefaultEntity(name: nil)
+	}
+}
+
+func batchDestroyEntities(count: Int) {
+
+	var i = count
+	for entity in nexus.entities {
+		if nexus.destroy(entity: entity) {
+			i -= 1
+			if i == 0 {
+				return
+			}
+		}
+	}
+}
+
+func createDefaultEntity(name: String?) {
+	let e = nexus.create(entity: name)
+	e.assign(Position())
+	e.assign(Color())
 }
 
 class PositionSystem {
 	let family = nexus.family(requiresAll: [Position.self], excludesAll: [])
-	var acceleration: Double = 4.0
+	var velocity: Double = 4.0
 	func update() {
 		family.iterate(components: Position.self) { [unowned self](_, pos) in
 
-			let deltaX: Double = self.acceleration*((randNorm() * 2) - 1)
-			let deltaY: Double = self.acceleration*((randNorm() * 2) - 1)
+			let deltaX: Double = self.velocity*((randNorm() * 2) - 1)
+			let deltaY: Double = self.velocity*((randNorm() * 2) - 1)
 			var x = pos!.x + Int32(deltaX)
 			var y = pos!.y + Int32(deltaY)
 
@@ -142,6 +173,10 @@ func printHelp() {
 	+		increase movement speed
 	-		reduce movement speed
 	space	reset to default movement speed
+	e		create 1 entity
+	d		destroy 1 entity
+	8		batch create 10k entities
+	9		batch destroy 10k entities
 	"""
 	print(help)
 }
@@ -155,8 +190,12 @@ printHelp()
 tRun.start()
 var event: SDL_Event = SDL_Event()
 var quit: Bool = false
+var currentTime: UInt32 = 0
+var lastTime: UInt32 = 0
+var frameTimes: [UInt64] = []
 print("================ RUNNING ================")
 while quit == false {
+	tFrame.start()
 	while SDL_PollEvent(&event) == 1 {
 		switch SDL_EventType(rawValue: event.type) {
 		case SDL_QUIT:
@@ -172,13 +211,21 @@ while quit == false {
 			case SDLK_r:
 				positionResetSystem.update()
 			case SDLK_s:
-				positionSystem.acceleration = 0.0
+				positionSystem.velocity = 0.0
 			case SDLK_PLUS:
-				positionSystem.acceleration += 0.1
+				positionSystem.velocity += 0.1
 			case SDLK_MINUS:
-				positionSystem.acceleration -= 0.1
+				positionSystem.velocity -= 0.1
 			case SDLK_SPACE:
-				positionSystem.acceleration = 4.0
+				positionSystem.velocity = 4.0
+			case SDLK_e:
+				batchCreateEntities(count: 1)
+			case SDLK_d:
+				batchDestroyEntities(count: 1)
+			case SDLK_8:
+				batchCreateEntities(count: 10_000)
+			case SDLK_9:
+				batchDestroyEntities(count: 10_000)
 			default:
 				break
 			}
@@ -190,6 +237,28 @@ while quit == false {
 	positionSystem.update()
 
 	renderSystem.render()
+	tFrame.stop()
+
+	frameTimes.append(tFrame.nanoSeconds)
+
+	// Print a report once per second
+	currentTime = SDL_GetTicks()
+	if (currentTime > lastTime + 1000) {
+
+		let count = UInt(frameTimes.count)
+		frameCount += count
+		let sum: UInt64 = frameTimes.reduce(0, { $0 + $1 })
+		frameTimes.removeAll(keepingCapacity: true)
+
+		let avergageNanos: Double = Double(sum)/Double(count)
+
+		fps = 1.0 / (avergageNanos * 1.0e-9)
+		fps.round()
+
+		SDL_SetWindowTitle(hWin, windowTitle)
+		lastTime = currentTime
+	}
+	tFrame.reset()
 }
 
 SDL_DestroyWindow(hWin)

@@ -71,7 +71,7 @@ extension Nexus {
 		assert(replaced == nil, "Family with exact trait hash already exists: \(traitHash)")
 
 		// FIXME: this is costly for many entities
-		for entity: Entity in entities {
+		for entity: Entity in entityStorage {
 			update(membership: family, for: entity.identifier)
 		}
 

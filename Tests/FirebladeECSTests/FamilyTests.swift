@@ -74,7 +74,7 @@ class FamilyTests: XCTestCase {
 		let family = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [Party.self], needsAtLeastOne: [Name.self, EmptyComponent.self])
 
 		XCTAssert(family.count == number)
-		XCTAssert(nexus.count == number)
+		XCTAssert(nexus.numEntities == number)
 
 		measure {
 			family.iterateMembers({ (entityId) in
@@ -94,7 +94,7 @@ class FamilyTests: XCTestCase {
 		let family = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [Party.self], needsAtLeastOne: [Name.self, EmptyComponent.self])
 
 		XCTAssert(family.count == number)
-		XCTAssert(nexus.count == number)
+		XCTAssert(nexus.numEntities	== number)
 
 		measure {
 			family.iterate(components: Velocity.self) { (_, vel) in
@@ -115,7 +115,7 @@ class FamilyTests: XCTestCase {
 		let family = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [Party.self], needsAtLeastOne: [Name.self, EmptyComponent.self])
 
 		XCTAssert(family.count == number)
-		XCTAssert(nexus.count == number)
+		XCTAssert(nexus.numEntities == number)
 
 		measure {
 			family.iterate(components: Position.self, Velocity.self, Name.self) { (entityId, pos, vel, nm) in

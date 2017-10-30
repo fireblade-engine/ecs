@@ -39,23 +39,24 @@ extension Nexus {
 		return family.traits.isMatch(components: componentSet)
 	}
 
-	public func members(of family: Family) -> EntityIdSet {
+	public func members(of family: Family) -> [EntityIdentifier] {
 		let traitHash: FamilyTraitSetHash = family.traits.hashValue
 		return familyMembersByTraitHash[traitHash] ?? [] // FIXME: fail?
 	}
-
-	/*public func members(of family: Family) -> LazyMapCollection<LazyFilterCollection<LazyMapCollection<EntityIdSet, Entity?>>, Entity> {
-		return members(of: family).lazy.flatMap { self.get(entity: $0) }
-	}*/
 
 	public func isMember(_ entity: Entity, in family: Family) -> Bool {
 		return isMember(entity.identifier, in: family)
 	}
 
+	public func isMember(byHash traitSetEntityIdHash: TraitEntityIdHash) -> Bool {
+		return familyContainsEntityId[traitSetEntityIdHash] ?? false
+	}
+
 	public func isMember(_ entityId: EntityIdentifier, in family: Family) -> Bool {
 		let traitHash: FamilyTraitSetHash = family.traits.hashValue
-		// FIXME: this may be costly for many entities in family
-		return familyMembersByTraitHash[traitHash]?.contains(entityId) ?? false
+		// FIXME: this is costly!
+		guard let members: [EntityIdentifier] = familyMembersByTraitHash[traitHash] else { return false }
+		return members.contains(entityId)
 	}
 
 	fileprivate func get(family traits: FamilyTraitSet) -> Family? {
@@ -82,44 +83,57 @@ extension Nexus {
 
 	// MARK: - update family membership
 
+	fileprivate func calculateTraitEntityIdHash(traitHash: FamilyTraitSetHash, entityIdx: EntityIndex) -> TraitEntityIdHash {
+		return hash(combine: traitHash, entityIdx)
+	}
+
 	func update(membership family: Family, for entityId: EntityIdentifier) {
 		let entityIdx: EntityIndex = entityId.index
+		let traitHash: FamilyTraitSetHash = family.traits.hashValue
 		guard let componentIds: ComponentIdentifiers = componentIdsByEntity[entityIdx] else { return }
-		// FIXME: bottle neck
+
+		let trash: TraitEntityIdHash = calculateTraitEntityIdHash(traitHash: traitHash, entityIdx: entityIdx)
+		let is_Member: Bool = isMember(byHash: trash)
+
 		let componentsSet: ComponentSet = ComponentSet.init(componentIds)
-		let isMember: Bool = family.isMember(entityId)
 		let isMatch: Bool = family.traits.isMatch(components: componentsSet)
-		switch (isMatch, isMember) {
+		switch (isMatch, is_Member) {
 		case (true, false):
-			add(to: family, entityId: entityId)
+			add(to: family, entityId: entityId, with: trash)
 		case (false, true):
-			remove(from: family, entityId: entityId)
+			remove(from: family, entityId: entityId, with: trash)
 		default:
 			break
 		}
 	}
 
-	fileprivate func add(to family: Family, entityId: EntityIdentifier) {
+	fileprivate func add(to family: Family, entityId: EntityIdentifier, with traitEntityIdHash: TraitEntityIdHash) {
 		let traitHash: FamilyTraitSetHash = family.traits.hashValue
-
 		if familyMembersByTraitHash[traitHash] != nil {
-			familyMembersByTraitHash[traitHash]?.insert(entityId)
+			// here we already checked if entity is a member
+			familyMembersByTraitHash[traitHash]!.append(entityId)
 		} else {
-			familyMembersByTraitHash[traitHash] = EntityIdSet(arrayLiteral: entityId)
+			familyMembersByTraitHash[traitHash] = [EntityIdentifier].init(arrayLiteral: entityId)
+			familyMembersByTraitHash.reserveCapacity(4096)
 		}
+
+		familyContainsEntityId[traitEntityIdHash] = true
 
 		notify(FamilyMemberAdded(member: entityId, to: family.traits))
 	}
 
-	fileprivate func remove(from family: Family, entityId: EntityIdentifier) {
+	fileprivate func remove(from family: Family, entityId: EntityIdentifier, with traitEntityIdHash: TraitEntityIdHash) {
 		let traitHash: FamilyTraitSetHash = family.traits.hashValue
 
-		guard let removed: EntityIdentifier = familyMembersByTraitHash[traitHash]?.remove(entityId) else {
+		// FIXME: index of is not cheep
+		guard let indexInFamily = familyMembersByTraitHash[traitHash]?.index(of: entityId) else {
 			assert(false, "removing entity id \(entityId) that is not in family \(family)")
 			report("removing entity id \(entityId) that is not in family \(family)")
 			return
 		}
 
+		let removed: EntityIdentifier = familyMembersByTraitHash[traitHash]!.remove(at: indexInFamily)
+		familyContainsEntityId[traitEntityIdHash] = false
 		notify(FamilyMemberRemoved(member: removed, from: family.traits))
 	}
 

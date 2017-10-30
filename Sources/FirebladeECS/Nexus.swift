@@ -42,7 +42,8 @@ public class Nexus {
 	var freeEntities: ContiguousArray<EntityIdentifier>
 
 	var familiyByTraitHash: [FamilyTraitSetHash: Family]
-	var familyMembersByTraitHash: [FamilyTraitSetHash: EntityIdSet]
+	var familyMembersByTraitHash: [FamilyTraitSetHash: [EntityIdentifier]]
+	var familyContainsEntityId: [TraitEntityIdHash: Bool]
 
 	public init() {
 		entities = Entities()
@@ -52,6 +53,7 @@ public class Nexus {
 		freeEntities = ContiguousArray<EntityIdentifier>()
 		familiyByTraitHash = [:]
 		familyMembersByTraitHash = [:]
+		familyContainsEntityId = [:]
 	}
 
 }

@@ -34,7 +34,7 @@ extension Nexus {
 		if componentsByType[componentId] != nil {
 			componentsByType[componentId]!.insert(component, at: entityIdx)
 		} else {
-			componentsByType[componentId] = UniformComponents(minEntityCount: entities.count)
+			componentsByType[componentId] = UniformComponents()
 			componentsByType[componentId]!.insert(component, at: entityIdx)
 		}
 
@@ -63,7 +63,7 @@ extension Nexus {
 
 	public func get(component componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
 		guard let uniformComponents: UniformComponents = componentsByType[componentId] else { return nil }
-		return uniformComponents.get(at: entityId.index)
+		return uniformComponents.get(at: entityId.index) as? Component
 	}
 
 	public func get<C>(for entityId: EntityIdentifier) -> C? where C: Component {

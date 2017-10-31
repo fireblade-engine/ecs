@@ -162,12 +162,4 @@ class NexusTests: XCTestCase {
 
 	}
 
-	func testComponentStorage() {
-		let nexus = Nexus()
-		let a = nexus.create()
-		let b = nexus.create()
-		let c = nexus.create()
-
-	}
-
 }

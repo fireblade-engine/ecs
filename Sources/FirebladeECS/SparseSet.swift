@@ -5,8 +5,10 @@
 //  Created by Christian Treffs on 30.10.17.
 //
 
-public class SparseComponentSet {
-	public typealias Element = Component
+public class SparseSet: UniformStorage {
+
+	public typealias Element = Any
+	public typealias Index = Int
 	fileprivate typealias ComponentIdx = Int
 	fileprivate var size: Int = 0
 	fileprivate var dense: ContiguousArray<Pair?>
@@ -26,42 +28,37 @@ public class SparseComponentSet {
 	internal var capacitySparse: Int { return sparse.capacity }
 	internal var capacityDense: Int { return dense.capacity }
 
-	public func contains(_ entityIdx: EntityIndex ) -> Bool {
-		return sparse[entityIdx] != nil &&
-			sparse[entityIdx]! < count &&
-			dense[sparse[entityIdx]!] != nil
+	public func has(_ index: EntityIndex) -> Bool {
+		return sparse[index] ?? Int.max < count &&
+			dense[sparse[index]!] != nil
 	}
 
-	@discardableResult
-	public func add(_ element: Element, with entityIdx: EntityIndex ) -> Bool {
-		if contains(entityIdx) { return false }
-		sparse[entityIdx] = count
-		let entry: Pair = Pair(key: entityIdx, value: element)
+	public func add(_ element: Element, at index: EntityIndex) {
+		if has(index) { return }
+		sparse[index] = count
+		let entry: Pair = Pair(key: index, value: element)
 		dense.append(entry)
 		size += 1
-		return true
 	}
 
 	public func get(at entityIdx: EntityIndex) -> Element? {
-		guard contains(entityIdx) else { return nil }
+		guard has(entityIdx) else { return nil }
 		return dense[sparse[entityIdx]!]!.value
 	}
 
-	@discardableResult
-	public func remove(_ entityIdx: EntityIndex ) -> Element? {
-		guard contains(entityIdx) else { return nil }
-		let compIdx: ComponentIdx = sparse[entityIdx]!
+	public func remove(at index: EntityIndex) {
+		guard has(index) else { return }
+		let compIdx: ComponentIdx = sparse[index]!
 		let lastIdx: ComponentIdx = count-1
 		dense.swapAt(compIdx, lastIdx)
-		sparse[entityIdx] = nil
+		sparse[index] = nil
 		let swapped: Pair = dense[compIdx]!
 		sparse[swapped.key] = compIdx
-		let removed: Pair = dense.popLast()!!
+		_ = dense.popLast()!!
 		size -= 1
 		if size == 0 {
 			clear(keepingCapacity: false)
 		}
-		return removed.value
 	}
 
 	public func clear(keepingCapacity: Bool = false) {
@@ -72,7 +69,7 @@ public class SparseComponentSet {
 
 }
 
-extension SparseComponentSet: Sequence {
+extension SparseSet: Sequence {
 
 	public func makeIterator() -> AnyIterator<Element> {
 		var iterator = dense.makeIterator()
@@ -80,4 +77,9 @@ extension SparseComponentSet: Sequence {
 			iterator.next()??.value
 		}
 	}
+}
+
+public class SparseComponentSet: SparseSet {
+	public typealias Element = Component
+	public typealias Index = EntityIndex
 }

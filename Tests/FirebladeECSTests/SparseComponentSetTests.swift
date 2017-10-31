@@ -16,7 +16,7 @@ class SparseComponentSetTests: XCTestCase {
 		let num: Int = 100
 
 		for i in 0..<num {
-			s.add(Position(x: i, y: i), with: EntityIndex(i))
+			s.add(Position(x: i, y: i), at: EntityIndex(i))
 		}
 
 		XCTAssert(s.count == num)
@@ -28,7 +28,7 @@ class SparseComponentSetTests: XCTestCase {
 		}
 
 		for i in 0..<num {
-			s.remove(EntityIndex(i))
+			s.remove(at: EntityIndex(i))
 		}
 
 		XCTAssert(s.count == 0)

@@ -9,7 +9,7 @@
 public typealias EntityComponentHash = Int
 public typealias ComponentIdsByEntityIndex = Int
 public typealias ComponentTypeHash = Int // component object identifier hash value
-
+//public typealias UniformComponents = SparseComponentSet
 public typealias UniformComponents = ContiguousComponentArray
 public typealias ComponentIdentifiers = ContiguousArray<ComponentIdentifier>
 public typealias ComponentSet = Set<ComponentIdentifier>
@@ -28,7 +28,7 @@ public class Nexus {
 
 	/// - Key: component type identifier
 	/// - Value: each element is a component instance of the same type (uniform). New component instances are appended.
-	var componentsByType: [ComponentIdentifier: SparseComponentSet]
+	var componentsByType: [ComponentIdentifier: UniformComponents]
 
 	/// - Key: entity id as index
 	/// - Value: each element is a component identifier associated with this entity

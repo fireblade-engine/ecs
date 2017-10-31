@@ -5,54 +5,91 @@
 //  Created by Christian Treffs on 30.10.17.
 //
 
-public struct SparseComponentSet<Element: Component> {
+public class SparseComponentSet {
+	public typealias Element = Component
+	public let chunkSize: Int = 4096
 	fileprivate typealias ComponentIdx = Int
-	fileprivate typealias EntryTuple = (entityId: EntityIdentifier, component: Element)
-	fileprivate var dense: ContiguousArray<EntryTuple?>
-	fileprivate var sparse: [EntityIdentifier: ComponentIdx]
+	fileprivate var size: Int = 0
 
-	public init(_ min: Int = 1024) {
-		dense = ContiguousArray<EntryTuple?>()
-		dense.reserveCapacity(min)
-
-		sparse = [EntityIdentifier: ComponentIdx](minimumCapacity: min)
+	fileprivate class Pair {
+		let key: EntityIndex
+		let value: Element
+		init(key: EntityIndex, value: Element) {
+			self.key = key
+			self.value = value
+		}
 	}
 
-	public var count: Int { return dense.count }
+	fileprivate var dense: ContiguousArray<Pair?>
+	fileprivate var sparse: [EntityIndex: ComponentIdx]
+
+	public init() {
+		dense = ContiguousArray<Pair?>()
+		dense.reserveCapacity(chunkSize)
+		sparse = [EntityIndex: ComponentIdx].init(minimumCapacity: chunkSize)
+	}
+
+	public var count: Int { return size }
 	internal var capacitySparse: Int { return sparse.count }
 	internal var capacityDense: Int { return dense.count }
 
-	public func contains(_ entityId: EntityIdentifier) -> Bool {
-		guard let compIdx: ComponentIdx = sparse[entityId] else { return false }
+	public func contains(_ entityIdx: EntityIndex ) -> Bool {
+		guard let compIdx: ComponentIdx = sparse[entityIdx] else { return false }
 		return compIdx < count && dense[compIdx] != nil
 	}
 
 	@discardableResult
-	public mutating func add(_ element: Element, with entityId: EntityIdentifier) -> Bool {
-		if contains(entityId) { return false }
-		sparse[entityId] = count
-		let entry: EntryTuple = EntryTuple(entityId: entityId, component: element)
+	public func add(_ element: Element, with entityIdx: EntityIndex ) -> Bool {
+		if contains(entityIdx) { return false }
+		if needsToGrow(entityIdx) {
+			grow(including: entityIdx)
+		}
+		sparse[entityIdx] = count
+		let entry: Pair = Pair(key: entityIdx, value: element)
 		dense.append(entry)
+		size += 1
 		return true
 	}
 
-	public func get(_ entityId: EntityIdentifier) -> Element? {
-		guard let compIdx: ComponentIdx = sparse[entityId] else { return nil }
-		return dense[compIdx]?.component
+	public func get(at entityIdx: EntityIndex) -> Element? {
+		guard let compIdx: ComponentIdx = sparse[entityIdx] else { return nil }
+		return dense[compIdx]!.value
 	}
 
-	public mutating func remove(_ entityId: EntityIdentifier) -> Element? {
-		guard let compIdx: ComponentIdx = sparse[entityId] else { return nil }
-		dense.swapAt(compIdx, count-1)
-		sparse[entityId] = nil
-		let swapped: EntryTuple = dense[compIdx]!
-		sparse[swapped.entityId] = compIdx
-		let removed: EntryTuple = dense.popLast()!!
-		return removed.component
+	@discardableResult
+	public func remove(_ entityIdx: EntityIndex ) -> Element? {
+		guard let compIdx: ComponentIdx = sparse[entityIdx] else { return nil }
+		let last: Int = count-1
+		dense.swapAt(compIdx, last)
+		sparse[entityIdx] = nil
+		let swapped: Pair = dense[compIdx]!
+		sparse[swapped.key] = compIdx
+		let removed: Pair = dense.popLast()!!
+		size -= 1
+		return removed.value
 	}
 
-	public mutating func clear(keepingCapacity: Bool = false) {
+	public func clear(keepingCapacity: Bool = false) {
 		dense.removeAll(keepingCapacity: keepingCapacity)
+	}
+
+	fileprivate func needsToGrow(_ index: Int) -> Bool {
+		return index > count - 1
+	}
+
+	fileprivate func grow(including index: Int) {
+		let newCapacity: Int = nearest(to: index)
+		//let newCount: Int = newCapacity-count
+		dense.reserveCapacity(newCapacity)
+		/*for _ in 0..<newCount {
+			dense.append(nil)
+		}*/
+	}
+
+	fileprivate func nearest(to index: Int) -> Int {
+		let delta = Float(index) / Float(chunkSize)
+		let multiplier = Int(delta) + 1
+		return multiplier * chunkSize
 	}
 }
 
@@ -62,7 +99,7 @@ extension SparseComponentSet: Sequence {
 		var iterator = dense.makeIterator()
 
 		return AnyIterator<Element> {
-			iterator.next()??.component
+			iterator.next()??.value
 		}
 	}
 }

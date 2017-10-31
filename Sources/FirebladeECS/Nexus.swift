@@ -28,7 +28,7 @@ public class Nexus {
 
 	/// - Key: component type identifier
 	/// - Value: each element is a component instance of the same type (uniform). New component instances are appended.
-	var componentsByType: [ComponentIdentifier: UniformComponents]
+	var componentsByType: [ComponentIdentifier: SparseComponentSet]
 
 	/// - Key: entity id as index
 	/// - Value: each element is a component identifier associated with this entity

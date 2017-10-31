@@ -9,15 +9,15 @@ extension Nexus {
 
 	public var numComponents: Int {
 		var count = 0
-		for (_, value) in componentsByType {
-			count += value._count
+		for (_, uniformComps) in componentsByType {
+			count += uniformComps.count
 		}
 		return count
 	}
 
 	public func has(componentId: ComponentIdentifier, entityIdx: EntityIndex) -> Bool {
 		guard let uniforms = componentsByType[componentId] else { return false }
-		return uniforms.has(entityIdx)
+		return uniforms.contains(entityIdx)
 	}
 
 	public func count(components entityId: EntityIdentifier) -> Int {
@@ -40,10 +40,10 @@ extension Nexus {
 			return
 		}
 		if componentsByType[componentId] != nil {
-			componentsByType[componentId]!.insert(component, at: entityIdx)
+			componentsByType[componentId]!.add(component, with: entityIdx)
 		} else {
-			componentsByType[componentId] = UniformComponents()
-			componentsByType[componentId]!.insert(component, at: entityIdx)
+			componentsByType[componentId] = SparseComponentSet()
+			componentsByType[componentId]!.add(component, with: entityIdx)
 		}
 
 		// assigns the component id to the entity id
@@ -70,8 +70,8 @@ extension Nexus {
 	}
 
 	public func get(component componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
-		guard let uniformComponents: UniformComponents = componentsByType[componentId] else { return nil }
-		return uniformComponents.get(at: entityId.index) as? Component
+		guard let uniformComponents: SparseComponentSet = componentsByType[componentId] else { return nil }
+		return uniformComponents.get(at: entityId.index)
 	}
 
 	public func get<C>(for entityId: EntityIdentifier) -> C? where C: Component {
@@ -80,7 +80,7 @@ extension Nexus {
 	}
 
 	fileprivate func get<C>(componentId: ComponentIdentifier, entityIdx: EntityIndex) -> C? where C: Component {
-		guard let uniformComponents: UniformComponents = componentsByType[componentId] else { return nil }
+		guard let uniformComponents: SparseComponentSet = componentsByType[componentId] else { return nil }
 		return uniformComponents.get(at: entityIdx) as? C
 	}
 
@@ -90,10 +90,11 @@ extension Nexus {
 
 	@discardableResult
 	public func remove(component componentId: ComponentIdentifier, from entityId: EntityIdentifier) -> Bool {
-		let hash: EntityComponentHash = componentId.hashValue(using: entityId.index)
+		let entityIdx: EntityIndex = entityId.index
+		let hash: EntityComponentHash = componentId.hashValue(using: entityIdx)
 
 		// MARK: delete component instance
-		componentsByType[componentId]?.remove(at: entityId.index)
+		componentsByType[componentId]?.remove(entityIdx)
 
 		// MARK: unassign component
 		guard let removeIndex: ComponentIdsByEntityIndex = componentIdsByEntityLookup.removeValue(forKey: hash) else {
@@ -101,17 +102,17 @@ extension Nexus {
 			return false
 		}
 
-		guard componentIdsByEntity[entityId.index]?.remove(at: removeIndex) != nil else {
+		guard componentIdsByEntity[entityIdx]?.remove(at: removeIndex) != nil else {
 			assert(false, "ComponentRemove failure: nothing was removed")
 			report("ComponentRemove failure: nothing was removed")
 			return false
 		}
 
 		// relocate remaining indices pointing in the componentsByEntity map
-		if let remainingComponents: ComponentIdentifiers = componentIdsByEntity[entityId.index] {
+		if let remainingComponents: ComponentIdentifiers = componentIdsByEntity[entityIdx] {
 			// FIXME: may be expensive but is cheap for small entities
 			for (index, compId) in remainingComponents.enumerated() {
-				let cHash: EntityComponentHash = compId.hashValue(using: entityId.index)
+				let cHash: EntityComponentHash = compId.hashValue(using: entityIdx)
 				assert(cHash != hash)
 				componentIdsByEntityLookup[cHash] = index
 			}

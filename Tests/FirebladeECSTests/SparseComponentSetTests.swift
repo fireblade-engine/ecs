@@ -6,27 +6,31 @@
 //
 
 import XCTest
-import FirebladeECS
+@testable import FirebladeECS
 
 class SparseComponentSetTests: XCTestCase {
 
 	func testSet() {
-		var s = SparseComponentSet<Position>()
+		let s = SparseComponentSet()
 
-		s.add(Position(x: 1, y: 2), with: 0)
-		s.add(Position(x: 13, y: 23), with: 13)
-		s.add(Position(x: 123, y: 123), with: 123)
+		let num: Int = 100
 
-		for p in s {
-			print(p.x, p.y)
+		for i in 0..<num {
+			s.add(Position(x: i, y: i), with: EntityIndex(i))
 		}
 
-		s.remove(13)
+		XCTAssert(s.count == num)
 
-		for p in s {
-			print(p.x, p.y)
+		for i in 0..<num {
+			let idx = num-i-1
+			let p: Position = s.get(at: idx) as! Position
+			XCTAssertEqual(idx, p.x)
 		}
 
-		s.remove(234567890)
+		for i in 0..<num {
+			s.remove(EntityIndex(i))
+		}
+
+		XCTAssert(s.count == 0)
 	}
 }

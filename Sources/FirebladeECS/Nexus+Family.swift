@@ -39,24 +39,19 @@ extension Nexus {
 		return family.traits.isMatch(components: componentSet)
 	}
 
-	public func members(of family: Family) -> [EntityIdentifier] {
+	public func members(of family: Family) -> UniformEntityIdentifiers {
 		let traitHash: FamilyTraitSetHash = family.traits.hashValue
-		return familyMembersByTraitHash[traitHash] ?? [] // FIXME: fail?
+		return familyMembersByTraitHash[traitHash] ?? UniformEntityIdentifiers() // FIXME: fail?
 	}
 
 	public func isMember(_ entity: Entity, in family: Family) -> Bool {
 		return isMember(entity.identifier, in: family)
 	}
 
-	public func isMember(byHash traitSetEntityIdHash: TraitEntityIdHash) -> Bool {
-		return familyContainsEntityId[traitSetEntityIdHash] ?? false
-	}
-
 	public func isMember(_ entityId: EntityIdentifier, in family: Family) -> Bool {
 		let traitHash: FamilyTraitSetHash = family.traits.hashValue
-		// FIXME: this is costly!
-		guard let members: [EntityIdentifier] = familyMembersByTraitHash[traitHash] else { return false }
-		return members.contains(entityId)
+		guard let members: UniformEntityIdentifiers = familyMembersByTraitHash[traitHash] else { return false }
+		return members.has(entityId.index)
 	}
 
 	fileprivate func get(family traits: FamilyTraitSet) -> Family? {
@@ -89,52 +84,35 @@ extension Nexus {
 
 	func update(membership family: Family, for entityId: EntityIdentifier) {
 		let entityIdx: EntityIndex = entityId.index
-		let traitHash: FamilyTraitSetHash = family.traits.hashValue
+		let traits: FamilyTraitSet = family.traits
+		let traitHash: FamilyTraitSetHash = traits.hashValue
 		guard let componentIds: ComponentIdentifiers = componentIdsByEntity[entityIdx] else { return }
 
-		let trash: TraitEntityIdHash = calculateTraitEntityIdHash(traitHash: traitHash, entityIdx: entityIdx)
-		let is_Member: Bool = isMember(byHash: trash)
+		let is_Member: Bool = isMember(entityId, in: family)
 
 		let componentsSet: ComponentSet = ComponentSet.init(componentIds)
-		let isMatch: Bool = family.traits.isMatch(components: componentsSet)
+		let isMatch: Bool = traits.isMatch(components: componentsSet)
 		switch (isMatch, is_Member) {
 		case (true, false):
-			add(to: family, entityId: entityId, with: trash)
+			add(to: traitHash, entityId: entityId, entityIdx: entityIdx)
+			notify(FamilyMemberAdded(member: entityId, to: traits))
 		case (false, true):
-			remove(from: family, entityId: entityId, with: trash)
+			remove(from: traitHash, entityId: entityId, entityIdx: entityIdx)
+			notify(FamilyMemberRemoved(member: entityId, from: traits))
 		default:
 			break
 		}
 	}
 
-	fileprivate func add(to family: Family, entityId: EntityIdentifier, with traitEntityIdHash: TraitEntityIdHash) {
-		let traitHash: FamilyTraitSetHash = family.traits.hashValue
-		if familyMembersByTraitHash[traitHash] != nil {
-			// here we already checked if entity is a member
-			familyMembersByTraitHash[traitHash]!.append(entityId)
-		} else {
-			familyMembersByTraitHash[traitHash] = [EntityIdentifier].init(arrayLiteral: entityId)
-			familyMembersByTraitHash.reserveCapacity(4096)
+	fileprivate func add(to traitHash: FamilyTraitSetHash, entityId: EntityIdentifier, entityIdx: EntityIndex) {
+		if familyMembersByTraitHash[traitHash] == nil {
+			familyMembersByTraitHash[traitHash] = UniformEntityIdentifiers()
 		}
-
-		familyContainsEntityId[traitEntityIdHash] = true
-
-		notify(FamilyMemberAdded(member: entityId, to: family.traits))
+		familyMembersByTraitHash[traitHash]!.add(entityId, at: entityIdx)
 	}
 
-	fileprivate func remove(from family: Family, entityId: EntityIdentifier, with traitEntityIdHash: TraitEntityIdHash) {
-		let traitHash: FamilyTraitSetHash = family.traits.hashValue
-
-		// FIXME: index of is not cheep
-		guard let indexInFamily = familyMembersByTraitHash[traitHash]?.index(of: entityId) else {
-			assert(false, "removing entity id \(entityId) that is not in family \(family)")
-			report("removing entity id \(entityId) that is not in family \(family)")
-			return
-		}
-
-		let removed: EntityIdentifier = familyMembersByTraitHash[traitHash]!.remove(at: indexInFamily)
-		familyContainsEntityId[traitEntityIdHash] = false
-		notify(FamilyMemberRemoved(member: removed, from: family.traits))
+	fileprivate func remove(from traitHash: FamilyTraitSetHash, entityId: EntityIdentifier, entityIdx: EntityIndex) {
+		familyMembersByTraitHash[traitHash]?.remove(at: entityIdx)
 	}
 
 }

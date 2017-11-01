@@ -11,6 +11,7 @@ public typealias ComponentIdsByEntityIndex = Int
 public typealias ComponentTypeHash = Int // component object identifier hash value
 //public typealias UniformComponents = SparseComponentSet
 public typealias UniformComponents = ContiguousComponentArray
+public typealias UniformEntityIdentifiers = SparseEntityIdentifierSet
 public typealias ComponentIdentifiers = ContiguousArray<ComponentIdentifier>
 public typealias ComponentSet = Set<ComponentIdentifier>
 public typealias Entities = ContiguousArray<Entity>
@@ -42,8 +43,7 @@ public class Nexus {
 	var freeEntities: ContiguousArray<EntityIdentifier>
 
 	var familiyByTraitHash: [FamilyTraitSetHash: Family]
-	var familyMembersByTraitHash: [FamilyTraitSetHash: [EntityIdentifier]] // SparseSet for EntityIdentifier
-	var familyContainsEntityId: [TraitEntityIdHash: Bool]
+	var familyMembersByTraitHash: [FamilyTraitSetHash: UniformEntityIdentifiers] // SparseSet for EntityIdentifier
 
 	public init() {
 		entityStorage = Entities()
@@ -53,7 +53,7 @@ public class Nexus {
 		freeEntities = ContiguousArray<EntityIdentifier>()
 		familiyByTraitHash = [:]
 		familyMembersByTraitHash = [:]
-		familyContainsEntityId = [:]
+
 	}
 
 }

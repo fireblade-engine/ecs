@@ -64,17 +64,24 @@ extension Nexus {
 		let family = Family(self, traits: traits)
 		let replaced = familiyByTraitHash.updateValue(family, forKey: traitHash)
 		assert(replaced == nil, "Family with exact trait hash already exists: \(traitHash)")
-
-		// FIXME: this is costly for many entities
-		for entity: Entity in entityStorage {
-			update(membership: family, for: entity.identifier)
-		}
-
 		notify(FamilyCreated(family: traits))
 		return family
 	}
 
-	// FIXME: remove families?!
+	/// will be called on family init defer
+	internal func onFamilyCreated(family: Family) {
+		// FIXME: this is costly for many entities
+		for entity: Entity in entityStorage {
+			update(membership: family, for: entity.identifier)
+		}
+	}
+
+	internal func onFamilyRemove(family: Family) {
+		let traitHash: FamilyTraitSetHash = family.traits.hashValue
+		for member in members(of: family) {
+			remove(from: traitHash, entityId: member, entityIdx: member.index)
+		}
+	}
 
 	// MARK: - update family membership
 

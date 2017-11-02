@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 08.10.17.
 //
 
-public protocol Component: class, UniqueComponentIdentifiable {}
+public protocol Component: class, UniqueComponentIdentifiable, Activatable {}
 
 // MARK: UCI
 extension Component {
@@ -13,6 +13,12 @@ extension Component {
 	public static var identifier: ComponentIdentifier { return ComponentIdentifier(Self.self) }
 	/// Uniquely identifies the component by its meta type
 	public var identifier: ComponentIdentifier { return Self.identifier }
+}
+
+// MARK: - activatable protocol
+extension Component {
+	public func activate() { /* default does nothing */ }
+	public func deactivate() { /* default does nothing */ }
 }
 
 // MARK: - entity component hashable

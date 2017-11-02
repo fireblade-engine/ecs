@@ -1,5 +1,5 @@
 //
-//  SparseComponentSetTests.swift
+//  SparseSetTests.swift
 //  FirebladeECSTests
 //
 //  Created by Christian Treffs on 31.10.17.
@@ -8,9 +8,9 @@
 import XCTest
 @testable import FirebladeECS
 
-class SparseComponentSetTests: XCTestCase {
+class SparseSetTests: XCTestCase {
 
-	func testSet() {
+	func testSparseComponentSet() {
 		let s = SparseComponentSet()
 
 		let num: Int = 100

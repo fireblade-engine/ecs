@@ -39,19 +39,19 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 		size += 1
 	}
 
-	public func get(at entityIdx: Index) -> Element? {
-		guard has(entityIdx) else { return nil }
-		return dense[sparse[entityIdx]!]!.value
+	public func get(at index: Index) -> Element? {
+		guard has(index) else { return nil }
+		return dense[sparse[index]!]!.value
 	}
 
 	public func remove(at index: Index) {
 		guard has(index) else { return }
-		let compIdx: DenseIndex = sparse[index]!
+		let removeIdx: DenseIndex = sparse[index]!
 		let lastIdx: DenseIndex = count-1
-		dense.swapAt(compIdx, lastIdx)
+		dense.swapAt(removeIdx, lastIdx)
 		sparse[index] = nil
-		let swapped: Pair = dense[compIdx]!
-		sparse[swapped.key] = compIdx
+		let swapped: Pair = dense[removeIdx]!
+		sparse[swapped.key] = removeIdx
 		_ = dense.popLast()!!
 		size -= 1
 		if size == 0 {

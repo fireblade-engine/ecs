@@ -10,25 +10,35 @@ public final class Entity: UniqueEntityIdentifiable {
 	internal(set) public var identifier: EntityIdentifier = EntityIdentifier.invalid
 	public var name: String?
 
-	internal let nexus: Nexus
+	internal unowned let delegate: Nexus
 
 	internal init(nexus: Nexus, id: EntityIdentifier, name: String? = nil) {
-		self.nexus = nexus
+		self.delegate = nexus
 		self.identifier = id
 		self.name = name
 	}
 
 }
 
+// MARK: - activatable protocol
+extension Entity: Activatable {
+	public func activate() {
+		//TODO: nexus.activate(entity: self)
+	}
+	public func deactivate() {
+		//TODO: nexus.deactivate(entity: self)
+	}
+}
+
 // MARK: - Invalidate
 extension Entity {
 
 	public var isValid: Bool {
-		return nexus.isValid(entity: self)
+		return delegate.isValid(entity: self)
 	}
 
 	internal func invalidate() {
-		assert(nexus.isValid(entity: identifier), "Invalid entity \(self) is being invalidated.")
+		assert(delegate.isValid(entity: identifier), "Invalid entity \(self) is being invalidated.")
 		identifier = EntityIdentifier.invalid
 		name = nil
 	}
@@ -42,7 +52,7 @@ public func ==(lhs: Entity, rhs: Entity) -> Bool {
 // MARK: - number of components
 public extension Entity {
 	public final var numComponents: Int {
-		return nexus.count(components: identifier)
+		return delegate.count(components: identifier)
 	}
 }
 
@@ -54,11 +64,11 @@ public extension Entity {
 	}
 
 	public final func has(_ uct: ComponentIdentifier) -> Bool {
-		return nexus.has(componentId: uct, entityIdx: identifier.index)
+		return delegate.has(componentId: uct, entityIdx: identifier.index)
 	}
 
 	public final var hasComponents: Bool {
-		return nexus.count(components: identifier) > 0
+		return delegate.count(components: identifier) > 0
 	}
 
 }
@@ -76,13 +86,13 @@ public extension Entity {
 
 	@discardableResult
 	public final func assign(_ component: Component) -> Entity {
-		nexus.assign(component: component, to: self)
+		delegate.assign(component: component, to: self)
 		return self
 	}
 
 	@discardableResult
 	public final func assign<C>(_ component: C) -> Entity where C: Component {
-		nexus.assign(component: component, to: self)
+		delegate.assign(component: component, to: self)
 		return self
 	}
 
@@ -112,12 +122,12 @@ public extension Entity {
 
 	@discardableResult
 	public final func remove(_ uct: ComponentIdentifier) -> Entity {
-		nexus.remove(component: uct, from: identifier)
+		delegate.remove(component: uct, from: identifier)
 		return self
 	}
 
 	public final func clear() {
-		nexus.clear(componentes: identifier)
+		delegate.clear(componentes: identifier)
 	}
 
 	@discardableResult
@@ -134,6 +144,6 @@ public extension Entity {
 // MARK: - destroy/deinit entity
 extension Entity {
 	public final func destroy() {
-		nexus.destroy(entity: self)
+		delegate.destroy(entity: self)
 	}
 }

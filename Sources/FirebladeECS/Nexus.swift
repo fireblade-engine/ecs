@@ -33,7 +33,7 @@ public class Nexus {
 
 	/// - Key: entity id as index
 	/// - Value: each element is a component identifier associated with this entity
-	var componentIdsByEntity: [EntityIndex: ComponentIdentifiers]
+	var componentIdsByEntity: [EntityIndex: ComponentIdentifiers] // TODO: sparse set?!
 
 	/// - Key 'entity id' - 'component type' hash that uniquely links both
 	/// - Value: each element is an index pointing to the component identifier per entity in the componentIdsByEntity map
@@ -54,6 +54,11 @@ public class Nexus {
 		familiyByTraitHash = [:]
 		familyMembersByTraitHash = [:]
 
+	}
+
+	deinit {
+		// FIXME: clear all things and cleanup
+		print("nexus deinit")
 	}
 
 }

@@ -108,7 +108,7 @@ extension Nexus {
 
 		// relocate remaining indices pointing in the componentsByEntity map
 		if let remainingComponents: ComponentIdentifiers = componentIdsByEntity[entityIdx] {
-			// FIXME: may be expensive but is cheap for small entities
+			// FIXME: may be expensive but is cheap for small entities -> may be fixed with a sparse set?!
 			for (index, compId) in remainingComponents.enumerated() {
 				let cHash: EntityComponentHash = compId.hashValue(using: entityIdx)
 				assert(cHash != hash)

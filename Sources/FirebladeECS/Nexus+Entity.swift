@@ -8,7 +8,7 @@
 extension Nexus {
 
 	public var entities: [Entity] {
-		return entityStorage.filter { $0.isValid }
+		return entityStorage.filter { isValid(entity: $0.identifier) }
 	}
 
 	fileprivate func nextEntityIdx() -> EntityIndex {
@@ -77,6 +77,10 @@ extension Nexus {
 		entityStorage[entityId.index] = invalidEntity
 
 		freeEntities.append(entityId)
+
+		for (_, family) in familiesByTraitHash {
+			update(membership: family, for: entityId)
+		}
 
 		notify(EntityDestroyed(entityId: entityId))
 		return true

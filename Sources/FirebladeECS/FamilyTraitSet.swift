@@ -30,7 +30,6 @@ public struct FamilyTraitSet {
 		self.needsAtLeastOne = one
 		self.excludesAll = none
 	}
-
 }
 
 // MARK: - match

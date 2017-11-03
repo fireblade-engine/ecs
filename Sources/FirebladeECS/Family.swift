@@ -7,42 +7,43 @@
 
 // MARK: - family
 public final class Family {
-	internal unowned var delegate: Nexus
+	weak var nexus: Nexus?
 	// members of this Family must conform to these traits
 	public let traits: FamilyTraitSet
 
-	internal init(_ nexus: Nexus, traits: FamilyTraitSet) {
-		self.delegate = nexus
+	init(_ nexus: Nexus, traits: FamilyTraitSet) {
+		self.nexus = nexus
 		self.traits = traits
 		defer {
-			nexus.onFamilyCreated(family: self)
+			nexus.onFamilyInit(family: self)
 		}
 	}
 
 	deinit {
-		delegate.onFamilyRemove(family: self)
+		let hash: FamilyTraitSetHash = traits.hashValue
+		nexus?.onFamilyDeinit(traitHash: hash)
 	}
 }
 
 extension Family {
 
 	public var count: Int {
-		return delegate.members(of: self).count
+		return nexus?.members(of: self).count ?? 0
 	}
 
 	public final func canBecomeMember(_ entity: Entity) -> Bool {
-		return delegate.canBecomeMember(entity, in: self)
+		return nexus?.canBecomeMember(entity, in: self) ?? false
 	}
 
 	public final func isMember(_ entity: Entity) -> Bool {
-		return delegate.isMember(entity, in: self)
+		return nexus?.isMember(entity, in: self) ?? false
 	}
 
 	public final func isMember(_ entityId: EntityIdentifier) -> Bool {
-		return delegate.isMember(entityId, in: self)
+		return nexus?.isMember(entityId, in: self) ?? false
 	}
 
 	internal var memberIds: UniformEntityIdentifiers {
-		return delegate.members(of: self)
+		return nexus!.members(of: self)
 	}
 }

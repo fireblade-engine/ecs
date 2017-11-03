@@ -41,6 +41,10 @@ extension Nexus {
 
 	public func members(of family: Family) -> UniformEntityIdentifiers {
 		let traitHash: FamilyTraitSetHash = family.traits.hashValue
+		return members(of: traitHash)
+	}
+
+	public func members(of traitHash: FamilyTraitSetHash) -> UniformEntityIdentifiers {
 		return familyMembersByTraitHash[traitHash] ?? UniformEntityIdentifiers() // FIXME: fail?
 	}
 
@@ -56,29 +60,28 @@ extension Nexus {
 
 	fileprivate func get(family traits: FamilyTraitSet) -> Family? {
 		let traitHash: FamilyTraitSetHash = traits.hashValue
-		return familiyByTraitHash[traitHash]
+		return familiesByTraitHash[traitHash]
 	}
 
 	fileprivate func create(family traits: FamilyTraitSet) -> Family {
 		let traitHash: FamilyTraitSetHash = traits.hashValue
 		let family = Family(self, traits: traits)
-		let replaced = familiyByTraitHash.updateValue(family, forKey: traitHash)
+		let replaced = familiesByTraitHash.updateValue(family, forKey: traitHash)
 		assert(replaced == nil, "Family with exact trait hash already exists: \(traitHash)")
 		notify(FamilyCreated(family: traits))
 		return family
 	}
 
 	/// will be called on family init defer
-	internal func onFamilyCreated(family: Family) {
+	internal func onFamilyInit(family: Family) {
 		// FIXME: this is costly for many entities
 		for entity: Entity in entityStorage {
 			update(membership: family, for: entity.identifier)
 		}
 	}
 
-	internal func onFamilyRemove(family: Family) {
-		let traitHash: FamilyTraitSetHash = family.traits.hashValue
-		for member in members(of: family) {
+	internal func onFamilyDeinit(traitHash: FamilyTraitSetHash) {
+		for member in members(of: traitHash) {
 			remove(from: traitHash, entityId: member, entityIdx: member.index)
 		}
 	}
@@ -96,6 +99,10 @@ extension Nexus {
 		guard let componentIds: ComponentIdentifiers = componentIdsByEntity[entityIdx] else { return }
 
 		let is_Member: Bool = isMember(entityId, in: family)
+		if !isValid(entity: entityId) && is_Member {
+			remove(from: traitHash, entityId: entityId, entityIdx: entityIdx)
+			return
+		}
 
 		let componentsSet: ComponentSet = ComponentSet.init(componentIds)
 		let isMatch: Bool = traits.isMatch(components: componentsSet)

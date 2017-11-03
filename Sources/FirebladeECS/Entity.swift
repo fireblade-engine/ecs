@@ -10,10 +10,10 @@ public final class Entity: UniqueEntityIdentifiable {
 	internal(set) public var identifier: EntityIdentifier = EntityIdentifier.invalid
 	public var name: String?
 
-	internal unowned let delegate: Nexus
+	unowned let nexus: Nexus
 
-	internal init(nexus: Nexus, id: EntityIdentifier, name: String? = nil) {
-		self.delegate = nexus
+	init(nexus: Nexus, id: EntityIdentifier, name: String? = nil) {
+		self.nexus = nexus
 		self.identifier = id
 		self.name = name
 	}
@@ -34,11 +34,10 @@ extension Entity: Activatable {
 extension Entity {
 
 	public var isValid: Bool {
-		return delegate.isValid(entity: self)
+		return nexus.isValid(entity: self)
 	}
 
 	internal func invalidate() {
-		assert(delegate.isValid(entity: identifier), "Invalid entity \(self) is being invalidated.")
 		identifier = EntityIdentifier.invalid
 		name = nil
 	}
@@ -52,7 +51,7 @@ public func ==(lhs: Entity, rhs: Entity) -> Bool {
 // MARK: - number of components
 public extension Entity {
 	public final var numComponents: Int {
-		return delegate.count(components: identifier)
+		return nexus.count(components: identifier)
 	}
 }
 
@@ -64,11 +63,11 @@ public extension Entity {
 	}
 
 	public final func has(_ uct: ComponentIdentifier) -> Bool {
-		return delegate.has(componentId: uct, entityIdx: identifier.index)
+		return nexus.has(componentId: uct, entityIdx: identifier.index)
 	}
 
 	public final var hasComponents: Bool {
-		return delegate.count(components: identifier) > 0
+		return nexus.count(components: identifier) > 0
 	}
 
 }
@@ -86,13 +85,13 @@ public extension Entity {
 
 	@discardableResult
 	public final func assign(_ component: Component) -> Entity {
-		delegate.assign(component: component, to: self)
+		nexus.assign(component: component, to: self)
 		return self
 	}
 
 	@discardableResult
 	public final func assign<C>(_ component: C) -> Entity where C: Component {
-		delegate.assign(component: component, to: self)
+		nexus.assign(component: component, to: self)
 		return self
 	}
 
@@ -122,12 +121,12 @@ public extension Entity {
 
 	@discardableResult
 	public final func remove(_ uct: ComponentIdentifier) -> Entity {
-		delegate.remove(component: uct, from: identifier)
+		nexus.remove(component: uct, from: identifier)
 		return self
 	}
 
 	public final func clear() {
-		delegate.clear(componentes: identifier)
+		nexus.clear(componentes: identifier)
 	}
 
 	@discardableResult
@@ -144,6 +143,6 @@ public extension Entity {
 // MARK: - destroy/deinit entity
 extension Entity {
 	public final func destroy() {
-		delegate.destroy(entity: self)
+		nexus.destroy(entity: self)
 	}
 }

@@ -56,7 +56,7 @@ extension Nexus {
 
 		// FIXME: this is costly for many families
 		let entityId: EntityIdentifier = entity.identifier
-		for (_, family) in familiyByTraitHash {
+		for (_, family) in familiesByTraitHash {
 			update(membership: family, for: entityId)
 		}
 
@@ -117,7 +117,7 @@ extension Nexus {
 		}
 
 		// FIXME: this is costly for many families
-		for (_, family) in familiyByTraitHash {
+		for (_, family) in familiesByTraitHash {
 			update(membership: family, for: entityId)
 		}
 

@@ -43,7 +43,7 @@ extension Family {
 		return nexus?.isMember(entityId, in: self) ?? false
 	}
 
-	internal var memberIds: UniformEntityIdentifiers {
+	var memberIds: UniformEntityIdentifiers {
 		return nexus!.members(of: self)
 	}
 }

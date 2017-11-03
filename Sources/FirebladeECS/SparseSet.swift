@@ -23,8 +23,8 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 	}
 
 	public var count: Int { return size }
-	internal var capacitySparse: Int { return sparse.capacity }
-	internal var capacityDense: Int { return dense.capacity }
+	var capacitySparse: Int { return sparse.capacity }
+	var capacityDense: Int { return dense.capacity }
 
 	public func has(_ index: Index) -> Bool {
 		return sparse[index] ?? Int.max < count &&

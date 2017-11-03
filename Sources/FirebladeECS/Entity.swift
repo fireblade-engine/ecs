@@ -37,7 +37,7 @@ extension Entity {
 		return nexus.isValid(entity: self)
 	}
 
-	internal func invalidate() {
+	func invalidate() {
 		identifier = EntityIdentifier.invalid
 		name = nil
 	}

@@ -34,7 +34,6 @@ extension Nexus {
 			assert(false, "no component set defined for entity: \(entity)")
 			return false
 		}
-		// FIXME: may be a bottle neck
 		let componentSet: ComponentSet = ComponentSet.init(componentIds)
 		return family.traits.isMatch(components: componentSet)
 	}
@@ -73,14 +72,14 @@ extension Nexus {
 	}
 
 	/// will be called on family init defer
-	internal func onFamilyInit(family: Family) {
+	func onFamilyInit(family: Family) {
 		// FIXME: this is costly for many entities
 		for entity: Entity in entityStorage {
 			update(membership: family, for: entity.identifier)
 		}
 	}
 
-	internal func onFamilyDeinit(traitHash: FamilyTraitSetHash) {
+	func onFamilyDeinit(traitHash: FamilyTraitSetHash) {
 		for member in members(of: traitHash) {
 			remove(from: traitHash, entityId: member, entityIdx: member.index)
 		}

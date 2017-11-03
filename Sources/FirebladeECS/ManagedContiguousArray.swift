@@ -68,11 +68,11 @@ public class ManagedContiguousArray: UniformStorage {
 		_store.removeAll(keepingCapacity: keepingCapacity)
 	}
 
-	internal func needsToGrow(_ index: Index) -> Bool {
+	func needsToGrow(_ index: Index) -> Bool {
 		return index > _store.count - 1
 	}
 
-	internal func grow(including index: Index) {
+	func grow(including index: Index) {
 		let newCapacity: Int = nearest(to: index)
 		let newCount: Int = newCapacity-_store.count
 		for _ in 0..<newCount {
@@ -80,7 +80,7 @@ public class ManagedContiguousArray: UniformStorage {
 		}
 	}
 
-	internal func nearest(to index: Index) -> Int {
+	func nearest(to index: Index) -> Int {
 		let delta = Float(index) / Float(ManagedContiguousArray.chunkSize)
 		let multiplier = Int(delta) + 1
 		return multiplier * ManagedContiguousArray.chunkSize

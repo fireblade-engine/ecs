@@ -5,14 +5,11 @@
 //  Created by Christian Treffs on 08.10.17.
 //
 
-public protocol Component: class, UniqueComponentIdentifiable, Activatable {}
+public protocol Component: class, TypeIdentifiable, Activatable {}
 
-// MARK: UCI
 extension Component {
-	/// Uniquely identifies the component by its meta type
-	public static var identifier: ComponentIdentifier { return ComponentIdentifier(Self.self) }
-	/// Uniquely identifies the component by its meta type
-	public var identifier: ComponentIdentifier { return Self.identifier }
+	public var identifier: ComponentIdentifier { return typeObjectIdentifier }
+	public static var identifier: ComponentIdentifier { return typeObjectIdentifier }
 }
 
 // MARK: - activatable protocol

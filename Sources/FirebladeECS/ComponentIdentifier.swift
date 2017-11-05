@@ -7,12 +7,6 @@
 
 public typealias ComponentIdentifier = ObjectIdentifier
 
-// MARK: Unique Component Identifiable
-public protocol UniqueComponentIdentifiable {
-	static var identifier: ComponentIdentifier { get }
-	var identifier: ComponentIdentifier { get }
-}
-
 extension ComponentIdentifier {
 
 	/// Provides XOR hash value from component identifier (aka type) and entity index.

@@ -82,4 +82,3 @@ extension FamilyTraitSet: Hashable {
 		return _hash
 	}
 }
-

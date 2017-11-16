@@ -15,7 +15,7 @@ public final class Family {
 		self.nexus = nexus
 		self.traits = traits
 		defer {
-			nexus.onFamilyInit(family: self)
+			self.nexus?.onFamilyInit(family: self)
 		}
 	}
 

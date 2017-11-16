@@ -52,6 +52,6 @@ extension TypeHashable where Self: InstanceHashable {
 			lhs.instanceObjectIdentifier == rhs.instanceObjectIdentifier
 	}
 	public var hashValue: Int {
-		return typeObjectIdentifier.hashValue ^ instanceObjectIdentifier.hashValue // TODO: this might not be best - use hash combine?
+		return  hash(combine: typeObjectIdentifier.hashValue, instanceObjectIdentifier.hashValue)
 	}
 }

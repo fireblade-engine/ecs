@@ -21,7 +21,14 @@ public typealias TraitEntityIdHash = Int
 public typealias EntityIdInFamilyIndex = Int
 public typealias TraitEntityIdHashSet = [TraitEntityIdHash: EntityIdInFamilyIndex]
 
+public protocol NexusDelegate: class {
+	func nexusEventOccurred(_ event: ECSEvent)
+	func nexusRecoverableErrorOccurred(_ message: String)
+}
+
 public class Nexus {
+
+	weak var delegate: NexusDelegate?
 
 	/// - Index: index value matching entity identifier shifted to Int
 	/// - Value: each element is a entity instance
@@ -80,15 +87,14 @@ public class Nexus {
 
 }
 
+// MARK: - nexus delegate
 extension Nexus {
 
-	func notify(_ event: Event) {
-		//Log.debug(event)
-		// TODO: implement
-
+	func notify(_ event: ECSEvent) {
+		delegate?.nexusEventOccurred(event)
 	}
 
 	func report(_ message: String) {
-		// TODO: implement
+		delegate?.nexusRecoverableErrorOccurred(message)
 	}
 }

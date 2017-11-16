@@ -65,18 +65,12 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 		sparse.removeAll(keepingCapacity: keepingCapacity)
 	}
 
-	public func makeIterator() -> SparseIterator<Element> {
-		return SparseIterator<Element>(self)
-		/*
-		// NOTE: was optimized by using a dedicated iterator implementation
-		var iter = dense.makeIterator()
-		return AnyIterator<Element>.init {
-		guard let next: Pair = iter.next() as? Pair else { return nil }
-		return next.value
-		}*/
+	public func makeIterator() -> SparseSetIterator<Element> {
+		return SparseSetIterator<Element>(self)
 	}
 
-	public struct SparseIterator<Element>: IteratorProtocol {
+	// MARK: - SparseIterator
+	public struct SparseSetIterator<Element>: IteratorProtocol {
 		private let sparseSet: SparseSet<Element>
 		private var iterator: IndexingIterator<ContiguousArray<(key: Index, value: Element)?>>
 		init(_ sparseSet: SparseSet<Element>) {
@@ -91,6 +85,8 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 
 	}
 }
+
+// MARK: - specialized sparse sets
 
 public class SparseComponentSet: SparseSet<Component> {
 	public typealias Index = EntityIndex

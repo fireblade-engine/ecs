@@ -10,7 +10,7 @@ public struct FamilyTraitSet {
 	fileprivate let requiresAll: ComponentSet
 	fileprivate let excludesAll: ComponentSet
 	fileprivate let needsAtLeastOne: ComponentSet
-	fileprivate let _hash: Int
+	fileprivate let setHash: Int
 	fileprivate let isEmptyAny: Bool
 
 	public init(requiresAll: [Component.Type], excludesAll: [Component.Type], needsAtLeastOne: [Component.Type] = []) {
@@ -24,7 +24,7 @@ public struct FamilyTraitSet {
 
 		isEmptyAny = one.isEmpty
 
-		_hash = hash(combine: [all, one, none])
+		setHash = hash(combine: [all, one, none])
 
 		self.requiresAll = all
 		self.needsAtLeastOne = one
@@ -72,13 +72,13 @@ extension FamilyTraitSet {
 // MARK: - Equatable
 extension FamilyTraitSet: Equatable {
 	public static func ==(lhs: FamilyTraitSet, rhs: FamilyTraitSet) -> Bool {
-		return lhs._hash == rhs._hash
+		return lhs.setHash == rhs.setHash
 	}
 }
 
 // MARK: - Hashable
 extension FamilyTraitSet: Hashable {
 	public var hashValue: Int {
-		return _hash
+		return setHash
 	}
 }

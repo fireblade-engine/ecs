@@ -8,11 +8,7 @@
 extension Nexus {
 
 	public var numComponents: Int {
-		var count = 0
-		for (_, uniformComps) in componentsByType {
-			count += uniformComps.count
-		}
-		return count
+		return componentsByType.reduce(0) { return $0 + $1.value.count }
 	}
 
 	public func has(componentId: ComponentIdentifier, entityIdx: EntityIndex) -> Bool {
@@ -35,8 +31,11 @@ extension Nexus {
 		let hash: EntityComponentHash = componentId.hashValue(using: entityIdx)
 		/// test if component is already assigned
 		guard !has(componentId: componentId, entityIdx: entityIdx) else {
+			// FIXME: this is still open to debate
+			// a) we replace the component
+			// b) we copy the properties
+			// c) we assert fail
 			report("ComponentAdd collision: \(entityIdx) already has a component \(component)")
-			// TODO: replace component?! copy properties?!
 			return
 		}
 		if componentsByType[componentId] == nil {
@@ -54,7 +53,7 @@ extension Nexus {
 			componentIdsByEntityLookup[hash] = 0
 		}
 
-		// FIXME: this is costly for many families
+		// FIXME: iterating all families is costly for many families
 		let entityId: EntityIdentifier = entity.identifier
 		for (_, family) in familiesByTraitHash {
 			update(membership: family, for: entityId)
@@ -91,10 +90,10 @@ extension Nexus {
 		let entityIdx: EntityIndex = entityId.index
 		let hash: EntityComponentHash = componentId.hashValue(using: entityIdx)
 
-		// MARK: delete component instance
+		// delete component instance
 		componentsByType[componentId]?.remove(at: entityIdx)
 
-		// MARK: unassign component
+		// unassign component
 		guard let removeIndex: ComponentIdsByEntityIndex = componentIdsByEntityLookup.removeValue(forKey: hash) else {
 			report("ComponentRemove failure: no component found to be removed")
 			return false
@@ -108,7 +107,8 @@ extension Nexus {
 
 		// relocate remaining indices pointing in the componentsByEntity map
 		if let remainingComponents: ComponentIdentifiers = componentIdsByEntity[entityIdx] {
-			// FIXME: may be expensive but is cheap for small entities -> may be fixed with a sparse set?!
+			// FIXME: enumerated iteration of remaning components is costly
+			// solution: we fix it by using a sparse set for components per entity
 			for (index, compId) in remainingComponents.enumerated() {
 				let cHash: EntityComponentHash = compId.hashValue(using: entityIdx)
 				assert(cHash != hash)
@@ -116,7 +116,7 @@ extension Nexus {
 			}
 		}
 
-		// FIXME: this is costly for many families
+		// FIXME: iterating all families is costly for many families
 		for (_, family) in familiesByTraitHash {
 			update(membership: family, for: entityId)
 		}

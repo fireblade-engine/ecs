@@ -4,43 +4,43 @@
 //
 //  Created by Christian Treffs on 08.10.17.
 //
-protocol Event { }
-public struct EntityCreated: Event {
+public protocol ECSEvent {}
+public struct EntityCreated: ECSEvent {
 	let entityId: EntityIdentifier
 }
 
-public struct EntityDestroyed: Event {
+public struct EntityDestroyed: ECSEvent {
 	let entityId: EntityIdentifier
 }
 
-public struct ComponentAdded: Event {
+public struct ComponentAdded: ECSEvent {
 	let component: ComponentIdentifier
 	let to: EntityIdentifier
 }
 
-public struct ComponentUpdated: Event {
+public struct ComponentUpdated: ECSEvent {
 	let at: EntityIdentifier
 }
 
-public struct ComponentRemoved: Event {
+public struct ComponentRemoved: ECSEvent {
 	let component: ComponentIdentifier
 	let from: EntityIdentifier
 }
 
-struct FamilyMemberAdded: Event {
+struct FamilyMemberAdded: ECSEvent {
 	let member: EntityIdentifier
 	let to: FamilyTraitSet
 }
 
-struct FamilyMemberRemoved: Event {
+struct FamilyMemberRemoved: ECSEvent {
 	let member: EntityIdentifier
 	let from: FamilyTraitSet
 }
 
-struct FamilyCreated: Event {
+struct FamilyCreated: ECSEvent {
 	let family: FamilyTraitSet
 }
 
-struct FamilyDestroyed: Event {
+struct FamilyDestroyed: ECSEvent {
 	let family: FamilyTraitSet
 }

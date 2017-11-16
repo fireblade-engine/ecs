@@ -6,18 +6,14 @@
 //
 
 public final class Entity: UniqueEntityIdentifiable {
-
 	internal(set) public var identifier: EntityIdentifier = EntityIdentifier.invalid
 	public var name: String?
-
 	unowned let nexus: Nexus
-
 	init(nexus: Nexus, id: EntityIdentifier, name: String? = nil) {
 		self.nexus = nexus
 		self.identifier = id
 		self.name = name
 	}
-
 }
 
 // MARK: - Invalidate
@@ -52,8 +48,8 @@ public extension Entity {
 		return has(type.identifier)
 	}
 
-	public final func has(_ uct: ComponentIdentifier) -> Bool {
-		return nexus.has(componentId: uct, entityIdx: identifier.index)
+	public final func has(_ compId: ComponentIdentifier) -> Bool {
+		return nexus.has(componentId: compId, entityIdx: identifier.index)
 	}
 
 	public final var hasComponents: Bool {
@@ -105,13 +101,13 @@ public extension Entity {
 	}
 
 	@discardableResult
-	public final func remove<C>(_ componentType: C.Type) -> Entity where C: Component {
-		return remove(componentType.identifier)
+	public final func remove<C>(_ compType: C.Type) -> Entity where C: Component {
+		return remove(compType.identifier)
 	}
 
 	@discardableResult
-	public final func remove(_ uct: ComponentIdentifier) -> Entity {
-		nexus.remove(component: uct, from: identifier)
+	public final func remove(_ compId: ComponentIdentifier) -> Entity {
+		nexus.remove(component: compId, from: identifier)
 		return self
 	}
 

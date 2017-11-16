@@ -19,7 +19,6 @@ public protocol UniformStorage: class {
 
 public class ManagedContiguousArray: UniformStorage {
 	public static var chunkSize: Int = 4096
-
 	public typealias Index = Int
 	public typealias Element = Any
 	var _size: Int = 0

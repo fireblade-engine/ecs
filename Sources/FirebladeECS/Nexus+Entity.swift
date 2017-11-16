@@ -8,6 +8,7 @@
 extension Nexus {
 
 	public var entities: [Entity] {
+		// FIXME: we do not want this kind of access to the underlying entity store
 		return entityStorage.filter { isValid(entity: $0.identifier) }
 	}
 
@@ -62,6 +63,7 @@ extension Nexus {
 	@discardableResult
 	public func destroy(entity: Entity) -> Bool {
 		let entityId: EntityIdentifier = entity.identifier
+		// FIXME: we can make this cheaper by eliminating the need to ask if entity is present
 		guard has(entity: entityId) else {
 			report("EntityRemove failure: no entity \(entityId) to remove")
 			return false
@@ -78,6 +80,7 @@ extension Nexus {
 
 		freeEntities.append(entityId)
 
+		// FIXME: iterating all families is costly for many families
 		for (_, family) in familiesByTraitHash {
 			update(membership: family, for: entityId)
 		}

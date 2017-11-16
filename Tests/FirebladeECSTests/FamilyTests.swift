@@ -77,7 +77,7 @@ class FamilyTests: XCTestCase {
 		XCTAssert(nexus.numEntities == number)
 
 		measure {
-			family.iterateMembers({ (entityId) in
+			family.iterate(entities: { (entityId) in
 				_ = entityId
 			})
 		}

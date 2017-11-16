@@ -83,17 +83,3 @@ extension FamilyTraitSet: Hashable {
 	}
 }
 
-// MARK: - description
-/*extension FamilyTraits: CustomStringConvertible {
-
-	public var description: String {
-		let all: String = hasAll.map { "\($0.self)" }.joined(separator: " AND ")
-		let any: String = hasAny.map { "\($0.self)" }.joined(separator: " OR ")
-		let none: String = hasNone.map { "!\($0.self)"}.joined(separator: " NOT ")
-		let out: String = ["\(all)", "\(any)", "\(none)"].joined(separator: " AND ")
-		//TODO: nicer
-		return "FamilyTraits(\(out))"
-	}
-
-}
-*/

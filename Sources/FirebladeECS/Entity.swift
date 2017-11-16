@@ -20,16 +20,6 @@ public final class Entity: UniqueEntityIdentifiable {
 
 }
 
-// MARK: - activatable protocol
-extension Entity: Activatable {
-	public func activate() {
-		//TODO: nexus.activate(entity: self)
-	}
-	public func deactivate() {
-		//TODO: nexus.deactivate(entity: self)
-	}
-}
-
 // MARK: - Invalidate
 extension Entity {
 

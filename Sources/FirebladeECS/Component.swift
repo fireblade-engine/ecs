@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 08.10.17.
 //
 
-public protocol Component: class, TypeIdentifiable, Activatable {}
+public protocol Component: class, TypeIdentifiable {}
 
 extension Component {
 	public var identifier: ComponentIdentifier { return typeObjectIdentifier }

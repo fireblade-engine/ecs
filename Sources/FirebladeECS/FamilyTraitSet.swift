@@ -48,22 +48,20 @@ extension FamilyTraitSet {
 
 	fileprivate func hasOne(_ components: ComponentSet) -> Bool {
 		if needsAtLeastOne.isEmpty { return true }
-		return !needsAtLeastOne.intersection(components).isEmpty
+		return !needsAtLeastOne.isDisjoint(with: components)
 	}
 }
 
 // MARK: - valid
-extension FamilyTraitSet {
-	fileprivate static func isValid(requiresAll: ComponentSet,
-									excludesAll: ComponentSet,
-									atLeastOne: ComponentSet) -> Bool {
+fileprivate extension FamilyTraitSet {
+	static func isValid(requiresAll: ComponentSet, excludesAll: ComponentSet, atLeastOne: ComponentSet) -> Bool {
 		return validAtLeastOneNonEmpty(requiresAll, atLeastOne) &&
 			requiresAll.isDisjoint(with: atLeastOne) &&
 			requiresAll.isDisjoint(with: excludesAll) &&
 			atLeastOne.isDisjoint(with: excludesAll)
 	}
 
-	fileprivate static func validAtLeastOneNonEmpty(_ requiresAll: ComponentSet, _ atLeastOne: ComponentSet) -> Bool {
+	static func validAtLeastOneNonEmpty(_ requiresAll: ComponentSet, _ atLeastOne: ComponentSet) -> Bool {
 		return !requiresAll.isEmpty || !atLeastOne.isEmpty
 	}
 
@@ -71,7 +69,7 @@ extension FamilyTraitSet {
 
 // MARK: - Equatable
 extension FamilyTraitSet: Equatable {
-	public static func ==(lhs: FamilyTraitSet, rhs: FamilyTraitSet) -> Bool {
+	public static func == (lhs: FamilyTraitSet, rhs: FamilyTraitSet) -> Bool {
 		return lhs.setHash == rhs.setHash
 	}
 }

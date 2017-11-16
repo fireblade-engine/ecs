@@ -8,9 +8,9 @@
 public protocol Component: class, TypeIdentifiable {}
 public typealias ComponentIdentifier = ObjectIdentifier
 
-extension Component {
-	public var identifier: ComponentIdentifier { return typeObjectIdentifier }
-	public static var identifier: ComponentIdentifier { return typeObjectIdentifier }
+public extension Component {
+	var identifier: ComponentIdentifier { return typeObjectIdentifier }
+	static var identifier: ComponentIdentifier { return typeObjectIdentifier }
 }
 
 // MARK: - entity component hashable

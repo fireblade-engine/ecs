@@ -5,8 +5,8 @@
 //  Created by Christian Treffs on 09.10.17.
 //
 
-import XCTest
 @testable import FirebladeECS
+import XCTest
 
 class FamilyTests: XCTestCase {
 
@@ -68,7 +68,7 @@ class FamilyTests: XCTestCase {
 		let number: Int = 10_000
 
 		for i in 0..<number {
-			nexus.create(entity: "\(i)").assign(Position(x: 1+i, y: 2+i), Name(name: "myName\(i)"), Velocity(a: 3.14), EmptyComponent())
+			nexus.create(entity: "\(i)").assign(Position(x: 1 + i, y: 2 + i), Name(name: "myName\(i)"), Velocity(a: 3.14), EmptyComponent())
 		}
 
 		let family = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [Party.self], needsAtLeastOne: [Name.self, EmptyComponent.self])
@@ -77,7 +77,7 @@ class FamilyTests: XCTestCase {
 		XCTAssert(nexus.numEntities == number)
 
 		measure {
-			family.iterate(entities: { (entityId) in
+			family.iterate(entities: { entityId in
 				_ = entityId
 			})
 		}
@@ -88,7 +88,7 @@ class FamilyTests: XCTestCase {
 		let number: Int = 10_000
 
 		for i in 0..<number {
-			nexus.create(entity: "\(i)").assign(Position(x: 1+i, y: 2+i), Name(name: "myName\(i)"), Velocity(a: 3.14), EmptyComponent())
+			nexus.create(entity: "\(i)").assign(Position(x: 1 + i, y: 2 + i), Name(name: "myName\(i)"), Velocity(a: 3.14), EmptyComponent())
 		}
 
 		let family = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [Party.self], needsAtLeastOne: [Name.self, EmptyComponent.self])
@@ -109,7 +109,7 @@ class FamilyTests: XCTestCase {
 		let number: Int = 10_000
 
 		for i in 0..<number {
-			nexus.create(entity: "\(i)").assign(Position(x: 1+i, y: 2+i), Name(name: "myName\(i)"), Velocity(a: 3.14), EmptyComponent())
+			nexus.create(entity: "\(i)").assign(Position(x: 1 + i, y: 2 + i), Name(name: "myName\(i)"), Velocity(a: 3.14), EmptyComponent())
 		}
 
 		let family = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [Party.self], needsAtLeastOne: [Name.self, EmptyComponent.self])
@@ -118,7 +118,7 @@ class FamilyTests: XCTestCase {
 		XCTAssert(nexus.numEntities == number)
 
 		measure {
-			family.iterate(components: Position.self, Velocity.self, Name.self) { (entityId, pos, vel, nm) in
+			family.iterate(components: Position.self, Velocity.self, Name.self) { entityId, pos, vel, nm in
 				let position: Position = pos!
 				let velocity: Velocity = vel!
 				let name: Name? = nm
@@ -136,7 +136,7 @@ class FamilyTests: XCTestCase {
 		let number: Int = 10
 
 		for i in 0..<number {
-			nexus.create(entity: "\(i)").assign(Position(x: i+1, y: i+2))
+			nexus.create(entity: "\(i)").assign(Position(x: i + 1, y: i + 2))
 		}
 
 		let familyA = nexus.family(requiresAll: [Position.self], excludesAll: [Velocity.self])
@@ -152,7 +152,7 @@ class FamilyTests: XCTestCase {
 		XCTAssert(countA == number)
 
 		var countB: Int = 0
-		familyB.iterate(components: Velocity.self) { (eId, velocity) in
+		familyB.iterate(components: Velocity.self) { eId, velocity in
 			let e = nexus.get(entity: eId)
 			e.assign(Position(x: 1, y: 2))
 			e.remove(velocity!)

@@ -29,29 +29,34 @@ public protocol InstanceHashable: class, Hashable {
 /// Identifies an object by instance and meta type and conforms to Hashable
 public typealias TypeInstanceHashable = TypeHashable & InstanceHashable
 
-extension InstanceHashable {
-	public var instanceObjectIdentifier: ObjectIdentifier { return ObjectIdentifier.init(self) }
-	public static func == (lhs: Self, rhs: Self) -> Bool { return lhs.hashValue == rhs.hashValue }
-	public var hashValue: Int { return instanceObjectIdentifier.hashValue }
+public extension InstanceHashable {
+	var instanceObjectIdentifier: ObjectIdentifier { return ObjectIdentifier(self) }
+
+	static func == (lhs: Self, rhs: Self) -> Bool { return lhs.hashValue == rhs.hashValue }
+
+	var hashValue: Int { return instanceObjectIdentifier.hashValue }
 }
 
-extension TypeIdentifiable {
-	public static var typeObjectIdentifier: ObjectIdentifier { return ObjectIdentifier.init(Self.self) }
-	public var typeObjectIdentifier: ObjectIdentifier { return Self.typeObjectIdentifier }
+public extension TypeIdentifiable {
+	static var typeObjectIdentifier: ObjectIdentifier { return ObjectIdentifier(Self.self) }
+
+	var typeObjectIdentifier: ObjectIdentifier { return Self.typeObjectIdentifier }
 }
 
-extension TypeHashable {
-	public static func == (lhs: Self, rhs: Self) -> Bool { return lhs.hashValue == rhs.hashValue }
-	public var hashValue: Int { return typeObjectIdentifier.hashValue }
-	public static var hashValue: Int { return typeObjectIdentifier.hashValue }
+public extension TypeHashable {
+	static func == (lhs: Self, rhs: Self) -> Bool { return lhs.hashValue == rhs.hashValue }
+
+	var hashValue: Int { return typeObjectIdentifier.hashValue }
+	static var hashValue: Int { return typeObjectIdentifier.hashValue }
 }
 
-extension TypeHashable where Self: InstanceHashable {
-	public static func == (lhs: Self, rhs: Self) -> Bool {
+public extension TypeHashable where Self: InstanceHashable {
+	static func == (lhs: Self, rhs: Self) -> Bool {
 		return lhs.typeObjectIdentifier == rhs.typeObjectIdentifier &&
 			lhs.instanceObjectIdentifier == rhs.instanceObjectIdentifier
 	}
-	public var hashValue: Int {
+
+	var hashValue: Int {
 		return  hash(combine: typeObjectIdentifier.hashValue, instanceObjectIdentifier.hashValue)
 	}
 }

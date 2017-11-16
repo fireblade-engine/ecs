@@ -40,7 +40,8 @@ public class Nexus {
 
 	/// - Key: entity id as index
 	/// - Value: each element is a component identifier associated with this entity
-	var componentIdsByEntity: [EntityIndex: ComponentIdentifiers] // TODO: sparse set?!
+	// FIXME: this may be refactored to a uniform sparse set
+	var componentIdsByEntity: [EntityIndex: ComponentIdentifiers]
 
 	/// - Key 'entity id' - 'component type' hash that uniquely links both
 	/// - Value: each element is an index pointing to the component identifier per entity in the componentIdsByEntity map

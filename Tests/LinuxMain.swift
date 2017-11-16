@@ -1,5 +1,5 @@
-import XCTest
 @testable import FirebladeECSTests
+import XCTest
 
 XCTMain([
     testCase(FirebladeECSTests.allTests)

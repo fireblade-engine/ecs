@@ -11,6 +11,7 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 	fileprivate var size: Int = 0
 	fileprivate var dense: ContiguousArray<Pair?>
 	fileprivate var sparse: [Index: DenseIndex]
+
 	fileprivate typealias Pair = (key: Index, value: Element)
 
 	public init() {
@@ -47,7 +48,7 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 	public func remove(at index: Index) {
 		guard has(index) else { return }
 		let removeIdx: DenseIndex = sparse[index]!
-		let lastIdx: DenseIndex = count-1
+		let lastIdx: DenseIndex = count - 1
 		dense.swapAt(removeIdx, lastIdx)
 		sparse[index] = nil
 		let swapped: Pair = dense[removeIdx]!
@@ -73,6 +74,7 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 	public struct SparseSetIterator<Element>: IteratorProtocol {
 		private let sparseSet: SparseSet<Element>
 		private var iterator: IndexingIterator<ContiguousArray<(key: Index, value: Element)?>>
+
 		init(_ sparseSet: SparseSet<Element>) {
 			self.sparseSet = sparseSet
 			self.iterator = sparseSet.dense.makeIterator()

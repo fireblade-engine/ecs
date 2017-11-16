@@ -60,7 +60,7 @@ extension EntityComponentHash {
 	static func compose(entityId: EntityIdentifier, componentTypeHash: ComponentTypeHash) -> EntityComponentHash {
 		let entityIdSwapped: UInt = UInt(entityId).byteSwapped // needs to be 64 bit
 		let componentTypeHashUInt: UInt = UInt(bitPattern: componentTypeHash)
-		let hashUInt: UInt =  componentTypeHashUInt ^ entityIdSwapped
+		let hashUInt: UInt = componentTypeHashUInt ^ entityIdSwapped
 		return Int(bitPattern: hashUInt)
 	}
 

@@ -15,13 +15,13 @@ public extension EntityIdentifier {
 }
 
 public extension EntityIdentifier {
-	public var index: EntityIndex {
+	var index: EntityIndex {
 		return EntityIndex(self)
 	}
 }
 
 public extension EntityIndex {
-	public var identifier: EntityIdentifier {
+	var identifier: EntityIdentifier {
 		return EntityIdentifier(truncatingIfNeeded: self)
 	}
 }
@@ -32,5 +32,5 @@ public protocol UniqueEntityIdentifiable: Hashable {
 }
 
 public extension UniqueEntityIdentifiable {
-	public var hashValue: Int { return identifier.hashValue }
+	var hashValue: Int { return identifier.hashValue }
 }

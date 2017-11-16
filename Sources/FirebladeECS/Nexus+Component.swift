@@ -59,7 +59,7 @@ extension Nexus {
 			update(membership: family, for: entityId)
 		}
 
-		notify(ComponentAdded(component: componentId, to: entity.identifier))
+		notify(ComponentAdded(component: componentId, toEntity: entity.identifier))
 	}
 
 	public func assign<C>(component: C, to entity: Entity) where C: Component {

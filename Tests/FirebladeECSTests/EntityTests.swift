@@ -5,8 +5,8 @@
 //  Created by Christian Treffs on 22.10.17.
 //
 
-import XCTest
 import FirebladeECS
+import XCTest
 
 class EntityTests: XCTestCase {
 

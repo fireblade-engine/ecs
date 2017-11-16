@@ -15,11 +15,11 @@ public struct EntityDestroyed: ECSEvent {
 
 public struct ComponentAdded: ECSEvent {
 	let component: ComponentIdentifier
-	let to: EntityIdentifier
+	let toEntity: EntityIdentifier
 }
 
 public struct ComponentUpdated: ECSEvent {
-	let at: EntityIdentifier
+	let atEnity: EntityIdentifier
 }
 
 public struct ComponentRemoved: ECSEvent {
@@ -29,7 +29,7 @@ public struct ComponentRemoved: ECSEvent {
 
 struct FamilyMemberAdded: ECSEvent {
 	let member: EntityIdentifier
-	let to: FamilyTraitSet
+	let toFamily: FamilyTraitSet
 }
 
 struct FamilyMemberRemoved: ECSEvent {

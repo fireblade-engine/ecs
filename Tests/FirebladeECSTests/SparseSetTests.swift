@@ -5,8 +5,8 @@
 //  Created by Christian Treffs on 31.10.17.
 //
 
-import XCTest
 @testable import FirebladeECS
+import XCTest
 
 class SparseSetTests: XCTestCase {
 
@@ -22,7 +22,7 @@ class SparseSetTests: XCTestCase {
 		XCTAssert(s.count == num)
 
 		for i in 0..<num {
-			let idx = num-i-1
+			let idx = num - i - 1
 			let p: Position = s.get(at: idx) as! Position
 			XCTAssertEqual(idx, p.x)
 		}

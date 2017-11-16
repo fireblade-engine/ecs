@@ -25,7 +25,7 @@ public final class Family {
 	}
 
 	var memberIds: UniformEntityIdentifiers {
-		return nexus!.members(of: self)
+		return nexus?.members(of: self) ?? UniformEntityIdentifiers()
 	}
 }
 

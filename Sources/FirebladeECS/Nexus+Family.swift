@@ -131,7 +131,7 @@ private extension Nexus {
 		if familyMembersByTraitHash[traitHash] == nil {
 			familyMembersByTraitHash[traitHash] = UniformEntityIdentifiers()
 		}
-		familyMembersByTraitHash[traitHash]!.add(entityId, at: entityIdx)
+		familyMembersByTraitHash[traitHash]?.add(entityId, at: entityIdx)
 	}
 
 	func remove(from traitHash: FamilyTraitSetHash, entityId: EntityIdentifier, entityIdx: EntityIndex) {

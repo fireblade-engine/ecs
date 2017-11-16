@@ -43,12 +43,12 @@ extension Nexus {
 		if componentsByType[componentId] == nil {
 			componentsByType[componentId] = UniformComponents()
 		}
-		componentsByType[componentId]!.add(component, at: entityIdx)
+		componentsByType[componentId]?.add(component, at: entityIdx)
 
 		// assigns the component id to the entity id
-		if componentIdsByEntity[entityIdx] != nil {
-			let endIndex: Int = componentIdsByEntity[entityIdx]!.count
-			componentIdsByEntity[entityIdx]!.append(componentId) // Amortized O(1)
+		if let compIds = componentIdsByEntity[entityIdx] {
+			let endIndex: Int = compIds.count
+			componentIdsByEntity[entityIdx]?.append(componentId) // Amortized O(1)
 			componentIdsByEntityLookup[hash] = endIndex
 		} else {
 			componentIdsByEntity[entityIdx] = ComponentIdentifiers(arrayLiteral: componentId)

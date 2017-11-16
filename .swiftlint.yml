@@ -58,7 +58,7 @@ file_header:
                     \/\/  FirebladeECS
                     \/\/
                     \/\/  Created by .*? on \d{1,2}\/\d{1,2}\/\d{2}\.
-                    \/\/  Copyright © \d{4} Realm\. All rights reserved\.
+                    \/\/  Copyright © \d{4} Christian Treffs\. All rights reserved\.
                     \/\/
 identifier_name:
   excluded:

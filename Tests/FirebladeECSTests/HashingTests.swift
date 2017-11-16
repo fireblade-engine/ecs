@@ -5,7 +5,6 @@
 //  Created by Christian Treffs on 16.10.17.
 //
 
-import Darwin
 import XCTest
 @testable import FirebladeECS
 

@@ -22,8 +22,8 @@ public class ManagedContiguousArray: UniformStorage {
 	public static var chunkSize: Int = 4096
 	public typealias Index = Int
 	public typealias Element = Any
-	fileprivate var size: Int = 0
-	fileprivate var store: ContiguousArray<Element?> = []
+	private var size: Int = 0
+	private var store: ContiguousArray<Element?> = []
 
 	public init(minCount: Int = chunkSize) {
 		store = ContiguousArray<Element?>(repeating: nil, count: minCount)
@@ -46,7 +46,9 @@ public class ManagedContiguousArray: UniformStorage {
 		store[index] = element
 	}
 	public func has(_ index: Index) -> Bool {
-		if store.count <= index { return false }
+		if store.count <= index {
+			return false
+		}
 		return store[index] != nil
 	}
 

@@ -12,7 +12,7 @@ extension Nexus {
 		return entityStorage.filter { isValid(entity: $0.identifier) }
 	}
 
-	fileprivate func nextEntityIdx() -> EntityIndex {
+	private func nextEntityIdx() -> EntityIndex {
 		guard let nextReused: EntityIdentifier = freeEntities.popLast() else {
 			return entityStorage.count
 		}

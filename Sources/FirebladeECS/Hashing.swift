@@ -42,7 +42,7 @@ public func hash(combine seed: Int, _ value: Int) -> Int {
 /// - Returns: combined hash value.
 public func hash<S: Sequence>(combine hashValues: S) -> Int where S.Element == Int {
 	/// http://www.boost.org/doc/libs/1_65_1/doc/html/hash/reference.html#boost.hash_range_idp517643120
-	return hashValues.reduce(0, { hash(combine: $0, $1) })
+	return hashValues.reduce(0) { hash(combine: $0, $1) }
 }
 
 /// Calculates the combined hash value of the elements. This implementation is based on boost::hash_range.
@@ -51,7 +51,7 @@ public func hash<S: Sequence>(combine hashValues: S) -> Int where S.Element == I
 /// - Returns: combined hash value.
 public func hash<H: Sequence>(combine hashables: H) -> Int where H.Element == Hashable {
 	/// http://www.boost.org/doc/libs/1_65_1/doc/html/hash/reference.html#boost.hash_range_idp517643120
-	return hashables.reduce(0, { hash(combine: $0, $1.hashValue) })
+	return hashables.reduce(0) { hash(combine: $0, $1.hashValue) }
 }
 
 // MARK: - entity component hash

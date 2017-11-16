@@ -27,20 +27,20 @@ public struct ComponentRemoved: ECSEvent {
 	let from: EntityIdentifier
 }
 
-struct FamilyMemberAdded: ECSEvent {
+public struct FamilyMemberAdded: ECSEvent {
 	let member: EntityIdentifier
 	let toFamily: FamilyTraitSet
 }
 
-struct FamilyMemberRemoved: ECSEvent {
+public struct FamilyMemberRemoved: ECSEvent {
 	let member: EntityIdentifier
 	let from: FamilyTraitSet
 }
 
-struct FamilyCreated: ECSEvent {
+public struct FamilyCreated: ECSEvent {
 	let family: FamilyTraitSet
 }
 
-struct FamilyDestroyed: ECSEvent {
+public struct FamilyDestroyed: ECSEvent {
 	let family: FamilyTraitSet
 }

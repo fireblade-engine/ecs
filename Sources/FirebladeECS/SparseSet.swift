@@ -7,12 +7,12 @@
 
 public class SparseSet<Element>: UniformStorage, Sequence {
 	public typealias Index = Int
-	fileprivate typealias DenseIndex = Int
-	fileprivate var size: Int = 0
-	fileprivate var dense: ContiguousArray<Pair?>
-	fileprivate var sparse: [Index: DenseIndex]
+	private typealias DenseIndex = Int
+	private var size: Int = 0
+	private var dense: ContiguousArray<Pair?>
+	private var sparse: [Index: DenseIndex]
 
-	fileprivate typealias Pair = (key: Index, value: Element)
+	private typealias Pair = (key: Index, value: Element)
 
 	public init() {
 		dense = ContiguousArray<Pair?>()
@@ -33,7 +33,9 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 	}
 
 	public func add(_ element: Element, at index: Index) {
-		if has(index) { return }
+		if has(index) {
+			return
+		}
 		sparse[index] = count
 		let entry: Pair = Pair(key: index, value: element)
 		dense.append(entry)
@@ -41,12 +43,16 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 	}
 
 	public func get(at index: Index) -> Element? {
-		guard has(index) else { return nil }
+		guard has(index) else {
+			return nil
+		}
 		return dense[sparse[index]!]!.value
 	}
 
 	public func remove(at index: Index) {
-		guard has(index) else { return }
+		guard has(index) else {
+			return
+		}
 		let removeIdx: DenseIndex = sparse[index]!
 		let lastIdx: DenseIndex = count - 1
 		dense.swapAt(removeIdx, lastIdx)
@@ -81,7 +87,9 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 		}
 
 		mutating public func next() -> Element? {
-			guard let next: Pair = iterator.next() as? Pair else { return nil }
+			guard let next: Pair = iterator.next() as? Pair else {
+				return nil
+			}
 			return next.value as? Element
 		}
 

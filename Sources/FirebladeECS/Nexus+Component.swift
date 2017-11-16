@@ -12,7 +12,9 @@ extension Nexus {
 	}
 
 	public func has(componentId: ComponentIdentifier, entityIdx: EntityIndex) -> Bool {
-		guard let uniforms = componentsByType[componentId] else { return false }
+		guard let uniforms = componentsByType[componentId] else {
+			return false
+		}
 		return uniforms.has(entityIdx)
 	}
 
@@ -67,7 +69,9 @@ extension Nexus {
 	}
 
 	public func get(component componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
-		guard let uniformComponents: UniformComponents = componentsByType[componentId] else { return nil }
+		guard let uniformComponents: UniformComponents = componentsByType[componentId] else {
+			return nil
+		}
 		return uniformComponents.get(at: entityId.index) as? Component
 	}
 
@@ -76,8 +80,10 @@ extension Nexus {
 		return get(componentId: componentId, entityIdx: entityId.index)
 	}
 
-	fileprivate func get<C>(componentId: ComponentIdentifier, entityIdx: EntityIndex) -> C? where C: Component {
-		guard let uniformComponents: UniformComponents = componentsByType[componentId] else { return nil }
+	private func get<C>(componentId: ComponentIdentifier, entityIdx: EntityIndex) -> C? where C: Component {
+		guard let uniformComponents: UniformComponents = componentsByType[componentId] else {
+			return nil
+		}
 		return uniformComponents.get(at: entityIdx) as? C
 	}
 
@@ -131,7 +137,7 @@ extension Nexus {
 			report("clearing components form entity \(entityId) with no components")
 			return true
 		}
-		let removedAll: Bool = allComponents.reduce(true, { $0 && remove(component: $1, from: entityId) })
+		let removedAll: Bool = allComponents.reduce(true) { $0 && remove(component: $1, from: entityId) }
 		return removedAll
 	}
 

@@ -127,9 +127,9 @@ class NexusTests: XCTestCase {
 		XCTAssert(e0.numComponents == 2)
 		let (name, position) = e0.get(components: Name.self, Position.self)
 
-		XCTAssert(name.name == "myName")
-		XCTAssert(position.x == 99)
-		XCTAssert(position.y == 111)
+		XCTAssert(name?.name == "myName")
+		XCTAssert(position?.x == 99)
+		XCTAssert(position?.y == 111)
 
 		e0.destroy()
 

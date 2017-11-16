@@ -7,11 +7,11 @@
 
 public struct FamilyTraitSet {
 
-	fileprivate let requiresAll: ComponentSet
-	fileprivate let excludesAll: ComponentSet
-	fileprivate let needsAtLeastOne: ComponentSet
-	fileprivate let setHash: Int
-	fileprivate let isEmptyAny: Bool
+	private let requiresAll: ComponentSet
+	private let excludesAll: ComponentSet
+	private let needsAtLeastOne: ComponentSet
+	private let setHash: Int
+	private let isEmptyAny: Bool
 
 	public init(requiresAll: [Component.Type], excludesAll: [Component.Type], needsAtLeastOne: [Component.Type] = []) {
 
@@ -30,30 +30,28 @@ public struct FamilyTraitSet {
 		self.needsAtLeastOne = one
 		self.excludesAll = none
 	}
-}
 
-// MARK: - match
-extension FamilyTraitSet {
+	// MARK: - match
 	public func isMatch(components: ComponentSet) -> Bool {
 		return hasAll(components) && hasNone(components) && hasOne(components)
 	}
 
-	fileprivate func hasAll(_ components: ComponentSet) -> Bool {
+	private func hasAll(_ components: ComponentSet) -> Bool {
 		return requiresAll.isSubset(of: components)
 	}
 
-	fileprivate func hasNone(_ components: ComponentSet) -> Bool {
+	private func hasNone(_ components: ComponentSet) -> Bool {
 		return excludesAll.isDisjoint(with: components)
 	}
 
-	fileprivate func hasOne(_ components: ComponentSet) -> Bool {
-		if needsAtLeastOne.isEmpty { return true }
+	private func hasOne(_ components: ComponentSet) -> Bool {
+		if needsAtLeastOne.isEmpty {
+			return true
+		}
 		return !needsAtLeastOne.isDisjoint(with: components)
 	}
-}
 
-// MARK: - valid
-fileprivate extension FamilyTraitSet {
+	// MARK: - valid
 	static func isValid(requiresAll: ComponentSet, excludesAll: ComponentSet, atLeastOne: ComponentSet) -> Bool {
 		return validAtLeastOneNonEmpty(requiresAll, atLeastOne) &&
 			requiresAll.isDisjoint(with: atLeastOne) &&

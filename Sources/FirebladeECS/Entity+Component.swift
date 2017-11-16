@@ -23,16 +23,16 @@ public extension Entity {
 		return getComponentFunc
 	}
 
-	func get<A, B>(components _: A.Type, _: B.Type) -> (A, B) where A: Component, B: Component {
-		let a: A = get(component: A.self)!
-		let b: B = get(component: B.self)!
+	func get<A, B>(components _: A.Type, _: B.Type) -> (A?, B?) where A: Component, B: Component {
+		let a: A? = get(component: A.self)
+		let b: B? = get(component: B.self)
 		return (a, b)
 	}
 
-	func get<A, B, C>(components _: A.Type, _: B.Type, _: C.Type) -> (A, B, C) where A: Component, B: Component, C: Component {
-		let a: A = get(component: A.self)!
-		let b: B = get(component: B.self)!
-		let c: C = get(component: C.self)!
+	func get<A, B, C>(components _: A.Type, _: B.Type, _: C.Type) -> (A?, B?, C?) where A: Component, B: Component, C: Component {
+		let a: A? = get(component: A.self)
+		let b: B? = get(component: B.self)
+		let c: C? = get(component: C.self)
 		return (a, b, c)
 	}
 }

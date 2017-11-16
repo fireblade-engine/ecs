@@ -52,7 +52,9 @@ public extension Nexus {
 
 	func isMember(_ entityId: EntityIdentifier, in family: Family) -> Bool {
 		let traitHash: FamilyTraitSetHash = family.traits.hashValue
-		guard let members: UniformEntityIdentifiers = familyMembersByTraitHash[traitHash] else { return false }
+		guard let members: UniformEntityIdentifiers = familyMembersByTraitHash[traitHash] else {
+			return false
+		}
 		return members.has(entityId.index)
 	}
 
@@ -79,7 +81,9 @@ extension Nexus {
 		let entityIdx: EntityIndex = entityId.index
 		let traits: FamilyTraitSet = family.traits
 		let traitHash: FamilyTraitSetHash = traits.hashValue
-		guard let componentIds: ComponentIdentifiers = componentIdsByEntity[entityIdx] else { return }
+		guard let componentIds: ComponentIdentifiers = componentIdsByEntity[entityIdx] else {
+			return
+		}
 
 		let is_Member: Bool = isMember(entityId, in: family)
 		if !isValid(entity: entityId) && is_Member {
@@ -104,7 +108,7 @@ extension Nexus {
 }
 
 // MARK: - fileprivate extensions
-fileprivate extension Nexus {
+private extension Nexus {
 
 	func get(family traits: FamilyTraitSet) -> Family? {
 		let traitHash: FamilyTraitSetHash = traits.hashValue

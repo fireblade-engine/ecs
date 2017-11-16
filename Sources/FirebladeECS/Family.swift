@@ -23,27 +23,28 @@ public final class Family {
 		let hash: FamilyTraitSetHash = traits.hashValue
 		nexus?.onFamilyDeinit(traitHash: hash)
 	}
-}
-
-extension Family {
-
-	public var count: Int {
-		return nexus?.members(of: self).count ?? 0
-	}
-
-	public final func canBecomeMember(_ entity: Entity) -> Bool {
-		return nexus?.canBecomeMember(entity, in: self) ?? false
-	}
-
-	public final func isMember(_ entity: Entity) -> Bool {
-		return nexus?.isMember(entity, in: self) ?? false
-	}
-
-	public final func isMember(_ entityId: EntityIdentifier) -> Bool {
-		return nexus?.isMember(entityId, in: self) ?? false
-	}
 
 	var memberIds: UniformEntityIdentifiers {
 		return nexus!.members(of: self)
 	}
+}
+
+public extension Family {
+
+	var count: Int {
+		return nexus?.members(of: self).count ?? 0
+	}
+
+	final func canBecomeMember(_ entity: Entity) -> Bool {
+		return nexus?.canBecomeMember(entity, in: self) ?? false
+	}
+
+	final func isMember(_ entity: Entity) -> Bool {
+		return nexus?.isMember(entity, in: self) ?? false
+	}
+
+	final func isMember(_ entityId: EntityIdentifier) -> Bool {
+		return nexus?.isMember(entityId, in: self) ?? false
+	}
+
 }

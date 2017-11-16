@@ -28,8 +28,8 @@ opt_in_rules:
   - multiline_arguments
   - multiline_parameters
   - nimble_operator
-  - no_extension_access_modifier
-  - no_grouping_extension
+  #- no_extension_access_modifier
+  #- no_grouping_extension
   - number_separator
   - object_literal
   - operator_usage_whitespace

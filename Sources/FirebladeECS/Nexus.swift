@@ -73,12 +73,12 @@ public class Nexus {
 		freeEntities.removeAll()
 
 		assert(entityStorage.isEmpty)
-		assert(componentsByType.values.reduce(0, { $0 + $1.count }) == 0)
-		assert(componentIdsByEntity.values.reduce(0, { $0 + $1.count }) == 0)
+		assert(componentsByType.values.reduce(0) { $0 + $1.count } == 0)
+		assert(componentIdsByEntity.values.reduce(0) { $0 + $1.count } == 0)
 		assert(componentIdsByEntityLookup.isEmpty)
 		assert(freeEntities.isEmpty)
-		assert(familiesByTraitHash.values.reduce(0, { $0 + $1.count }) == 0)
-		assert(familyMembersByTraitHash.values.reduce(0, { $0 + $1.count }) == 0)
+		assert(familiesByTraitHash.values.reduce(0) { $0 + $1.count } == 0)
+		assert(familyMembersByTraitHash.values.reduce(0) { $0 + $1.count } == 0)
 
 		componentsByType.removeAll()
 		componentIdsByEntity.removeAll()

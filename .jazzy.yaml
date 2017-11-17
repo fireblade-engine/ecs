@@ -1,0 +1,15 @@
+module: FirebladeECS
+author: Christian Treffs
+github_url: https://github.com/ctreffs/FirebladeECS/
+
+#theme: fullwidth
+clean: true
+#exclude: [Packages]
+
+readme: README.md
+
+skip_undocumented: false
+hide_documentation_coverage: false
+
+xcodebuild_arguments: [-project, FirebladeECS.xcodeproj, -target, FirebladeECS, LIBRARY_SEARCH_PATHS=.build/debug]
+

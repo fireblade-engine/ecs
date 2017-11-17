@@ -34,6 +34,7 @@
 /Packages
 build/
 DerivedData/
+docs/
 fastlane/Preview.html
 fastlane/report.xml
 fastlane/screenshots
@@ -46,4 +47,4 @@ playground.xcworkspace
 Temporary Items
 timeline.xctimeline
 xcuserdata
-xcuserdata/Package.resolved
+xcuserdata/Package.resolveddocs/

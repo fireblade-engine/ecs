@@ -1,15 +1,24 @@
-module: FirebladeECS
-author: Christian Treffs
-github_url: https://github.com/ctreffs/FirebladeECS/
-
-#theme: fullwidth
-clean: true
+#author_url: URL
+#copyright: Copyright © 2017 Christian Treffs. All rights reserved.
+#docset_icon: /path/to/icon.png
 #exclude: [Packages]
-
-readme: README.md
-
-skip_undocumented: false
+#theme: fullwidth
+author: Christian Treffs
+clean: true
+documentation: docs/*.md
+github_url: https://github.com/ctreffs/FirebladeECS/
 hide_documentation_coverage: false
-
+min_acl: "public"
+module: FirebladeECS
+module_version: 0.1.0
+output: docs
+readme: README.md
+skip_undocumented: false
+#source_directory: Sources
+swift_version: "4.0.3"
+theme: apple
 xcodebuild_arguments: [-project, FirebladeECS.xcodeproj, -target, FirebladeECS, LIBRARY_SEARCH_PATHS=.build/debug]
-
+#custom_categories:
+#- name: Guides
+#  children:
+#   - Category

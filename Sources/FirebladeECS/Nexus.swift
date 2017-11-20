@@ -32,6 +32,7 @@ public class Nexus {
 
 	/// - Index: index value matching entity identifier shifted to Int
 	/// - Value: each element is a entity instance
+	// FIXME: sparse set my be valuable
 	var entityStorage: Entities
 
 	/// - Key: component type identifier
@@ -51,7 +52,7 @@ public class Nexus {
 	var freeEntities: ContiguousArray<EntityIdentifier>
 
 	var familiesByTraitHash: [FamilyTraitSetHash: Family]
-	var familyMembersByTraitHash: [FamilyTraitSetHash: UniformEntityIdentifiers] // SparseSet for EntityIdentifier
+	var familyMembersByTraitHash: [FamilyTraitSetHash: UniformEntityIdentifiers]
 
 	public init() {
 		entityStorage = Entities()

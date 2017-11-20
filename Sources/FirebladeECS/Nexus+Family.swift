@@ -66,6 +66,7 @@ extension Nexus {
 	/// will be called on family init defer
 	func onFamilyInit(family: Family) {
 		// FIXME: this is costly for many entities
+		// FIXME: we iterate invalid entities here
 		for entity: Entity in entityStorage {
 			update(membership: family, for: entity.identifier)
 		}

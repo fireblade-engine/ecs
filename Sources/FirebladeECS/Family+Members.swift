@@ -61,4 +61,23 @@ public extension Family {
 			}
 	}
 
+	func iterate<A>(_ apply: @escaping (EntityIdentifier, A?) -> Void) where A: Component {
+		iterate(components: A.self, apply)
+	}
+
+	func iterate<A, B>(_ apply: @escaping (EntityIdentifier, A?, B?) -> Void) where A: Component, B: Component {
+		iterate(components: A.self, B.self, apply)
+	}
+
+	func iterate<A, B, C>(_ apply: @escaping (EntityIdentifier, A?, B?, C?) -> Void) where A: Component, B: Component, C: Component {
+		iterate(components: A.self, B.self, C.self, apply)
+	}
+
+	func iterate<A, B, C, D>(_ apply: @escaping (EntityIdentifier, A?, B?, C?, D?) -> Void) where A: Component, B: Component, C: Component, D: Component {
+		iterate(components: A.self, B.self, C.self, D.self, apply)
+	}
+
+	func iterate<A, B, C, D, E>(_ apply: @escaping (EntityIdentifier, A?, B?, C?, D?, E?) -> Void) where A: Component, B: Component, C: Component, D: Component, E: Component {
+		iterate(components: A.self, B.self, C.self, D.self, E.self, apply)
+	}
 }

@@ -162,4 +162,27 @@ class FamilyTests: XCTestCase {
 
 	}
 
+
+	func testIterationSimple() {
+		let nexus = Nexus()
+
+		for i in 0..<1000 {
+			nexus.create(entity: "\(i)").assign(Position(x: i + 1, y: i + 2))
+		}
+
+		let familyA = nexus.family(requiresAll: [Position.self], excludesAll: [Velocity.self])
+		let familyB = nexus.family(requiresAll: [Velocity.self], excludesAll: [Position.self])
+
+		familyA.iterate { (_: EntityIdentifier, pos: Position!, vel: Velocity!) in
+
+		}
+
+		
+	}
+
+
+
 }
+
+
+

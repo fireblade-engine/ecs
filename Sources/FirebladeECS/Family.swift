@@ -11,6 +11,15 @@ public final class Family {
 	// members of this Family must conform to these traits
 	public let traits: FamilyTraitSet
 
+	// TODO: add family configuration feature
+	// a) define sort order of entities
+	// b) define read/write access
+	// c) set size and storage constraints
+
+	// TODO: family unions
+	// a) iterate family A and family B in pairs
+	// b) pair-wise comparison inside families or between families
+
 	init(_ nexus: Nexus, traits: FamilyTraitSet) {
 		self.nexus = nexus
 		self.traits = traits

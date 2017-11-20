@@ -17,19 +17,6 @@ public final class Entity: UniqueEntityIdentifiable {
 	}
 }
 
-// MARK: - Invalidate
-extension Entity {
-
-	public var isValid: Bool {
-		return nexus.isValid(entity: self)
-	}
-
-	func invalidate() {
-		identifier = EntityIdentifier.invalid
-		name = nil
-	}
-}
-
 // MARK: - Equatable
 public func == (lhs: Entity, rhs: Entity) -> Bool {
 	return lhs.identifier == rhs.identifier

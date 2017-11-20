@@ -13,7 +13,7 @@ public typealias UniformComponents = ContiguousComponentArray
 public typealias UniformEntityIdentifiers = SparseEntityIdentifierSet
 public typealias ComponentIdentifiers = ContiguousArray<ComponentIdentifier>
 public typealias ComponentSet = Set<ComponentIdentifier>
-public typealias Entities = ContiguousArray<Entity>
+public typealias Entities = SparseEntitySet
 public typealias EntityIdSet = Set<EntityIdentifier>
 public typealias FamilyTraitSetHash = Int
 public typealias TraitEntityIdHash = Int
@@ -31,7 +31,6 @@ public class Nexus {
 
 	/// - Index: index value matching entity identifier shifted to Int
 	/// - Value: each element is a entity instance
-	// FIXME: sparse set my be valuable
 	var entityStorage: Entities
 
 	/// - Key: component type identifier
@@ -40,7 +39,6 @@ public class Nexus {
 
 	/// - Key: entity id as index
 	/// - Value: each element is a component identifier associated with this entity
-	// FIXME: this may be refactored to a uniform sparse set
 	var componentIdsByEntity: [EntityIndex: SparseComponentIdentifierSet]
 
 	/// - Values: entity ids that are currently not used
@@ -61,11 +59,12 @@ public class Nexus {
 	}
 
 	deinit {
-		for e in entities {
+
+		for e: Entity in entityStorage {
 			destroy(entity: e)
 		}
 
-		entityStorage.removeAll()
+		entityStorage.clear()
 		freeEntities.removeAll()
 
 		assert(entityStorage.isEmpty)

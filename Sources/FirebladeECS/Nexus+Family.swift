@@ -66,7 +66,6 @@ extension Nexus {
 	/// will be called on family init defer
 	func onFamilyInit(family: Family) {
 		// FIXME: this is costly for many entities
-		// FIXME: we iterate invalid entities here
 		for entity: Entity in entityStorage {
 			update(membership: family, for: entity.identifier)
 		}
@@ -87,7 +86,7 @@ extension Nexus {
 		}
 
 		let is_Member: Bool = isMember(entityId, in: family)
-		if !isValid(entity: entityId) && is_Member {
+		if !has(entity: entityId) && is_Member {
 			remove(from: traitHash, entityId: entityId, entityIdx: entityIdx)
 			return
 		}

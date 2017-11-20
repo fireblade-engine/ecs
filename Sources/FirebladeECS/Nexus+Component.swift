@@ -30,6 +30,8 @@ extension Nexus {
 	public func assign(component: Component, to entity: Entity) {
 		let componentId = component.identifier
 		let entityIdx = entity.identifier.index
+		let entityId: EntityIdentifier = entity.identifier
+
 		/// test if component is already assigned
 		guard !has(componentId: componentId, entityIdx: entityIdx) else {
 			// FIXME: this is still open to debate
@@ -53,7 +55,6 @@ extension Nexus {
 		componentIdsByEntity[entityIdx]?.add(componentId, at: componentId.hashValue)
 
 		// FIXME: iterating all families is costly for many families
-		let entityId: EntityIdentifier = entity.identifier
 		for (_, family) in familiesByTraitHash {
 			update(membership: family, for: entityId)
 		}

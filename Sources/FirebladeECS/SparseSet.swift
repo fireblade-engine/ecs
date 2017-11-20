@@ -24,6 +24,7 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 	}
 
 	public var count: Int { return size }
+	var isEmpty: Bool { return size == 0 }
 	var capacitySparse: Int { return sparse.capacity }
 	var capacityDense: Int { return dense.capacity }
 
@@ -52,18 +53,19 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 		return dense[sIdx]?.value
 	}
 
-	public func remove(at index: Index) {
+	@discardableResult
+	public func remove(at index: Index) -> Bool {
 		guard has(index) else {
-			return
+			return false
 		}
 		guard let removeIdx: DenseIndex = sparse[index] else {
-			return
+			return false
 		}
 		let lastIdx: DenseIndex = count - 1
 		dense.swapAt(removeIdx, lastIdx)
 		sparse[index] = nil
 		guard let swapped: Pair = dense[removeIdx] else {
-			return
+			return false
 		}
 		sparse[swapped.key] = removeIdx
 		dense.removeLast()
@@ -71,6 +73,7 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 		if size == 0 {
 			clear(keepingCapacity: false)
 		}
+		return true
 	}
 
 	public func clear(keepingCapacity: Bool = false) {
@@ -104,6 +107,10 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 }
 
 // MARK: - specialized sparse sets
+
+public class SparseEntitySet: SparseSet<Entity> {
+	public typealias Index = EntityIndex
+}
 
 public class SparseEntityIdentifierSet: SparseSet<EntityIdentifier> {
 	public typealias Index = EntityIndex

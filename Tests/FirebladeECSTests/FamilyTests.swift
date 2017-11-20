@@ -144,7 +144,7 @@ class FamilyTests: XCTestCase {
 
 		var countA: Int = 0
 		familyA.iterate(components: Position.self) { (entityId, _) in
-			let e = nexus.get(entity: entityId)
+			let e = nexus.get(entity: entityId)!
 			e.assign(Velocity(a: 3.14))
 			e.remove(Position.self)
 			countA += 1
@@ -153,7 +153,7 @@ class FamilyTests: XCTestCase {
 
 		var countB: Int = 0
 		familyB.iterate(components: Velocity.self) { eId, velocity in
-			let e = nexus.get(entity: eId)
+			let e = nexus.get(entity: eId)!
 			e.assign(Position(x: 1, y: 2))
 			e.remove(velocity!)
 			countB += 1

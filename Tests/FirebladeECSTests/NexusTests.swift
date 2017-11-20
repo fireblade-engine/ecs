@@ -24,49 +24,18 @@ class NexusTests: XCTestCase {
 
 		let e0 = nexus.create()
 		XCTAssert(e0.identifier.index == 0)
-		XCTAssert(e0.isValid)
 		XCTAssert(nexus.numEntities == 1)
 
 		let e1 = nexus.create(entity: "Named e1")
 		XCTAssert(e1.identifier.index == 1)
-		XCTAssert(e1.isValid)
 		XCTAssert(nexus.numEntities == 2)
 
 		XCTAssert(e0.name == nil)
 		XCTAssert(e1.name == "Named e1")
 
-		let rE0 = nexus.get(entity: e0.identifier)
+		let rE0 = nexus.get(entity: e0.identifier)!
 		XCTAssert(rE0.name == e0.name)
 		XCTAssert(rE0.identifier == e0.identifier)
-	}
-
-	func testDestroyAndReuseEntity() {
-		let nexus: Nexus = Nexus()
-		XCTAssert(nexus.numEntities == 0)
-
-		let e0 = nexus.create(entity: "e0")
-		XCTAssert(e0.isValid)
-		XCTAssert(nexus.numEntities == 1)
-
-		let e1 = nexus.create(entity: "e1")
-		XCTAssert(e1.isValid)
-		XCTAssert(nexus.numEntities == 2)
-
-		e0.destroy()
-
-		XCTAssert(!e0.isValid)
-		XCTAssert(e1.isValid)
-		XCTAssert(nexus.numEntities == 1)
-
-		let e2 = nexus.create(entity: "e2")
-		XCTAssert(!e0.isValid)
-		XCTAssert(e1.isValid)
-		XCTAssert(e2.isValid)
-
-		XCTAssert(nexus.numEntities == 2)
-
-		XCTAssert(!(e0 == e2))
-		XCTAssert(!(e0 === e2))
 	}
 
 	func testComponentCreation() {
@@ -80,7 +49,6 @@ class NexusTests: XCTestCase {
 		e0.assign(p0)
 		e0.assign(p0)
 
-		XCTAssert(e0.isValid)
 		XCTAssert(e0.hasComponents)
 		XCTAssert(e0.numComponents == 1)
 
@@ -93,7 +61,7 @@ class NexusTests: XCTestCase {
 		let nexus = Nexus()
 		let identifier: EntityIdentifier = nexus.create(entity: "e0").identifier
 
-		let e0 = nexus.get(entity: identifier)
+		let e0 = nexus.get(entity: identifier)!
 
 		XCTAssert(e0.numComponents == 0)
 		e0.remove(Position.self)
@@ -134,7 +102,6 @@ class NexusTests: XCTestCase {
 		e0.destroy()
 
 		XCTAssert(e0.numComponents == 0)
-		XCTAssert(!e0.isValid)
 
 	}
 

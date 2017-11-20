@@ -14,7 +14,8 @@ public protocol UniformStorage: class {
 	func add(_ element: Element, at index: Index)
 	func has(_ index: Index) -> Bool
 	func get(at index: Index) -> Element?
-	func remove(at index: Index)
+	@discardableResult
+	func remove(at index: Index) -> Bool
 	func clear(keepingCapacity: Bool)
 }
 
@@ -56,7 +57,8 @@ public class ManagedContiguousArray: UniformStorage {
 		return store[index]
 	}
 
-	public func remove(at index: Index) {
+	@discardableResult
+	public func remove(at index: Index) -> Bool {
 		if store[index] != nil {
 			size -= 1
 		}
@@ -64,6 +66,7 @@ public class ManagedContiguousArray: UniformStorage {
 		if size == 0 {
 			clear()
 		}
+		return true
 	}
 
 	public func clear(keepingCapacity: Bool = false) {

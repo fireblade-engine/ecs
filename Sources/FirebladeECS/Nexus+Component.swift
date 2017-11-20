@@ -30,7 +30,6 @@ extension Nexus {
 	public func assign(component: Component, to entity: Entity) {
 		let componentId = component.identifier
 		let entityIdx = entity.identifier.index
-		let hash: EntityComponentHash = componentId.hashValue(using: entityIdx)
 		/// test if component is already assigned
 		guard !has(componentId: componentId, entityIdx: entityIdx) else {
 			// FIXME: this is still open to debate
@@ -40,20 +39,18 @@ extension Nexus {
 			report("ComponentAdd collision: \(entityIdx) already has a component \(component)")
 			return
 		}
+
+		// add component instances to uniform component stores
 		if componentsByType[componentId] == nil {
 			componentsByType[componentId] = UniformComponents()
 		}
 		componentsByType[componentId]?.add(component, at: entityIdx)
 
 		// assigns the component id to the entity id
-		if let compIds = componentIdsByEntity[entityIdx] {
-			let endIndex: Int = compIds.count
-			componentIdsByEntity[entityIdx]?.append(componentId) // Amortized O(1)
-			componentIdsByEntityLookup[hash] = endIndex
-		} else {
-			componentIdsByEntity[entityIdx] = ComponentIdentifiers(arrayLiteral: componentId)
-			componentIdsByEntityLookup[hash] = 0
+		if componentIdsByEntity[entityIdx] == nil {
+			componentIdsByEntity[entityIdx] = SparseComponentIdentifierSet()
 		}
+		componentIdsByEntity[entityIdx]?.add(componentId, at: componentId.hashValue)
 
 		// FIXME: iterating all families is costly for many families
 		let entityId: EntityIdentifier = entity.identifier
@@ -87,40 +84,19 @@ extension Nexus {
 		return uniformComponents.get(at: entityIdx) as? C
 	}
 
-	public func get(components entityId: EntityIdentifier) -> ComponentIdentifiers? {
+	public func get(components entityId: EntityIdentifier) -> SparseComponentIdentifierSet? {
 		return componentIdsByEntity[entityId.index]
 	}
 
 	@discardableResult
 	public func remove(component componentId: ComponentIdentifier, from entityId: EntityIdentifier) -> Bool {
 		let entityIdx: EntityIndex = entityId.index
-		let hash: EntityComponentHash = componentId.hashValue(using: entityIdx)
+		//let hash: EntityComponentHash = componentId.hashValue(using: entityIdx)
 
 		// delete component instance
 		componentsByType[componentId]?.remove(at: entityIdx)
-
-		// unassign component
-		guard let removeIndex: ComponentIdsByEntityIndex = componentIdsByEntityLookup.removeValue(forKey: hash) else {
-			report("ComponentRemove failure: no component found to be removed")
-			return false
-		}
-
-		guard componentIdsByEntity[entityIdx]?.remove(at: removeIndex) != nil else {
-			assert(false, "ComponentRemove failure: nothing was removed")
-			report("ComponentRemove failure: nothing was removed")
-			return false
-		}
-
-		// relocate remaining indices pointing in the componentsByEntity map
-		if let remainingComponents: ComponentIdentifiers = componentIdsByEntity[entityIdx] {
-			// FIXME: enumerated iteration of remaning components is costly
-			// solution: we fix it by using a sparse set for components per entity
-			for (index, compId) in remainingComponents.enumerated() {
-				let cHash: EntityComponentHash = compId.hashValue(using: entityIdx)
-				assert(cHash != hash)
-				componentIdsByEntityLookup[cHash] = index
-			}
-		}
+		// unasign component from entity
+		componentIdsByEntity[entityIdx]?.remove(at: componentId.hashValue)
 
 		// FIXME: iterating all families is costly for many families
 		for (_, family) in familiesByTraitHash {
@@ -133,7 +109,7 @@ extension Nexus {
 
 	@discardableResult
 	public func clear(componentes entityId: EntityIdentifier) -> Bool {
-		guard let allComponents: ComponentIdentifiers = get(components: entityId) else {
+		guard let allComponents = get(components: entityId) else {
 			report("clearing components form entity \(entityId) with no components")
 			return true
 		}

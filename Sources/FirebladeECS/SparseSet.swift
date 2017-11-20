@@ -105,12 +105,11 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 
 // MARK: - specialized sparse sets
 
-public class SparseComponentSet: SparseSet<Component> {
+public class SparseEntityIdentifierSet: SparseSet<EntityIdentifier> {
 	public typealias Index = EntityIndex
 
 }
 
-public class SparseEntityIdentifierSet: SparseSet<EntityIdentifier> {
-	public typealias Index = EntityIndex
+public class SparseComponentIdentifierSet: SparseSet<ComponentIdentifier> {
 
 }

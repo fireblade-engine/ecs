@@ -9,13 +9,15 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 	public typealias Index = Int
 	private typealias DenseIndex = Int
 	private var size: Int = 0
-	private var dense: ContiguousArray<Pair?>
+	private var denseIndices: ContiguousArray<Index>
+	private var denseData: ContiguousArray<Element>
 	private var sparse: [Index: DenseIndex]
 
-	private typealias Pair = (key: Index, value: Element)
+	//private typealias Pair = (key: Index, value: Element)
 
 	public init() {
-		dense = ContiguousArray<Pair?>()
+		denseIndices = ContiguousArray<Index>()
+		denseData = ContiguousArray<Element>()
 		sparse = [Index: DenseIndex]()
 	}
 
@@ -26,11 +28,11 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 	public var count: Int { return size }
 	var isEmpty: Bool { return size == 0 }
 	var capacitySparse: Int { return sparse.capacity }
-	var capacityDense: Int { return dense.capacity }
+	var capacityDense: Int { return denseIndices.capacity }
 
 	public func has(_ index: Index) -> Bool {
-		return sparse[index] ?? Int.max < count &&
-			dense[sparse[index]!] != nil
+		return sparse[index] ?? Int.max < count /*&&
+			denseIndices[safe: sparse[index]!] != nil*/
 	}
 
 	public func add(_ element: Element, at index: Index) {
@@ -38,19 +40,16 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 			return
 		}
 		sparse[index] = count
-		let entry: Pair = Pair(key: index, value: element)
-		dense.append(entry)
+		denseIndices.append(index)
+		denseData.append(element)
 		size += 1
 	}
 
 	public func get(at index: Index) -> Element? {
-		guard has(index) else {
+		guard let sIdx: Index = sparse[index] else {
 			return nil
 		}
-		guard let sIdx = sparse[index] else {
-			return nil
-		}
-		return dense[sIdx]?.value
+		return denseData[sIdx]
 	}
 
 	@discardableResult
@@ -62,13 +61,13 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 			return false
 		}
 		let lastIdx: DenseIndex = count - 1
-		dense.swapAt(removeIdx, lastIdx)
+		denseIndices.swapAt(removeIdx, lastIdx)
+		denseData.swapAt(removeIdx, lastIdx)
 		sparse[index] = nil
-		guard let swapped: Pair = dense[removeIdx] else {
-			return false
-		}
-		sparse[swapped.key] = removeIdx
-		dense.removeLast()
+		let swappedIndex = denseIndices[removeIdx]
+		sparse[swappedIndex] = removeIdx
+		denseIndices.removeLast()
+		denseData.removeLast()
 		size -= 1
 		if size == 0 {
 			clear(keepingCapacity: false)
@@ -78,7 +77,8 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 
 	public func clear(keepingCapacity: Bool = false) {
 		size = 0
-		dense.removeAll(keepingCapacity: keepingCapacity)
+		denseIndices.removeAll(keepingCapacity: keepingCapacity)
+		denseData.removeAll(keepingCapacity: keepingCapacity)
 		sparse.removeAll(keepingCapacity: keepingCapacity)
 	}
 
@@ -89,18 +89,15 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 	// MARK: - SparseIterator
 	public struct SparseSetIterator<Element>: IteratorProtocol {
 		private let sparseSet: SparseSet<Element>
-		private var iterator: IndexingIterator<ContiguousArray<(key: Index, value: Element)?>>
+		private var iterator: IndexingIterator<ContiguousArray<Element>>
 
 		init(_ sparseSet: SparseSet<Element>) {
 			self.sparseSet = sparseSet
-			self.iterator = sparseSet.dense.makeIterator()
+			self.iterator = sparseSet.denseData.makeIterator()
 		}
 
 		mutating public func next() -> Element? {
-			guard let next: Pair = iterator.next() as? Pair else {
-				return nil
-			}
-			return next.value as? Element
+			return iterator.next()
 		}
 
 	}

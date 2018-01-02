@@ -1,5 +1,5 @@
 [![version 0.3.0](https://img.shields.io/badge/version-0.3.0-brightgreen.svg)](https://github.com/ctreffs/fireblade-ecs/releases/tag/v0.3.0)
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE.md)
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE)
 
 # Fireblade ECS (Entity-Component-System)
 <!--One Paragraph of project description goes here
@@ -70,7 +70,7 @@ See also the list of [contributors](https://github.com/ctreffs/fireblade-ecs/pro
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
 
 ## Acknowledgments
 

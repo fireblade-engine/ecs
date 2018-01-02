@@ -66,7 +66,7 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 * [Christian Treffs](https://github.com/ctreffs) - *Initial work*
 * [Manuel Weidmann](https://github.com/vyo)
 
-See also the list of [contributors](https://github.com/ctreffs/fireblade-ecs/project/contributors) who participated in this project.
+See also the list of [contributors](project/contributors) who participated in this project.
 
 ## License
 

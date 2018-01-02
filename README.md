@@ -3,7 +3,7 @@
 
 A short description of the motivation behind the creation and maintenance of the project. This should explain **why** the project exists.-->
 
-This is a lightweight, easy to use, fast and simple [Entity-Component-System](https://en.wikipedia.org/wiki/Entity–component–system) implementation for Swift. It is developed and maintained as part of the Fireblade Game Engine project.
+This is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component-System](https://en.wikipedia.org/wiki/Entity–component–system) implementation in Swift. It is developed and maintained as part of the Fireblade Game Engine project.
 
 ## Getting Started
 
@@ -40,69 +40,27 @@ let package = Package(
 
 ```
 
-### Contribution 
-
-Clone this repository into your favorite folder.
-If you like to edit the project via Xcode use the following to generate the Xcode Project.
-
-```
-cd <PATH_TO_REPOSITORY>
-swift package generate-xcodeproj
-open FirebladeECS.xcodeproj
-```
-
-
 End with an example of getting some data out of the system or using it for a little demo
 
 
 ## Code Example
 
-Show what the library does as concisely as possible, developers should be able to figure out **how** your project solves their problem by looking at the code example. Make sure the API you are showing off is obvious, and that your code is short and concise.
+<!--Show what the library does as concisely as possible, developers should be able to figure out **how** your project solves their problem by looking at the code example. Make sure the API you are showing off is obvious, and that your code is short and concise.-->
 
+<!--## Contributing
 
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
-
-## Built With
-
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
+Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.-->
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/ctreffs/fireblade-ecs/tags). 
 
 ## Authors
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+* [Christian Treffs](https://github.com/ctreffs) - *Initial work*
+* [Manuel Weidmann](https://github.com/vyo)
 
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/ctreffs/fireblade-ecs/project/contributors) who participated in this project.
 
 ## License
 

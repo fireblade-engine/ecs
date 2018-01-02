@@ -1,4 +1,3 @@
-//
 //  Family.swift
 //  FirebladeECS
 //
@@ -41,7 +40,7 @@ public final class Family {
 public extension Family {
 
 	var count: Int {
-		return nexus?.members(of: self).count ?? 0
+		return nexus?.members(of: self)?.count ?? 0
 	}
 
 	final func canBecomeMember(_ entity: Entity) -> Bool {

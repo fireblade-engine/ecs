@@ -171,7 +171,7 @@ class FamilyTests: XCTestCase {
 		}
 
 		let familyA = nexus.family(requiresAll: [Position.self], excludesAll: [Velocity.self])
-		let familyB = nexus.family(requiresAll: [Velocity.self], excludesAll: [Position.self])
+		_ = nexus.family(requiresAll: [Velocity.self], excludesAll: [Position.self])
 
 		familyA.iterate { (_: EntityIdentifier, pos: Position!, vel: Velocity!) in
 

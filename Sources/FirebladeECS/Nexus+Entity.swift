@@ -52,10 +52,7 @@ extension Nexus {
 
 		freeEntities.append(entityId)
 
-		// FIXME: iterating all families is costly for many families
-		for (_, family) in familiesByTraitHash {
-			update(membership: family, for: entityId)
-		}
+		update(familyMembership: entityId)
 
 		notify(EntityDestroyed(entityId: entityId))
 		return true

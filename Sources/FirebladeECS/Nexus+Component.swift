@@ -54,10 +54,7 @@ extension Nexus {
 		}
 		componentIdsByEntity[entityIdx]?.add(componentId, at: componentId.hashValue)
 
-		// FIXME: iterating all families is costly for many families
-		for (_, family) in familiesByTraitHash {
-			update(membership: family, for: entityId)
-		}
+		update(familyMembership: entityId)
 
 		notify(ComponentAdded(component: componentId, toEntity: entity.identifier))
 	}
@@ -99,10 +96,7 @@ extension Nexus {
 		// unasign component from entity
 		componentIdsByEntity[entityIdx]?.remove(at: componentId.hashValue)
 
-		// FIXME: iterating all families is costly for many families
-		for (_, family) in familiesByTraitHash {
-			update(membership: family, for: entityId)
-		}
+		update(familyMembership: entityId)
 
 		notify(ComponentRemoved(component: componentId, from: entityId))
 		return true
@@ -117,5 +111,4 @@ extension Nexus {
 		let removedAll: Bool = allComponents.reduce(true) { $0 && remove(component: $1, from: entityId) }
 		return removedAll
 	}
-
 }

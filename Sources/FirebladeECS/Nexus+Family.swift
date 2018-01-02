@@ -36,14 +36,13 @@ public extension Nexus {
 		return family.traits.isMatch(components: componentSet)
 	}
 
-	func members(of family: Family) -> UniformEntityIdentifiers {
+	func members(of family: Family) -> UniformEntityIdentifiers? {
 		let traitHash: FamilyTraitSetHash = family.traits.hashValue
 		return members(of: traitHash)
 	}
 
-	func members(of traitHash: FamilyTraitSetHash) -> UniformEntityIdentifiers {
-		// FIXME: we may fail here if this is empty
-		return familyMembersByTraitHash[traitHash] ?? UniformEntityIdentifiers()
+	func members(of traitHash: FamilyTraitSetHash) -> UniformEntityIdentifiers? {
+		return familyMembersByTraitHash[traitHash]
 	}
 
 	func isMember(_ entity: Entity, in family: Family) -> Bool {
@@ -52,7 +51,7 @@ public extension Nexus {
 
 	func isMember(_ entityId: EntityIdentifier, in family: Family) -> Bool {
 		let traitHash: FamilyTraitSetHash = family.traits.hashValue
-		guard let members: UniformEntityIdentifiers = familyMembersByTraitHash[traitHash] else {
+		guard let members: UniformEntityIdentifiers = members(of: traitHash) else {
 			return false
 		}
 		return members.has(entityId.index)
@@ -72,8 +71,18 @@ extension Nexus {
 	}
 
 	func onFamilyDeinit(traitHash: FamilyTraitSetHash) {
-		for member in members(of: traitHash) {
+		guard let members = members(of: traitHash) else {
+			return
+		}
+		for member in members {
 			remove(from: traitHash, entityId: member, entityIdx: member.index)
+		}
+	}
+
+	func update(familyMembership entityId: EntityIdentifier) {
+		// FIXME: iterating all families is costly for many families
+		for family in familiesByTraitHash.values {
+			update(membership: family, for: entityId)
 		}
 	}
 

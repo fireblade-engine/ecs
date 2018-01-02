@@ -1,3 +1,6 @@
+[![version 0.3.0](https://img.shields.io/badge/version-0.3.0-brightgreen.svg)](https://github.com/ctreffs/fireblade-ecs/releases/tag/v0.3.0)
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE.md)
+
 # Fireblade ECS (Entity-Component-System)
 <!--One Paragraph of project description goes here
 
@@ -21,7 +24,7 @@ Fireblade ECS is available for all platforms that support [Swift 4.0+](https://s
 
 Extend the following lines in your `Package.swift` file or use it to create a new project.
 
-```
+```swift
 // swift-tools-version:4.0
 
 import PackageDescription
@@ -40,12 +43,15 @@ let package = Package(
 
 ```
 
-End with an example of getting some data out of the system or using it for a little demo
-
-
 ## Code Example
 
 <!--Show what the library does as concisely as possible, developers should be able to figure out **how** your project solves their problem by looking at the code example. Make sure the API you are showing off is obvious, and that your code is short and concise.-->
+
+A core element in the Fireblade-ECS is the [Nexus](https://en.wiktionary.org/wiki/nexus). It acts as a centralized way to store, access and manage entities and their components.   
+
+```swift
+let nexus = Nexus()
+```
 
 <!--## Contributing
 

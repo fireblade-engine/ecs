@@ -1,4 +1,4 @@
-[![version 0.3.0](https://img.shields.io/badge/version-0.3.0-brightgreen.svg)](https://github.com/ctreffs/fireblade-ecs/releases/tag/v0.3.0)
+[![version 0.3.0](https://img.shields.io/badge/version-0.3.0-brightgreen.svg)](releases/tag/v0.3.0)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE)
 
 # Fireblade ECS (Entity-Component-System)
@@ -47,7 +47,7 @@ let package = Package(
 
 <!--Show what the library does as concisely as possible, developers should be able to figure out **how** your project solves their problem by looking at the code example. Make sure the API you are showing off is obvious, and that your code is short and concise.-->
 
-A core element in the Fireblade-ECS is the [Nexus](https://en.wiktionary.org/wiki/nexus). It acts as a centralized way to store, access and manage entities and their components.   
+A core element in the Fireblade-ECS is the [Nexus](https://en.wiktionary.org/wiki/nexus#Noun). It acts as a centralized way to store, access and manage entities and their components.   
 
 ```swift
 let nexus = Nexus()
@@ -59,7 +59,7 @@ Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c6
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/ctreffs/fireblade-ecs/tags). 
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](tags). 
 
 ## Authors
 

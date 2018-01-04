@@ -75,19 +75,40 @@ and assign them to an entity with
 myEntity.assign(Movement())
 ```
 
+This ECS uses a grouping approach for entities with the same component types to optimize and ease up access to these. Entites with the same component types may be accessed via a so called family. A family has entities as members and component types as family traits.
+
+Create a family by calling `.family` with a set of traits on the nexus.
+A family that containts only entities with a `Movement` and `PlayerInput` component, but no `Texture` component is created by
+
+```swift
+	let family = nexus.family(requiresAll: [Movement.self, PlayerInput.self], excludesAll: [Texture.self])
+```
+
+These entites are cached in the nexus for efficient access and iteration.
+Iterate family members by calling `.iterate` on the family you want to iterate over.
+`iterate` provides a closure who's paramter start with the entity identifier (entityId) of the current entity, followed by the typesafe component instanced of the current entity, that you may provide in your desired order. You may discard any of the components if you do not need them but this is not recommended due to performance reasons.
+
 ```swift
 class PlayerMovementSystem {
-	let family = nexus.family(requiresAll: [Movement.self, PlayerInput.self], excludesAll: [])
+	let family = nexus.family(requiresAll: [Movement.self, PlayerInput.self], excludesAll: [Texture.self], any: [Name.self])
 
 	func update() {
-		family.iterate { (_, mov: Movement!, input: PlayerInput!) in
+		family.iterate { (_, mov: Movement!, input: PlayerInput!, name: Name?) in
 			
+			// position & velocity for the current entity
+			// we know that we will have this component so we force unwrap the component instance parameter already for easy handling inside the closure
 			mov.position
 			mov.velocity
 			...
 			
+			// current input command for the given entity
 			input.command
 			...
+			
+			// optional name component that may or may not be part of the current entity
+			name?.name
+			...
+			
 		}
 	}
 }

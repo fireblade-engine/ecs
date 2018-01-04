@@ -47,10 +47,50 @@ let package = Package(
 
 <!--Show what the library does as concisely as possible, developers should be able to figure out **how** your project solves their problem by looking at the code example. Make sure the API you are showing off is obvious, and that your code is short and concise.-->
 
-A core element in the Fireblade-ECS is the [Nexus](https://en.wiktionary.org/wiki/nexus#Noun). It acts as a centralized way to store, access and manage entities and their components.   
+A core element in the Fireblade-ECS is the [Nexus](https://en.wiktionary.org/wiki/nexus#Noun). It acts as a centralized way to store, access and manage entities and their components. You may use more than one nexus at the same time.
+
+Initialize a nexus with
 
 ```swift
 let nexus = Nexus()
+```
+
+then create entities by generating them with the nexus.
+
+```swift
+let myEntity = nexus.create(entity: "myEntity")
+```
+
+You create components like this
+
+```swift
+class Movement: Component {
+	var position: (x: Double, y: Double) = (0.0, 1.0)
+	var velocity: Double = 0.1
+}
+```
+and assign them to an entity with
+
+```swift
+myEntity.assign(Movement())
+```
+
+```swift
+class PlayerMovementSystem {
+	let family = nexus.family(requiresAll: [Movement.self, PlayerInput.self], excludesAll: [])
+
+	func update() {
+		family.iterate { (_, mov: Movement!, input: PlayerInput!) in
+			
+			mov.position
+			mov.velocity
+			...
+			
+			input.command
+			...
+		}
+	}
+}
 ```
 
 <!--## Contributing

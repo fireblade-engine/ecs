@@ -1,5 +1,6 @@
 [![version 0.3.0](https://img.shields.io/badge/version-0.3.0-brightgreen.svg)](releases/tag/v0.3.0)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE)
+[![swift version](https://img.shields.io/badge/swift-4.0+-brightgreen.svg)](#)
 
 # Fireblade ECS (Entity-Component-System)
 <!--One Paragraph of project description goes here
@@ -91,7 +92,7 @@ A family that containts only entities with a `Movement` and `PlayerInput` compon
 These entities are cached in the nexus for efficient access and iteration.
 Iterate family members by calling `.iterate` on the family you want to iterate over.
 `iterate` provides a closure whose parameters start with the entity identifier (entityId) of the current entity, 
-followed by the typesafe component instance of the current entity that you may provide in your desired order. 
+followed by the typesafe component instances of the current entity that you may provide in your desired order. 
 
 ```swift
 class PlayerMovementSystem {

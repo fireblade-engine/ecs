@@ -47,7 +47,9 @@ let package = Package(
 
 <!--Show what the library does as concisely as possible, developers should be able to figure out **how** your project solves their problem by looking at the code example. Make sure the API you are showing off is obvious, and that your code is short and concise.-->
 
-A core element in the Fireblade-ECS is the [Nexus](https://en.wiktionary.org/wiki/nexus#Noun). It acts as a centralized way to store, access and manage entities and their components. You may use more than one nexus at the same time.
+A core element in the Fireblade-ECS is the [Nexus](https://en.wiktionary.org/wiki/nexus#Noun). 
+It acts as a centralized way to store, access and manage entities and their components. 
+You may use more than one nexus at a time.
 
 Initialize a nexus with
 
@@ -55,13 +57,13 @@ Initialize a nexus with
 let nexus = Nexus()
 ```
 
-then create entities by generating them with the nexus.
+then create entities by letting the `Nexus` generate them.
 
 ```swift
 let myEntity = nexus.create(entity: "myEntity")
 ```
 
-You create components like this
+You can define `Components` like this
 
 ```swift
 class Movement: Component {
@@ -69,24 +71,27 @@ class Movement: Component {
 	var velocity: Double = 0.1
 }
 ```
-and assign them to an entity with
+and assign instances of them to an `Entity` with
 
 ```swift
 myEntity.assign(Movement())
 ```
 
-This ECS uses a grouping approach for entities with the same component types to optimize and ease up access to these. Entites with the same component types may be accessed via a so called family. A family has entities as members and component types as family traits.
+This ECS uses a grouping approach for entities with the same component types to optimize and ease up access to these. 
+Entities with the same component types may be accessed via a so called family. 
+A family has entities as members and component types as family traits.
 
 Create a family by calling `.family` with a set of traits on the nexus.
 A family that containts only entities with a `Movement` and `PlayerInput` component, but no `Texture` component is created by
 
 ```swift
-	let family = nexus.family(requiresAll: [Movement.self, PlayerInput.self], excludesAll: [Texture.self])
+	let family = nexus.family(requiresAll: [Movement.self, PlayerInput.self], excludesAll: [Texture.self], any: [Name.self])
 ```
 
-These entites are cached in the nexus for efficient access and iteration.
+These entities are cached in the nexus for efficient access and iteration.
 Iterate family members by calling `.iterate` on the family you want to iterate over.
-`iterate` provides a closure who's paramter start with the entity identifier (entityId) of the current entity, followed by the typesafe component instanced of the current entity, that you may provide in your desired order. You may discard any of the components if you do not need them but this is not recommended due to performance reasons.
+`iterate` provides a closure whose parameters start with the entity identifier (entityId) of the current entity, 
+followed by the typesafe component instance of the current entity that you may provide in your desired order. 
 
 ```swift
 class PlayerMovementSystem {
@@ -97,16 +102,21 @@ class PlayerMovementSystem {
 			
 			// position & velocity for the current entity
 			// we know that we will have this component so we force unwrap the component instance parameter already for easy handling inside the closure
-			mov.position
-			mov.velocity
+			
+			// get properties
+			_ = mov.position
+			_ = mov.velocity
+			
+			// set properties
+			mov.position.x = mov.position.x + 3.0
 			...
 			
 			// current input command for the given entity
-			input.command
+			_ = input.command
 			...
 			
 			// optional name component that may or may not be part of the current entity
-			name?.name
+			_ = name?.name
 			...
 			
 		}
@@ -135,6 +145,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-* Hat tip to anyone who's code was used
-* Inspiration
-* etc
+* Inspired by [Ashley](https://github.com/libgdx/ashley), [EntitasKit](https://github.com/mzaks/EntitasKit)

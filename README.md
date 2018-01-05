@@ -1,8 +1,9 @@
-[![version 0.3.0](https://img.shields.io/badge/version-0.3.0-brightgreen.svg)](releases/tag/v0.3.0)
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE)
-[![swift version](https://img.shields.io/badge/swift-4.0+-brightgreen.svg)](#)
 
 # Fireblade ECS (Entity-Component-System)
+[![version 0.3.0](https://img.shields.io/badge/version-0.3.0-brightgreen.svg)](releases/tag/v0.3.0)
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE)
+[![swift version](https://img.shields.io/badge/swift-4.0+-blue.svg)](#)
+[![platforms](https://img.shields.io/badge/platform-macOS,linux-blue.svg)](#)
 <!--One Paragraph of project description goes here
 
 A short description of the motivation behind the creation and maintenance of the project. This should explain **why** the project exists.-->

@@ -3,9 +3,6 @@
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE)
 [![swift version](https://img.shields.io/badge/swift-4+-blue.svg)](#)
 [![platforms](https://img.shields.io/badge/platform-macOS,linux-blue.svg)](#)
-<!--One Paragraph of project description goes here
-
-A short description of the motivation behind the creation and maintenance of the project. This should explain **why** the project exists.-->
 
 This is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component-System](https://en.wikipedia.org/wiki/Entity–component–system) implementation in Swift. It is developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
 

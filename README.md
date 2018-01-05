@@ -6,7 +6,7 @@
 
 A short description of the motivation behind the creation and maintenance of the project. This should explain **why** the project exists.-->
 
-This is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component-System](https://en.wikipedia.org/wiki/Entity–component–system) implementation in Swift. It is developed and maintained as part of the Fireblade Game Engine project.
+This is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component-System](https://en.wikipedia.org/wiki/Entity–component–system) implementation in Swift. It is developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
 
 ## Getting Started
 

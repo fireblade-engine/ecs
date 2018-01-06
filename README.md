@@ -96,13 +96,16 @@ followed by the typesafe component instances of the current entity that you may 
 
 ```swift
 class PlayerMovementSystem {
-	let family = nexus.family(requiresAll: [Movement.self, PlayerInput.self], excludesAll: [Texture.self], any: [Name.self])
+	let family = nexus.family(requiresAll: [Movement.self, PlayerInput.self], 
+				  excludesAll: [Texture.self], 
+				  any: [Name.self])
 
 	func update() {
 		family.iterate { (_, mov: Movement!, input: PlayerInput!, name: Name?) in
 			
 			// position & velocity for the current entity
-			// we know that we will have this component so we force unwrap the component instance parameter already for easy handling inside the closure
+			// we know that we will have this component so we force unwrap the component 
+			// instance parameter already for easy handling inside the closure
 			
 			// get properties
 			_ = mov.position

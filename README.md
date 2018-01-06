@@ -6,6 +6,8 @@
 
 This is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component-System](https://en.wikipedia.org/wiki/Entity–component–system) implementation in Swift. It is developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
 
+See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) to get started.
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine and provide a code example.
@@ -127,6 +129,7 @@ class PlayerMovementSystem {
 	}
 }
 ```
+See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) to get started.
 
 <!--## Contributing
 

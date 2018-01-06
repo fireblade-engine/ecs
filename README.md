@@ -1,8 +1,8 @@
 # Fireblade ECS (Entity-Component-System)
 [![version 0.3.0](https://img.shields.io/badge/version-0.3.0-brightgreen.svg)](releases/tag/v0.3.0)
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE)
-[![swift version](https://img.shields.io/badge/swift-4+-blue.svg)](#)
-[![platforms](https://img.shields.io/badge/platform-macOS|iOS|linux-blue.svg)](#)
+[![license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
+[![swift version](https://img.shields.io/badge/swift-4-brightgreen.svg)](#)
+[![platforms](https://img.shields.io/badge/platform-macOS%20|%20iOS%20|%20linux-brightgreen.svg)](#)
 
 This is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component-System](https://en.wikipedia.org/wiki/Entity–component–system) implementation in Swift. It is developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
 
@@ -47,7 +47,8 @@ let package = Package(
 
 A core element in the Fireblade-ECS is the [Nexus](https://en.wiktionary.org/wiki/nexus#Noun). 
 It acts as a centralized way to store, access and manage entities and their components. 
-You may use more than one nexus at a time.
+A single `Nexus` may hold up to 4294967295 `Entities` at a time.
+You may use more than one `Nexus`.
 
 Initialize a nexus with
 

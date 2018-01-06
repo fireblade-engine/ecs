@@ -18,7 +18,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Installing
 
-Fireblade ECS is available for all platforms that support [Swift 4.0+](https://swift.org/) and the [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager).
+Fireblade ECS is available for all platforms that support [Swift 4](https://swift.org/) and the [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager).
 
 Extend the following lines in your `Package.swift` file or use it to create a new project.
 
@@ -30,7 +30,7 @@ import PackageDescription
 let package = Package(
     name: "YourPackageName",
     dependencies: [
-        .package(url: "https://github.com/ctreffs/fireblade-ecs.git", from: "0.3.0")
+        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.3.0")
     ],
     targets: [
         .target(
@@ -144,4 +144,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-* Inspired by [Ashley](https://github.com/libgdx/ashley), [EntitasKit](https://github.com/mzaks/EntitasKit)
+Inspired by 
+- [Ashley](https://github.com/libgdx/ashley)
+- [Entitas](https://github.com/sschmid/Entitas-CSharp)
+- [EntitasKit](https://github.com/mzaks/EntitasKit)

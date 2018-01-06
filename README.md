@@ -84,7 +84,9 @@ Create a family by calling `.family` with a set of traits on the nexus.
 A family that containts only entities with a `Movement` and `PlayerInput` component, but no `Texture` component is created by
 
 ```swift
-let family = nexus.family(requiresAll: [Movement.self, PlayerInput.self], excludesAll: [Texture.self], any: [Name.self])
+let family = nexus.family(requiresAll: [Movement.self, PlayerInput.self], 
+			  excludesAll: [Texture.self], 
+			  any: [Name.self])
 ```
 
 These entities are cached in the nexus for efficient access and iteration.

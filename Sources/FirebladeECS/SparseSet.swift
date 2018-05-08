@@ -13,6 +13,10 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 	private var denseData: ContiguousArray<Element>
 	private var sparse: [Index: DenseIndex]
 
+    // TODO: implement
+    // a) RandomAccessCollection conformance
+    // b) subscript
+
 	//private typealias Pair = (key: Index, value: Element)
 
 	public init() {
@@ -26,9 +30,7 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 	}
 
 	public var count: Int { return size }
-	var isEmpty: Bool { return size == 0 }
-	var capacitySparse: Int { return sparse.capacity }
-	var capacityDense: Int { return denseIndices.capacity }
+	public var isEmpty: Bool { return size == 0 }
 
 	public func has(_ index: Index) -> Bool {
 		return sparse[index] ?? Int.max < count /*&&
@@ -54,12 +56,10 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 
 	@discardableResult
 	public func remove(at index: Index) -> Bool {
-		guard has(index) else {
+		guard has(index), let removeIdx: DenseIndex = sparse[index] else {
 			return false
 		}
-		guard let removeIdx: DenseIndex = sparse[index] else {
-			return false
-		}
+
 		let lastIdx: DenseIndex = count - 1
 		denseIndices.swapAt(removeIdx, lastIdx)
 		denseData.swapAt(removeIdx, lastIdx)

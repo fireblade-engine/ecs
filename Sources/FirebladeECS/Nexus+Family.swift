@@ -15,7 +15,7 @@ public extension Nexus {
 	///   - oneComponents: at least one of component types must appear in this family.
 	/// - Returns: family with given traits.
 	func family(requiresAll allComponents: [Component.Type], excludesAll noneComponents: [Component.Type], needsAtLeastOne oneComponents: [Component.Type] = []) -> Family {
-		let traits = FamilyTraitSet(requiresAll: allComponents, excludesAll: noneComponents, needsAtLeastOne: oneComponents)
+        let traits: FamilyTraitSet = FamilyTraitSet(requiresAll: allComponents, excludesAll: noneComponents, needsAtLeastOne: oneComponents)
 		return family(with: traits)
 	}
 
@@ -28,8 +28,8 @@ public extension Nexus {
 
 	func canBecomeMember(_ entity: Entity, in family: Family) -> Bool {
 		let entityIdx: EntityIndex = entity.identifier.index
-		guard let componentIds = componentIdsByEntity[entityIdx] else {
-			assert(false, "no component set defined for entity: \(entity)")
+		guard let componentIds: SparseComponentIdentifierSet = componentIdsByEntity[entityIdx] else {
+			assertionFailure("no component set defined for entity: \(entity)")
 			return false
 		}
 		let componentSet: ComponentSet = ComponentSet(componentIds)
@@ -71,17 +71,18 @@ extension Nexus {
 	}
 
 	func onFamilyDeinit(traitHash: FamilyTraitSetHash) {
-		guard let members = members(of: traitHash) else {
+		guard let members: UniformEntityIdentifiers = members(of: traitHash) else {
 			return
 		}
-		for member in members {
+
+        for member: EntityIdentifier in members {
 			remove(from: traitHash, entityId: member, entityIdx: member.index)
 		}
 	}
 
 	func update(familyMembership entityId: EntityIdentifier) {
 		// FIXME: iterating all families is costly for many families
-		for family in familiesByTraitHash.values {
+        for family: Family in familiesByTraitHash.values {
 			update(membership: family, for: entityId)
 		}
 	}
@@ -90,19 +91,19 @@ extension Nexus {
 		let entityIdx: EntityIndex = entityId.index
 		let traits: FamilyTraitSet = family.traits
 		let traitHash: FamilyTraitSetHash = traits.hashValue
-		guard let componentIds = componentIdsByEntity[entityIdx] else {
+		guard let componentIds: SparseComponentIdentifierSet = componentIdsByEntity[entityIdx] else {
 			return
 		}
 
-		let is_Member: Bool = isMember(entityId, in: family)
-		if !has(entity: entityId) && is_Member {
+		let isMember: Bool = self.isMember(entityId, in: family)
+		if !has(entity: entityId) && isMember {
 			remove(from: traitHash, entityId: entityId, entityIdx: entityIdx)
 			return
 		}
 
 		let componentsSet: ComponentSet = ComponentSet(componentIds)
 		let isMatch: Bool = traits.isMatch(components: componentsSet)
-		switch (isMatch, is_Member) {
+		switch (isMatch, isMember) {
 		case (true, false):
 			add(to: traitHash, entityId: entityId, entityIdx: entityIdx)
 			notify(FamilyMemberAdded(member: entityId, toFamily: traits))
@@ -126,8 +127,8 @@ private extension Nexus {
 
 	func create(family traits: FamilyTraitSet) -> Family {
 		let traitHash: FamilyTraitSetHash = traits.hashValue
-		let family = Family(self, traits: traits)
-		let replaced = familiesByTraitHash.updateValue(family, forKey: traitHash)
+        let family: Family = Family(self, traits: traits)
+        let replaced: Family? = familiesByTraitHash.updateValue(family, forKey: traitHash)
 		assert(replaced == nil, "Family with exact trait hash already exists: \(traitHash)")
 		notify(FamilyCreated(family: traits))
 		return family

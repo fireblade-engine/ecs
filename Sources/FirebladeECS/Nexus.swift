@@ -60,8 +60,8 @@ public class Nexus {
 
 	deinit {
 
-		for e: Entity in entityStorage {
-			destroy(entity: e)
+		for entity: Entity in entityStorage {
+			destroy(entity: entity)
 		}
 
 		entityStorage.clear()

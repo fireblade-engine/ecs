@@ -64,7 +64,7 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 		denseIndices.swapAt(removeIdx, lastIdx)
 		denseData.swapAt(removeIdx, lastIdx)
 		sparse[index] = nil
-		let swappedIndex = denseIndices[removeIdx]
+        let swappedIndex: Index = denseIndices[removeIdx]
 		sparse[swappedIndex] = removeIdx
 		denseIndices.removeLast()
 		denseData.removeLast()

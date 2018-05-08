@@ -18,7 +18,7 @@ extension Nexus {
 		let newEntityIndex: EntityIndex = nextEntityIdx()
 		let newEntityIdentifier: EntityIdentifier = newEntityIndex.identifier
 
-		let newEntity = Entity(nexus: self, id: newEntityIdentifier, name: name)
+        let newEntity: Entity = Entity(nexus: self, id: newEntityIdentifier, name: name)
 		entityStorage.add(newEntity, at: newEntityIndex)
 		notify(EntityCreated(entityId: newEntityIdentifier))
 		return newEntity

@@ -1,3 +1,4 @@
+//
 //  Family.swift
 //  FirebladeECS
 //
@@ -6,6 +7,7 @@
 
 // MARK: - family
 public final class Family {
+
 	weak var nexus: Nexus?
 	// members of this Family must conform to these traits
 	public let traits: FamilyTraitSet
@@ -14,9 +16,10 @@ public final class Family {
 	// a) define sort order of entities
 	// b) define read/write access
 	// c) set size and storage constraints
+    // d) conform to collection
 
 	// TODO: family unions
-	// a) iterate family A and family B in pairs
+	// a) iterate family A and family B in pairs - i.e. zip
 	// b) pair-wise comparison inside families or between families
 
 	init(_ nexus: Nexus, traits: FamilyTraitSet) {

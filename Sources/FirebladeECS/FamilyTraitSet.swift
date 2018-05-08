@@ -15,9 +15,9 @@ public struct FamilyTraitSet {
 
 	public init(requiresAll: [Component.Type], excludesAll: [Component.Type], needsAtLeastOne: [Component.Type] = []) {
 
-		let all = ComponentSet(requiresAll.map { $0.identifier })
-		let none = ComponentSet(excludesAll.map { $0.identifier })
-		let one = ComponentSet(needsAtLeastOne.map { $0.identifier })
+        let all: ComponentSet = ComponentSet(requiresAll.map { $0.identifier })
+		let none: ComponentSet = ComponentSet(excludesAll.map { $0.identifier })
+		let one: ComponentSet = ComponentSet(needsAtLeastOne.map { $0.identifier })
 
 		let valid: Bool = FamilyTraitSet.isValid(requiresAll: all, excludesAll: none, atLeastOne: one)
 		assert(valid, "invalid family trait created - requiresAll: \(all), excludesAll: \(none), atLeastOne: \(one)")

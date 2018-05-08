@@ -87,8 +87,8 @@ public class ManagedContiguousArray: UniformStorage {
 	}
 
 	func nearest(to index: Index) -> Int {
-		let delta = Float(index) / Float(ManagedContiguousArray.chunkSize)
-		let multiplier = Int(delta) + 1
+        let delta: Float = Float(index) / Float(ManagedContiguousArray.chunkSize)
+        let multiplier: Int = Int(delta) + 1
 		return multiplier * ManagedContiguousArray.chunkSize
 	}
 }

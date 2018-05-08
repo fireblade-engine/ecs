@@ -5,6 +5,7 @@
 //  Created by Christian Treffs on 08.10.17.
 //
 public protocol ECSEvent {}
+
 public struct EntityCreated: ECSEvent {
 	let entityId: EntityIdentifier
 }

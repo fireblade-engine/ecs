@@ -62,7 +62,7 @@ extension Nexus {
         guard let uniformComponents: UniformComponents = componentsByType[componentId] else {
             return nil
         }
-        return uniformComponents.get(at: entityId.index) as? Component
+        return uniformComponents.get(at: entityId.index)
     }
 
     public func get<C>(for entityId: EntityIdentifier) -> C? where C: Component {

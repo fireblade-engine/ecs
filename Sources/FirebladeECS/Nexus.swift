@@ -9,7 +9,7 @@
 public typealias EntityComponentHash = Int
 public typealias ComponentIdsByEntityIndex = Int
 public typealias ComponentTypeHash = Int // component object identifier hash value
-public typealias UniformComponents = ContiguousComponentArray
+public typealias UniformComponents = ManagedContiguousArray<Component>
 public typealias UniformEntityIdentifiers = SparseEntityIdentifierSet
 public typealias ComponentIdentifiers = ContiguousArray<ComponentIdentifier>
 public typealias ComponentSet = Set<ComponentIdentifier>
@@ -25,7 +25,7 @@ public protocol NexusDelegate: class {
 	func nexusRecoverableErrorOccurred(_ message: String)
 }
 
-public class Nexus {
+public class Nexus: Equatable {
 
 	weak var delegate: NexusDelegate?
 
@@ -51,7 +51,6 @@ public class Nexus {
 		entityStorage = Entities()
 		componentsByType = [:]
 		componentIdsByEntity = [:]
-		//componentIdsByEntityLookup = [:]
 		freeEntities = ContiguousArray<EntityIdentifier>()
 		familiesByTraitHash = [:]
 		familyMembersByTraitHash = [:]
@@ -80,6 +79,16 @@ public class Nexus {
 		familyMembersByTraitHash.removeAll()
 	}
 
+    // MARK: Equatable
+    public static func == (lhs: Nexus, rhs: Nexus) -> Bool {
+        return lhs.entityStorage == rhs.entityStorage &&
+        lhs.componentIdsByEntity == rhs.componentIdsByEntity &&
+        lhs.freeEntities == rhs.freeEntities &&
+        lhs.familiesByTraitHash == rhs.familiesByTraitHash &&
+        lhs.familyMembersByTraitHash == rhs.familyMembersByTraitHash
+        // TODO: components are not equatable yet
+        //lhs.componentsByType == rhs.componentsByType
+    }
 }
 
 // MARK: - nexus delegate

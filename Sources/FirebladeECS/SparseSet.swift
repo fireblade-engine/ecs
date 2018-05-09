@@ -17,8 +17,6 @@ public class SparseSet<Element>: UniformStorage, Sequence {
     // a) RandomAccessCollection conformance
     // b) subscript
 
-	//private typealias Pair = (key: Index, value: Element)
-
 	public init() {
 		denseIndices = ContiguousArray<Index>()
 		denseData = ContiguousArray<Element>()
@@ -101,6 +99,15 @@ public class SparseSet<Element>: UniformStorage, Sequence {
 		}
 
 	}
+}
+
+// MARK: - Equatable
+extension SparseSet: Equatable where SparseSet.Element: Equatable {
+    public static func == (lhs: SparseSet<Element>, rhs: SparseSet<Element>) -> Bool {
+        return lhs.denseIndices == rhs.denseIndices &&
+        lhs.denseData == rhs.denseData &&
+        lhs.sparse == rhs.sparse
+    }
 }
 
 // MARK: - specialized sparse sets

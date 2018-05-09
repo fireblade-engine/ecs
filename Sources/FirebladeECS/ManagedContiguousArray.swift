@@ -19,14 +19,14 @@ public protocol UniformStorage: class {
 	func clear(keepingCapacity: Bool)
 }
 
-public class ManagedContiguousArray: UniformStorage {
-	public static var chunkSize: Int = 4096
+public class ManagedContiguousArray<Element>: UniformStorage {
 	public typealias Index = Int
-	public typealias Element = Any
+    private let chunkSize: Int
 	private var size: Int = 0
 	private var store: ContiguousArray<Element?> = []
 
-	public init(minCount: Int = chunkSize) {
+	public init(minCount: Int = 4096) {
+        chunkSize = minCount
 		store = ContiguousArray<Element?>(repeating: nil, count: minCount)
 	}
 	deinit {
@@ -87,17 +87,18 @@ public class ManagedContiguousArray: UniformStorage {
 	}
 
 	func nearest(to index: Index) -> Int {
-        let delta: Float = Float(index) / Float(ManagedContiguousArray.chunkSize)
+        let delta: Float = Float(index) / Float(chunkSize)
         let multiplier: Int = Int(delta) + 1
-		return multiplier * ManagedContiguousArray.chunkSize
+		return multiplier * chunkSize
 	}
 }
 
-public class ContiguousComponentArray: ManagedContiguousArray {
-	public typealias Element = Component
-	public typealias Index = EntityIndex
+// MARK: - Equatable
+extension ManagedContiguousArray: Equatable where ManagedContiguousArray.Element: Equatable {
+    public static func == (lhs: ManagedContiguousArray<Element>, rhs: ManagedContiguousArray<Element>) -> Bool {
+        return lhs.store == rhs.store
+    }
+
 }
 
-public class ContiguousEntityIdArray: ManagedContiguousArray {
-	public typealias Element = EntityIdentifier
-}
+public typealias ContiguousEntityIdArray = ManagedContiguousArray<EntityIdentifier>

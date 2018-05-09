@@ -6,9 +6,9 @@
 //
 
 // MARK: - family
-public final class Family {
+public final class Family: Equatable {
 
-	weak var nexus: Nexus?
+	public weak var nexus: Nexus?
 	// members of this Family must conform to these traits
 	public let traits: FamilyTraitSet
 
@@ -17,6 +17,7 @@ public final class Family {
 	// b) define read/write access
 	// c) set size and storage constraints
     // d) conform to collection
+    // e) consider family to be a struct
 
 	// TODO: family unions
 	// a) iterate family A and family B in pairs - i.e. zip
@@ -35,27 +36,30 @@ public final class Family {
 		nexus?.onFamilyDeinit(traitHash: hash)
 	}
 
-	var memberIds: UniformEntityIdentifiers {
+	public final var memberIds: UniformEntityIdentifiers {
 		return nexus?.members(of: self) ?? UniformEntityIdentifiers()
 	}
-}
 
-public extension Family {
-
-	var count: Int {
+	public final var count: Int {
 		return nexus?.members(of: self)?.count ?? 0
 	}
 
-	final func canBecomeMember(_ entity: Entity) -> Bool {
+	public final func canBecomeMember(_ entity: Entity) -> Bool {
 		return nexus?.canBecomeMember(entity, in: self) ?? false
 	}
 
-	final func isMember(_ entity: Entity) -> Bool {
+	public final func isMember(_ entity: Entity) -> Bool {
 		return nexus?.isMember(entity, in: self) ?? false
 	}
 
-	final func isMember(_ entityId: EntityIdentifier) -> Bool {
+	public final func isMember(_ entityId: EntityIdentifier) -> Bool {
 		return nexus?.isMember(entityId, in: self) ?? false
 	}
+
+    // MARK: Equatable
+    public static func == (lhs: Family, rhs: Family) -> Bool {
+        // TODO: maybe this is not enough for equality
+        return lhs.traits == rhs.traits && lhs.nexus == rhs.nexus
+    }
 
 }

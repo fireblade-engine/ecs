@@ -33,11 +33,6 @@ public extension Nexus {
 		return family.traits.isMatch(components: componentSet)
 	}
 
-	func members(of family: Family) -> UniformEntityIdentifiers? {
-		let traits: FamilyTraitSet = family.traits
-		return members(of: traits)
-	}
-
 	func members(of traits: FamilyTraitSet) -> UniformEntityIdentifiers? {
 		return familyMembersByTraits[traits]
 	}

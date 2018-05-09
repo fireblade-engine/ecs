@@ -34,11 +34,11 @@ public final class Family: Equatable {
 	}
 
 	public final var memberIds: UniformEntityIdentifiers {
-		return nexus?.members(of: self) ?? UniformEntityIdentifiers()
+		return nexus?.members(of: traits) ?? UniformEntityIdentifiers()
 	}
 
 	public final var count: Int {
-		return nexus?.members(of: self)?.count ?? 0
+		return nexus?.members(of: traits)?.count ?? 0
 	}
 
 	public final func canBecomeMember(_ entity: Entity) -> Bool {
@@ -55,7 +55,6 @@ public final class Family: Equatable {
 
     // MARK: Equatable
     public static func == (lhs: Family, rhs: Family) -> Bool {
-        // TODO: maybe this is not enough for equality
         return lhs.traits == rhs.traits && lhs.nexus == rhs.nexus
     }
 

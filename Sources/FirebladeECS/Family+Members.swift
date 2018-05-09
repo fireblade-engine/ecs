@@ -37,8 +37,6 @@ private protocol FamilyMemberComponentsGetterProtocol {
     func components<A, B, C, D, E>(_ entityId: EntityIdentifier) -> (A?, B?, C?, D?, E?) where A: Component, B: Component, C: Component, D: Component, E: Component
 }
 
-// TODO: lazy get entity instead of entity identifier
-
 extension Family: FamilyMemberIterable {
 
     public final func iterate<A>(_ apply: @escaping (A?) -> Void) where A: Component {

@@ -47,12 +47,11 @@ extension Nexus {
 			return false
 		}
 
-		let cleared: Bool = clear(componentes: entityId)
-		assert(cleared, "Could not clear all components form entity \(entityId)")
+        if clear(componentes: entityId) {
+            update(familyMembership: entityId)
+        }
 
-		freeEntities.append(entityId)
-
-		update(familyMembership: entityId)
+        freeEntities.append(entityId)
 
 		notify(EntityDestroyed(entityId: entityId))
 		return true

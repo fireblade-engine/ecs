@@ -29,6 +29,7 @@ public class ManagedContiguousArray<Element>: UniformStorage {
         chunkSize = minCount
 		store = ContiguousArray<Element?>(repeating: nil, count: minCount)
 	}
+
 	deinit {
 		clear()
 	}
@@ -100,5 +101,3 @@ extension ManagedContiguousArray: Equatable where ManagedContiguousArray.Element
     }
 
 }
-
-public typealias ContiguousEntityIdArray = ManagedContiguousArray<EntityIdentifier>

@@ -44,17 +44,15 @@ public class Nexus: Equatable {
 	/// - Values: entity ids that are currently not used
 	var freeEntities: ContiguousArray<EntityIdentifier>
 
-	var familiesByTraitHash: [FamilyTraitSetHash: Family]
-	var familyMembersByTraitHash: [FamilyTraitSetHash: UniformEntityIdentifiers]
+	//var familiesByTraitHash: [FamilyTraitSetHash: Family]
+	var familyMembersByTraits: [FamilyTraitSet: UniformEntityIdentifiers]
 
 	public init() {
 		entityStorage = Entities()
 		componentsByType = [:]
 		componentIdsByEntity = [:]
 		freeEntities = ContiguousArray<EntityIdentifier>()
-		familiesByTraitHash = [:]
-		familyMembersByTraitHash = [:]
-
+		familyMembersByTraits = [:]
 	}
 
 	deinit {
@@ -70,13 +68,11 @@ public class Nexus: Equatable {
 		assert(componentsByType.values.reduce(0) { $0 + $1.count } == 0)
 		assert(componentIdsByEntity.values.reduce(0) { $0 + $1.count } == 0)
 		assert(freeEntities.isEmpty)
-		assert(familiesByTraitHash.values.reduce(0) { $0 + $1.count } == 0)
-		assert(familyMembersByTraitHash.values.reduce(0) { $0 + $1.count } == 0)
+		assert(familyMembersByTraits.values.reduce(0) { $0 + $1.count } == 0)
 
 		componentsByType.removeAll()
 		componentIdsByEntity.removeAll()
-		familiesByTraitHash.removeAll()
-		familyMembersByTraitHash.removeAll()
+		familyMembersByTraits.removeAll()
 	}
 
     // MARK: Equatable
@@ -84,8 +80,7 @@ public class Nexus: Equatable {
         return lhs.entityStorage == rhs.entityStorage &&
         lhs.componentIdsByEntity == rhs.componentIdsByEntity &&
         lhs.freeEntities == rhs.freeEntities &&
-        lhs.familiesByTraitHash == rhs.familiesByTraitHash &&
-        lhs.familyMembersByTraitHash == rhs.familyMembersByTraitHash
+        lhs.familyMembersByTraits == rhs.familyMembersByTraits
         // TODO: components are not equatable yet
         //lhs.componentsByType == rhs.componentsByType
     }

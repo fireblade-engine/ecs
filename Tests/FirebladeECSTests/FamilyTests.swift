@@ -30,8 +30,8 @@ class FamilyTests: XCTestCase {
         
         XCTAssertEqual(family.nexus, self.nexus)
         XCTAssertTrue(family.nexus === self.nexus)
-        XCTAssertEqual(nexus.familiesByTraitHash.count, 1)
-        XCTAssertEqual(nexus.familiesByTraitHash.values.first!, family)
+        XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
+        XCTAssertEqual(nexus.familyMembersByTraits.values.count, 1)
         
         let traits = FamilyTraitSet(requiresAll: [Position.self], excludesAll: [Name.self], needsAtLeastOne: [Velocity.self])
         XCTAssertEqual(family.traits, traits)
@@ -47,12 +47,55 @@ class FamilyTests: XCTestCase {
                                            excludesAll: [Name.self],
                                            needsAtLeastOne: [Velocity.self])
         
-        XCTAssertEqual(nexus.familiesByTraitHash.count, 1)
+        XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
+        XCTAssertEqual(nexus.familyMembersByTraits.values.count, 1)
+        
         XCTAssertEqual(familyA, familyB)
-        XCTAssertTrue(familyA === familyB)
     }
     
+    func testFamilyAbandoned() {
+        
+        XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 0)
+        
+        nexus.family(requiresAll: [Position.self],
+                                          excludesAll: [])
+        
+        XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
+        
+        let entity = nexus.create(entity: "eimer")
+        entity.assign(Position(x: 1, y: 1))
+
+        XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
+        
+        entity.remove(Position.self)
+        
+        // FIXME: the family trait should vanish when no entity with revlevant component is present anymore
+        
+        XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
+        
+        nexus.destroy(entity: entity)
+        
+        XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
+        
+    }
     
+    func testFamilyLateMember() {
+        
+        let eEarly = nexus.create(entity: "eary").assign(Position(x: 1, y: 2))
+        
+        XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 0)
+        
+        let family = nexus.family(requiresAll: [Position.self],
+                     excludesAll: [])
+        
+        XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
+        
+        let eLate = nexus.create(entity: "late").assign(Position(x: 1, y: 2))
+        
+        XCTAssertTrue(family.isMember(eEarly))
+        XCTAssertTrue(family.isMember(eLate))
+        
+    }
     
     func testFamilyExchange() {
         
@@ -68,162 +111,50 @@ class FamilyTests: XCTestCase {
         let familyB = nexus.family(requiresAll: [Velocity.self],
                                    excludesAll: [Position.self])
         
-        var countA: Int = 0
+        
+        XCTAssertEqual(familyA.count, 10)
+        XCTAssertEqual(familyB.count, 0)
         
         familyA.iterate { (entity: Entity!) in
             entity.assign(Velocity(a: 3.14))
             entity.remove(Position.self)
-            countA += 1
         }
         
-        XCTAssert(countA == number)
-        
-        var countB: Int = 0
+        XCTAssertEqual(familyA.count, 0)
+        XCTAssertEqual(familyB.count, 10)
         
         familyB.iterate { (entity: Entity!, velocity: Velocity!) in
             entity.assign(Position(x: 1, y: 2))
             entity.remove(velocity)
-            countB += 1
         }
         
-        XCTAssert(countB == number)
-        
+        XCTAssertEqual(familyA.count, 10)
+        XCTAssertEqual(familyB.count, 0)
+
     }
     
     
-    func testIterationSimple() {
-        
-        
+    func testFamilyMemberBasicIteration() {
+
         for i in 0..<1000 {
             nexus.create(entity: "\(i)").assign(Position(x: i + 1, y: i + 2))
+            nexus.create(entity: "\(i)").assign(Velocity(a: Float(i)))
         }
         
-        let familyA = nexus.family(requiresAll: [Position.self], excludesAll: [Velocity.self])
-        _ = nexus.family(requiresAll: [Velocity.self], excludesAll: [Position.self])
+        let familyA = nexus.family(requiresAll: [Position.self],
+                                   excludesAll: [Velocity.self])
         
-        familyA.iterate { (pos: Position!, vel: Velocity!) in
-            _ = pos
-            _ = vel
+        let familyB = nexus.family(requiresAll: [Velocity.self],
+                                   excludesAll: [Position.self])
+        
+        familyA.iterate { (pos: Position?, vel: Velocity?) in
+            XCTAssertNotNil(pos)
+            XCTAssertNil(vel)
         }
         
-        
-    }
-    
-    // MARK: - family performance
-    
-    
-    func testMeasureIterateMembers() {
-        
-        let number: Int = 10_000
-        
-        for i in 0..<number {
-            nexus.create(entity: "\(i)").assign(Position(x: 1 + i, y: 2 + i), Name(name: "myName\(i)"), Velocity(a: 3.14), EmptyComponent())
-        }
-        
-        let family = nexus.family(requiresAll: [Position.self, Velocity.self],
-                                  excludesAll: [Party.self],
-                                  needsAtLeastOne: [Name.self, EmptyComponent.self])
-        
-        XCTAssertEqual(family.count, number)
-        XCTAssertEqual(nexus.numEntities, number)
-        
-        measure {
-            family.iterate { (entityId: EntityIdentifier) in
-                _ = entityId
-            }
-        }
-    }
-    
-    func testMeasureFamilyIterationOne() {
-        
-        let number: Int = 10_000
-        
-        for i in 0..<number {
-            nexus.create(entity: "\(i)").assign(Position(x: 1 + i, y: 2 + i), Name(name: "myName\(i)"), Velocity(a: 3.14), EmptyComponent())
-        }
-        
-        let family = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [Party.self], needsAtLeastOne: [Name.self, EmptyComponent.self])
-        
-        XCTAssert(family.count == number)
-        XCTAssert(nexus.numEntities    == number)
-        
-        measure {
-            family.iterate { (velocity: Velocity!) in
-                _ = velocity
-            }
-        }
-        
-    }
-    func testMeasureFamilyIterationThree() {
-        
-        let number: Int = 10_000
-        
-        for i in 0..<number {
-            nexus.create(entity: "\(i)").assign(Position(x: 1 + i, y: 2 + i), Name(name: "myName\(i)"), Velocity(a: 3.14), EmptyComponent())
-        }
-        
-        let family = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [Party.self], needsAtLeastOne: [Name.self, EmptyComponent.self])
-        
-        XCTAssert(family.count == number)
-        XCTAssert(nexus.numEntities == number)
-        
-        measure {
-            family.iterate { (entity: Entity!, position: Position!, velocity: Velocity!, name: Name?) in
-                position.x += entity.identifier.index
-                _ = velocity
-                _ = name
-            }
-        }
-        
-    }
-    
-    
-    
-    // MARK: - family traits
-    
-    func testTraitCommutativity() {
-        
-        let t1 = FamilyTraitSet(requiresAll: [Position.self, Velocity.self], excludesAll: [Name.self], needsAtLeastOne: [])
-        let t2 = FamilyTraitSet(requiresAll: [Velocity.self, Position.self], excludesAll: [Name.self], needsAtLeastOne: [])
-        
-        XCTAssertEqual(t1, t2)
-        XCTAssertEqual(t1.hashValue, t2.hashValue)
-        
-    }
-    
-    func testTraitMatching() {
-        
-        let a = nexus.create(entity: "a")
-        a.assign(Position(x: 1, y: 2))
-        a.assign(Name(name: "myName"))
-        a.assign(Velocity(a: 3.14))
-        a.assign(EmptyComponent())
-        
-        let noMatch = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [Name.self])
-        let isMatch = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [], needsAtLeastOne: [Name.self, EmptyComponent.self])
-        
-        XCTAssertFalse(noMatch.canBecomeMember(a))
-        XCTAssertTrue(isMatch.canBecomeMember(a))
-        
-    }
-    
-    func testMeasureTraitMatching() {
-        
-        let a = nexus.create(entity: "a")
-        a.assign(Position(x: 1, y: 2))
-        a.assign(Name(name: "myName"))
-        a.assign(Velocity(a: 3.14))
-        a.assign(EmptyComponent())
-        
-        let isMatch = nexus.family(requiresAll: [Position.self, Velocity.self],
-                                   excludesAll: [Party.self],
-                                   needsAtLeastOne: [Name.self, EmptyComponent.self])
-        
-        measure {
-            for _ in 0..<10_000 {
-                let success = isMatch.canBecomeMember(a)
-                XCTAssert(success)
-            }
+        familyB.iterate { (pos: Position?, vel: Velocity?) in
+            XCTAssertNil(pos)
+            XCTAssertNotNil(vel)
         }
     }
     

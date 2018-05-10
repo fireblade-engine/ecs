@@ -39,6 +39,12 @@ class Party: Component {
 	}
 }
 
+class Color: Component {
+    var r: UInt8 = 0
+    var g: UInt8 = 0
+    var b: UInt8 = 0
+}
+
 class ExampleSystem {
 	private let family: Family
 

@@ -158,7 +158,42 @@ class FamilyTests: XCTestCase {
         }
     }
     
+    func createDefaultEntity(name: String?) {
+        let e = nexus.create(entity: name)
+        e.assign(Position(x: 1, y: 2))
+        e.assign(Color())
+    }
+    
+    func testFamilyBulkDestroy() {
+        let count = 10_000
+        
+        for _ in 0..<count {
+            createDefaultEntity(name: nil)
+        }
+        
+        let family = nexus.family(requiresAll: [Position.self], excludesAll: [])
+        
+        XCTAssertEqual(family.memberIds.count, count)
+        
+        var currentCount: Int = (count / 2)
+        
+        family.iterate { (entity: Entity!) in
+            if currentCount > 0 {
+                entity.destroy()
+                currentCount -= 1
+            } else {
+                // FIXME: this is highly inefficient since we can not break out of the iteration
+                return
+            }
+        }
+        
+        XCTAssertEqual(family.memberIds.count, (count / 2))
+        
+        for _ in 0..<count {
+            createDefaultEntity(name: nil)
+        }
+        
+        XCTAssertEqual(family.memberIds.count, count + (count / 2))
+    }
+    
 }
-
-
-

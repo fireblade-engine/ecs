@@ -30,8 +30,8 @@ public func hash(combine seed: Int, _ value: Int) -> Int {
 	#elseif arch(i386) || arch(arm) // 32 bit
 		let fibA: UInt = 0x9e3779b9 // = 2654435769 aka Fibonacci Hash a value for 2^32; calculate by: 2^32 / (golden ratio)
 	#endif
-	var uSeed = UInt(bitPattern: seed)
-	let uValue = UInt(bitPattern: value)
+    var uSeed: UInt = UInt(bitPattern: seed)
+	let uValue: UInt = UInt(bitPattern: value)
 	uSeed ^= uValue &+ fibA &+ (uSeed << 6) &+ (uSeed >> 2)
 	return Int(bitPattern: uSeed)
 }
@@ -66,7 +66,7 @@ extension EntityComponentHash {
 
 	static func decompose(_ hash: EntityComponentHash, with entityId: EntityIdentifier) -> ComponentTypeHash {
 		let entityIdSwapped: UInt = UInt(entityId).byteSwapped
-		let entityIdSwappedInt = Int(bitPattern: entityIdSwapped)
+        let entityIdSwappedInt: Int = Int(bitPattern: entityIdSwapped)
 		return hash ^ entityIdSwappedInt
 	}
 

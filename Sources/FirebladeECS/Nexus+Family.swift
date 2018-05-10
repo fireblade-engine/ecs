@@ -15,46 +15,41 @@ public extension Nexus {
 	///   - oneComponents: at least one of component types must appear in this family.
 	/// - Returns: family with given traits.
 	func family(requiresAll allComponents: [Component.Type], excludesAll noneComponents: [Component.Type], needsAtLeastOne oneComponents: [Component.Type] = []) -> Family {
-		let traits = FamilyTraitSet(requiresAll: allComponents, excludesAll: noneComponents, needsAtLeastOne: oneComponents)
+        let traits: FamilyTraitSet = FamilyTraitSet(requiresAll: allComponents, excludesAll: noneComponents, needsAtLeastOne: oneComponents)
 		return family(with: traits)
 	}
 
 	func family(with traits: FamilyTraitSet) -> Family {
-		guard let family: Family = get(family: traits) else {
-			return create(family: traits)
-		}
-		return family
+        return create(family: traits)
 	}
 
 	func canBecomeMember(_ entity: Entity, in family: Family) -> Bool {
 		let entityIdx: EntityIndex = entity.identifier.index
-		guard let componentIds = componentIdsByEntity[entityIdx] else {
-			assert(false, "no component set defined for entity: \(entity)")
+		guard let componentIds: SparseComponentIdentifierSet = componentIdsByEntity[entityIdx] else {
+			assertionFailure("no component set defined for entity: \(entity)")
 			return false
 		}
 		let componentSet: ComponentSet = ComponentSet(componentIds)
 		return family.traits.isMatch(components: componentSet)
 	}
 
-	func members(of family: Family) -> UniformEntityIdentifiers? {
-		let traitHash: FamilyTraitSetHash = family.traits.hashValue
-		return members(of: traitHash)
-	}
-
-	func members(of traitHash: FamilyTraitSetHash) -> UniformEntityIdentifiers? {
-		return familyMembersByTraitHash[traitHash]
+	func members(of traits: FamilyTraitSet) -> UniformEntityIdentifiers? {
+		return familyMembersByTraits[traits]
 	}
 
 	func isMember(_ entity: Entity, in family: Family) -> Bool {
 		return isMember(entity.identifier, in: family)
 	}
 
-	func isMember(_ entityId: EntityIdentifier, in family: Family) -> Bool {
-		let traitHash: FamilyTraitSetHash = family.traits.hashValue
-		guard let members: UniformEntityIdentifiers = members(of: traitHash) else {
+    func isMember(_ entityId: EntityIdentifier, in family: Family) -> Bool {
+        return isMember(entityId, in: family.traits)
+    }
+
+	func isMember(_ entityId: EntityIdentifier, in traits: FamilyTraitSet) -> Bool {
+		guard let members: UniformEntityIdentifiers = members(of: traits) else {
 			return false
 		}
-		return members.has(entityId.index)
+		return members.contains(entityId.index)
 	}
 
 }
@@ -63,51 +58,52 @@ public extension Nexus {
 extension Nexus {
 
 	/// will be called on family init defer
-	func onFamilyInit(family: Family) {
+	func onFamilyInit(traits: FamilyTraitSet) {
+        createTraitsIfNeccessary(traits: traits)
+
 		// FIXME: this is costly for many entities
 		for entity: Entity in entityStorage {
-			update(membership: family, for: entity.identifier)
+			update(membership: traits, for: entity.identifier)
 		}
 	}
 
-	func onFamilyDeinit(traitHash: FamilyTraitSetHash) {
-		guard let members = members(of: traitHash) else {
+	func onFamilyDeinit(traits: FamilyTraitSet) {
+		guard let members: UniformEntityIdentifiers = members(of: traits) else {
 			return
 		}
-		for member in members {
-			remove(from: traitHash, entityId: member, entityIdx: member.index)
+
+        for member: EntityIdentifier in members {
+			remove(from: traits, entityId: member, entityIdx: member.index)
 		}
 	}
 
 	func update(familyMembership entityId: EntityIdentifier) {
 		// FIXME: iterating all families is costly for many families
-		for family in familiesByTraitHash.values {
-			update(membership: family, for: entityId)
+        for (familyTraits, _) in familyMembersByTraits {
+            update(membership: familyTraits, for: entityId)
 		}
 	}
 
-	func update(membership family: Family, for entityId: EntityIdentifier) {
+	func update(membership traits: FamilyTraitSet, for entityId: EntityIdentifier) {
 		let entityIdx: EntityIndex = entityId.index
-		let traits: FamilyTraitSet = family.traits
-		let traitHash: FamilyTraitSetHash = traits.hashValue
-		guard let componentIds = componentIdsByEntity[entityIdx] else {
+		guard let componentIds: SparseComponentIdentifierSet = componentIdsByEntity[entityIdx] else {
 			return
 		}
 
-		let is_Member: Bool = isMember(entityId, in: family)
-		if !has(entity: entityId) && is_Member {
-			remove(from: traitHash, entityId: entityId, entityIdx: entityIdx)
+		let isMember: Bool = self.isMember(entityId, in: traits)
+		if !has(entity: entityId) && isMember {
+			remove(from: traits, entityId: entityId, entityIdx: entityIdx)
 			return
 		}
 
 		let componentsSet: ComponentSet = ComponentSet(componentIds)
 		let isMatch: Bool = traits.isMatch(components: componentsSet)
-		switch (isMatch, is_Member) {
+		switch (isMatch, isMember) {
 		case (true, false):
-			add(to: traitHash, entityId: entityId, entityIdx: entityIdx)
+			add(to: traits, entityId: entityId, entityIdx: entityIdx)
 			notify(FamilyMemberAdded(member: entityId, toFamily: traits))
 		case (false, true):
-			remove(from: traitHash, entityId: entityId, entityIdx: entityIdx)
+			remove(from: traits, entityId: entityId, entityIdx: entityIdx)
 			notify(FamilyMemberRemoved(member: entityId, from: traits))
 		default:
 			break
@@ -120,30 +116,31 @@ extension Nexus {
 private extension Nexus {
 
 	func get(family traits: FamilyTraitSet) -> Family? {
-		let traitHash: FamilyTraitSetHash = traits.hashValue
-		return familiesByTraitHash[traitHash]
+        return create(family: traits)
 	}
 
 	func create(family traits: FamilyTraitSet) -> Family {
-		let traitHash: FamilyTraitSetHash = traits.hashValue
-		let family = Family(self, traits: traits)
-		let replaced = familiesByTraitHash.updateValue(family, forKey: traitHash)
-		assert(replaced == nil, "Family with exact trait hash already exists: \(traitHash)")
-		notify(FamilyCreated(family: traits))
+        let family: Family = Family(self, traits: traits)
 		return family
 	}
+
+    func createTraitsIfNeccessary(traits: FamilyTraitSet) {
+        guard familyMembersByTraits[traits] == nil else {
+            return
+        }
+        familyMembersByTraits[traits] = UniformEntityIdentifiers()
+    }
 
 	func calculateTraitEntityIdHash(traitHash: FamilyTraitSetHash, entityIdx: EntityIndex) -> TraitEntityIdHash {
 		return hash(combine: traitHash, entityIdx)
 	}
-	func add(to traitHash: FamilyTraitSetHash, entityId: EntityIdentifier, entityIdx: EntityIndex) {
-		if familyMembersByTraitHash[traitHash] == nil {
-			familyMembersByTraitHash[traitHash] = UniformEntityIdentifiers()
-		}
-		familyMembersByTraitHash[traitHash]?.add(entityId, at: entityIdx)
+
+	func add(to traits: FamilyTraitSet, entityId: EntityIdentifier, entityIdx: EntityIndex) {
+        createTraitsIfNeccessary(traits: traits)
+		familyMembersByTraits[traits]?.insert(entityId, at: entityIdx)
 	}
 
-	func remove(from traitHash: FamilyTraitSetHash, entityId: EntityIdentifier, entityIdx: EntityIndex) {
-		familyMembersByTraitHash[traitHash]?.remove(at: entityIdx)
+	func remove(from traits: FamilyTraitSet, entityId: EntityIdentifier, entityIdx: EntityIndex) {
+		familyMembersByTraits[traits]?.remove(at: entityIdx)
 	}
 }

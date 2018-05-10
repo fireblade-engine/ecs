@@ -24,15 +24,16 @@ public extension Entity {
 	}
 
 	func get<A, B>(components _: A.Type, _: B.Type) -> (A?, B?) where A: Component, B: Component {
-		let a: A? = get(component: A.self)
-		let b: B? = get(component: B.self)
-		return (a, b)
+		let compA: A? = get(component: A.self)
+		let compB: B? = get(component: B.self)
+		return (compA, compB)
 	}
 
+    // swiftlint:disable:next large_tuple
 	func get<A, B, C>(components _: A.Type, _: B.Type, _: C.Type) -> (A?, B?, C?) where A: Component, B: Component, C: Component {
-		let a: A? = get(component: A.self)
-		let b: B? = get(component: B.self)
-		let c: C? = get(component: C.self)
-		return (a, b, c)
+		let compA: A? = get(component: A.self)
+		let compB: B? = get(component: B.self)
+		let compC: C? = get(component: C.self)
+		return (compA, compB, compC)
 	}
 }

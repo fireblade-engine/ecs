@@ -13,41 +13,15 @@ public extension Component {
 	static var identifier: ComponentIdentifier { return typeObjectIdentifier }
 }
 
-// MARK: - entity component hashable
-extension Component {
-
-	/// Provides XOR hash value from component identifier (aka type) and entity index.
-	/// Is only stable for app runtime.
-	///
-	/// - Parameter entityIdx: entity index
-	/// - Returns: combinded entity component hash
-	static func hashValue(using entityIdx: EntityIndex) -> EntityComponentHash {
-		return Self.identifier.hashValue(using: entityIdx)
-	}
-
-	/// Provides XOR hash value from component identifier (aka type) and entity index.
-	/// Is only stable for app runtime.
-	///
-	/// - Parameter entityIdx: entity index
-	/// - Returns: combinded entity component hash
-	func hashValue(using entityIdx: EntityIndex) -> EntityComponentHash {
-		return Self.hashValue(using: entityIdx)
-	}
+/// TypeIdentifiable
+/// Identifies an object by it's meta type.
+public protocol TypeIdentifiable {
+    static var typeObjectIdentifier: ObjectIdentifier { get }
+    var typeObjectIdentifier: ObjectIdentifier { get }
 }
 
-// MARK: - component identifier hashable
-extension ComponentIdentifier {
+public extension TypeIdentifiable {
+    static var typeObjectIdentifier: ObjectIdentifier { return ObjectIdentifier(Self.self) }
 
-	/// Provides XOR hash value from component identifier (aka type) and entity index.
-	/// Is only stable for app runtime.
-	///
-	/// - Parameter entityIdx: entity index
-	/// - Returns: combinded entity component hash
-	func hashValue(using entityIdx: EntityIndex) -> EntityComponentHash {
-		return hashValue(using: entityIdx.identifier)
-	}
-
-	func hashValue(using entityId: EntityIdentifier) -> EntityComponentHash {
-		return EntityComponentHash.compose(entityId: entityId, componentTypeHash: hashValue)
-	}
+    var typeObjectIdentifier: ObjectIdentifier { return Self.typeObjectIdentifier }
 }

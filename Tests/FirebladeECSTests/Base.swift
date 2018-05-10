@@ -47,15 +47,13 @@ class ExampleSystem {
 	}
 
 	func update(deltaT: Double) {
-		family.iterate(components: Position.self, Velocity.self, Name.self) { (_, positionGetter, velocityGetter, _) in
-
-			let position: Position = positionGetter!
-			let velocity: Velocity = velocityGetter!
-
+        family.iterate { (position: Position!, velocity: Velocity!) in
 			position.x *= 2
 			velocity.a *= 2
 
 		}
+        
+        
 	}
 
 }

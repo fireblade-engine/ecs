@@ -1,11 +1,11 @@
 //
-//  SparseSet.swift
+//  UnorderedSparseSet.swift
 //  FirebladeECS
 //
 //  Created by Christian Treffs on 30.10.17.
 //
 
-public class SparseSet<Element>: Sequence {
+public class UnorderedSparseSet<Element>: Sequence {
     public typealias Index = Int
     public typealias Key = Int
 
@@ -95,8 +95,8 @@ public class SparseSet<Element>: Sequence {
         dense.removeAll(keepingCapacity: keepingCapacity)
     }
 
-    public func makeIterator() -> SparseSetIterator<Element> {
-        return SparseSetIterator<Element>(self)
+    public func makeIterator() -> UnorderedSparseSetIterator<Element> {
+        return UnorderedSparseSetIterator<Element>(self)
     }
 
     /// Removes an element from the set and retuns it in O(1).
@@ -121,58 +121,32 @@ public class SparseSet<Element>: Sequence {
         return (denseIndex, entry.element)
     }
 
-    // MARK: - SparseIterator
-    public struct SparseSetIterator<Element>: IteratorProtocol {
-        private let sparseSet: SparseSet<Element>
-        private var sortedSparseIterator: IndexingIterator<[(key: SparseSet.Index, value: SparseSet.Key)]>
+    // MARK: - UnorderedSparseSetIterator
 
-        init(_ sparseSet: SparseSet<Element>) {
-            self.sparseSet = sparseSet
+    public struct UnorderedSparseSetIterator<Element>: IteratorProtocol {
 
-            let sortedSparse = sparseSet.sparse.sorted { first, next -> Bool in
-                first.key < next.key
-            }
+        private var iterator: IndexingIterator<ContiguousArray<UnorderedSparseSet<Element>.Entry>>
 
-            sortedSparseIterator = sortedSparse.makeIterator()
+        init(_ sparseSet: UnorderedSparseSet<Element>) {
+            iterator = sparseSet.dense.makeIterator()
         }
 
         mutating public func next() -> Element? {
-            guard let (key, _) = sortedSparseIterator.next() else {
-                return nil
-            }
-
-            return sparseSet.get(at: key)
-
+            return iterator.next()?.element
         }
-
     }
 }
 
-extension SparseSet.Entry: Equatable where SparseSet.Element: Equatable {
-    public static func == (lhs: SparseSet.Entry, rhs: SparseSet.Entry) -> Bool {
+extension UnorderedSparseSet.Entry: Equatable where UnorderedSparseSet.Element: Equatable {
+    public static func == (lhs: UnorderedSparseSet.Entry, rhs: UnorderedSparseSet.Entry) -> Bool {
         return lhs.element == rhs.element && lhs.key == rhs.key
     }
 }
 
 // MARK: - Equatable
-extension SparseSet: Equatable where SparseSet.Element: Equatable {
-    public static func == (lhs: SparseSet<Element>, rhs: SparseSet<Element>) -> Bool {
+extension UnorderedSparseSet: Equatable where UnorderedSparseSet.Element: Equatable {
+    public static func == (lhs: UnorderedSparseSet<Element>, rhs: UnorderedSparseSet<Element>) -> Bool {
         return lhs.dense == rhs.dense &&
             lhs.sparse == rhs.sparse
     }
-}
-
-// MARK: - specialized sparse sets
-
-public class SparseEntitySet: SparseSet<Entity> {
-    public typealias Index = EntityIndex
-}
-
-public class SparseEntityIdentifierSet: SparseSet<EntityIdentifier> {
-    public typealias Index = EntityIndex
-
-}
-
-public class SparseComponentIdentifierSet: SparseSet<ComponentIdentifier> {
-
 }

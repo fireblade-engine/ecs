@@ -10,11 +10,11 @@ import XCTest
 
 class SparseSetTests: XCTestCase {
     
-    var set: SparseSet<Position>!
+    var set: UnorderedSparseSet<Position>!
     
     override func setUp() {
         super.setUp()
-        set = SparseSet<Position>()
+        set = UnorderedSparseSet<Position>()
     }
     
     override func tearDown() {
@@ -335,7 +335,7 @@ class SparseSetTests: XCTestCase {
     
     func testSparseSetDoubleRemove() {
         class AClass { }
-        let set = SparseSet<AClass>()
+        let set = UnorderedSparseSet<AClass>()
         let a = AClass()
         let b = AClass()
         set.insert(a, at: 0)
@@ -425,24 +425,21 @@ class SparseSetTests: XCTestCase {
     }
     
     func testSparseSetReduce() {
-        let characters = SparseSet<Character>()
+        let characters = UnorderedSparseSet<Character>()
         
         
         characters.insert("H", at: 4)
         characters.insert("e", at: 13)
-        
         characters.insert("l", at: 44)
+        characters.insert("l", at: 123)
         characters.insert("o", at: 89)
         
         characters.insert(" ", at: 66)
-        characters.insert("d", at: 140)
         characters.insert("W", at: 77)
-        
-        characters.insert("r", at: 90)
-        characters.insert("l", at: 123)
         characters.insert("o", at: 55)
+        characters.insert("r", at: 90)
         characters.insert("l", at: 34)
-        
+        characters.insert("d", at: 140)
         
         XCTAssertEqual(characters.count, 11)
         
@@ -450,6 +447,7 @@ class SparseSetTests: XCTestCase {
             return res + "\(char)"
         }
         
+        // NOTE: this tests only dense insertion order, this is no guarantee for the real ordering.
         XCTAssertEqual(string, "Hello World")
         
     }

@@ -32,7 +32,7 @@ import PackageDescription
 let package = Package(
     name: "YourPackageName",
     dependencies: [
-        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.3.0")
+        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.4.0")
     ],
     targets: [
         .target(
@@ -86,9 +86,9 @@ Create a family by calling `.family` with a set of traits on the nexus.
 A family that containts only entities with a `Movement` and `PlayerInput` component, but no `Texture` component is created by
 
 ```swift
-let family = nexus.family(requiresAll: [Movement.self, PlayerInput.self], 
-			  excludesAll: [Texture.self], 
-			  any: [Name.self])
+let family = nexus.family(requiresAll: [Movement.self, PlayerInput.self],
+                          excludesAll: [Texture.self],
+                          needsAtLeastOne: [Name.self])
 ```
 
 These entities are cached in the nexus for efficient access and iteration.
@@ -98,12 +98,12 @@ followed by the typesafe component instances of the current entity that you may 
 
 ```swift
 class PlayerMovementSystem {
-	let family = nexus.family(requiresAll: [Movement.self, PlayerInput.self], 
-				  excludesAll: [Texture.self], 
-				  any: [Name.self])
+	let family = nexus.family(requiresAll: [Movement.self, PlayerInput.self],
+                              excludesAll: [Texture.self],
+                              needsAtLeastOne: [Name.self])
 
 	func update() {
-		family.iterate { (_, mov: Movement!, input: PlayerInput!, name: Name?) in
+		family.iterate { (mov: Movement!, input: PlayerInput!, name: Name?) in
 			
 			// position & velocity for the current entity
 			// we know that we will have this component so we force unwrap the component 

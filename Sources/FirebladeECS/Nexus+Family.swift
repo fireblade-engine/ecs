@@ -57,26 +57,6 @@ public extension Nexus {
 // MARK: - internal extensions
 extension Nexus {
 
-	/// will be called on family init defer
-	func onFamilyInit(traits: FamilyTraitSet) {
-        createTraitsIfNeccessary(traits: traits)
-
-		// FIXME: this is costly for many entities
-		for entity: Entity in entityStorage {
-			update(membership: traits, for: entity.identifier)
-		}
-	}
-
-	func onFamilyDeinit(traits: FamilyTraitSet) {
-		guard let members: UniformEntityIdentifiers = members(of: traits) else {
-			return
-		}
-
-        for member: EntityIdentifier in members {
-			remove(from: traits, entityId: member, entityIdx: member.index)
-		}
-	}
-
 	func update(familyMembership entityId: EntityIdentifier) {
 		// FIXME: iterating all families is costly for many families
         for (familyTraits, _) in familyMembersByTraits {
@@ -84,16 +64,25 @@ extension Nexus {
 		}
 	}
 
-	func update(membership traits: FamilyTraitSet, for entityId: EntityIdentifier) {
+    enum UpdateState {
+        case noComponents(id: EntityIdentifier, traits: FamilyTraitSet)
+        case added(id: EntityIdentifier, traits: FamilyTraitSet)
+        case removedDeleted(id: EntityIdentifier, traits: FamilyTraitSet)
+        case removed(id: EntityIdentifier, traits: FamilyTraitSet)
+        case unchanged(id: EntityIdentifier, traits: FamilyTraitSet)
+    }
+
+    @discardableResult
+	func update(membership traits: FamilyTraitSet, for entityId: EntityIdentifier) -> UpdateState {
 		let entityIdx: EntityIndex = entityId.index
 		guard let componentIds: SparseComponentIdentifierSet = componentIdsByEntity[entityIdx] else {
-			return
+            return .noComponents(id: entityId, traits: traits)
 		}
 
 		let isMember: Bool = self.isMember(entityId, in: traits)
 		if !has(entity: entityId) && isMember {
 			remove(from: traits, entityId: entityId, entityIdx: entityIdx)
-			return
+			return .removedDeleted(id: entityId, traits: traits)
 		}
 
 		let componentsSet: ComponentSet = ComponentSet(componentIds)
@@ -102,13 +91,32 @@ extension Nexus {
 		case (true, false):
 			add(to: traits, entityId: entityId, entityIdx: entityIdx)
 			notify(FamilyMemberAdded(member: entityId, toFamily: traits))
+            return .added(id: entityId, traits: traits)
 		case (false, true):
 			remove(from: traits, entityId: entityId, entityIdx: entityIdx)
 			notify(FamilyMemberRemoved(member: entityId, from: traits))
+            return .removed(id: entityId, traits: traits)
 		default:
-			break
+			return .unchanged(id: entityId, traits: traits)
 		}
 	}
+
+    /// will be called on family init defer
+    func onFamilyInit(traits: FamilyTraitSet) {
+
+        if familyMembersByTraits[traits] == nil {
+            familyMembersByTraits[traits] = UniformEntityIdentifiers()
+        }
+
+        // FIXME: this is costly for many entities
+        for entity: Entity in entityStorage {
+            update(membership: traits, for: entity.identifier)
+        }
+    }
+
+    func onFamilyDeinit(traits: FamilyTraitSet) {
+        // nothing todo here
+    }
 
 }
 
@@ -124,19 +132,15 @@ private extension Nexus {
 		return family
 	}
 
-    func createTraitsIfNeccessary(traits: FamilyTraitSet) {
-        guard familyMembersByTraits[traits] == nil else {
-            return
-        }
-        familyMembersByTraits[traits] = UniformEntityIdentifiers()
-    }
-
 	func calculateTraitEntityIdHash(traitHash: FamilyTraitSetHash, entityIdx: EntityIndex) -> TraitEntityIdHash {
 		return hash(combine: traitHash, entityIdx)
 	}
 
 	func add(to traits: FamilyTraitSet, entityId: EntityIdentifier, entityIdx: EntityIndex) {
-        createTraitsIfNeccessary(traits: traits)
+        if familyMembersByTraits[traits] == nil {
+            familyMembersByTraits[traits] = UniformEntityIdentifiers()
+        }
+
 		familyMembersByTraits[traits]?.insert(entityId, at: entityIdx)
 	}
 

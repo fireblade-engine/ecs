@@ -57,8 +57,7 @@ class FamilyTests: XCTestCase {
         
         XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 0)
         
-        nexus.family(requiresAll: [Position.self],
-                                          excludesAll: [])
+        _ = nexus.family(requiresAll: [Position.self], excludesAll: [])
         
         XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
         

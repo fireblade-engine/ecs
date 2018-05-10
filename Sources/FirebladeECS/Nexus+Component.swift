@@ -83,8 +83,8 @@ extension Nexus {
 
     @discardableResult
     public func remove(component componentId: ComponentIdentifier, from entityId: EntityIdentifier) -> Bool {
+
         let entityIdx: EntityIndex = entityId.index
-        //let hash: EntityComponentHash = componentId.hashValue(using: entityIdx)
 
         // delete component instance
         componentsByType[componentId]?.remove(at: entityIdx)
@@ -99,6 +99,7 @@ extension Nexus {
 
     @discardableResult
     public func clear(componentes entityId: EntityIdentifier) -> Bool {
+
         guard let allComponents: SparseComponentIdentifierSet = get(components: entityId) else {
             report("clearing components form entity \(entityId) with no components")
             return false

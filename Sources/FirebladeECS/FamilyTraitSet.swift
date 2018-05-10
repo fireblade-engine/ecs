@@ -5,13 +5,14 @@
 //  Created by Christian Treffs on 09.10.17.
 //
 
-public struct FamilyTraitSet {
+public struct FamilyTraitSet: CustomStringConvertible, CustomDebugStringConvertible {
 
 	public let requiresAll: ComponentSet
 	public let excludesAll: ComponentSet
 	public let needsAtLeastOne: ComponentSet
 	private let setHash: Int
 	private let isEmptyAny: Bool
+    private let stringRespresentation: String
 
 	public init(requiresAll: [Component.Type], excludesAll: [Component.Type], needsAtLeastOne: [Component.Type] = []) {
 
@@ -29,6 +30,12 @@ public struct FamilyTraitSet {
 		self.requiresAll = all
 		self.needsAtLeastOne = one
 		self.excludesAll = none
+
+        let allString: String = requiresAll.map { "\($0)" }.joined(separator: ",")
+        let excludedString: String = excludesAll.map { "\($0)" }.joined(separator: ",")
+        let oneString: String = needsAtLeastOne.map { "\($0)" }.joined(separator: ",")
+
+        stringRespresentation = "[all:\(allString) excluded:\(excludedString) one:\(oneString)]"
 	}
 
 	// MARK: - match
@@ -62,6 +69,14 @@ public struct FamilyTraitSet {
 	static func validAtLeastOneNonEmpty(_ requiresAll: ComponentSet, _ atLeastOne: ComponentSet) -> Bool {
 		return !requiresAll.isEmpty || !atLeastOne.isEmpty
 	}
+
+    public var description: String {
+        return stringRespresentation
+    }
+
+    public var debugDescription: String {
+        return stringRespresentation
+    }
 
 }
 

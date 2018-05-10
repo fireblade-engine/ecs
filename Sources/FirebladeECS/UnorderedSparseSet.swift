@@ -77,7 +77,6 @@ public class UnorderedSparseSet<Element>: Sequence {
     @discardableResult
     public func remove(at key: Key) -> Entry? {
         guard let (denseIndex, _) = find(at: key) else {
-
             return nil
         }
 

@@ -6,7 +6,7 @@
 //
 
 import XCTest
-import FirebladeECS
+@testable import FirebladeECS
 
 class SystemsTests: XCTestCase {
     
@@ -31,57 +31,78 @@ class SystemsTests: XCTestCase {
     
     func testSystemsUpdate() {
         
+        let num: Int = 10_000
+        
         colorSystem.update()
         positionSystem.update()
         
+        let posTraits = positionSystem.family.traits
+    
         XCTAssertEqual(nexus.numEntities, 0)
         XCTAssertEqual(colorSystem.family.memberIds.count, 0)
         XCTAssertEqual(positionSystem.family.memberIds.count, 0)
+        XCTAssertEqual(nexus.freeEntities.count, 0)
+        XCTAssertEqual(nexus.familyMembersByTraits[posTraits]?.count, 0)
         
-        batchCreateEntities(count: 10_000)
+        batchCreateEntities(count: num)
         
-        XCTAssertEqual(nexus.numEntities, 10_000)
-        XCTAssertEqual(colorSystem.family.memberIds.count, 10_000)
-        XCTAssertEqual(positionSystem.family.memberIds.count, 10_000)
-        
-        colorSystem.update()
-        positionSystem.update()
-        
-        XCTAssertEqual(nexus.numEntities, 10_000)
-        XCTAssertEqual(colorSystem.family.memberIds.count, 10_000)
-        XCTAssertEqual(positionSystem.family.memberIds.count, 10_000)
-        
-        batchCreateEntities(count: 10_000)
-        
-        XCTAssertEqual(nexus.numEntities, 20_000)
-        XCTAssertEqual(colorSystem.family.memberIds.count, 20_000)
-        XCTAssertEqual(positionSystem.family.memberIds.count, 20_000)
+        XCTAssertEqual(nexus.numEntities, num)
+        XCTAssertEqual(nexus.familyMembersByTraits[posTraits]?.count, num)
+        XCTAssertEqual(colorSystem.family.memberIds.count, num)
+        XCTAssertEqual(positionSystem.family.memberIds.count, num)
+        XCTAssertEqual(nexus.freeEntities.count, 0)
         
         colorSystem.update()
         positionSystem.update()
         
-        XCTAssertEqual(nexus.numEntities, 20_000)
-        XCTAssertEqual(colorSystem.family.memberIds.count, 20_000)
-        XCTAssertEqual(positionSystem.family.memberIds.count, 20_000)
+        XCTAssertEqual(nexus.numEntities, num)
+        XCTAssertEqual(nexus.familyMembersByTraits[posTraits]?.count, num)
+        XCTAssertEqual(colorSystem.family.memberIds.count, num)
+        XCTAssertEqual(positionSystem.family.memberIds.count, num)
+        XCTAssertEqual(nexus.freeEntities.count, 0)
         
-        batchDestroyEntities(count: 10_000)
+        batchCreateEntities(count: num)
         
-        XCTAssertEqual(nexus.numEntities, 10_000)
-        XCTAssertEqual(colorSystem.family.memberIds.count, 10_000)
-        XCTAssertEqual(positionSystem.family.memberIds.count, 10_000)
+        XCTAssertEqual(nexus.numEntities, num * 2)
+        XCTAssertEqual(nexus.familyMembersByTraits[posTraits]?.count, num * 2)
+        XCTAssertEqual(colorSystem.family.memberIds.count, num * 2)
+        XCTAssertEqual(positionSystem.family.memberIds.count, num * 2)
+        XCTAssertEqual(nexus.freeEntities.count, 0)
+        
+        colorSystem.update()
+        positionSystem.update()
+        
+        XCTAssertEqual(nexus.numEntities, num * 2)
+        XCTAssertEqual(nexus.familyMembersByTraits[posTraits]?.count, num * 2)
+        XCTAssertEqual(colorSystem.family.memberIds.count, num * 2)
+        XCTAssertEqual(positionSystem.family.memberIds.count, num * 2)
+        XCTAssertEqual(nexus.freeEntities.count, 0)
+        
+        batchDestroyEntities(count: num)
+        
+        XCTAssertEqual(nexus.familyMembersByTraits[posTraits]?.count, num)
+        XCTAssertEqual(nexus.freeEntities.count, num)
+        XCTAssertEqual(nexus.numEntities, num)
+        XCTAssertEqual(colorSystem.family.memberIds.count, num)
+        XCTAssertEqual(positionSystem.family.memberIds.count, num)
+        
     
         colorSystem.update()
         positionSystem.update()
         
-        XCTAssertEqual(nexus.numEntities, 10_000)
-        XCTAssertEqual(colorSystem.family.memberIds.count, 10_000)
-        XCTAssertEqual(positionSystem.family.memberIds.count, 10_000)
+        XCTAssertEqual(nexus.familyMembersByTraits[posTraits]?.count, num)
+        XCTAssertEqual(nexus.numEntities, num)
+        XCTAssertEqual(colorSystem.family.memberIds.count, num)
+        XCTAssertEqual(positionSystem.family.memberIds.count, num)
+        XCTAssertEqual(nexus.freeEntities.count, num)
         
-        batchCreateEntities(count: 10_000)
+        batchCreateEntities(count: num)
         
-        XCTAssertEqual(nexus.numEntities, 20_000)
-        XCTAssertEqual(colorSystem.family.memberIds.count, 20_000)
-        XCTAssertEqual(positionSystem.family.memberIds.count, 20_000)
+        XCTAssertEqual(nexus.familyMembersByTraits[posTraits]?.count, num * 2)
+        XCTAssertEqual(nexus.numEntities, num * 2)
+        XCTAssertEqual(colorSystem.family.memberIds.count, num * 2)
+        XCTAssertEqual(positionSystem.family.memberIds.count, num * 2)
+        XCTAssertEqual(nexus.freeEntities.count, 0)
     }
     
     func createDefaultEntity(name: String?) {
@@ -99,6 +120,7 @@ class SystemsTests: XCTestCase {
     func batchDestroyEntities(count: Int) {
         let family = nexus.family(requiresAll: [Position.self], excludesAll: [])
         var currentCount = count
+        
         family.iterate { (entity: Entity!) in
             if currentCount > 0 {
                 entity.destroy()
@@ -150,8 +172,8 @@ class PositionSystem {
             
             let deltaX: Double = self.velocity*((self.randNorm() * 2) - 1)
             let deltaY: Double = self.velocity*((self.randNorm() * 2) - 1)
-            var x = pos.x + Int(deltaX)
-            var y = pos.y + Int(deltaY)
+            let x = pos.x + Int(deltaX)
+            let y = pos.y + Int(deltaY)
             
             pos.x = x
             pos.y = y

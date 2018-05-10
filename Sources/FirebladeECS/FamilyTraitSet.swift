@@ -7,9 +7,9 @@
 
 public struct FamilyTraitSet {
 
-	private let requiresAll: ComponentSet
-	private let excludesAll: ComponentSet
-	private let needsAtLeastOne: ComponentSet
+	public let requiresAll: ComponentSet
+	public let excludesAll: ComponentSet
+	public let needsAtLeastOne: ComponentSet
 	private let setHash: Int
 	private let isEmptyAny: Bool
 

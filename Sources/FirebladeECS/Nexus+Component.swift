@@ -7,7 +7,7 @@
 
 extension Nexus {
 
-    public var numComponents: Int {
+    var numComponents: Int {
         return componentsByType.reduce(0) { return $0 + $1.value.count }
     }
 
@@ -47,7 +47,7 @@ extension Nexus {
         if componentIdsByEntity[entityIdx] == nil {
             componentIdsByEntity[entityIdx] = SparseComponentIdentifierSet()
         }
-        componentIdsByEntity[entityIdx]?.add(componentId, at: componentId.hashValue)
+        componentIdsByEntity[entityIdx]?.insert(componentId, at: componentId.hashValue)
 
         update(familyMembership: entityId)
 
@@ -62,7 +62,7 @@ extension Nexus {
         guard let uniformComponents: UniformComponents = componentsByType[componentId] else {
             return nil
         }
-        return uniformComponents.get(at: entityId.index) as? Component
+        return uniformComponents.get(at: entityId.index)
     }
 
     public func get<C>(for entityId: EntityIdentifier) -> C? where C: Component {
@@ -101,7 +101,7 @@ extension Nexus {
     public func clear(componentes entityId: EntityIdentifier) -> Bool {
         guard let allComponents: SparseComponentIdentifierSet = get(components: entityId) else {
             report("clearing components form entity \(entityId) with no components")
-            return true
+            return false
         }
         let removedAll: Bool = allComponents.reduce(true) { $0 && remove(component: $1, from: entityId) }
         return removedAll

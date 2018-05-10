@@ -6,56 +6,56 @@
 //
 
 // MARK: - family
-public final class Family {
+public final class Family: Equatable {
 
-	weak var nexus: Nexus?
+	public weak var nexus: Nexus?
 	// members of this Family must conform to these traits
 	public let traits: FamilyTraitSet
 
-	// TODO: add family configuration feature
+	// TODO: implemenet
 	// a) define sort order of entities
 	// b) define read/write access
 	// c) set size and storage constraints
     // d) conform to collection
-
-	// TODO: family unions
-	// a) iterate family A and family B in pairs - i.e. zip
-	// b) pair-wise comparison inside families or between families
+    // e) consider family to be a struct
+	// f) iterate family A and family B in pairs - i.e. zip
+	// g) pair-wise comparison inside families or between families
 
 	init(_ nexus: Nexus, traits: FamilyTraitSet) {
 		self.nexus = nexus
 		self.traits = traits
 		defer {
-			self.nexus?.onFamilyInit(family: self)
+			self.nexus?.onFamilyInit(traits: self.traits)
 		}
 	}
 
 	deinit {
-		let hash: FamilyTraitSetHash = traits.hashValue
-		nexus?.onFamilyDeinit(traitHash: hash)
+		nexus?.onFamilyDeinit(traits: traits)
 	}
 
-	var memberIds: UniformEntityIdentifiers {
-		return nexus?.members(of: self) ?? UniformEntityIdentifiers()
-	}
-}
-
-public extension Family {
-
-	var count: Int {
-		return nexus?.members(of: self)?.count ?? 0
+	public final var memberIds: UniformEntityIdentifiers {
+		return nexus?.members(of: traits) ?? UniformEntityIdentifiers()
 	}
 
-	final func canBecomeMember(_ entity: Entity) -> Bool {
+	public final var count: Int {
+		return nexus?.members(of: traits)?.count ?? 0
+	}
+
+	public final func canBecomeMember(_ entity: Entity) -> Bool {
 		return nexus?.canBecomeMember(entity, in: self) ?? false
 	}
 
-	final func isMember(_ entity: Entity) -> Bool {
+	public final func isMember(_ entity: Entity) -> Bool {
 		return nexus?.isMember(entity, in: self) ?? false
 	}
 
-	final func isMember(_ entityId: EntityIdentifier) -> Bool {
+	public final func isMember(_ entityId: EntityIdentifier) -> Bool {
 		return nexus?.isMember(entityId, in: self) ?? false
 	}
+
+    // MARK: Equatable
+    public static func == (lhs: Family, rhs: Family) -> Bool {
+        return lhs.traits == rhs.traits && lhs.nexus == rhs.nexus
+    }
 
 }

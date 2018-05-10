@@ -5,24 +5,24 @@
 //  Created by Christian Treffs on 13.10.17.
 //
 
-extension Nexus {
+public extension Nexus {
 
-    var numComponents: Int {
+    final var numComponents: Int {
         return componentsByType.reduce(0) { return $0 + $1.value.count }
     }
 
-    public func has(componentId: ComponentIdentifier, entityIdx: EntityIndex) -> Bool {
+    final func has(componentId: ComponentIdentifier, entityIdx: EntityIndex) -> Bool {
         guard let uniforms: UniformComponents = componentsByType[componentId] else {
             return false
         }
         return uniforms.has(entityIdx)
     }
 
-    public func count(components entityId: EntityIdentifier) -> Int {
+    final func count(components entityId: EntityIdentifier) -> Int {
         return componentIdsByEntity[entityId.index]?.count ?? 0
     }
 
-    public func assign(component: Component, to entity: Entity) {
+    final func assign(component: Component, to entity: Entity) {
         let componentId: ComponentIdentifier = component.identifier
         let entityIdx: EntityIndex = entity.identifier.index
         let entityId: EntityIdentifier = entity.identifier
@@ -54,35 +54,28 @@ extension Nexus {
         notify(ComponentAdded(component: componentId, toEntity: entity.identifier))
     }
 
-    public func assign<C>(component: C, to entity: Entity) where C: Component {
+    final func assign<C>(component: C, to entity: Entity) where C: Component {
         assign(component: component, to: entity)
     }
 
-    public func get(component componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
+    final func get(component componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
         guard let uniformComponents: UniformComponents = componentsByType[componentId] else {
             return nil
         }
         return uniformComponents.get(at: entityId.index)
     }
 
-    public func get<C>(for entityId: EntityIdentifier) -> C? where C: Component {
+    final func get<C>(for entityId: EntityIdentifier) -> C? where C: Component {
         let componentId: ComponentIdentifier = C.identifier
         return get(componentId: componentId, entityIdx: entityId.index)
     }
 
-    private func get<C>(componentId: ComponentIdentifier, entityIdx: EntityIndex) -> C? where C: Component {
-        guard let uniformComponents: UniformComponents = componentsByType[componentId] else {
-            return nil
-        }
-        return uniformComponents.get(at: entityIdx) as? C
-    }
-
-    public func get(components entityId: EntityIdentifier) -> SparseComponentIdentifierSet? {
+    final func get(components entityId: EntityIdentifier) -> SparseComponentIdentifierSet? {
         return componentIdsByEntity[entityId.index]
     }
 
     @discardableResult
-    public func remove(component componentId: ComponentIdentifier, from entityId: EntityIdentifier) -> Bool {
+    final func remove(component componentId: ComponentIdentifier, from entityId: EntityIdentifier) -> Bool {
 
         let entityIdx: EntityIndex = entityId.index
 
@@ -98,7 +91,7 @@ extension Nexus {
     }
 
     @discardableResult
-    public func clear(componentes entityId: EntityIdentifier) -> Bool {
+    final func clear(componentes entityId: EntityIdentifier) -> Bool {
 
         guard let allComponents: SparseComponentIdentifierSet = get(components: entityId) else {
             report("clearing components form entity \(entityId) with no components")
@@ -106,5 +99,14 @@ extension Nexus {
         }
         let removedAll: Bool = allComponents.reduce(true) { $0 && remove(component: $1, from: entityId) }
         return removedAll
+    }
+}
+
+private extension Nexus {
+    func get<C>(componentId: ComponentIdentifier, entityIdx: EntityIndex) -> C? where C: Component {
+        guard let uniformComponents: UniformComponents = componentsByType[componentId] else {
+            return nil
+        }
+        return uniformComponents.get(at: entityIdx) as? C
     }
 }

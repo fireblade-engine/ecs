@@ -7,6 +7,10 @@
 
 public extension Nexus {
 
+    final var numFamilies: Int {
+        return familyMembersByTraits.keys.count
+    }
+
 	/// Gets or creates (new) family with given traits.
 	///
 	/// - Parameters:

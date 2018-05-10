@@ -55,24 +55,27 @@ public class Nexus: Equatable {
 		familyMembersByTraits = [:]
 	}
 
+    public final func clear() {
+        for entity: Entity in entityStorage {
+            destroy(entity: entity)
+        }
+
+        entityStorage.clear()
+        freeEntities.removeAll()
+
+        assert(entityStorage.isEmpty)
+        assert(componentsByType.values.reduce(0) { $0 + $1.count } == 0)
+        assert(componentIdsByEntity.values.reduce(0) { $0 + $1.count } == 0)
+        assert(freeEntities.isEmpty)
+        assert(familyMembersByTraits.values.reduce(0) { $0 + $1.count } == 0)
+
+        componentsByType.removeAll()
+        componentIdsByEntity.removeAll()
+        familyMembersByTraits.removeAll()
+    }
+
 	deinit {
-
-		for entity: Entity in entityStorage {
-			destroy(entity: entity)
-		}
-
-		entityStorage.clear()
-		freeEntities.removeAll()
-
-		assert(entityStorage.isEmpty)
-		assert(componentsByType.values.reduce(0) { $0 + $1.count } == 0)
-		assert(componentIdsByEntity.values.reduce(0) { $0 + $1.count } == 0)
-		assert(freeEntities.isEmpty)
-		assert(familyMembersByTraits.values.reduce(0) { $0 + $1.count } == 0)
-
-		componentsByType.removeAll()
-		componentIdsByEntity.removeAll()
-		familyMembersByTraits.removeAll()
+        clear()
 	}
 
     // MARK: Equatable

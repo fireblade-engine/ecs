@@ -47,7 +47,7 @@ extension Nexus {
         if componentIdsByEntity[entityIdx] == nil {
             componentIdsByEntity[entityIdx] = SparseComponentIdentifierSet()
         }
-        componentIdsByEntity[entityIdx]?.add(componentId, at: componentId.hashValue)
+        componentIdsByEntity[entityIdx]?.insert(componentId, at: componentId.hashValue)
 
         update(familyMembership: entityId)
 

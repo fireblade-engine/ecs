@@ -49,7 +49,7 @@ public extension Nexus {
 		guard let members: UniformEntityIdentifiers = members(of: traits) else {
 			return false
 		}
-		return members.has(entityId.index)
+		return members.contains(entityId.index)
 	}
 
 }
@@ -137,7 +137,7 @@ private extension Nexus {
 
 	func add(to traits: FamilyTraitSet, entityId: EntityIdentifier, entityIdx: EntityIndex) {
         createTraitsIfNeccessary(traits: traits)
-		familyMembersByTraits[traits]?.add(entityId, at: entityIdx)
+		familyMembersByTraits[traits]?.insert(entityId, at: entityIdx)
 	}
 
 	func remove(from traits: FamilyTraitSet, entityId: EntityIdentifier, entityIdx: EntityIndex) {

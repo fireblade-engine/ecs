@@ -19,7 +19,7 @@ extension Nexus {
 		let newEntityIdentifier: EntityIdentifier = newEntityIndex.identifier
 
         let newEntity: Entity = Entity(nexus: self, id: newEntityIdentifier, name: name)
-		entityStorage.add(newEntity, at: newEntityIndex)
+		entityStorage.insert(newEntity, at: newEntityIndex)
 		notify(EntityCreated(entityId: newEntityIdentifier))
 		return newEntity
 	}
@@ -30,7 +30,7 @@ extension Nexus {
 	}
 
 	public func has(entity entityId: EntityIdentifier) -> Bool {
-		return entityStorage.has(entityId.index)
+		return entityStorage.contains(entityId.index)
 	}
 
 	public func get(entity entityId: EntityIdentifier) -> Entity? {
@@ -42,7 +42,7 @@ extension Nexus {
 		let entityId: EntityIdentifier = entity.identifier
 		let entityIdx: EntityIndex = entityId.index
 
-		guard entityStorage.remove(at: entityIdx) else {
+		guard entityStorage.remove(at: entityIdx) != nil else {
 			report("EntityRemove failure: no entity \(entityId) to remove")
 			return false
 		}

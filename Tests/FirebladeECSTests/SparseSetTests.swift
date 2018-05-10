@@ -10,13 +10,25 @@ import XCTest
 
 class SparseSetTests: XCTestCase {
     
+    var set: SparseSet<Position>!
+    
+    override func setUp() {
+        super.setUp()
+        set = SparseSet<Position>()
+    }
+    
+    override func tearDown() {
+        set = nil
+        super.tearDown()
+    }
+    
     func testSparseSetAdd() {
-        let set = SparseSet<Position>()
+        
         let num: Int = 100
         
         for idx in 0..<num {
             let pos = Position(x: idx, y: idx)
-            set.add(pos, at: idx)
+            set.insert(pos, at: idx)
         }
         
         XCTAssertEqual(set.count, num)
@@ -34,75 +46,355 @@ class SparseSetTests: XCTestCase {
         XCTAssertEqual(set.get(at: 100)?.x, nil)
     }
     
-    func testSparseSetAddNoReplace() {
-        let set = SparseSet<Position>()
+    func testSparseSetAddAndReplace() {
+        
         let p1 = Position(x: 1, y: 1)
         let p2 = Position(x: 2, y: 2)
         
-        set.add(p1, at: 10)
+        XCTAssertTrue(set.insert(p1, at: 10))
         
         XCTAssertEqual(set.get(at: 10)?.x, p1.x)
         XCTAssertEqual(set.count, 1)
         
-        set.add(p2, at: 10)
+        XCTAssertFalse(set.insert(p2, at: 10))
         
-        XCTAssertEqual(set.get(at: 10)?.x, p1.x)
+        XCTAssertEqual(set.get(at: 10)?.x, p2.x)
         XCTAssertEqual(set.count, 1)
         
+    }
+    
+    func testSparseSetGet() {
+        
+        let p1 = Position(x: 1, y: 1)
+        
+        set.insert(p1, at: 10)
+        
+        XCTAssertEqual(set.get(at: 10)?.x, p1.x)
+        
+        XCTAssertNil(set.get(at: 33))
+        
+        XCTAssertNotNil(set.remove(at: 10))
+        
+        XCTAssertNil(set.get(at: 10))
     }
     
     func testSparseSetRemove() {
-        let set = SparseSet<Position>()
-        let num: Int = 100
+        
+        let num: Int = 7
         
         for idx in 0..<num {
             let pos = Position(x: idx, y: idx)
-            set.add(pos, at: idx)
+            set.insert(pos, at: idx)
+            XCTAssertEqual(set.sparse[idx], idx)
+            XCTAssertEqual(set.dense.count, idx+1)
         }
         
         XCTAssertEqual(set.count, num)
-        set.remove(at: 33)
-        XCTAssertEqual(set.count, num-1)
-        set.remove(at: 54)
-        XCTAssertEqual(set.count, num-2)
+        XCTAssertEqual(set.sparse.count, num)
+        XCTAssertEqual(set.dense.count, num)
         
-        for idx in 0..<num {
-            set.remove(at: idx)
-        }
+        XCTAssertEqual(set.get(at: 0)?.x, 0)
+        XCTAssertEqual(set.get(at: 1)?.x, 1)
+        XCTAssertEqual(set.get(at: 2)?.x, 2)
+        XCTAssertEqual(set.get(at: 3)?.x, 3)
+        XCTAssertEqual(set.get(at: 4)?.x, 4)
+        XCTAssertEqual(set.get(at: 5)?.x, 5)
+        XCTAssertEqual(set.get(at: 6)?.x, 6)
+        XCTAssertEqual(set.get(at: 7)?.x, nil)
+        
+        XCTAssertEqual(set.sparse[0], 0)
+        XCTAssertEqual(set.sparse[1], 1)
+        XCTAssertEqual(set.sparse[2], 2)
+        XCTAssertEqual(set.sparse[3], 3)
+        XCTAssertEqual(set.sparse[4], 4)
+        XCTAssertEqual(set.sparse[5], 5)
+        XCTAssertEqual(set.sparse[6], 6)
+        XCTAssertEqual(set.sparse[7], nil)
+        
+        
+        // ---------------------------------------------
+        set.remove(at: 3)
+        
+        XCTAssertEqual(set.count, num-1)
+        XCTAssertEqual(set.sparse.count, num-1)
+        XCTAssertEqual(set.dense.count, num-1)
+        
+        
+        XCTAssertEqual(set.get(at: 0)?.x, 0)
+        XCTAssertEqual(set.get(at: 1)?.x, 1)
+        XCTAssertEqual(set.get(at: 2)?.x, 2)
+        XCTAssertEqual(set.get(at: 3)?.x, nil)
+        XCTAssertEqual(set.get(at: 4)?.x, 4)
+        XCTAssertEqual(set.get(at: 5)?.x, 5)
+        XCTAssertEqual(set.get(at: 6)?.x, 6)
+        XCTAssertEqual(set.get(at: 7)?.x, nil)
+        
+        XCTAssertEqual(set.sparse[0], 0)
+        XCTAssertEqual(set.sparse[1], 1)
+        XCTAssertEqual(set.sparse[2], 2)
+        XCTAssertEqual(set.sparse[3], nil)
+        XCTAssertEqual(set.sparse[4], 4)
+        XCTAssertEqual(set.sparse[5], 5)
+        XCTAssertEqual(set.sparse[6], 3)
+        XCTAssertEqual(set.sparse[7], nil)
+        
+        
+        
+        // ---------------------------------------------
+        set.remove(at: 2)
+        
+        XCTAssertEqual(set.count, num-2)
+        XCTAssertEqual(set.sparse.count, num-2)
+        XCTAssertEqual(set.dense.count, num-2)
+        
+        
+        XCTAssertEqual(set.get(at: 0)?.x, 0)
+        XCTAssertEqual(set.get(at: 1)?.x, 1)
+        XCTAssertEqual(set.get(at: 2)?.x, nil)
+        XCTAssertEqual(set.get(at: 3)?.x, nil)
+        XCTAssertEqual(set.get(at: 4)?.x, 4)
+        XCTAssertEqual(set.get(at: 5)?.x, 5)
+        XCTAssertEqual(set.get(at: 6)?.x, 6)
+        XCTAssertEqual(set.get(at: 7)?.x, nil)
+        
+        XCTAssertEqual(set.sparse[0], 0)
+        XCTAssertEqual(set.sparse[1], 1)
+        XCTAssertEqual(set.sparse[2], nil)
+        XCTAssertEqual(set.sparse[3], nil)
+        XCTAssertEqual(set.sparse[4], 4)
+        XCTAssertEqual(set.sparse[5], 2)
+        XCTAssertEqual(set.sparse[6], 3)
+        XCTAssertEqual(set.sparse[7], nil)
+        
+        
+        
+        // ---------------------------------------------
+        set.remove(at: 0)
+        
+        XCTAssertEqual(set.count, num-3)
+        XCTAssertEqual(set.sparse.count, num-3)
+        XCTAssertEqual(set.dense.count, num-3)
+        
+        
+        XCTAssertEqual(set.get(at: 0)?.x, nil)
+        XCTAssertEqual(set.get(at: 1)?.x, 1)
+        XCTAssertEqual(set.get(at: 2)?.x, nil)
+        XCTAssertEqual(set.get(at: 3)?.x, nil)
+        XCTAssertEqual(set.get(at: 4)?.x, 4)
+        XCTAssertEqual(set.get(at: 5)?.x, 5)
+        XCTAssertEqual(set.get(at: 6)?.x, 6)
+        XCTAssertEqual(set.get(at: 7)?.x, nil)
+        
+        XCTAssertEqual(set.sparse[0], nil)
+        XCTAssertEqual(set.sparse[1], 1)
+        XCTAssertEqual(set.sparse[2], nil)
+        XCTAssertEqual(set.sparse[3], nil)
+        XCTAssertEqual(set.sparse[4], 0)
+        XCTAssertEqual(set.sparse[5], 2)
+        XCTAssertEqual(set.sparse[6], 3)
+        XCTAssertEqual(set.sparse[7], nil)
+        
+        
+        
+        // ---------------------------------------------
+        set.remove(at: 1)
+        
+        XCTAssertEqual(set.count, num-4)
+        XCTAssertEqual(set.sparse.count, num-4)
+        XCTAssertEqual(set.dense.count, num-4)
+        
+        XCTAssertEqual(set.get(at: 0)?.x, nil)
+        XCTAssertEqual(set.get(at: 1)?.x, nil)
+        XCTAssertEqual(set.get(at: 2)?.x, nil)
+        XCTAssertEqual(set.get(at: 3)?.x, nil)
+        XCTAssertEqual(set.get(at: 4)?.x, 4)
+        XCTAssertEqual(set.get(at: 5)?.x, 5)
+        XCTAssertEqual(set.get(at: 6)?.x, 6)
+        XCTAssertEqual(set.get(at: 7)?.x, nil)
+        
+        XCTAssertEqual(set.sparse[0], nil)
+        XCTAssertEqual(set.sparse[1], nil)
+        XCTAssertEqual(set.sparse[2], nil)
+        XCTAssertEqual(set.sparse[3], nil)
+        XCTAssertEqual(set.sparse[4], 0)
+        XCTAssertEqual(set.sparse[5], 2)
+        XCTAssertEqual(set.sparse[6], 1)
+        XCTAssertEqual(set.sparse[7], nil)
+        
+        // ---------------------------------------------
+        set.remove(at: 6)
+        
+        XCTAssertEqual(set.count, num-5)
+        XCTAssertEqual(set.sparse.count, num-5)
+        XCTAssertEqual(set.dense.count, num-5)
+        
+        XCTAssertEqual(set.get(at: 0)?.x, nil)
+        XCTAssertEqual(set.get(at: 1)?.x, nil)
+        XCTAssertEqual(set.get(at: 2)?.x, nil)
+        XCTAssertEqual(set.get(at: 3)?.x, nil)
+        XCTAssertEqual(set.get(at: 4)?.x, 4)
+        XCTAssertEqual(set.get(at: 5)?.x, 5)
+        XCTAssertEqual(set.get(at: 6)?.x, nil)
+        XCTAssertEqual(set.get(at: 7)?.x, nil)
+        
+        XCTAssertEqual(set.sparse[0], nil)
+        XCTAssertEqual(set.sparse[1], nil)
+        XCTAssertEqual(set.sparse[2], nil)
+        XCTAssertEqual(set.sparse[3], nil)
+        XCTAssertEqual(set.sparse[4], 0)
+        XCTAssertEqual(set.sparse[5], 1)
+        XCTAssertEqual(set.sparse[6], nil)
+        XCTAssertEqual(set.sparse[7], nil)
+        
+        // ---------------------------------------------
+        set.remove(at: 5)
+        
+        XCTAssertEqual(set.count, num-6)
+        XCTAssertEqual(set.sparse.count, num-6)
+        XCTAssertEqual(set.dense.count, num-6)
+        
+        XCTAssertEqual(set.get(at: 0)?.x, nil)
+        XCTAssertEqual(set.get(at: 1)?.x, nil)
+        XCTAssertEqual(set.get(at: 2)?.x, nil)
+        XCTAssertEqual(set.get(at: 3)?.x, nil)
+        XCTAssertEqual(set.get(at: 4)?.x, 4)
+        XCTAssertEqual(set.get(at: 5)?.x, nil)
+        XCTAssertEqual(set.get(at: 6)?.x, nil)
+        XCTAssertEqual(set.get(at: 7)?.x, nil)
+        
+        XCTAssertEqual(set.sparse[0], nil)
+        XCTAssertEqual(set.sparse[1], nil)
+        XCTAssertEqual(set.sparse[2], nil)
+        XCTAssertEqual(set.sparse[3], nil)
+        XCTAssertEqual(set.sparse[4], 0)
+        XCTAssertEqual(set.sparse[5], nil)
+        XCTAssertEqual(set.sparse[6], nil)
+        XCTAssertEqual(set.sparse[7], nil)
+        
+        // ---------------------------------------------
+        set.remove(at: 4)
         
         XCTAssertEqual(set.count, 0)
+        XCTAssertEqual(set.sparse.count, 0)
+        XCTAssertEqual(set.dense.count, 0)
+        XCTAssertTrue(set.isEmpty)
+        
+        XCTAssertEqual(set.get(at: 0)?.x, nil)
+        XCTAssertEqual(set.get(at: 1)?.x, nil)
+        XCTAssertEqual(set.get(at: 2)?.x, nil)
+        XCTAssertEqual(set.get(at: 3)?.x, nil)
+        XCTAssertEqual(set.get(at: 4)?.x, nil)
+        XCTAssertEqual(set.get(at: 5)?.x, nil)
+        XCTAssertEqual(set.get(at: 6)?.x, nil)
+        XCTAssertEqual(set.get(at: 7)?.x, nil)
+        
+        XCTAssertEqual(set.sparse[0], nil)
+        XCTAssertEqual(set.sparse[1], nil)
+        XCTAssertEqual(set.sparse[2], nil)
+        XCTAssertEqual(set.sparse[3], nil)
+        XCTAssertEqual(set.sparse[4], nil)
+        XCTAssertEqual(set.sparse[5], nil)
+        XCTAssertEqual(set.sparse[6], nil)
+        XCTAssertEqual(set.sparse[7], nil)
+        
+    }
+    
+    func testSparseSetRemoveAndAdd() {
+        testSparseSetRemove()
+        
+        let indices: Set<Int> = [0, 30, 1, 21, 78, 56, 99, 3]
+        
+        for idx in indices {
+            let pos = Position(x: idx, y: idx)
+            set.insert(pos, at: idx)
+        }
+        
+        XCTAssertEqual(set.count, indices.count)
+        XCTAssertEqual(set.sparse.count, indices.count)
+        XCTAssertEqual(set.dense.count, indices.count)
+        XCTAssertFalse(set.isEmpty)
+        
+        XCTAssertEqual(set.get(at: 0)?.x, 0)
+        XCTAssertEqual(set.get(at: 30)?.x, 30)
+        XCTAssertEqual(set.get(at: 1)?.x, 1)
+        XCTAssertEqual(set.get(at: 21)?.x, 21)
+        XCTAssertEqual(set.get(at: 78)?.x, 78)
+        XCTAssertEqual(set.get(at: 56)?.x, 56)
+        XCTAssertEqual(set.get(at: 99)?.x, 99)
+        XCTAssertEqual(set.get(at: 3)?.x, 3)
+        
+        
     }
     
     func testSparseSetRemoveNonPresent() {
-        let set = SparseSet<Position>()
+        
         XCTAssertTrue(set.isEmpty)
-        XCTAssertFalse(set.remove(at: 100))
+        XCTAssertNil(set.remove(at: 100))
         XCTAssertTrue(set.isEmpty)
     }
     
+    func testSparseSetDoubleRemove() {
+        class AClass { }
+        let set = SparseSet<AClass>()
+        let a = AClass()
+        let b = AClass()
+        set.insert(a, at: 0)
+        set.insert(b, at: 1)
+        
+        XCTAssertEqual(set.sparse.count, 2)
+        XCTAssertEqual(set.dense.count, 2)
+        
+        XCTAssertEqual(set.count, 2)
+        
+        XCTAssertTrue(set.get(at: 0) === a)
+        XCTAssertTrue(set.get(at: 1) === b)
+        
+        XCTAssertEqual(set.count, 2)
+        
+        XCTAssertNotNil(set.remove(at: 1))
+        
+        XCTAssertEqual(set.count, 1)
+        XCTAssertEqual(set.sparse.count, 1)
+        XCTAssertEqual(set.dense.count, 1)
+        
+        
+        XCTAssertNil(set.remove(at: 1))
+        
+        XCTAssertEqual(set.count, 1)
+        XCTAssertEqual(set.sparse.count, 1)
+        XCTAssertEqual(set.dense.count, 1)
+        
+        
+        XCTAssertTrue(set.get(at: 0) === a)
+        
+        XCTAssertEqual(set.count, 1)
+        
+    }
+    
     func testSparseSetNonCongiuousData() {
-        let set = SparseSet<Position>()
+        
         
         var indices: Set<Int> = [0, 30, 1, 21, 78, 56, 99, 3]
         
         for idx in indices {
             let pos = Position(x: idx, y: idx)
-            set.add(pos, at: idx)
+            set.insert(pos, at: idx)
         }
         
         XCTAssertEqual(set.count, indices.count)
-
+        
         func recurseValueTest() {
             for idx in indices {
                 XCTAssertEqual(set.get(at: idx)?.x, idx)
                 XCTAssertEqual(set.get(at: idx)?.y, idx)
             }
         }
-
+        
         recurseValueTest()
         
         while let idx = indices.popFirst() {
-            set.remove(at: idx)
+            let entry = set.remove(at: idx)!
+            XCTAssertEqual(entry.key, idx)
             recurseValueTest()
             XCTAssertEqual(set.count, indices.count)
         }
@@ -112,7 +404,7 @@ class SparseSetTests: XCTestCase {
     }
     
     func testSparseSetClear() {
-        let set = SparseSet<Position>()
+        
         let num: Int = 100
         
         XCTAssertEqual(set.count, 0)
@@ -120,7 +412,7 @@ class SparseSetTests: XCTestCase {
         
         for idx in 0..<num {
             let pos = Position(x: idx, y: idx)
-            set.add(pos, at: idx)
+            set.insert(pos, at: idx)
         }
         
         XCTAssertEqual(set.count, num)
@@ -136,17 +428,21 @@ class SparseSetTests: XCTestCase {
         let characters = SparseSet<Character>()
         
         
-        characters.add("H", at: 4)
-        characters.add("e", at: 13)
-        characters.add("l", at: 34)
-        characters.add("l", at: 44)
-        characters.add("o", at: 55)
-        characters.add(" ", at: 66)
-        characters.add("W", at: 77)
-        characters.add("o", at: 89)
-        characters.add("r", at: 90)
-        characters.add("l", at: 123)
-        characters.add("d", at: 140)
+        characters.insert("H", at: 4)
+        characters.insert("e", at: 13)
+        
+        characters.insert("l", at: 44)
+        characters.insert("o", at: 89)
+        
+        characters.insert(" ", at: 66)
+        characters.insert("d", at: 140)
+        characters.insert("W", at: 77)
+        
+        characters.insert("r", at: 90)
+        characters.insert("l", at: 123)
+        characters.insert("o", at: 55)
+        characters.insert("l", at: 34)
+        
         
         XCTAssertEqual(characters.count, 11)
         

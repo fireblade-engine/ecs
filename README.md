@@ -1,5 +1,5 @@
 # Fireblade ECS (Entity-Component-System)
-[![version 0.3.0](https://img.shields.io/badge/version-0.3.0-brightgreen.svg)](releases/tag/v0.3.0)
+[![version 0.3.0](https://img.shields.io/badge/version-0.4.0-brightgreen.svg)](releases/tag/v0.4.0)
 [![license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 [![swift version](https://img.shields.io/badge/swift-4-brightgreen.svg)](#)
 [![platforms](https://img.shields.io/badge/platform-macOS%20|%20iOS%20|%20linux-brightgreen.svg)](#)

@@ -10,11 +10,11 @@ import XCTest
 
 class SparseSetTests: XCTestCase {
     
-    var set: SparseSet<Position>!
+    var set: UnorderedSparseSet<Position>!
     
     override func setUp() {
         super.setUp()
-        set = SparseSet<Position>()
+        set = UnorderedSparseSet<Position>()
     }
     
     override func tearDown() {
@@ -335,7 +335,7 @@ class SparseSetTests: XCTestCase {
     
     func testSparseSetDoubleRemove() {
         class AClass { }
-        let set = SparseSet<AClass>()
+        let set = UnorderedSparseSet<AClass>()
         let a = AClass()
         let b = AClass()
         set.insert(a, at: 0)
@@ -425,7 +425,7 @@ class SparseSetTests: XCTestCase {
     }
     
     func testSparseSetReduce() {
-        let characters = SparseSet<Character>()
+        let characters = UnorderedSparseSet<Character>()
         
         
         characters.insert("H", at: 4)

@@ -10,15 +10,16 @@ public typealias EntityComponentHash = Int
 public typealias ComponentIdsByEntityIndex = Int
 public typealias ComponentTypeHash = Int // component object identifier hash value
 public typealias UniformComponents = ManagedContiguousArray<Component>
-public typealias UniformEntityIdentifiers = SparseEntityIdentifierSet
+public typealias UniformEntityIdentifiers = UnorderedSparseSet<EntityIdentifier>
 public typealias ComponentIdentifiers = ContiguousArray<ComponentIdentifier>
 public typealias ComponentSet = Set<ComponentIdentifier>
-public typealias Entities = SparseEntitySet
+public typealias Entities = UnorderedSparseSet<Entity>
 public typealias EntityIdSet = Set<EntityIdentifier>
 public typealias FamilyTraitSetHash = Int
 public typealias TraitEntityIdHash = Int
 public typealias EntityIdInFamilyIndex = Int
 public typealias TraitEntityIdHashSet = [TraitEntityIdHash: EntityIdInFamilyIndex]
+public typealias SparseComponentIdentifierSet = UnorderedSparseSet<ComponentIdentifier>
 
 public protocol NexusDelegate: class {
 	func nexusEventOccurred(_ event: ECSEvent)

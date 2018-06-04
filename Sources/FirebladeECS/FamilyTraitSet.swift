@@ -4,7 +4,7 @@
 //
 //  Created by Christian Treffs on 09.10.17.
 //
-
+import Swift
 public struct FamilyTraitSet: CustomStringConvertible, CustomDebugStringConvertible {
 
 	public let requiresAll: ComponentSet
@@ -25,7 +25,7 @@ public struct FamilyTraitSet: CustomStringConvertible, CustomDebugStringConverti
 
 		isEmptyAny = one.isEmpty
 
-		setHash = hash(combine: [all, one, none])
+        setHash = FirebladeECS.hash(combine: [all, one, none])
 
 		self.requiresAll = all
 		self.needsAtLeastOne = one

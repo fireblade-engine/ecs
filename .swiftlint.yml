@@ -2,12 +2,14 @@ included:
   - Sources
 excluded:
   - Tests
-identifier_name:
-  excluded:
-    - id
+#identifier_name:
+#  excluded:
+#    - id
 line_length: 220
 number_separator:
   minimum_length: 5
+disabled_rules:
+- identifier_name
 opt_in_rules:
   - file_header
   - array_init

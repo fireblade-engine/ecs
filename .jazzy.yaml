@@ -1,7 +1,3 @@
-#author_url: URL
-#docset_icon: /path/to/icon.png
-#exclude: [Tests]
-#theme: fullwidth
 author: "Christian Treffs"
 clean: true
 documentation: "docs/*.md"
@@ -13,11 +9,5 @@ module_version: 0.4.0
 output: "docs"
 readme: "README.md"
 skip_undocumented: false
-#source_directory: Sources
 swift_version: "4.2"
 theme: fullwidth
-#xcodebuild_arguments: [-project, FirebladeECS.xcodeproj, -target, FirebladeECS, LIBRARY_SEARCH_PATHS=.build/debug]
-#custom_categories:
-#- name: Guides
-#  children:
-#   - Category

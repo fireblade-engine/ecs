@@ -1,23 +1,22 @@
 #author_url: URL
-#copyright: Copyright © 2017 Christian Treffs. All rights reserved.
 #docset_icon: /path/to/icon.png
-#exclude: [Packages]
+#exclude: [Tests]
 #theme: fullwidth
-author: Christian Treffs
+author: "Christian Treffs"
 clean: true
-documentation: docs/*.md
-github_url: https://github.com/ctreffs/FirebladeECS/
+documentation: "docs/*.md"
+github_url: "https://github.com/ctreffs/FirebladeECS/"
 hide_documentation_coverage: false
 min_acl: "public"
-module: FirebladeECS
-module_version: 0.1.0
-output: docs
-readme: README.md
+module: "FirebladeECS"
+module_version: 0.4.0
+output: "docs"
+readme: "README.md"
 skip_undocumented: false
 #source_directory: Sources
-swift_version: "4.0.3"
-theme: apple
-xcodebuild_arguments: [-project, FirebladeECS.xcodeproj, -target, FirebladeECS, LIBRARY_SEARCH_PATHS=.build/debug]
+swift_version: "4.2"
+theme: fullwidth
+#xcodebuild_arguments: [-project, FirebladeECS.xcodeproj, -target, FirebladeECS, LIBRARY_SEARCH_PATHS=.build/debug]
 #custom_categories:
 #- name: Guides
 #  children:

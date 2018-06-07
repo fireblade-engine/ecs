@@ -5,7 +5,7 @@
 author: "Christian Treffs"
 clean: true
 documentation: "docs/*.md"
-github_url: "https://github.com/ctreffs/FirebladeECS/"
+github_url: "https://github.com/fireblade-engine/ecs"
 hide_documentation_coverage: false
 min_acl: "public"
 module: "FirebladeECS"

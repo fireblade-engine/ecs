@@ -29,7 +29,7 @@ extension Nexus {
 		return entityStorage.count
 	}
 
-	public func has(entity entityId: EntityIdentifier) -> Bool {
+	public func exists(entity entityId: EntityIdentifier) -> Bool {
 		return entityStorage.contains(entityId.index)
 	}
 

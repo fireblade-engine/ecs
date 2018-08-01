@@ -5,12 +5,12 @@
 //  Created by Christian Treffs on 08.10.17.
 //
 
-public final class Entity: UniqueEntityIdentifiable {
+open class Entity: UniqueEntityIdentifiable {
 	internal(set) public var identifier: EntityIdentifier = EntityIdentifier.invalid
 	public var name: String?
 	unowned let nexus: Nexus
 
-	init(nexus: Nexus, id: EntityIdentifier, name: String? = nil) {
+    internal init(nexus: Nexus, id: EntityIdentifier, name: String? = nil) {
 		self.nexus = nexus
 		self.identifier = id
 		self.name = name

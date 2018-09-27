@@ -57,9 +57,8 @@ class ExampleSystem {
 			position.x *= 2
 			velocity.a *= 2
 
-		}
-        
-        
+        }
+
 	}
 
 }

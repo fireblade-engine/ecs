@@ -37,7 +37,7 @@ public extension Nexus {
 		return family.traits.isMatch(components: componentSet)
 	}
 
-	func members(of traits: FamilyTraitSet) -> UniformEntityIdentifiers? {
+	func members(withFamilyTraits traits: FamilyTraitSet) -> UniformEntityIdentifiers? {
 		return familyMembersByTraits[traits]
 	}
 
@@ -46,11 +46,11 @@ public extension Nexus {
 	}
 
     func isMember(_ entityId: EntityIdentifier, in family: Family) -> Bool {
-        return isMember(entityId, in: family.traits)
+        return isMember(entity: entityId, inFamilyWithTraits: family.traits)
     }
 
-	func isMember(_ entityId: EntityIdentifier, in traits: FamilyTraitSet) -> Bool {
-		guard let members: UniformEntityIdentifiers = members(of: traits) else {
+	func isMember(entity entityId: EntityIdentifier, inFamilyWithTraits traits: FamilyTraitSet) -> Bool {
+		guard let members: UniformEntityIdentifiers = members(withFamilyTraits: traits) else {
 			return false
 		}
 		return members.contains(entityId.index)
@@ -63,9 +63,8 @@ extension Nexus {
 
 	func update(familyMembership entityId: EntityIdentifier) {
 		// FIXME: iterating all families is costly for many families
-        for (familyTraits, _) in familyMembersByTraits {
-            update(membership: familyTraits, for: entityId)
-		}
+        familyMembersByTraits.forEach { familyTraits, _ in update(membership: familyTraits, for: entityId) }
+
 	}
 
     enum UpdateState {
@@ -76,32 +75,34 @@ extension Nexus {
         case unchanged(id: EntityIdentifier, traits: FamilyTraitSet)
     }
 
-    @discardableResult
-	func update(membership traits: FamilyTraitSet, for entityId: EntityIdentifier) -> UpdateState {
+	func update(membership traits: FamilyTraitSet, for entityId: EntityIdentifier) {
 		let entityIdx: EntityIndex = entityId.index
 		guard let componentIds: SparseComponentIdentifierSet = componentIdsByEntity[entityIdx] else {
-            return .noComponents(id: entityId, traits: traits)
+            // no components - so skip
+            return
 		}
 
-		let isMember: Bool = self.isMember(entityId, in: traits)
-		if !has(entity: entityId) && isMember {
-			remove(from: traits, entityId: entityId, entityIdx: entityIdx)
-			return .removedDeleted(id: entityId, traits: traits)
+        let isMember: Bool = self.isMember(entity: entityId, inFamilyWithTraits: traits)
+		if !exists(entity: entityId) && isMember {
+            remove(entityWithId: entityId, andIndex: entityIdx, fromFamilyWithTraits: traits)
+			return
 		}
 
+        // TODO: get rid of set creation for comparison
 		let componentsSet: ComponentSet = ComponentSet(componentIds)
 		let isMatch: Bool = traits.isMatch(components: componentsSet)
+
 		switch (isMatch, isMember) {
 		case (true, false):
-			add(to: traits, entityId: entityId, entityIdx: entityIdx)
+            add(entityWithId: entityId, andIndex: entityIdx, toFamilyWithTraits: traits)
 			notify(FamilyMemberAdded(member: entityId, toFamily: traits))
-            return .added(id: entityId, traits: traits)
+            return
 		case (false, true):
-			remove(from: traits, entityId: entityId, entityIdx: entityIdx)
+            remove(entityWithId: entityId, andIndex: entityIdx, fromFamilyWithTraits: traits)
 			notify(FamilyMemberRemoved(member: entityId, from: traits))
-            return .removed(id: entityId, traits: traits)
+            return
 		default:
-			return .unchanged(id: entityId, traits: traits)
+			return
 		}
 	}
 
@@ -127,28 +128,27 @@ extension Nexus {
 // MARK: - fileprivate extensions
 private extension Nexus {
 
-	func get(family traits: FamilyTraitSet) -> Family? {
+	final func get(family traits: FamilyTraitSet) -> Family? {
         return create(family: traits)
 	}
 
-	func create(family traits: FamilyTraitSet) -> Family {
+	final func create(family traits: FamilyTraitSet) -> Family {
         let family: Family = Family(self, traits: traits)
 		return family
 	}
 
-	func calculateTraitEntityIdHash(traitHash: FamilyTraitSetHash, entityIdx: EntityIndex) -> TraitEntityIdHash {
+	final func calculateTraitEntityIdHash(traitHash: FamilyTraitSetHash, entityIdx: EntityIndex) -> TraitEntityIdHash {
 		return hash(combine: traitHash, entityIdx)
 	}
 
-	func add(to traits: FamilyTraitSet, entityId: EntityIdentifier, entityIdx: EntityIndex) {
+	final func add(entityWithId entityId: EntityIdentifier, andIndex entityIdx: EntityIndex, toFamilyWithTraits traits: FamilyTraitSet) {
         if familyMembersByTraits[traits] == nil {
             familyMembersByTraits[traits] = UniformEntityIdentifiers()
         }
-
 		familyMembersByTraits[traits]?.insert(entityId, at: entityIdx)
 	}
 
-	func remove(from traits: FamilyTraitSet, entityId: EntityIdentifier, entityIdx: EntityIndex) {
+	final func remove(entityWithId entityId: EntityIdentifier, andIndex entityIdx: EntityIndex, fromFamilyWithTraits traits: FamilyTraitSet) {
 		familyMembersByTraits[traits]?.remove(at: entityIdx)
 	}
 }

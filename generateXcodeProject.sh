@@ -11,7 +11,7 @@ bundle install
 swift package update
 
 # generate project
-swift package generate-xcodeproj #--xcconfig-overrides settings.xcconfig
+swift package generate-xcodeproj --enable-code-coverage #--xcconfig-overrides settings.xcconfig
 
 # add project specialities
 bundle exec ./prepareXcodeProject.rb 

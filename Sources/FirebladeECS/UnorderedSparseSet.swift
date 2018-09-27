@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 30.10.17.
 //
 
-public class UnorderedSparseSet<Element>: Sequence {
+public class UnorderedSparseSet<Element> {
     public typealias Index = Int
     public typealias Key = Int
 
@@ -134,6 +134,33 @@ public class UnorderedSparseSet<Element>: Sequence {
             return iterator.next()?.element
         }
     }
+}
+
+extension UnorderedSparseSet: MutableCollection, RandomAccessCollection {
+    public func index(after index: Index) -> Int {
+        return dense.index(after: index)
+    }
+
+    public subscript(position: Index) -> Element {
+        get {
+            guard let element: Element = get(at: position) else {
+                fatalError("no element at index \(position)")
+            }
+            return element
+        }
+        set(newValue) {
+            insert(newValue, at: position)
+        }
+    }
+
+    public var startIndex: Index {
+        return dense.startIndex
+    }
+
+    public var endIndex: Index {
+        return dense.endIndex
+    }
+
 }
 
 extension UnorderedSparseSet.Entry: Equatable where UnorderedSparseSet.Element: Equatable {

@@ -8,8 +8,8 @@ excluded:
 line_length: 220
 number_separator:
   minimum_length: 5
-disabled_rules:
-- identifier_name
+#disabled_rules:
+#- identifier_name
 opt_in_rules:
   - file_header
   - array_init

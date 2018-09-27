@@ -5,7 +5,6 @@
 //  Created by Christian Treffs on 08.10.17.
 //
 
-// MARK: - family
 public final class Family: Equatable {
 
 	public weak var nexus: Nexus?

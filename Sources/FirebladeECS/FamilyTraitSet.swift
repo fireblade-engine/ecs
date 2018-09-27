@@ -4,7 +4,7 @@
 //
 //  Created by Christian Treffs on 09.10.17.
 //
-import Swift
+
 public struct FamilyTraitSet: CustomStringConvertible, CustomDebugStringConvertible {
 
 	public let requiresAll: ComponentSet

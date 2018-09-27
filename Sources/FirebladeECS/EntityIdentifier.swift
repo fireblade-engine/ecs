@@ -5,8 +5,6 @@
 //  Created by Christian Treffs on 08.10.17.
 //
 
-// MARK: Unique Entity Index
-
 public typealias EntityIdentifier = UInt32 // provides 4294967295 unique identifiers
 public typealias EntityIndex = Int
 

@@ -1,6 +1,6 @@
 # Fireblade ECS (Entity-Component-System)
 [![Build Status](https://travis-ci.com/fireblade-engine/ecs.svg?branch=master)](https://travis-ci.com/fireblade-engine/ecs)
-[![version 0.4.2](https://img.shields.io/badge/version-0.4.2-brightgreen.svg)](releases/tag/v0.4.2)
+[![version 0.4.3](https://img.shields.io/badge/version-0.4.3-brightgreen.svg)](releases/tag/v0.4.3)
 [![license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 [![swift version](https://img.shields.io/badge/swift-4.2-brightgreen.svg)](#)
 [![platforms](https://img.shields.io/badge/platform-macOS%20|%20iOS%20|%20linux-brightgreen.svg)](#)
@@ -33,7 +33,7 @@ import PackageDescription
 let package = Package(
     name: "YourPackageName",
     dependencies: [
-        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.4.2")
+        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.4.3")
     ],
     targets: [
         .target(

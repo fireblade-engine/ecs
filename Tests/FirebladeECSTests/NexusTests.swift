@@ -11,7 +11,7 @@ import XCTest
 class NexusTests: XCTestCase {
 
     var nexus: Nexus!
-    
+
 	override func setUp() {
 		super.setUp()
         nexus = Nexus()
@@ -26,44 +26,43 @@ class NexusTests: XCTestCase {
         XCTAssertEqual(nexus.numEntities, 0)
 
 		let e0 = nexus.create()
-        
+
 		XCTAssertEqual(e0.identifier.index, 0)
         XCTAssertEqual(nexus.numEntities, 1)
-        
+
         let e1 = nexus.create(entity: "Entity 1")
 
         XCTAssert(e1.identifier.index == 1)
         XCTAssert(nexus.numEntities == 2)
-        
+
         XCTAssertNil(e0.name)
         XCTAssertEqual(e1.name, "Entity 1")
 	}
-    
+
     func testEntityDestroy() {
         testEntityCreate()
         XCTAssertEqual(nexus.numEntities, 2)
-        
+
         let e1: Entity = nexus.get(entity: 1)!
         XCTAssertEqual(e1.identifier.index, 1)
-        
+
         XCTAssertTrue(nexus.destroy(entity: e1))
         XCTAssertFalse(nexus.destroy(entity: e1))
-        
+
         XCTAssertEqual(nexus.numEntities, 1)
-        
+
         let e1Again: Entity? = nexus.get(entity: 1)
         XCTAssertNil(e1Again)
-        
+
         XCTAssertEqual(nexus.numEntities, 1)
-        
+
         nexus.clear()
-        
+
         XCTAssertEqual(nexus.numEntities, 0)
     }
-    
 
 	func testComponentCreation() {
-		
+
 		XCTAssert(nexus.numEntities == 0)
 
 		let e0: Entity = nexus.create(entity: "e0")
@@ -82,7 +81,7 @@ class NexusTests: XCTestCase {
 	}
 
 	func testComponentDeletion() {
-		
+
 		let identifier: EntityIdentifier = nexus.create(entity: "e0").identifier
 
 		let e0 = nexus.get(entity: identifier)!

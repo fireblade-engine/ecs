@@ -8,7 +8,7 @@
 public extension Nexus {
 
     final var numComponents: Int {
-        return componentsByType.reduce(0) { return $0 + $1.value.count }
+        return componentsByType.reduce(0) { $0 + $1.value.count }
     }
 
     final func has(componentId: ComponentIdentifier, entityIdx: EntityIndex) -> Bool {

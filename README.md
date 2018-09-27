@@ -1,4 +1,5 @@
 # Fireblade ECS (Entity-Component-System)
+[![Build Status](https://travis-ci.com/fireblade-engine/ecs.svg?branch=master)](https://travis-ci.com/fireblade-engine/ecs)
 [![version 0.4.2](https://img.shields.io/badge/version-0.4.2-brightgreen.svg)](releases/tag/v0.4.2)
 [![license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 [![swift version](https://img.shields.io/badge/swift-4.2-brightgreen.svg)](#)

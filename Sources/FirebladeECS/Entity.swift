@@ -6,9 +6,9 @@
 //
 
 open class Entity: UniqueEntityIdentifiable {
-	internal(set) public var identifier: EntityIdentifier = EntityIdentifier.invalid
+	public internal(set) var identifier = EntityIdentifier.invalid
 	public var name: String?
-	unowned let nexus: Nexus
+	internal unowned let nexus: Nexus
 
     internal init(nexus: Nexus, id: EntityIdentifier, name: String? = nil) {
 		self.nexus = nexus

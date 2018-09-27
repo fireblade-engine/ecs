@@ -4,7 +4,7 @@
 //
 //  Created by Christian Treffs on 09.10.17.
 //
-import Swift
+
 public struct FamilyTraitSet: CustomStringConvertible, CustomDebugStringConvertible {
 
 	public let requiresAll: ComponentSet
@@ -16,9 +16,9 @@ public struct FamilyTraitSet: CustomStringConvertible, CustomDebugStringConverti
 
 	public init(requiresAll: [Component.Type], excludesAll: [Component.Type], needsAtLeastOne: [Component.Type] = []) {
 
-        let all: ComponentSet = ComponentSet(requiresAll.map { $0.identifier })
-		let none: ComponentSet = ComponentSet(excludesAll.map { $0.identifier })
-		let one: ComponentSet = ComponentSet(needsAtLeastOne.map { $0.identifier })
+        let all = ComponentSet(requiresAll.map { $0.identifier })
+		let none = ComponentSet(excludesAll.map { $0.identifier })
+		let one = ComponentSet(needsAtLeastOne.map { $0.identifier })
 
 		let valid: Bool = FamilyTraitSet.isValid(requiresAll: all, excludesAll: none, atLeastOne: one)
 		assert(valid, "invalid family trait created - requiresAll: \(all), excludesAll: \(none), atLeastOne: \(one)")
@@ -59,14 +59,14 @@ public struct FamilyTraitSet: CustomStringConvertible, CustomDebugStringConverti
 	}
 
 	// MARK: - valid
-	static func isValid(requiresAll: ComponentSet, excludesAll: ComponentSet, atLeastOne: ComponentSet) -> Bool {
+	private static func isValid(requiresAll: ComponentSet, excludesAll: ComponentSet, atLeastOne: ComponentSet) -> Bool {
 		return validAtLeastOneNonEmpty(requiresAll, atLeastOne) &&
 			requiresAll.isDisjoint(with: atLeastOne) &&
 			requiresAll.isDisjoint(with: excludesAll) &&
 			atLeastOne.isDisjoint(with: excludesAll)
 	}
 
-	static func validAtLeastOneNonEmpty(_ requiresAll: ComponentSet, _ atLeastOne: ComponentSet) -> Bool {
+	private static func validAtLeastOneNonEmpty(_ requiresAll: ComponentSet, _ atLeastOne: ComponentSet) -> Bool {
 		return !requiresAll.isEmpty || !atLeastOne.isEmpty
 	}
 

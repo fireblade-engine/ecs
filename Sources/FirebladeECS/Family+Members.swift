@@ -166,25 +166,25 @@ extension Family: FamilyMemberIterable {
 // swiftlint:disable large_tuple
 extension Family: FamilyMemberComponentsGetterProtocol {
 
-    func components<A>(_ entityId: EntityIdentifier) -> (A?) where A: Component {
+    public func components<A>(_ entityId: EntityIdentifier) -> (A?) where A: Component {
         let compA: A? = nexus?.get(for: entityId)
         return (compA)
     }
 
-    func components<A, B>(_ entityId: EntityIdentifier) -> (A?, B?) where A: Component, B: Component {
+    public func components<A, B>(_ entityId: EntityIdentifier) -> (A?, B?) where A: Component, B: Component {
         let compA: A? = nexus?.get(for: entityId)
         let compB: B? = nexus?.get(for: entityId)
         return (compA, compB)
     }
 
-    func components<A, B, C>(_ entityId: EntityIdentifier) -> (A?, B?, C?) where A: Component, B: Component, C: Component {
+    public func components<A, B, C>(_ entityId: EntityIdentifier) -> (A?, B?, C?) where A: Component, B: Component, C: Component {
         let compA: A? = nexus?.get(for: entityId)
         let compB: B? = nexus?.get(for: entityId)
         let compC: C? = nexus?.get(for: entityId)
         return (compA, compB, compC)
     }
 
-    final func components<A, B, C, D>(_ entityId: EntityIdentifier) -> (A?, B?, C?, D?) where A: Component, B: Component, C: Component, D: Component {
+    public final func components<A, B, C, D>(_ entityId: EntityIdentifier) -> (A?, B?, C?, D?) where A: Component, B: Component, C: Component, D: Component {
         let compA: A? = nexus?.get(for: entityId)
         let compB: B? = nexus?.get(for: entityId)
         let compC: C? = nexus?.get(for: entityId)
@@ -192,7 +192,7 @@ extension Family: FamilyMemberComponentsGetterProtocol {
         return (compA, compB, compC, compD)
     }
 
-    final func components<A, B, C, D, E>(_ entityId: EntityIdentifier) -> (A?, B?, C?, D?, E?) where A: Component, B: Component, C: Component, D: Component, E: Component {
+    public final func components<A, B, C, D, E>(_ entityId: EntityIdentifier) -> (A?, B?, C?, D?, E?) where A: Component, B: Component, C: Component, D: Component, E: Component {
         let compA: A? = nexus?.get(for: entityId)
         let compB: B? = nexus?.get(for: entityId)
         let compC: C? = nexus?.get(for: entityId)

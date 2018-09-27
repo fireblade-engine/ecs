@@ -6,9 +6,9 @@
 //
 
 #if arch(x86_64) || arch(arm64) // 64 bit
-private let fibA: UInt = 0x9e3779b97f4a7c15 // = 11400714819323198485 aka Fibonacci Hash a value for 2^64; calculate by: 2^64 / (golden ratio)
+private let kFibA: UInt = 0x9e3779b97f4a7c15 // = 11400714819323198485 aka Fibonacci Hash a value for 2^64; calculate by: 2^64 / (golden ratio)
 #elseif arch(i386) || arch(arm) // 32 bit
-private let fibA: UInt = 0x9e3779b9 // = 2654435769 aka Fibonacci Hash a value for 2^32; calculate by: 2^32 / (golden ratio)
+private let kFibA: UInt = 0x9e3779b9 // = 2654435769 aka Fibonacci Hash a value for 2^32; calculate by: 2^32 / (golden ratio)
 #else
 #error("unsupported architecture")
 #endif
@@ -33,9 +33,9 @@ public func hash(combine seed: Int, _ value: Int) -> Int {
      let a32 = pow(2.0,32.0) / phi
      let a64 = pow(2.0,64.0) / phi
      */
-    var uSeed: UInt = UInt(bitPattern: seed)
-    let uValue: UInt = UInt(bitPattern: value)
-    uSeed ^= uValue &+ fibA &+ (uSeed << 6) &+ (uSeed >> 2)
+    var uSeed = UInt(bitPattern: seed)
+    let uValue = UInt(bitPattern: value)
+    uSeed ^= uValue &+ kFibA &+ (uSeed << 6) &+ (uSeed >> 2)
     return Int(bitPattern: uSeed)
 }
 
@@ -60,20 +60,20 @@ public func hash<H: Sequence>(combine hashables: H) -> Int where H.Element == Ha
 // MARK: - entity component hash
 extension EntityComponentHash {
 
-    static func compose(entityId: EntityIdentifier, componentTypeHash: ComponentTypeHash) -> EntityComponentHash {
-        let entityIdSwapped: UInt = UInt(entityId).byteSwapped // needs to be 64 bit
-        let componentTypeHashUInt: UInt = UInt(bitPattern: componentTypeHash)
+    internal static func compose(entityId: EntityIdentifier, componentTypeHash: ComponentTypeHash) -> EntityComponentHash {
+        let entityIdSwapped = UInt(entityId).byteSwapped // needs to be 64 bit
+        let componentTypeHashUInt = UInt(bitPattern: componentTypeHash)
         let hashUInt: UInt = componentTypeHashUInt ^ entityIdSwapped
         return Int(bitPattern: hashUInt)
     }
 
-    static func decompose(_ hash: EntityComponentHash, with entityId: EntityIdentifier) -> ComponentTypeHash {
-        let entityIdSwapped: UInt = UInt(entityId).byteSwapped
-        let entityIdSwappedInt: Int = Int(bitPattern: entityIdSwapped)
+    internal static func decompose(_ hash: EntityComponentHash, with entityId: EntityIdentifier) -> ComponentTypeHash {
+        let entityIdSwapped = UInt(entityId).byteSwapped
+        let entityIdSwappedInt = Int(bitPattern: entityIdSwapped)
         return hash ^ entityIdSwappedInt
     }
 
-    static func decompose(_ hash: EntityComponentHash, with componentTypeHash: ComponentTypeHash) -> EntityIdentifier {
+    internal static func decompose(_ hash: EntityComponentHash, with componentTypeHash: ComponentTypeHash) -> EntityIdentifier {
         let entityId: Int = (hash ^ componentTypeHash).byteSwapped
         return EntityIdentifier(truncatingIfNeeded: entityId)
     }

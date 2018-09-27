@@ -10,12 +10,12 @@ public class UnorderedSparseSet<Element> {
     public typealias Key = Int
 
     public struct Entry {
-        let key: Key
-        let element: Element
+        public let key: Key
+        public let element: Element
     }
 
-    private(set) var dense: ContiguousArray<Entry>
-    private(set) var sparse: [Index: Key]
+    internal var dense: ContiguousArray<Entry>
+    internal var sparse: [Index: Key]
 
     // TODO: implement
     // a) RandomAccessCollection conformance
@@ -124,13 +124,13 @@ public class UnorderedSparseSet<Element> {
 
     public struct UnorderedSparseSetIterator<Element>: IteratorProtocol {
 
-        private var iterator: IndexingIterator<ContiguousArray<UnorderedSparseSet<Element>.Entry>>
+        public private(set) var iterator: IndexingIterator<ContiguousArray<UnorderedSparseSet<Element>.Entry>>
 
-        init(_ sparseSet: UnorderedSparseSet<Element>) {
+        public init(_ sparseSet: UnorderedSparseSet<Element>) {
             iterator = sparseSet.dense.makeIterator()
         }
 
-        mutating public func next() -> Element? {
+        public mutating func next() -> Element? {
             return iterator.next()?.element
         }
     }

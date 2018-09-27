@@ -5,7 +5,6 @@
 //  Created by Christian Treffs on 22.10.17.
 //
 
-// MARK: - get components
 public extension Entity {
 
 	final func get<C>() -> C? where C: Component {

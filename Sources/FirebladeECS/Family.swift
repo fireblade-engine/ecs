@@ -5,7 +5,6 @@
 //  Created by Christian Treffs on 08.10.17.
 //
 
-// MARK: - family
 public final class Family: Equatable {
 
 	public weak var nexus: Nexus?
@@ -21,7 +20,7 @@ public final class Family: Equatable {
 	// f) iterate family A and family B in pairs - i.e. zip
 	// g) pair-wise comparison inside families or between families
 
-	init(_ nexus: Nexus, traits: FamilyTraitSet) {
+	internal init(_ nexus: Nexus, traits: FamilyTraitSet) {
 		self.nexus = nexus
 		self.traits = traits
 		defer {

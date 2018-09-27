@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 08.10.17.
 //
 
-public protocol Component: class, TypeIdentifiable {}
+public protocol Component: AnyObject, TypeIdentifiable {}
 public typealias ComponentIdentifier = ObjectIdentifier
 
 public extension Component {

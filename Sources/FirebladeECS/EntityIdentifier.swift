@@ -11,7 +11,7 @@ public typealias EntityIdentifier = UInt32 // provides 4294967295 unique identif
 public typealias EntityIndex = Int
 
 public extension EntityIdentifier {
-	static let invalid: EntityIdentifier = EntityIdentifier.max
+	static let invalid = EntityIdentifier.max
 }
 
 public extension EntityIdentifier {

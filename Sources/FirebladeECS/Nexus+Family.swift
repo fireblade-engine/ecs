@@ -19,7 +19,7 @@ public extension Nexus {
 	///   - oneComponents: at least one of component types must appear in this family.
 	/// - Returns: family with given traits.
 	func family(requiresAll allComponents: [Component.Type], excludesAll noneComponents: [Component.Type], needsAtLeastOne oneComponents: [Component.Type] = []) -> Family {
-        let traits: FamilyTraitSet = FamilyTraitSet(requiresAll: allComponents, excludesAll: noneComponents, needsAtLeastOne: oneComponents)
+        let traits = FamilyTraitSet(requiresAll: allComponents, excludesAll: noneComponents, needsAtLeastOne: oneComponents)
 		return family(with: traits)
 	}
 
@@ -33,7 +33,7 @@ public extension Nexus {
 			assertionFailure("no component set defined for entity: \(entity)")
 			return false
 		}
-		let componentSet: ComponentSet = ComponentSet(componentIds)
+		let componentSet = ComponentSet(componentIds)
 		return family.traits.isMatch(components: componentSet)
 	}
 
@@ -61,13 +61,13 @@ public extension Nexus {
 // MARK: - internal extensions
 extension Nexus {
 
-	func update(familyMembership entityId: EntityIdentifier) {
+	internal func update(familyMembership entityId: EntityIdentifier) {
 		// FIXME: iterating all families is costly for many families
         familyMembersByTraits.forEach { familyTraits, _ in update(membership: familyTraits, for: entityId) }
 
 	}
 
-    enum UpdateState {
+    internal enum UpdateState {
         case noComponents(id: EntityIdentifier, traits: FamilyTraitSet)
         case added(id: EntityIdentifier, traits: FamilyTraitSet)
         case removedDeleted(id: EntityIdentifier, traits: FamilyTraitSet)
@@ -75,7 +75,7 @@ extension Nexus {
         case unchanged(id: EntityIdentifier, traits: FamilyTraitSet)
     }
 
-	func update(membership traits: FamilyTraitSet, for entityId: EntityIdentifier) {
+	internal func update(membership traits: FamilyTraitSet, for entityId: EntityIdentifier) {
 		let entityIdx: EntityIndex = entityId.index
 		guard let componentIds: SparseComponentIdentifierSet = componentIdsByEntity[entityIdx] else {
             // no components - so skip
@@ -89,7 +89,7 @@ extension Nexus {
 		}
 
         // TODO: get rid of set creation for comparison
-		let componentsSet: ComponentSet = ComponentSet(componentIds)
+		let componentsSet = ComponentSet(componentIds)
 		let isMatch: Bool = traits.isMatch(components: componentsSet)
 
 		switch (isMatch, isMember) {
@@ -107,7 +107,7 @@ extension Nexus {
 	}
 
     /// will be called on family init defer
-    func onFamilyInit(traits: FamilyTraitSet) {
+    internal func onFamilyInit(traits: FamilyTraitSet) {
 
         if familyMembersByTraits[traits] == nil {
             familyMembersByTraits[traits] = UniformEntityIdentifiers()
@@ -119,7 +119,7 @@ extension Nexus {
         }
     }
 
-    func onFamilyDeinit(traits: FamilyTraitSet) {
+    internal func onFamilyDeinit(traits: FamilyTraitSet) {
         // nothing todo here
     }
 
@@ -133,7 +133,7 @@ private extension Nexus {
 	}
 
 	final func create(family traits: FamilyTraitSet) -> Family {
-        let family: Family = Family(self, traits: traits)
+        let family = Family(self, traits: traits)
 		return family
 	}
 

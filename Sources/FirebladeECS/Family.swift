@@ -21,7 +21,7 @@ public final class Family: Equatable {
 	// f) iterate family A and family B in pairs - i.e. zip
 	// g) pair-wise comparison inside families or between families
 
-	init(_ nexus: Nexus, traits: FamilyTraitSet) {
+	internal init(_ nexus: Nexus, traits: FamilyTraitSet) {
 		self.nexus = nexus
 		self.traits = traits
 		defer {

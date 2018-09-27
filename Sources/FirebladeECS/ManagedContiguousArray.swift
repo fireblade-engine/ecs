@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 28.10.17.
 //
 
-public protocol UniformStorage: class {
+public protocol UniformStorage: AnyObject {
 	associatedtype Element
 	associatedtype Index
 
@@ -75,11 +75,11 @@ public class ManagedContiguousArray<Element>: UniformStorage {
 		store.removeAll(keepingCapacity: keepingCapacity)
 	}
 
-	func needsToGrow(_ index: Index) -> Bool {
+	private func needsToGrow(_ index: Index) -> Bool {
 		return index > store.count - 1
 	}
 
-	func grow(including index: Index) {
+	private func grow(including index: Index) {
 		let newCapacity: Int = nearest(to: index)
 		let newCount: Int = newCapacity - store.count
 		for _ in 0..<newCount {
@@ -87,9 +87,9 @@ public class ManagedContiguousArray<Element>: UniformStorage {
 		}
 	}
 
-	func nearest(to index: Index) -> Int {
-        let delta: Float = Float(index) / Float(chunkSize)
-        let multiplier: Int = Int(delta) + 1
+	private func nearest(to index: Index) -> Int {
+        let delta = Float(index) / Float(chunkSize)
+        let multiplier = Int(delta) + 1
 		return multiplier * chunkSize
 	}
 }

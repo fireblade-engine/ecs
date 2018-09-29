@@ -40,10 +40,33 @@ class TypedFamilyPerformanceTests: XCTestCase {
         var loopCount: Int = 0
         
         measure {
-            family.forEach { (position: Position) in
-                _ = position
-                
-                loopCount += 1
+            family
+                .forEach { (position: Position) in
+                    _ = position
+                    
+                    loopCount += 1
+            }
+        }
+        
+        XCTAssertEqual(loopCount, family.count * 10)
+    }
+    
+    func testPerformanceTypedFamilyEntityOneComponent() {
+        let family = nexus.family(requires: Position.self, excludesAll: Party.self)
+        
+        XCTAssertEqual(family.count, numEntities)
+        XCTAssertEqual(nexus.numEntities, numEntities)
+        
+        var loopCount: Int = 0
+        
+        measure {
+            family
+                .entityAndComponents
+                .forEach { (entity: Entity, position: Position) in
+                    _ = entity
+                    _ = position
+                    
+                    loopCount += 1
             }
         }
         
@@ -59,11 +82,35 @@ class TypedFamilyPerformanceTests: XCTestCase {
         var loopCount: Int = 0
         
         measure {
-            family.forEach { (position: Position, velocity: Velocity) in
-                _ = position
-                _ = velocity
-                
-                loopCount += 1
+            family
+                .forEach { (position: Position, velocity: Velocity) in
+                    _ = position
+                    _ = velocity
+                    
+                    loopCount += 1
+            }
+        }
+        
+        XCTAssertEqual(loopCount, family.count * 10)
+    }
+    
+    func testPerformanceTypedFamilyEntityTwoComponents() {
+        let family = nexus.family(requiresAll: Position.self, Velocity.self, excludesAll: Party.self)
+        
+        XCTAssertEqual(family.count, numEntities)
+        XCTAssertEqual(nexus.numEntities, numEntities)
+        
+        var loopCount: Int = 0
+        
+        measure {
+            family
+                .entityAndComponents
+                .forEach { (entity: Entity, position: Position, velocity: Velocity) in
+                    _ = entity
+                    _ = position
+                    _ = velocity
+                    
+                    loopCount += 1
             }
         }
         
@@ -79,12 +126,37 @@ class TypedFamilyPerformanceTests: XCTestCase {
         var loopCount: Int = 0
         
         measure {
-            family.forEach { (position: Position, velocity: Velocity, name: Name) in
-                _ = position
-                _ = velocity
-                _ = name
-                
-                loopCount += 1
+            family
+                .forEach { (position: Position, velocity: Velocity, name: Name) in
+                    _ = position
+                    _ = velocity
+                    _ = name
+                    
+                    loopCount += 1
+            }
+        }
+        
+        XCTAssertEqual(loopCount, family.count * 10)
+    }
+    
+    func testPerformanceTypedFamilyEntityThreeComponents() {
+        let family = nexus.family(requiresAll: Position.self, Velocity.self, Name.self, excludesAll: Party.self)
+        
+        XCTAssertEqual(family.count, numEntities)
+        XCTAssertEqual(nexus.numEntities, numEntities)
+        
+        var loopCount: Int = 0
+        
+        measure {
+            family
+                .entityAndComponents
+                .forEach { (entity: Entity, position: Position, velocity: Velocity, name: Name) in
+                    _ = entity
+                    _ = position
+                    _ = velocity
+                    _ = name
+                    
+                    loopCount += 1
             }
         }
         
@@ -100,13 +172,39 @@ class TypedFamilyPerformanceTests: XCTestCase {
         var loopCount: Int = 0
         
         measure {
-            family.forEach { (position: Position, velocity: Velocity, name: Name, color: Color) in
-                _ = position
-                _ = velocity
-                _ = name
-                _ = color
-                
-                loopCount += 1
+            family
+                .forEach { (position: Position, velocity: Velocity, name: Name, color: Color) in
+                    _ = position
+                    _ = velocity
+                    _ = name
+                    _ = color
+                    
+                    loopCount += 1
+            }
+        }
+        
+        XCTAssertEqual(loopCount, family.count * 10)
+    }
+    
+    func testPerformanceTypedFamilyEntityFourComponents() {
+        let family = nexus.family(requiresAll: Position.self, Velocity.self, Name.self, Color.self, excludesAll: Party.self)
+        
+        XCTAssertEqual(family.count, numEntities)
+        XCTAssertEqual(nexus.numEntities, numEntities)
+        
+        var loopCount: Int = 0
+        
+        measure {
+            family
+                .entityAndComponents
+                .forEach { (entity: Entity, position: Position, velocity: Velocity, name: Name, color: Color) in
+                    _ = entity
+                    _ = position
+                    _ = velocity
+                    _ = name
+                    _ = color
+                    
+                    loopCount += 1
             }
         }
         
@@ -130,6 +228,32 @@ class TypedFamilyPerformanceTests: XCTestCase {
                 _ = empty
                 
                 loopCount += 1
+            }
+        }
+        
+        XCTAssertEqual(loopCount, family.count * 10)
+    }
+    
+    func testPerformanceTypedFamilyEntityFiveComponents() {
+        let family = nexus.family(requiresAll: Position.self, Velocity.self, Name.self, Color.self, EmptyComponent.self, excludesAll: Party.self)
+        
+        XCTAssertEqual(family.count, numEntities)
+        XCTAssertEqual(nexus.numEntities, numEntities)
+        
+        var loopCount: Int = 0
+        
+        measure {
+            family
+                .entityAndComponents
+                .forEach { (entity: Entity, position: Position, velocity: Velocity, name: Name, color: Color, empty: EmptyComponent) in
+                    _ = entity
+                    _ = position
+                    _ = velocity
+                    _ = name
+                    _ = color
+                    _ = empty
+                    
+                    loopCount += 1
             }
         }
         

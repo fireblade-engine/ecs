@@ -7,15 +7,31 @@
 
 public extension Nexus {
 
+    func family<A>(requires componentA: A.Type,
+                   excludesAll excludedComponents: Component.Type...) -> TypedFamily1<A> where A: Component {
+        return TypedFamily1(self,
+                            requiresAll: componentA,
+                            excludesAll: excludedComponents)
+    }
+
+    func family<A, B>(requiresAll componentA: A.Type,
+                      _ componentB: B.Type,
+                      excludesAll excludedComponents: Component.Type...) -> TypedFamily2<A, B> where A: Component, B: Component {
+        return TypedFamily2(self,
+                            requiresAll: componentA,
+                            componentB,
+                            excludesAll: excludedComponents)
+    }
+
     func family<A, B, C>(requiresAll componentA: A.Type,
                          _ componentB: B.Type,
                          _ componentC: C.Type,
-                         excludesAll excludedComponents: Component.Type...) -> TypedFamily<A, B, C> where A: Component, B: Component, C: Component {
-        return TypedFamily(self,
-                           requiresAll: componentA,
-                           componentB,
-                           componentC,
-                           excludesAll: excludedComponents)
+                         excludesAll excludedComponents: Component.Type...) -> TypedFamily3<A, B, C> where A: Component, B: Component, C: Component {
+        return TypedFamily3(self,
+                            requiresAll: componentA,
+                            componentB,
+                            componentC,
+                            excludesAll: excludedComponents)
     }
 
 }

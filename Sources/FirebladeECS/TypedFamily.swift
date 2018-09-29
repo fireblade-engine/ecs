@@ -6,9 +6,12 @@
 //
 
 public protocol TypedFamilyProtocol: AnyObject {
+    associatedtype Members: FamilyMembersProtocol
+
     var traits: FamilyTraitSet { get }
     var nexus: Nexus? { get }
     var memberIds: UniformEntityIdentifiers { get }
+    var members: Members { get set }
 }
 
 public extension TypedFamilyProtocol {
@@ -17,14 +20,23 @@ public extension TypedFamilyProtocol {
     }
 }
 
+public protocol FamilyMembersProtocol: LazySequenceProtocol {
+    associatedtype TypedFamily: TypedFamilyProtocol
+
+    var nexus: Nexus? { get }
+    var family: TypedFamily { get }
+
+    init(_ nexus: Nexus?, _ family: TypedFamily)
+}
+
 public protocol ComponentIteratorProtocol: IteratorProtocol {
+    associatedtype TypedFamily: TypedFamilyProtocol
+
     var memberIds: UniformEntityIdentifiers { get }
     var nexus: Nexus? { get }
     var index: Int { get set }
-}
 
-public protocol FamilyMembersProtocol: LazySequenceProtocol {
-    var nexus: Nexus? { get }
+    init(_ nexus: Nexus?, _ family: TypedFamily)
 }
 
 internal extension ComponentIteratorProtocol {

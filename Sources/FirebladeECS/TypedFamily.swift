@@ -12,11 +12,17 @@ public protocol TypedFamilyProtocol: AnyObject {
     var nexus: Nexus? { get }
     var memberIds: UniformEntityIdentifiers { get }
     var members: Members { get set }
+
+    var count: Int { get }
 }
 
 public extension TypedFamilyProtocol {
     var memberIds: UniformEntityIdentifiers {
         return nexus?.members(withFamilyTraits: traits) ?? UniformEntityIdentifiers()
+    }
+
+    var count: Int {
+        return memberIds.count
     }
 }
 

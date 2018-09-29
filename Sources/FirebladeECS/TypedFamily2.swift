@@ -40,12 +40,11 @@ public struct ComponentIterator2<A, B>: ComponentIteratorProtocol where A: Compo
 
     public private(set) weak var nexus: Nexus?
     public let memberIds: UniformEntityIdentifiers
-    public var index: Int
+    public var index: Int = -1
 
     public init(_ nexus: Nexus?, _ family: TypedFamily2<A, B>) {
         self.nexus = nexus
         memberIds = family.memberIds
-        index = memberIds.index(before: memberIds.startIndex)
     }
 
     public mutating func next() -> (A, B)? {

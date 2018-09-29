@@ -17,10 +17,6 @@ public class UnorderedSparseSet<Element> {
     internal var dense: ContiguousArray<Entry>
     internal var sparse: [Index: Key]
 
-    // TODO: implement
-    // a) RandomAccessCollection conformance
-    // b) subscript
-
     public init() {
         sparse = [Index: Key]()
         dense = ContiguousArray<Entry>()
@@ -148,6 +144,7 @@ extension UnorderedSparseSet: MutableCollection, RandomAccessCollection {
             }
             return element
         }
+
         set(newValue) {
             insert(newValue, at: position)
         }

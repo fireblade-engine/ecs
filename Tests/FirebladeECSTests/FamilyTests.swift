@@ -87,8 +87,8 @@ class FamilyTests: XCTestCase {
         
         let eLate = nexus.create(entity: "late").assign(Position(x: 1, y: 2))
         
-        //FIXME: XCTAssertTrue(family.isMember(eEarly))
-        //FIXME: XCTAssertTrue(family.isMember(eLate))
+        XCTAssertTrue(family.isMember(eEarly))
+        XCTAssertTrue(family.isMember(eLate))
         
     }
     

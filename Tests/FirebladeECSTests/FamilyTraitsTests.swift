@@ -49,8 +49,8 @@ class FamilyTraitsTests: XCTestCase {
 
         let isMatch = nexus.family(requiresAll: Position.self, Velocity.self)
 
-        //FIXME: XCTAssertFalse(noMatch.canBecomeMember(a))
-        //FIXME: XCTAssertTrue(isMatch.canBecomeMember(a))
+        XCTAssertFalse(noMatch.canBecomeMember(a))
+        XCTAssertTrue(isMatch.canBecomeMember(a))
 
     }
 
@@ -67,8 +67,8 @@ class FamilyTraitsTests: XCTestCase {
 
         measure {
             for _ in 0..<10_000 {
-                // FIXME: let success = isMatch.canBecomeMember(a)
-                // FIXME: XCTAssert(success)
+                let success = isMatch.canBecomeMember(a)
+                XCTAssert(success)
             }
         }
     }

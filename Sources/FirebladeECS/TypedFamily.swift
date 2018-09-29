@@ -5,6 +5,11 @@
 //  Created by Christian Treffs on 29.09.18.
 //
 
+// Note: implemenetation ideas
+// * define sort order of entities
+// * define read/write access
+// * set size and storage constraints
+
 public protocol TypedFamilyProtocol: AnyObject, Equatable, LazySequenceProtocol {
     associatedtype EntityComponentsSequence: EntityComponentsSequenceProtocol
 
@@ -13,11 +18,23 @@ public protocol TypedFamilyProtocol: AnyObject, Equatable, LazySequenceProtocol 
 
     var count: Int { get }
 
+    var memberIds: UniformEntityIdentifiers { get }
     var entities: FamilyEntities { get }
     var entityAndComponents: EntityComponentsSequence { get }
+
+    func canBecomeMember(_ entity: Entity) -> Bool
+    func isMember(_ entity: Entity) -> Bool
 }
 
 public extension TypedFamilyProtocol {
+    func canBecomeMember(_ entity: Entity) -> Bool {
+        return nexus?.canBecomeMember(entity, in: traits) ?? false
+    }
+
+    func isMember(_ entity: Entity) -> Bool {
+        return nexus?.isMember(entity, in: traits) ?? false
+    }
+
     var memberIds: UniformEntityIdentifiers {
         return nexus?.members(withFamilyTraits: traits) ?? UniformEntityIdentifiers()
     }

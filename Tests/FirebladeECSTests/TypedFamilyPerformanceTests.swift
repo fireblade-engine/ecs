@@ -31,6 +31,27 @@ class TypedFamilyPerformanceTests: XCTestCase {
         super.tearDown()
     }
     
+    func testPerformanceTypedFamilyEntities() {
+        let family = nexus.family(requires: Position.self, excludesAll: Party.self)
+        
+        XCTAssertEqual(family.count, numEntities)
+        XCTAssertEqual(nexus.numEntities, numEntities)
+        
+        var loopCount: Int = 0
+        
+        measure {
+            family
+                .entities
+                .forEach { (entity: Entity) in
+                    _ = entity
+                    
+                    loopCount += 1
+            }
+        }
+        
+        XCTAssertEqual(loopCount, family.count * 10)
+    }
+    
     func testPerformanceTypedFamilyOneComponent() {
         let family = nexus.family(requires: Position.self, excludesAll: Party.self)
         

@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 29.09.18.
 //
 
-public protocol TypedFamilyProtocol: AnyObject, LazySequenceProtocol {
+public protocol TypedFamilyProtocol: AnyObject, Equatable, LazySequenceProtocol {
 
     var traits: FamilyTraitSet { get }
     var nexus: Nexus? { get }
@@ -20,6 +20,10 @@ public extension TypedFamilyProtocol {
 
     var count: Int {
         return memberIds.count
+    }
+
+    static func == <Other>(lhs: Self, rhs: Other) -> Bool where Other: TypedFamilyProtocol {
+        return lhs.traits == rhs.traits && lhs.nexus == rhs.nexus
     }
 }
 

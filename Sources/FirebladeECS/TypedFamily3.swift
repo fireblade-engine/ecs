@@ -10,7 +10,6 @@
 public final class TypedFamily3<A, B, C>: TypedFamilyProtocol where A: Component, B: Component, C: Component {
     public private(set) weak var nexus: Nexus?
     public let traits: FamilyTraitSet
-    public lazy var members: FamilyMembers3<A, B, C> = FamilyMembers3(nexus, self)
 
     public init(_ nexus: Nexus, requiresAll compA: A.Type, _ compB: B.Type, _ compC: C.Type, excludesAll: [Component.Type]) {
         self.nexus = nexus
@@ -20,21 +19,10 @@ public final class TypedFamily3<A, B, C>: TypedFamilyProtocol where A: Component
         }
     }
 
-}
-
-public struct FamilyMembers3<A, B, C>: FamilyMembersProtocol where A: Component, B: Component, C: Component {
-
-    public private(set) weak var nexus: Nexus?
-    public let family: TypedFamily3<A, B, C>
-
-    public init(_ nexus: Nexus?, _ family: TypedFamily3<A, B, C>) {
-        self.nexus = nexus
-        self.family = family
-    }
-
     public func makeIterator() -> ComponentIterator3<A, B, C> {
-        return ComponentIterator3(nexus, family)
+        return ComponentIterator3(nexus, self)
     }
+
 }
 
 public struct ComponentIterator3<A, B, C>: ComponentIteratorProtocol where A: Component, B: Component, C: Component {
@@ -57,7 +45,7 @@ public struct ComponentIterator3<A, B, C>: ComponentIteratorProtocol where A: Co
             let compB: B = nexus?.get(for: entityId),
             let compC: C = nexus?.get(for: entityId)
             else {
-            return nil
+                return nil
         }
 
         return (compA, compB, compC)

@@ -40,7 +40,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
         var loopCount: Int = 0
         
         measure {
-            family.members.forEach { (position: Position) in
+            family.forEach { (position: Position) in
                 _ = position
                 
                 loopCount += 1
@@ -59,7 +59,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
         var loopCount: Int = 0
         
         measure {
-            family.members.forEach { (position: Position, velocity: Velocity) in
+            family.forEach { (position: Position, velocity: Velocity) in
                 _ = position
                 _ = velocity
                 
@@ -79,7 +79,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
         var loopCount: Int = 0
         
         measure {
-            family.members.forEach { (position: Position, velocity: Velocity, name: Name) in
+            family.forEach { (position: Position, velocity: Velocity, name: Name) in
                 _ = position
                 _ = velocity
                 _ = name
@@ -100,7 +100,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
         var loopCount: Int = 0
         
         measure {
-            family.members.forEach { (position: Position, velocity: Velocity, name: Name, color: Color) in
+            family.forEach { (position: Position, velocity: Velocity, name: Name, color: Color) in
                 _ = position
                 _ = velocity
                 _ = name
@@ -122,7 +122,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
         var loopCount: Int = 0
         
         measure {
-            family.members.forEach { (position: Position, velocity: Velocity, name: Name, color: Color, empty: EmptyComponent) in
+            family.forEach { (position: Position, velocity: Velocity, name: Name, color: Color, empty: EmptyComponent) in
                 _ = position
                 _ = velocity
                 _ = name

@@ -5,13 +5,10 @@
 //  Created by Christian Treffs on 29.09.18.
 //
 
-public protocol TypedFamilyProtocol: AnyObject {
-    associatedtype Members: FamilyMembersProtocol
+public protocol TypedFamilyProtocol: AnyObject, LazySequenceProtocol {
 
     var traits: FamilyTraitSet { get }
     var nexus: Nexus? { get }
-    var memberIds: UniformEntityIdentifiers { get }
-    var members: Members { get set }
 
     var count: Int { get }
 }
@@ -24,15 +21,6 @@ public extension TypedFamilyProtocol {
     var count: Int {
         return memberIds.count
     }
-}
-
-public protocol FamilyMembersProtocol: LazySequenceProtocol {
-    associatedtype TypedFamily: TypedFamilyProtocol
-
-    var nexus: Nexus? { get }
-    var family: TypedFamily { get }
-
-    init(_ nexus: Nexus?, _ family: TypedFamily)
 }
 
 public protocol ComponentIteratorProtocol: IteratorProtocol {

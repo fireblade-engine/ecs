@@ -9,7 +9,6 @@ public final class TypedFamily1<A>: TypedFamilyProtocol where A: Component {
 
     public private(set) weak var nexus: Nexus?
     public let traits: FamilyTraitSet
-    public lazy var members: FamilyMembers1<A> = FamilyMembers1(nexus, self)
 
     public init(_ nexus: Nexus, requiresAll compA: A.Type, excludesAll: [Component.Type]) {
         self.nexus = nexus
@@ -19,21 +18,10 @@ public final class TypedFamily1<A>: TypedFamilyProtocol where A: Component {
         }
     }
 
-}
-
-public struct FamilyMembers1<A>: FamilyMembersProtocol where A: Component {
-
-    public private(set) weak var nexus: Nexus?
-    public let family: TypedFamily1<A>
-
-    public init(_ nexus: Nexus?, _ family: TypedFamily1<A>) {
-        self.nexus = nexus
-        self.family = family
-    }
-
     public func makeIterator() -> ComponentIterator1<A> {
-        return ComponentIterator1(nexus, family)
+        return ComponentIterator1(nexus, self)
     }
+
 }
 
 public struct ComponentIterator1<A>: ComponentIteratorProtocol where A: Component {

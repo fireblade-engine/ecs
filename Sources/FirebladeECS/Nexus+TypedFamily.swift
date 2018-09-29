@@ -47,4 +47,20 @@ public extension Nexus {
                             excludesAll: excludedComponents)
     }
 
+    // swiftlint:disable function_parameter_count
+    func family<A, B, C, D, E>(requiresAll componentA: A.Type,
+                               _ componentB: B.Type,
+                               _ componentC: C.Type,
+                               _ componentD: D.Type,
+                               _ componentE: E.Type,
+                               excludesAll excludedComponents: Component.Type...) -> TypedFamily5<A, B, C, D, E> where A: Component, B: Component, C: Component, D: Component, E: Component {
+        return TypedFamily5(self,
+                            requiresAll: componentA,
+                            componentB,
+                            componentC,
+                            componentD,
+                            componentE,
+                            excludesAll: excludedComponents)
+    }
+
 }

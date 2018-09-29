@@ -34,4 +34,17 @@ public extension Nexus {
                             excludesAll: excludedComponents)
     }
 
+    func family<A, B, C, D>(requiresAll componentA: A.Type,
+                            _ componentB: B.Type,
+                            _ componentC: C.Type,
+                            _ componentD: D.Type,
+                            excludesAll excludedComponents: Component.Type...) -> TypedFamily4<A, B, C, D> where A: Component, B: Component, C: Component, D: Component {
+        return TypedFamily4(self,
+                            requiresAll: componentA,
+                            componentB,
+                            componentC,
+                            componentD,
+                            excludesAll: excludedComponents)
+    }
+
 }

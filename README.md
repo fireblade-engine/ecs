@@ -1,6 +1,6 @@
 # Fireblade ECS (Entity-Component-System)
 [![Build Status](https://travis-ci.com/fireblade-engine/ecs.svg?branch=master)](https://travis-ci.com/fireblade-engine/ecs)
-[![version 0.4.3](https://img.shields.io/badge/version-0.4.3-brightgreen.svg)](releases/tag/v0.4.3)
+[![version 0.5.0](https://img.shields.io/badge/version-0.5.0-brightgreen.svg)](releases/tag/v0.5.0)
 [![license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 [![swift version](https://img.shields.io/badge/swift-4.2-brightgreen.svg)](#)
 [![platforms](https://img.shields.io/badge/platform-macOS%20|%20iOS%20|%20linux-brightgreen.svg)](#)
@@ -33,7 +33,7 @@ import PackageDescription
 let package = Package(
     name: "YourPackageName",
     dependencies: [
-        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.4.3")
+        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.5.0")
     ],
     targets: [
         .target(
@@ -87,28 +87,26 @@ Create a family by calling `.family` with a set of traits on the nexus.
 A family that containts only entities with a `Movement` and `PlayerInput` component, but no `Texture` component is created by
 
 ```swift
-let family = nexus.family(requiresAll: [Movement.self, PlayerInput.self],
-                          excludesAll: [Texture.self],
-                          needsAtLeastOne: [Name.self])
+let family = nexus.family(requiresAll: Movement.self, PlayerInput.self,
+                          excludesAll: Texture.self)
 ```
 
 These entities are cached in the nexus for efficient access and iteration.
-Iterate family members by calling `.iterate` on the family you want to iterate over.
-`iterate` provides a closure whose parameters start with the entity identifier (entityId) of the current entity, 
-followed by the typesafe component instances of the current entity that you may provide in your desired order. 
+Families conform to the [LazySequenceProtocol](https://developer.apple.com/documentation/swift/lazysequenceprotocol) so that members (components) 
+may be iterated and accessed like any other sequence in Swift.
+Access a familiy's components directly on the family instance. To get each entity to the accessed components call `family.entityAndComponents`.
+If you are only interested in a family's entities call `family.entities`.
 
 ```swift
 class PlayerMovementSystem {
-	let family = nexus.family(requiresAll: [Movement.self, PlayerInput.self],
-                              excludesAll: [Texture.self],
-                              needsAtLeastOne: [Name.self])
+	let family = nexus.family(requiresAll: Movement.self, PlayerInput.self,
+                              excludesAll: Texture.self)
 
 	func update() {
-		family.iterate { (mov: Movement!, input: PlayerInput!, name: Name?) in
+		family
+			.forEach { (mov: Movement, input: PlayerInput) in
 			
-			// position & velocity for the current entity
-			// we know that we will have this component so we force unwrap the component 
-			// instance parameter already for easy handling inside the closure
+			// position & velocity component for the current entity
 			
 			// get properties
 			_ = mov.position
@@ -122,19 +120,40 @@ class PlayerMovementSystem {
 			_ = input.command
 			...
 			
-			// optional name component that may or may not be part of the current entity
-			_ = name?.name
-			...
+		}
+	}
+
+	func update2() {
+		family
+			.entityAndComponents
+			.forEach { (entity: Entity, mov: Movement, input: PlayerInput) in
 			
+			// the currenty entity instance
+			_ = entity
+
+			// position & velocity component for the current entity
+			
+			// get properties
+			_ = mov.position
+			_ = mov.velocity
+			
+			
+		}
+	}
+
+	func update3() {
+		family
+			.entities
+			.forEach { (entity: Entity) in
+			
+			// the currenty entity instance
+			_ = entity
 		}
 	}
 }
 ```
+
 See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) to get started.
-
-<!--## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.-->
 
 ## Versioning
 

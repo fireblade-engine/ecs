@@ -46,14 +46,14 @@ class Color: Component {
 }
 
 class ExampleSystem {
-	private let family: Family
+	private let family: TypedFamily2<Position, Velocity>
 
 	init(nexus: Nexus) {
-		family = nexus.family(requiresAll: [Position.self, Velocity.self], excludesAll: [EmptyComponent.self])
+		family = nexus.family(requiresAll: Position.self, Velocity.self, excludesAll: EmptyComponent.self)
 	}
 
 	func update(deltaT: Double) {
-        family.iterate { (position: Position!, velocity: Velocity!) in
+        family.forEach { (position: Position, velocity: Velocity) in
 			position.x *= 2
 			velocity.a *= 2
 

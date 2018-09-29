@@ -508,4 +508,35 @@ class SparseSetTests: XCTestCase {
         XCTAssertEqual(string, "Hello World")
 
     }
+    
+    func testSubscript() {
+        let characters = UnorderedSparseSet<Character>()
+        
+        characters[4] = "H"
+        characters[13] = "e"
+        characters[44] = "l"
+        characters[123] = "l"
+        characters[89] = "o"
+        
+        characters[66] = " "
+        characters[77] = "W"
+        characters[55] = "o"
+        characters[90] = "r"
+        characters[34] = "l"
+        characters[140] = "d"
+        
+        XCTAssertEqual(characters.count, 11)
+        
+        XCTAssertEqual(characters[4], "H")
+        XCTAssertEqual(characters[13], "e")
+        XCTAssertEqual(characters[44], "l")
+        XCTAssertEqual(characters[123], "l")
+        XCTAssertEqual(characters[89], "o")
+        XCTAssertEqual(characters[66], " ")
+        XCTAssertEqual(characters[77], "W")
+        XCTAssertEqual(characters[55], "o")
+        XCTAssertEqual(characters[90], "r")
+        XCTAssertEqual(characters[34], "l")
+        XCTAssertEqual(characters[140], "d")
+    }
 }

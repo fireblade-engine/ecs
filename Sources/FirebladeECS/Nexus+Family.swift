@@ -11,42 +11,26 @@ public extension Nexus {
         return familyMembersByTraits.keys.count
     }
 
-	/// Gets or creates (new) family with given traits.
-	///
-	/// - Parameters:
-	///   - allComponents: all component types are required in this family.
-	///   - noneComponents: none component type may appear in this family.
-	///   - oneComponents: at least one of component types must appear in this family.
-	/// - Returns: family with given traits.
-	func family(requiresAll allComponents: [Component.Type], excludesAll noneComponents: [Component.Type], needsAtLeastOne oneComponents: [Component.Type] = []) -> Family {
-        let traits = FamilyTraitSet(requiresAll: allComponents, excludesAll: noneComponents, needsAtLeastOne: oneComponents)
-		return family(with: traits)
-	}
-
-	func family(with traits: FamilyTraitSet) -> Family {
-        return create(family: traits)
-	}
-
-	func canBecomeMember(_ entity: Entity, in family: Family) -> Bool {
+	func canBecomeMember(_ entity: Entity, in traits: FamilyTraitSet) -> Bool {
 		let entityIdx: EntityIndex = entity.identifier.index
 		guard let componentIds: SparseComponentIdentifierSet = componentIdsByEntity[entityIdx] else {
 			assertionFailure("no component set defined for entity: \(entity)")
 			return false
 		}
 		let componentSet = ComponentSet(componentIds)
-		return family.traits.isMatch(components: componentSet)
+		return traits.isMatch(components: componentSet)
 	}
 
 	func members(withFamilyTraits traits: FamilyTraitSet) -> UniformEntityIdentifiers? {
 		return familyMembersByTraits[traits]
 	}
 
-	func isMember(_ entity: Entity, in family: Family) -> Bool {
+	func isMember(_ entity: Entity, in family: FamilyTraitSet) -> Bool {
 		return isMember(entity.identifier, in: family)
 	}
 
-    func isMember(_ entityId: EntityIdentifier, in family: Family) -> Bool {
-        return isMember(entity: entityId, inFamilyWithTraits: family.traits)
+    func isMember(_ entityId: EntityIdentifier, in family: FamilyTraitSet) -> Bool {
+        return isMember(entity: entityId, inFamilyWithTraits: family)
     }
 
 	func isMember(entity entityId: EntityIdentifier, inFamilyWithTraits traits: FamilyTraitSet) -> Bool {
@@ -127,15 +111,6 @@ extension Nexus {
 
 // MARK: - fileprivate extensions
 private extension Nexus {
-
-	final func get(family traits: FamilyTraitSet) -> Family? {
-        return create(family: traits)
-	}
-
-	final func create(family traits: FamilyTraitSet) -> Family {
-        let family = Family(self, traits: traits)
-		return family
-	}
 
 	final func calculateTraitEntityIdHash(traitHash: FamilyTraitSetHash, entityIdx: EntityIndex) -> TraitEntityIdHash {
 		return hash(combine: traitHash, entityIdx)

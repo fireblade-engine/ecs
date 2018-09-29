@@ -103,7 +103,7 @@ public extension Nexus {
 }
 
 private extension Nexus {
-    func get<C>(componentId: ComponentIdentifier, entityIdx: EntityIndex) -> C? where C: Component {
+    final func get<C>(componentId: ComponentIdentifier, entityIdx: EntityIndex) -> C? where C: Component {
         guard let uniformComponents: UniformComponents = componentsByType[componentId] else {
             return nil
         }

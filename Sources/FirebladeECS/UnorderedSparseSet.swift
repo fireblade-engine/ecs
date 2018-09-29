@@ -17,10 +17,6 @@ public class UnorderedSparseSet<Element> {
     internal var dense: ContiguousArray<Entry>
     internal var sparse: [Index: Key]
 
-    // TODO: implement
-    // a) RandomAccessCollection conformance
-    // b) subscript
-
     public init() {
         sparse = [Index: Key]()
         dense = ContiguousArray<Entry>()
@@ -120,19 +116,19 @@ public class UnorderedSparseSet<Element> {
         return (denseIndex, entry.element)
     }
 
-    // MARK: - UnorderedSparseSetIterator
+}
 
-    public struct UnorderedSparseSetIterator<Element>: IteratorProtocol {
+// MARK: - UnorderedSparseSetIterator
+public struct UnorderedSparseSetIterator<Element>: IteratorProtocol {
 
-        public private(set) var iterator: IndexingIterator<ContiguousArray<UnorderedSparseSet<Element>.Entry>>
+    public private(set) var iterator: IndexingIterator<ContiguousArray<UnorderedSparseSet<Element>.Entry>>
 
-        public init(_ sparseSet: UnorderedSparseSet<Element>) {
-            iterator = sparseSet.dense.makeIterator()
-        }
+    public init(_ sparseSet: UnorderedSparseSet<Element>) {
+        iterator = sparseSet.dense.makeIterator()
+    }
 
-        public mutating func next() -> Element? {
-            return iterator.next()?.element
-        }
+    public mutating func next() -> Element? {
+        return iterator.next()?.element
     }
 }
 
@@ -148,6 +144,7 @@ extension UnorderedSparseSet: MutableCollection, RandomAccessCollection {
             }
             return element
         }
+
         set(newValue) {
             insert(newValue, at: position)
         }

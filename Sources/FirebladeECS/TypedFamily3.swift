@@ -40,16 +40,15 @@ public struct FamilyMembers3<A, B, C>: FamilyMembersProtocol where A: Component,
 public struct ComponentIterator3<A, B, C>: ComponentIteratorProtocol where A: Component, B: Component, C: Component {
 
     public private(set) weak var nexus: Nexus?
-    public let memberIds: UniformEntityIdentifiers
-    public var index: Int = -1
+    public var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier>
 
     public init(_ nexus: Nexus?, _ family: TypedFamily3<A, B, C>) {
         self.nexus = nexus
-        memberIds = family.memberIds
+        memberIdsIterator = family.memberIds.makeIterator()
     }
 
     public mutating func next() -> (A, B, C)? {
-        guard let entityId: EntityIdentifier = nextEntityId() else {
+        guard let entityId: EntityIdentifier = memberIdsIterator.next() else {
             return nil
         }
 

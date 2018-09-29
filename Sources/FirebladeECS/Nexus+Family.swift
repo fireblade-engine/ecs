@@ -18,6 +18,7 @@ public extension Nexus {
 	///   - noneComponents: none component type may appear in this family.
 	///   - oneComponents: at least one of component types must appear in this family.
 	/// - Returns: family with given traits.
+    @available(*, deprecated: 0.4.3)
 	func family(requiresAll allComponents: [Component.Type], excludesAll noneComponents: [Component.Type], needsAtLeastOne oneComponents: [Component.Type] = []) -> Family {
         let traits = FamilyTraitSet(requiresAll: allComponents, excludesAll: noneComponents, needsAtLeastOne: oneComponents)
 		return family(with: traits)

@@ -5,6 +5,7 @@
 //  Created by Christian Treffs on 08.10.17.
 //
 
+@available(*, deprecated: 0.4.3)
 public final class Family: Equatable {
 
 	public weak var nexus: Nexus?

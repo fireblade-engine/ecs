@@ -10,7 +10,7 @@
 // * define read/write access
 // * set size and storage constraints
 
-public protocol TypedFamilyProtocol: AnyObject, Equatable, LazySequenceProtocol {
+public protocol TypedFamilyProtocol: AnyObject, Equatable, Sequence {
     associatedtype EntityComponentsSequence: EntityComponentsSequenceProtocol
 
     var traits: FamilyTraitSet { get }

@@ -15,9 +15,7 @@ public final class TypedFamily2<A, B>: TypedFamilyProtocol where A: Component, B
     public init(_ nexus: Nexus, requiresAll compA: A.Type, _ compB: B.Type, excludesAll: [Component.Type]) {
         self.nexus = nexus
         traits = FamilyTraitSet(requiresAll: [compA, compB], excludesAll: excludesAll)
-        defer {
-            nexus.onFamilyInit(traits: traits)
-        }
+        nexus.onFamilyInit(traits: traits)
     }
 
     public func makeIterator() -> ComponentIterator2<A, B> {

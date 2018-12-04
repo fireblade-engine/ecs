@@ -84,9 +84,9 @@ public class Nexus: Equatable {
         return lhs.entityStorage == rhs.entityStorage &&
         lhs.componentIdsByEntity == rhs.componentIdsByEntity &&
         lhs.freeEntities == rhs.freeEntities &&
-        lhs.familyMembersByTraits == rhs.familyMembersByTraits
+        lhs.familyMembersByTraits == rhs.familyMembersByTraits &&
+        lhs.componentsByType.count == rhs.componentsByType.count
         // TODO: components are not equatable yet
-        //lhs.componentsByType == rhs.componentsByType
     }
 }
 

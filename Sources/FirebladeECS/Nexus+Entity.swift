@@ -6,7 +6,6 @@
 //
 
 extension Nexus {
-
 	private func nextEntityIdx() -> EntityIndex {
 		guard let nextReused: EntityIdentifier = freeEntities.popLast() else {
 			return entityStorage.count
@@ -56,5 +55,4 @@ extension Nexus {
 		notify(EntityDestroyed(entityId: entityId))
 		return true
 	}
-
 }

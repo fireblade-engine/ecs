@@ -6,7 +6,6 @@
 //
 
 public extension Nexus {
-
     final var numComponents: Int {
         return componentsByType.reduce(0) { $0 + $1.value.count }
     }
@@ -76,7 +75,6 @@ public extension Nexus {
 
     @discardableResult
     final func remove(component componentId: ComponentIdentifier, from entityId: EntityIdentifier) -> Bool {
-
         let entityIdx: EntityIndex = entityId.index
 
         // delete component instance
@@ -92,7 +90,6 @@ public extension Nexus {
 
     @discardableResult
     final func clear(componentes entityId: EntityIdentifier) -> Bool {
-
         guard let allComponents: SparseComponentIdentifierSet = get(components: entityId) else {
             report("clearing components form entity \(entityId) with no components")
             return false

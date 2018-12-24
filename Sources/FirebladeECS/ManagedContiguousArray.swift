@@ -99,5 +99,4 @@ extension ManagedContiguousArray: Equatable where ManagedContiguousArray.Element
     public static func == (lhs: ManagedContiguousArray<Element>, rhs: ManagedContiguousArray<Element>) -> Bool {
         return lhs.store == rhs.store
     }
-
 }

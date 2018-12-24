@@ -6,7 +6,6 @@
 //
 
 public extension Nexus {
-
     final var numFamilies: Int {
         return familyMembersByTraits.keys.count
     }
@@ -39,16 +38,13 @@ public extension Nexus {
 		}
 		return members.contains(entityId.index)
 	}
-
 }
 
 // MARK: - internal extensions
 extension Nexus {
-
 	internal func update(familyMembership entityId: EntityIdentifier) {
 		// FIXME: iterating all families is costly for many families
         familyMembersByTraits.forEach { familyTraits, _ in update(membership: familyTraits, for: entityId) }
-
 	}
 
     internal enum UpdateState {
@@ -81,10 +77,12 @@ extension Nexus {
             add(entityWithId: entityId, andIndex: entityIdx, toFamilyWithTraits: traits)
 			notify(FamilyMemberAdded(member: entityId, toFamily: traits))
             return
+
 		case (false, true):
             remove(entityWithId: entityId, andIndex: entityIdx, fromFamilyWithTraits: traits)
 			notify(FamilyMemberRemoved(member: entityId, from: traits))
             return
+
 		default:
 			return
 		}
@@ -92,7 +90,6 @@ extension Nexus {
 
     /// will be called on family init defer
     internal func onFamilyInit(traits: FamilyTraitSet) {
-
         if familyMembersByTraits[traits] == nil {
             familyMembersByTraits[traits] = UniformEntityIdentifiers()
         }
@@ -106,12 +103,10 @@ extension Nexus {
     internal func onFamilyDeinit(traits: FamilyTraitSet) {
         // nothing todo here
     }
-
 }
 
 // MARK: - fileprivate extensions
 private extension Nexus {
-
 	final func calculateTraitEntityIdHash(traitHash: FamilyTraitSetHash, entityIdx: EntityIndex) -> TraitEntityIdHash {
 		return hash(combine: traitHash, entityIdx)
 	}

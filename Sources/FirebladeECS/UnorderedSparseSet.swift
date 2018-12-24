@@ -115,12 +115,10 @@ public class UnorderedSparseSet<Element> {
 
         return (denseIndex, entry.element)
     }
-
 }
 
 // MARK: - UnorderedSparseSetIterator
 public struct UnorderedSparseSetIterator<Element>: IteratorProtocol {
-
     public private(set) var iterator: IndexingIterator<ContiguousArray<UnorderedSparseSet<Element>.Entry>>
 
     public init(_ sparseSet: UnorderedSparseSet<Element>) {
@@ -157,7 +155,6 @@ extension UnorderedSparseSet: MutableCollection, RandomAccessCollection {
     public var endIndex: Index {
         return dense.endIndex
     }
-
 }
 
 extension UnorderedSparseSet.Entry: Equatable where UnorderedSparseSet.Element: Equatable {

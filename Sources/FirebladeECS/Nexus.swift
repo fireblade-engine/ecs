@@ -27,7 +27,6 @@ public protocol NexusDelegate: AnyObject {
 }
 
 public class Nexus: Equatable {
-
 	public weak var delegate: NexusDelegate?
 
 	/// - Index: index value matching entity identifier shifted to Int
@@ -92,7 +91,6 @@ public class Nexus: Equatable {
 
 // MARK: - nexus delegate
 extension Nexus {
-
 	internal func notify(_ event: ECSEvent) {
 		delegate?.nexusEventOccurred(event)
 	}

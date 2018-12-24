@@ -6,7 +6,6 @@
 //
 
 public struct FamilyTraitSet: CustomStringConvertible, CustomDebugStringConvertible {
-
 	public let requiresAll: ComponentSet
 	public let excludesAll: ComponentSet
 	public let needsAtLeastOne: ComponentSet
@@ -15,7 +14,6 @@ public struct FamilyTraitSet: CustomStringConvertible, CustomDebugStringConverti
     private let stringRespresentation: String
 
 	public init(requiresAll: [Component.Type], excludesAll: [Component.Type], needsAtLeastOne: [Component.Type] = []) {
-
         let all = ComponentSet(requiresAll.map { $0.identifier })
 		let none = ComponentSet(excludesAll.map { $0.identifier })
 		let one = ComponentSet(needsAtLeastOne.map { $0.identifier })
@@ -77,7 +75,6 @@ public struct FamilyTraitSet: CustomStringConvertible, CustomDebugStringConverti
     public var debugDescription: String {
         return stringRespresentation
     }
-
 }
 
 // MARK: - Equatable

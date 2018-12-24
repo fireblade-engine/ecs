@@ -8,7 +8,6 @@
 // swiftlint:disable large_tuple
 
 public final class TypedFamily2<A, B>: TypedFamilyProtocol where A: Component, B: Component {
-
     public private(set) weak var nexus: Nexus?
     public let traits: FamilyTraitSet
 
@@ -25,11 +24,9 @@ public final class TypedFamily2<A, B>: TypedFamilyProtocol where A: Component, B
     public var entityAndComponents: FamilyEntitiesAndComponents2<A, B> {
         return FamilyEntitiesAndComponents2<A, B>(nexus, self)
     }
-
 }
 
 public struct ComponentIterator2<A, B>: ComponentIteratorProtocol where A: Component, B: Component {
-
     public private(set) weak var nexus: Nexus?
     public var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier>
 
@@ -52,7 +49,6 @@ public struct ComponentIterator2<A, B>: ComponentIteratorProtocol where A: Compo
 
         return (compA, compB)
     }
-
 }
 
 public struct FamilyEntitiesAndComponents2<A, B>: EntityComponentsSequenceProtocol where A: Component, B: Component {

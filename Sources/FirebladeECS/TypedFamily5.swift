@@ -24,11 +24,9 @@ public final class TypedFamily5<A, B, C, D, E>: TypedFamilyProtocol where A: Com
     public var entityAndComponents: FamilyEntitiesAndComponents5<A, B, C, D, E> {
         return FamilyEntitiesAndComponents5(nexus, self)
     }
-
 }
 
 public struct ComponentIterator5<A, B, C, D, E>: ComponentIteratorProtocol where A: Component, B: Component, C: Component, D: Component, E: Component {
-
     public private(set) weak var nexus: Nexus?
     public var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier>
 
@@ -54,7 +52,6 @@ public struct ComponentIterator5<A, B, C, D, E>: ComponentIteratorProtocol where
 
         return (compA, compB, compC, compD, compE)
     }
-
 }
 
 public struct FamilyEntitiesAndComponents5<A, B, C, D, E>: EntityComponentsSequenceProtocol where A: Component, B: Component, C: Component, D: Component, E: Component {

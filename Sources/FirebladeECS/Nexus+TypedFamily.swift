@@ -6,7 +6,6 @@
 //
 
 public extension Nexus {
-
     func family<A>(requires componentA: A.Type,
                    excludesAll excludedComponents: Component.Type...) -> TypedFamily1<A> where A: Component {
         return TypedFamily1(self,
@@ -62,5 +61,4 @@ public extension Nexus {
                             componentE,
                             excludesAll: excludedComponents)
     }
-
 }

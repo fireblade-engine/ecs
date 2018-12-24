@@ -31,7 +31,6 @@ public extension Entity {
 
 // MARK: - has component(s)
 public extension Entity {
-
 	final func has<C>(_ type: C.Type) -> Bool where C: Component {
 		return has(type.identifier)
 	}
@@ -43,12 +42,10 @@ public extension Entity {
 	final var hasComponents: Bool {
 		return nexus.count(components: identifier) > 0
 	}
-
 }
 
 // MARK: - add component(s)
 public extension Entity {
-
 	@discardableResult
 	final func assign(_ components: Component...) -> Entity {
 		for component: Component in components {
@@ -82,7 +79,6 @@ public extension Entity {
 
 // MARK: - remove component(s)
 public extension Entity {
-
 	@discardableResult
 	final func remove<C>(_ component: C) -> Entity where C: Component {
 		return remove(component.identifier)

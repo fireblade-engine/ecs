@@ -59,7 +59,6 @@ public func hash<H: Sequence>(combine hashables: H) -> Int where H.Element == Ha
 
 // MARK: - entity component hash
 extension EntityComponentHash {
-
     internal static func compose(entityId: EntityIdentifier, componentTypeHash: ComponentTypeHash) -> EntityComponentHash {
         let entityIdSwapped = UInt(entityId).byteSwapped // needs to be 64 bit
         let componentTypeHashUInt = UInt(bitPattern: componentTypeHash)

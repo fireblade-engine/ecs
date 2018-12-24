@@ -6,7 +6,6 @@
 //
 
 public final class TypedFamily1<A>: TypedFamilyProtocol where A: Component {
-
     public private(set) weak var nexus: Nexus?
     public let traits: FamilyTraitSet
 
@@ -26,7 +25,6 @@ public final class TypedFamily1<A>: TypedFamilyProtocol where A: Component {
 }
 
 public struct ComponentIterator1<A>: ComponentIteratorProtocol where A: Component {
-
     public private(set) weak var nexus: Nexus?
     public var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier>
 
@@ -42,7 +40,6 @@ public struct ComponentIterator1<A>: ComponentIteratorProtocol where A: Componen
 
         return nexus?.get(for: entityId)
     }
-
 }
 
 public struct FamilyEntitiesAndComponents1<A>: EntityComponentsSequenceProtocol where A: Component {

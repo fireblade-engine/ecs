@@ -6,7 +6,6 @@
 //
 
 public extension Entity {
-
 	final func get<C>() -> C? where C: Component {
 		return nexus.get(for: identifier)
 	}

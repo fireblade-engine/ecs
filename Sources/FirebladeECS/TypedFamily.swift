@@ -50,7 +50,6 @@ public extension TypedFamilyProtocol {
     static func == <Other>(lhs: Self, rhs: Other) -> Bool where Other: TypedFamilyProtocol {
         return lhs.traits == rhs.traits && lhs.nexus == rhs.nexus
     }
-
 }
 
 public protocol ComponentIteratorProtocol: IteratorProtocol {
@@ -87,5 +86,4 @@ public struct FamilyEntities: LazySequenceProtocol, IteratorProtocol {
 
         return nexus?.get(entity: entityId)
     }
-
 }

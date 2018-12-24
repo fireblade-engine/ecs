@@ -21,7 +21,7 @@ public typealias EntityIdInFamilyIndex = Int
 public typealias TraitEntityIdHashSet = [TraitEntityIdHash: EntityIdInFamilyIndex]
 public typealias SparseComponentIdentifierSet = UnorderedSparseSet<ComponentIdentifier>
 
-public protocol NexusDelegate: AnyObject {
+public protocol NexusDelegate: class {
 	func nexusEventOccurred(_ event: ECSEvent)
 	func nexusRecoverableErrorOccurred(_ message: String)
 }

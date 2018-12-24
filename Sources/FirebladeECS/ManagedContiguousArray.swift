@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 28.10.17.
 //
 
-public protocol UniformStorage: AnyObject {
+public protocol UniformStorage: class {
 	associatedtype Element
 	associatedtype Index
 

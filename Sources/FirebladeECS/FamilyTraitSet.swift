@@ -86,7 +86,7 @@ extension FamilyTraitSet: Equatable {
 
 // MARK: - Hashable
 extension FamilyTraitSet: Hashable {
-	public var hashValue: Int {
-		return setHash
-	}
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(setHash)
+    }
 }

@@ -30,5 +30,7 @@ public protocol UniqueEntityIdentifiable: Hashable {
 }
 
 public extension UniqueEntityIdentifiable {
-	var hashValue: Int { return identifier.hashValue }
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(identifier.hashValue)
+    }
 }

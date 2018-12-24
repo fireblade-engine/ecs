@@ -15,11 +15,11 @@ open class Entity: UniqueEntityIdentifiable {
 		self.identifier = id
 		self.name = name
 	}
-}
 
-// MARK: - Equatable
-public func == (lhs: Entity, rhs: Entity) -> Bool {
-	return lhs.identifier == rhs.identifier
+    // MARK: Equatable
+    public static func == (lhs: Entity, rhs: Entity) -> Bool {
+        return lhs.identifier == rhs.identifier
+    }
 }
 
 // MARK: - number of components

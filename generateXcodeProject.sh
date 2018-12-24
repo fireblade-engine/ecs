@@ -16,7 +16,7 @@ swift package update
 #	--output                	Path where the Xcode project should be generated
 #	--watch                 	Watch for changes to the Package manifest to regenerate the Xcode project
 #	--xcconfig-overrides    	Path to xcconfig file
-swift package generate-xcodeproj  --enable-code-coverage
+swift package generate-xcodeproj  --enable-code-coverage --xcconfig-overrides settings.xcconfig
 
 # add project specialities
 bundle exec ./prepareXcodeProject.rb 

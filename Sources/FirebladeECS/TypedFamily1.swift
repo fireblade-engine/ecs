@@ -5,8 +5,8 @@
 //  Created by Christian Treffs on 29.09.18.
 //
 
-public final class TypedFamily1<A>: TypedFamilyProtocol where A: Component {
-    public private(set) weak var nexus: Nexus?
+public struct TypedFamily1<A>: TypedFamilyProtocol where A: Component {
+    public let nexus: Nexus
     public let traits: FamilyTraitSet
 
     public init(_ nexus: Nexus, requiresAll compA: A.Type, excludesAll: [Component.Type]) {
@@ -25,10 +25,10 @@ public final class TypedFamily1<A>: TypedFamilyProtocol where A: Component {
 }
 
 public struct ComponentIterator1<A>: ComponentIteratorProtocol where A: Component {
-    public private(set) weak var nexus: Nexus?
+    public let nexus: Nexus
     public var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier>
 
-    public init(_ nexus: Nexus?, _ family: TypedFamily1<A>) {
+    public init(_ nexus: Nexus, _ family: TypedFamily1<A>) {
         self.nexus = nexus
         memberIdsIterator = family.memberIds.makeIterator()
     }
@@ -38,15 +38,15 @@ public struct ComponentIterator1<A>: ComponentIteratorProtocol where A: Componen
             return nil
         }
 
-        return nexus?.get(for: entityId)
+        return nexus.get(for: entityId)
     }
 }
 
 public struct FamilyEntitiesAndComponents1<A>: EntityComponentsSequenceProtocol where A: Component {
-    public private(set) weak var nexus: Nexus?
+    public let nexus: Nexus
     public var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier>
 
-    public init(_ nexus: Nexus?, _ family: TypedFamily1<A>) {
+    public init(_ nexus: Nexus, _ family: TypedFamily1<A>) {
         self.nexus = nexus
         memberIdsIterator = family.memberIds.makeIterator()
     }
@@ -57,8 +57,8 @@ public struct FamilyEntitiesAndComponents1<A>: EntityComponentsSequenceProtocol 
         }
 
         guard
-            let entity = nexus?.get(entity: entityId),
-            let compA: A = nexus?.get(for: entityId)
+            let entity = nexus.get(entity: entityId),
+            let compA: A = nexus.get(for: entityId)
             else {
                 return nil
         }

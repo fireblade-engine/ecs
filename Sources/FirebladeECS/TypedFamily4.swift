@@ -7,8 +7,8 @@
 
 // swiftlint:disable large_tuple
 
-public final class TypedFamily4<A, B, C, D>: TypedFamilyProtocol where A: Component, B: Component, C: Component, D: Component {
-    public private(set) weak var nexus: Nexus?
+public struct TypedFamily4<A, B, C, D>: TypedFamilyProtocol where A: Component, B: Component, C: Component, D: Component {
+    public let nexus: Nexus
     public let traits: FamilyTraitSet
 
     public init(_ nexus: Nexus, requiresAll compA: A.Type, _ compB: B.Type, _ compC: C.Type, _ compD: D.Type, excludesAll: [Component.Type]) {
@@ -27,10 +27,10 @@ public final class TypedFamily4<A, B, C, D>: TypedFamilyProtocol where A: Compon
 }
 
 public struct ComponentIterator4<A, B, C, D>: ComponentIteratorProtocol where A: Component, B: Component, C: Component, D: Component {
-    public private(set) weak var nexus: Nexus?
+    public let nexus: Nexus
     public var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier>
 
-    public init(_ nexus: Nexus?, _ family: TypedFamily4<A, B, C, D>) {
+    public init(_ nexus: Nexus, _ family: TypedFamily4<A, B, C, D>) {
         self.nexus = nexus
         memberIdsIterator = family.memberIds.makeIterator()
     }
@@ -41,10 +41,10 @@ public struct ComponentIterator4<A, B, C, D>: ComponentIteratorProtocol where A:
         }
 
         guard
-            let compA: A = nexus?.get(for: entityId),
-            let compB: B = nexus?.get(for: entityId),
-            let compC: C = nexus?.get(for: entityId),
-            let compD: D = nexus?.get(for: entityId)
+            let compA: A = nexus.get(for: entityId),
+            let compB: B = nexus.get(for: entityId),
+            let compC: C = nexus.get(for: entityId),
+            let compD: D = nexus.get(for: entityId)
             else {
                 return nil
         }
@@ -54,10 +54,10 @@ public struct ComponentIterator4<A, B, C, D>: ComponentIteratorProtocol where A:
 }
 
 public struct FamilyEntitiesAndComponents4<A, B, C, D>: EntityComponentsSequenceProtocol where A: Component, B: Component, C: Component, D: Component {
-    public private(set) weak var nexus: Nexus?
+    public let nexus: Nexus
     public var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier>
 
-    public init(_ nexus: Nexus?, _ family: TypedFamily4<A, B, C, D>) {
+    public init(_ nexus: Nexus, _ family: TypedFamily4<A, B, C, D>) {
         self.nexus = nexus
         memberIdsIterator = family.memberIds.makeIterator()
     }
@@ -68,11 +68,11 @@ public struct FamilyEntitiesAndComponents4<A, B, C, D>: EntityComponentsSequence
         }
 
         guard
-            let entity = nexus?.get(entity: entityId),
-            let compA: A = nexus?.get(for: entityId),
-            let compB: B = nexus?.get(for: entityId),
-            let compC: C = nexus?.get(for: entityId),
-            let compD: D = nexus?.get(for: entityId)
+            let entity = nexus.get(entity: entityId),
+            let compA: A = nexus.get(for: entityId),
+            let compB: B = nexus.get(for: entityId),
+            let compC: C = nexus.get(for: entityId),
+            let compD: D = nexus.get(for: entityId)
             else {
                 return nil
         }

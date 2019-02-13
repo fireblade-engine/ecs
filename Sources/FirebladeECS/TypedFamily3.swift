@@ -7,8 +7,8 @@
 
 // swiftlint:disable large_tuple
 
-public final class TypedFamily3<A, B, C>: TypedFamilyProtocol where A: Component, B: Component, C: Component {
-    public private(set) weak var nexus: Nexus?
+public struct TypedFamily3<A, B, C>: TypedFamilyProtocol where A: Component, B: Component, C: Component {
+    public let nexus: Nexus
     public let traits: FamilyTraitSet
 
     public init(_ nexus: Nexus, requiresAll compA: A.Type, _ compB: B.Type, _ compC: C.Type, excludesAll: [Component.Type]) {
@@ -27,10 +27,10 @@ public final class TypedFamily3<A, B, C>: TypedFamilyProtocol where A: Component
 }
 
 public struct ComponentIterator3<A, B, C>: ComponentIteratorProtocol where A: Component, B: Component, C: Component {
-    public private(set) weak var nexus: Nexus?
+    public let nexus: Nexus
     public var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier>
 
-    public init(_ nexus: Nexus?, _ family: TypedFamily3<A, B, C>) {
+    public init(_ nexus: Nexus, _ family: TypedFamily3<A, B, C>) {
         self.nexus = nexus
         memberIdsIterator = family.memberIds.makeIterator()
     }
@@ -41,9 +41,9 @@ public struct ComponentIterator3<A, B, C>: ComponentIteratorProtocol where A: Co
         }
 
         guard
-            let compA: A = nexus?.get(for: entityId),
-            let compB: B = nexus?.get(for: entityId),
-            let compC: C = nexus?.get(for: entityId)
+            let compA: A = nexus.get(for: entityId),
+            let compB: B = nexus.get(for: entityId),
+            let compC: C = nexus.get(for: entityId)
             else {
                 return nil
         }
@@ -53,10 +53,10 @@ public struct ComponentIterator3<A, B, C>: ComponentIteratorProtocol where A: Co
 }
 
 public struct FamilyEntitiesAndComponents3<A, B, C>: EntityComponentsSequenceProtocol where A: Component, B: Component, C: Component {
-    public private(set) weak var nexus: Nexus?
+    public let nexus: Nexus
     public var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier>
 
-    public init(_ nexus: Nexus?, _ family: TypedFamily3<A, B, C>) {
+    public init(_ nexus: Nexus, _ family: TypedFamily3<A, B, C>) {
         self.nexus = nexus
         memberIdsIterator = family.memberIds.makeIterator()
     }
@@ -67,10 +67,10 @@ public struct FamilyEntitiesAndComponents3<A, B, C>: EntityComponentsSequencePro
         }
 
         guard
-            let entity = nexus?.get(entity: entityId),
-            let compA: A = nexus?.get(for: entityId),
-            let compB: B = nexus?.get(for: entityId),
-            let compC: C = nexus?.get(for: entityId)
+            let entity = nexus.get(entity: entityId),
+            let compA: A = nexus.get(for: entityId),
+            let compB: B = nexus.get(for: entityId),
+            let compC: C = nexus.get(for: entityId)
             else {
                 return nil
         }

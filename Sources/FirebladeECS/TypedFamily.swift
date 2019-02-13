@@ -10,11 +10,11 @@
 // * define read/write access
 // * set size and storage constraints
 
-public protocol TypedFamilyProtocol: class, Equatable, Sequence {
+public protocol TypedFamilyProtocol: Equatable, Sequence {
     associatedtype EntityComponentsSequence: EntityComponentsSequenceProtocol
 
     var traits: FamilyTraitSet { get }
-    var nexus: Nexus? { get }
+    var nexus: Nexus { get }
 
     var count: Int { get }
 
@@ -28,15 +28,15 @@ public protocol TypedFamilyProtocol: class, Equatable, Sequence {
 
 public extension TypedFamilyProtocol {
     func canBecomeMember(_ entity: Entity) -> Bool {
-        return nexus?.canBecomeMember(entity, in: traits) ?? false
+        return nexus.canBecomeMember(entity, in: traits)
     }
 
     func isMember(_ entity: Entity) -> Bool {
-        return nexus?.isMember(entity, in: traits) ?? false
+        return nexus.isMember(entity, in: traits)
     }
 
     var memberIds: UniformEntityIdentifiers {
-        return nexus?.members(withFamilyTraits: traits) ?? UniformEntityIdentifiers()
+        return nexus.members(withFamilyTraits: traits) ?? UniformEntityIdentifiers()
     }
 
     var count: Int {
@@ -56,25 +56,24 @@ public protocol ComponentIteratorProtocol: IteratorProtocol {
     associatedtype TypedFamily: TypedFamilyProtocol
 
     var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier> { get }
-    var nexus: Nexus? { get }
+    var nexus: Nexus { get }
 
-    init(_ nexus: Nexus?, _ family: TypedFamily)
+    init(_ nexus: Nexus, _ family: TypedFamily)
 }
 
 public protocol EntityComponentsSequenceProtocol: LazySequenceProtocol, IteratorProtocol {
     associatedtype TypedFamily: TypedFamilyProtocol
 
     var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier> { get }
-    var nexus: Nexus? { get }
 
-    init(_ nexus: Nexus?, _ family: TypedFamily)
+    init(_ nexus: Nexus, _ family: TypedFamily)
 }
 
 public struct FamilyEntities: LazySequenceProtocol, IteratorProtocol {
-    public private(set) weak var nexus: Nexus?
+    public let nexus: Nexus
     public var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier>
 
-    public init(_ nexus: Nexus?, _ memberIds: UniformEntityIdentifiers) {
+    public init(_ nexus: Nexus, _ memberIds: UniformEntityIdentifiers) {
         self.nexus = nexus
         memberIdsIterator = memberIds.makeIterator()
     }
@@ -84,6 +83,6 @@ public struct FamilyEntities: LazySequenceProtocol, IteratorProtocol {
             return nil
         }
 
-        return nexus?.get(entity: entityId)
+        return nexus.get(entity: entityId)
     }
 }

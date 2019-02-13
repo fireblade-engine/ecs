@@ -7,8 +7,8 @@
 
 // swiftlint:disable large_tuple
 
-public final class TypedFamily2<A, B>: TypedFamilyProtocol where A: Component, B: Component {
-    public private(set) weak var nexus: Nexus?
+public struct TypedFamily2<A, B>: TypedFamilyProtocol where A: Component, B: Component {
+    public let nexus: Nexus
     public let traits: FamilyTraitSet
 
     public init(_ nexus: Nexus, requiresAll compA: A.Type, _ compB: B.Type, excludesAll: [Component.Type]) {
@@ -27,10 +27,10 @@ public final class TypedFamily2<A, B>: TypedFamilyProtocol where A: Component, B
 }
 
 public struct ComponentIterator2<A, B>: ComponentIteratorProtocol where A: Component, B: Component {
-    public private(set) weak var nexus: Nexus?
+    public let nexus: Nexus
     public var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier>
 
-    public init(_ nexus: Nexus?, _ family: TypedFamily2<A, B>) {
+    public init(_ nexus: Nexus, _ family: TypedFamily2<A, B>) {
         self.nexus = nexus
         memberIdsIterator = family.memberIds.makeIterator()
     }
@@ -41,8 +41,8 @@ public struct ComponentIterator2<A, B>: ComponentIteratorProtocol where A: Compo
         }
 
         guard
-            let compA: A = nexus?.get(for: entityId),
-            let compB: B = nexus?.get(for: entityId)
+            let compA: A = nexus.get(for: entityId),
+            let compB: B = nexus.get(for: entityId)
             else {
                 return nil
         }
@@ -52,10 +52,10 @@ public struct ComponentIterator2<A, B>: ComponentIteratorProtocol where A: Compo
 }
 
 public struct FamilyEntitiesAndComponents2<A, B>: EntityComponentsSequenceProtocol where A: Component, B: Component {
-    public private(set) weak var nexus: Nexus?
+    public let nexus: Nexus
     public var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier>
 
-    public init(_ nexus: Nexus?, _ family: TypedFamily2<A, B>) {
+    public init(_ nexus: Nexus, _ family: TypedFamily2<A, B>) {
         self.nexus = nexus
         memberIdsIterator = family.memberIds.makeIterator()
     }
@@ -66,9 +66,9 @@ public struct FamilyEntitiesAndComponents2<A, B>: EntityComponentsSequenceProtoc
         }
 
         guard
-            let entity = nexus?.get(entity: entityId),
-            let compA: A = nexus?.get(for: entityId),
-            let compB: B = nexus?.get(for: entityId)
+            let entity = nexus.get(entity: entityId),
+            let compA: A = nexus.get(for: entityId),
+            let compB: B = nexus.get(for: entityId)
             else {
                 return nil
         }

@@ -52,6 +52,22 @@ class TypedFamilyPerformanceTests: XCTestCase {
         XCTAssertEqual(loopCount, family.count * 10)
     }
     
+    func testPerformanceArray() {
+        let positions = [Position](repeating: Position(x: Int.random(in: 0...10), y: Int.random(in: 0...10)), count: numEntities)
+        
+        var loopCount: Int = 0
+        
+        measure {
+            positions
+                .forEach { (position: Position) in
+                    _ = position
+                    loopCount += 1
+            }
+        }
+        
+        XCTAssertEqual(loopCount, numEntities * 10)
+    }
+    
     func testPerformanceTypedFamilyOneComponent() {
         let family = nexus.family(requires: Position.self, excludesAll: Party.self)
         

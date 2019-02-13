@@ -27,23 +27,25 @@ public protocol TypedFamilyProtocol: Equatable, Sequence {
 }
 
 public extension TypedFamilyProtocol {
+    @inlinable
     func canBecomeMember(_ entity: Entity) -> Bool {
         return nexus.canBecomeMember(entity, in: traits)
     }
 
+    @inlinable
     func isMember(_ entity: Entity) -> Bool {
         return nexus.isMember(entity, in: traits)
     }
 
-    var memberIds: UniformEntityIdentifiers {
+    @inlinable var memberIds: UniformEntityIdentifiers {
         return nexus.members(withFamilyTraits: traits) ?? UniformEntityIdentifiers()
     }
 
-    var count: Int {
+    @inlinable var count: Int {
         return memberIds.count
     }
 
-    var entities: FamilyEntities {
+    @inlinable var entities: FamilyEntities {
         return FamilyEntities(nexus, memberIds)
     }
 

@@ -6,82 +6,60 @@
 //
 
 public struct FamilyTraitSet: CustomStringConvertible, CustomDebugStringConvertible {
-	public let requiresAll: ComponentSet
-	public let excludesAll: ComponentSet
-	public let needsAtLeastOne: ComponentSet
-	private let setHash: Int
-	private let isEmptyAny: Bool
-    private let stringRespresentation: String
+    public let requiresAll: ComponentSet
+    public let excludesAll: ComponentSet
 
-	public init(requiresAll: [Component.Type], excludesAll: [Component.Type], needsAtLeastOne: [Component.Type] = []) {
-        let all = ComponentSet(requiresAll.map { $0.identifier })
-		let none = ComponentSet(excludesAll.map { $0.identifier })
-		let one = ComponentSet(needsAtLeastOne.map { $0.identifier })
+    public let setHash: Int
 
-		let valid: Bool = FamilyTraitSet.isValid(requiresAll: all, excludesAll: none, atLeastOne: one)
-		assert(valid, "invalid family trait created - requiresAll: \(all), excludesAll: \(none), atLeastOne: \(one)")
+    public init(requiresAll: [Component.Type], excludesAll: [Component.Type]) {
+        let requiresAll = ComponentSet(requiresAll.map { $0.identifier })
+        let excludesAll = ComponentSet(excludesAll.map { $0.identifier })
 
-		isEmptyAny = one.isEmpty
+        let valid: Bool = FamilyTraitSet.isValid(requiresAll: requiresAll, excludesAll: excludesAll)
+        precondition(valid, "invalid family trait created - requiresAll: \(requiresAll), excludesAll: \(excludesAll)")
 
-        setHash = FirebladeECS.hash(combine: [all, one, none])
-
-		self.requiresAll = all
-		self.needsAtLeastOne = one
-		self.excludesAll = none
-
-        let allString: String = requiresAll.map { "\($0)" }.joined(separator: ",")
-        let excludedString: String = excludesAll.map { "\($0)" }.joined(separator: ",")
-        let oneString: String = needsAtLeastOne.map { "\($0)" }.joined(separator: ",")
-
-        stringRespresentation = "[all:\(allString) excluded:\(excludedString) one:\(oneString)]"
-	}
-
-	// MARK: - match
-	public func isMatch(components: ComponentSet) -> Bool {
-		return hasAll(components) && hasNone(components) && hasOne(components)
-	}
-
-	private func hasAll(_ components: ComponentSet) -> Bool {
-		return requiresAll.isSubset(of: components)
-	}
-
-	private func hasNone(_ components: ComponentSet) -> Bool {
-		return excludesAll.isDisjoint(with: components)
-	}
-
-	private func hasOne(_ components: ComponentSet) -> Bool {
-		if needsAtLeastOne.isEmpty {
-			return true
-		}
-		return !needsAtLeastOne.isDisjoint(with: components)
-	}
-
-	// MARK: - valid
-	private static func isValid(requiresAll: ComponentSet, excludesAll: ComponentSet, atLeastOne: ComponentSet) -> Bool {
-		return validAtLeastOneNonEmpty(requiresAll, atLeastOne) &&
-			requiresAll.isDisjoint(with: atLeastOne) &&
-			requiresAll.isDisjoint(with: excludesAll) &&
-			atLeastOne.isDisjoint(with: excludesAll)
-	}
-
-	private static func validAtLeastOneNonEmpty(_ requiresAll: ComponentSet, _ atLeastOne: ComponentSet) -> Bool {
-		return !requiresAll.isEmpty || !atLeastOne.isEmpty
-	}
-
-    public var description: String {
-        return stringRespresentation
+        self.requiresAll = requiresAll
+        self.excludesAll = excludesAll
+        self.setHash = FirebladeECS.hash(combine: [requiresAll, excludesAll])
     }
 
-    public var debugDescription: String {
-        return stringRespresentation
+    // MARK: - match
+    @inlinable
+    public func isMatch(components: ComponentSet) -> Bool {
+        return hasAll(components) && hasNone(components)
+    }
+
+    @inlinable
+    public func hasAll(_ components: ComponentSet) -> Bool {
+        return requiresAll.isSubset(of: components)
+    }
+
+    @inlinable
+    public func hasNone(_ components: ComponentSet) -> Bool {
+        return excludesAll.isDisjoint(with: components)
+    }
+
+    // MARK: - valid
+    @inlinable
+    public static func isValid(requiresAll: ComponentSet, excludesAll: ComponentSet) -> Bool {
+        return !requiresAll.isEmpty &&
+            requiresAll.isDisjoint(with: excludesAll)
+    }
+
+    @inlinable public var description: String {
+        return "<FamilyTraitSet [requiresAll:\(requiresAll.description) excludesAll:\(excludesAll.description)]>"
+    }
+
+    @inlinable public var debugDescription: String {
+        return "<FamilyTraitSet [requiresAll:\(requiresAll.debugDescription) excludesAll: \(excludesAll.debugDescription)]>"
     }
 }
 
 // MARK: - Equatable
 extension FamilyTraitSet: Equatable {
-	public static func == (lhs: FamilyTraitSet, rhs: FamilyTraitSet) -> Bool {
-		return lhs.setHash == rhs.setHash
-	}
+    public static func == (lhs: FamilyTraitSet, rhs: FamilyTraitSet) -> Bool {
+        return lhs.setHash == rhs.setHash
+    }
 }
 
 // MARK: - Hashable

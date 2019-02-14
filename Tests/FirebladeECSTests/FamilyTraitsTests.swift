@@ -25,11 +25,9 @@ class FamilyTraitsTests: XCTestCase {
     func testTraitCommutativity() {
 
         let t1 = FamilyTraitSet(requiresAll: [Position.self, Velocity.self],
-                                excludesAll: [Name.self],
-                                needsAtLeastOne: [])
+                                excludesAll: [Name.self])
         let t2 = FamilyTraitSet(requiresAll: [Velocity.self, Position.self],
-                                excludesAll: [Name.self],
-                                needsAtLeastOne: [])
+                                excludesAll: [Name.self])
 
         XCTAssertEqual(t1, t2)
         XCTAssertEqual(t1.hashValue, t2.hashValue)

@@ -55,6 +55,8 @@ class TypedFamilyPerformanceTests: XCTestCase {
         
         XCTAssertEqual(family.count, numEntities)
         XCTAssertEqual(nexus.numEntities, numEntities)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numComponents, numEntities * 5)
         
         var loopCount: Int = 0
         
@@ -92,6 +94,8 @@ class TypedFamilyPerformanceTests: XCTestCase {
         
         XCTAssertEqual(family.count, numEntities)
         XCTAssertEqual(nexus.numEntities, numEntities)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numComponents, numEntities * 5)
         
         var loopCount: Int = 0
         
@@ -112,6 +116,8 @@ class TypedFamilyPerformanceTests: XCTestCase {
         
         XCTAssertEqual(family.count, numEntities)
         XCTAssertEqual(nexus.numEntities, numEntities)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numComponents, numEntities * 5)
         
         var loopCount: Int = 0
         
@@ -134,6 +140,8 @@ class TypedFamilyPerformanceTests: XCTestCase {
         
         XCTAssertEqual(family.count, numEntities)
         XCTAssertEqual(nexus.numEntities, numEntities)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numComponents, numEntities * 5)
         
         var loopCount: Int = 0
         
@@ -155,6 +163,8 @@ class TypedFamilyPerformanceTests: XCTestCase {
         
         XCTAssertEqual(family.count, numEntities)
         XCTAssertEqual(nexus.numEntities, numEntities)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numComponents, numEntities * 5)
         
         var loopCount: Int = 0
         
@@ -178,6 +188,8 @@ class TypedFamilyPerformanceTests: XCTestCase {
         
         XCTAssertEqual(family.count, numEntities)
         XCTAssertEqual(nexus.numEntities, numEntities)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numComponents, numEntities * 5)
         
         var loopCount: Int = 0
         
@@ -200,6 +212,8 @@ class TypedFamilyPerformanceTests: XCTestCase {
         
         XCTAssertEqual(family.count, numEntities)
         XCTAssertEqual(nexus.numEntities, numEntities)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numComponents, numEntities * 5)
         
         var loopCount: Int = 0
         
@@ -224,6 +238,8 @@ class TypedFamilyPerformanceTests: XCTestCase {
         
         XCTAssertEqual(family.count, numEntities)
         XCTAssertEqual(nexus.numEntities, numEntities)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numComponents, numEntities * 5)
         
         var loopCount: Int = 0
         
@@ -247,6 +263,8 @@ class TypedFamilyPerformanceTests: XCTestCase {
         
         XCTAssertEqual(family.count, numEntities)
         XCTAssertEqual(nexus.numEntities, numEntities)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numComponents, numEntities * 5)
         
         var loopCount: Int = 0
         
@@ -272,6 +290,8 @@ class TypedFamilyPerformanceTests: XCTestCase {
         
         XCTAssertEqual(family.count, numEntities)
         XCTAssertEqual(nexus.numEntities, numEntities)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numComponents, numEntities * 5)
         
         var loopCount: Int = 0
         
@@ -295,6 +315,8 @@ class TypedFamilyPerformanceTests: XCTestCase {
         
         XCTAssertEqual(family.count, numEntities)
         XCTAssertEqual(nexus.numEntities, numEntities)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numComponents, numEntities * 5)
         
         var loopCount: Int = 0
         

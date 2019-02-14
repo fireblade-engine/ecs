@@ -5,7 +5,6 @@
 //  Created by Christian Treffs on 13.02.19.
 //
 
-
 @testable import FirebladeECS
 import XCTest
 

@@ -1,6 +1,6 @@
 //
 //  TypedFamilyPerformanceTests.swift
-//  FirebladeECS
+//  FirebladeECSPerformanceTests
 //
 //  Created by Christian Treffs on 29.09.18.
 //

@@ -17,14 +17,6 @@ public extension Entity {
 	}
 
     @inlinable
-	func getComponent<A>() -> () -> A? where A: Component {
-		func getComponentFunc() -> A? {
-			return get(component: A.self)
-		}
-		return getComponentFunc
-	}
-
-    @inlinable
 	func get<A, B>(components _: A.Type, _: B.Type) -> (A?, B?) where A: Component, B: Component {
 		let compA: A? = get(component: A.self)
 		let compB: B? = get(component: B.self)

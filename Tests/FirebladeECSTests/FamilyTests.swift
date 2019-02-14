@@ -1,6 +1,6 @@
 //
 //  FamilyTests.swift
-//  FirebladeECS
+//  FirebladeECSTests
 //
 //  Created by Christian Treffs on 09.10.17.
 //

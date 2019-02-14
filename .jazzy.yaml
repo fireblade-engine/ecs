@@ -9,5 +9,4 @@ module_version: 0.4.2
 output: "docs"
 readme: "README.md"
 skip_undocumented: false
-swift_version: "4.2"
 theme: fullwidth

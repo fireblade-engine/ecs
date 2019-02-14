@@ -39,7 +39,7 @@ public extension TypedFamilyProtocol {
     }
 
     @inlinable var memberIds: UniformEntityIdentifiers {
-        return nexus.members(withFamilyTraits: traits) ?? UniformEntityIdentifiers()
+        return nexus.members(withFamilyTraits: traits)
     }
 
     @inlinable var count: Int {

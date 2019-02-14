@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 08.10.17.
 //
 
-public struct Entity: UniqueEntityIdentifiable {
+public struct Entity: UniqueEntityIdentifiable, Equatable {
 	public internal(set) var identifier = EntityIdentifier.invalid
 	public var name: String?
 	public let nexus: Nexus

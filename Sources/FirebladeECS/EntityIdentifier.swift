@@ -25,12 +25,6 @@ public extension EntityIndex {
 }
 
 // MARK: Unique Entity Identifiable
-public protocol UniqueEntityIdentifiable: Hashable {
+public protocol UniqueEntityIdentifiable {
 	var identifier: EntityIdentifier { get }
-}
-
-public extension UniqueEntityIdentifiable {
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(identifier.hashValue)
-    }
 }

@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 09.10.17.
 //
 
-@testable import FirebladeECS
+import FirebladeECS
 import XCTest
 
 class FamilyTests: XCTestCase {
@@ -35,8 +35,9 @@ class FamilyTests: XCTestCase {
         
         XCTAssertEqual(family.nexus, self.nexus)
         XCTAssertTrue(family.nexus === self.nexus)
-        XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
-        XCTAssertEqual(nexus.familyMembersByTraits.values.count, 1)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numComponents, 0)
+        XCTAssertEqual(nexus.numEntities, 0)
         
         let traits = FamilyTraitSet(requiresAll: [Position.self], excludesAll: [Name.self])
         XCTAssertEqual(family.traits, traits)
@@ -50,36 +51,56 @@ class FamilyTests: XCTestCase {
         let familyB = nexus.family(requires: Position.self,
                                    excludesAll: Name.self)
         
-        XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
-        XCTAssertEqual(nexus.familyMembersByTraits.values.count, 1)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numComponents, 0)
         
         XCTAssertEqual(familyA, familyB)
     }
     
     func testFamilyAbandoned() {
-        
-        XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 0)
+        XCTAssertEqual(nexus.numFamilies, 0)
+        XCTAssertEqual(nexus.numComponents, 0)
+        XCTAssertEqual(nexus.numEntities, 0)
         _ = nexus.family(requires: Position.self)
-        XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numComponents, 0)
+        XCTAssertEqual(nexus.numEntities, 0)
         let entity = nexus.create(entity: "eimer")
+        XCTAssertFalse(entity.has(Position.self))
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numComponents, 0)
+        XCTAssertEqual(nexus.numEntities, 1)
         entity.assign(Position(x: 1, y: 1))
-        XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
+        XCTAssertTrue(entity.has(Position.self))
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numComponents, 1)
+        XCTAssertEqual(nexus.numEntities, 1)
         entity.remove(Position.self)
-        XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numComponents, 0)
+        XCTAssertEqual(nexus.numEntities, 1)
         nexus.destroy(entity: entity)
-        XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numComponents, 0)
+        XCTAssertEqual(nexus.numEntities, 0)
         
     }
     
     func testFamilyLateMember() {
-        let eEarly = nexus.create(entity: "eary").assign(Position(x: 1, y: 2))
-        XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 0)
+        let eEarly = nexus.create(entity: "early").assign(Position(x: 1, y: 2))
+        XCTAssertEqual(nexus.numFamilies, 0)
+        XCTAssertEqual(nexus.numComponents, 1)
+        XCTAssertEqual(nexus.numEntities, 1)
         let family = nexus.family(requires: Position.self)
-        XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numComponents, 1)
+        XCTAssertEqual(nexus.numEntities, 1)
         let eLate = nexus.create(entity: "late").assign(Position(x: 1, y: 2))
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numComponents, 2)
+        XCTAssertEqual(nexus.numEntities, 2)
         XCTAssertTrue(family.isMember(eEarly))
         XCTAssertTrue(family.isMember(eLate))
-        
     }
     
     func testFamilyExchange() {

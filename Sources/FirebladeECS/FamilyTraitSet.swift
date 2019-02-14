@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 09.10.17.
 //
 
-public struct FamilyTraitSet: CustomStringConvertible, CustomDebugStringConvertible {
+public struct FamilyTraitSet {
     public let requiresAll: ComponentSet
     public let excludesAll: ComponentSet
 
@@ -45,14 +45,6 @@ public struct FamilyTraitSet: CustomStringConvertible, CustomDebugStringConverti
         return !requiresAll.isEmpty &&
             requiresAll.isDisjoint(with: excludesAll)
     }
-
-    @inlinable public var description: String {
-        return "<FamilyTraitSet [requiresAll:\(requiresAll.description) excludesAll:\(excludesAll.description)]>"
-    }
-
-    @inlinable public var debugDescription: String {
-        return "<FamilyTraitSet [requiresAll:\(requiresAll.debugDescription) excludesAll: \(excludesAll.debugDescription)]>"
-    }
 }
 
 // MARK: - Equatable
@@ -66,5 +58,15 @@ extension FamilyTraitSet: Equatable {
 extension FamilyTraitSet: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(setHash)
+    }
+}
+
+extension FamilyTraitSet: CustomStringConvertible, CustomDebugStringConvertible {
+    @inlinable public var description: String {
+        return "<FamilyTraitSet [requiresAll:\(requiresAll.description) excludesAll:\(excludesAll.description)]>"
+    }
+
+    @inlinable public var debugDescription: String {
+        return "<FamilyTraitSet [requiresAll:\(requiresAll.debugDescription) excludesAll: \(excludesAll.debugDescription)]>"
     }
 }

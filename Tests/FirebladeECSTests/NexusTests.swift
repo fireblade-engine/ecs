@@ -127,6 +127,21 @@ class NexusTests: XCTestCase {
 		XCTAssert(e0.numComponents == 0)
 
 	}
+    
+    func testComponentRetrieval() {
+        let pos = Position(x: 1, y: 2)
+        let name = Name(name: "myName")
+        let vel = Velocity(a: 3)
+        let entity = nexus.create(entity: "TrippleComponents", with: pos, name, vel)
+        
+        let (rPos, rName, rVel) = entity.get(components: Position.self, Name.self, Velocity.self)
+        
+        
+        XCTAssertTrue(rPos === pos)
+        XCTAssertTrue(rName === name)
+        XCTAssertTrue(rVel === vel)
+        
+    }
 
 	func testComponentUniqueness() {
 		let a = nexus.create()

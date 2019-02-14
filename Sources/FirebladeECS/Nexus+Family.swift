@@ -20,8 +20,8 @@ public extension Nexus {
 		return traits.isMatch(components: componentSet)
 	}
 
-	func members(withFamilyTraits traits: FamilyTraitSet) -> UniformEntityIdentifiers? {
-		return familyMembersByTraits[traits]
+	func members(withFamilyTraits traits: FamilyTraitSet) -> UniformEntityIdentifiers {
+		return familyMembersByTraits[traits] ?? UniformEntityIdentifiers()
 	}
 
 	func isMember(_ entity: Entity, in family: FamilyTraitSet) -> Bool {
@@ -33,9 +33,6 @@ public extension Nexus {
     }
 
 	func isMember(entity entityId: EntityIdentifier, inFamilyWithTraits traits: FamilyTraitSet) -> Bool {
-		guard let members: UniformEntityIdentifiers = members(withFamilyTraits: traits) else {
-			return false
-		}
-		return members.contains(entityId.index)
+		return members(withFamilyTraits: traits).contains(entityId.index)
 	}
 }

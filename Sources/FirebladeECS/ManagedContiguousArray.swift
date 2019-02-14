@@ -12,7 +12,7 @@ public class ManagedContiguousArray<Element>: UniformStorage {
     private var store: ContiguousArray<Element?> = []
 
     public init(minCount: Int = 4096) {
-        chunkSize = MemoryLayout<Element>.stride * 512
+        chunkSize = minCount
         store = ContiguousArray<Element?>(repeating: nil, count: minCount)
     }
 

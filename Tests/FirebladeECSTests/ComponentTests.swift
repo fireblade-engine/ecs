@@ -10,16 +10,6 @@ import XCTest
 
 class ComponentTests: XCTestCase {
 
-    override func setUp() {
-        super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-    }
-
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
-    }
-
 	func testComponentIdentifier() {
 		let p1 = Position(x: 1, y: 2)
 		XCTAssert(p1.identifier == Position.identifier)
@@ -30,25 +20,5 @@ class ComponentTests: XCTestCase {
 		XCTAssert(Velocity.identifier != Position.identifier)
 	}
 
-	func testMeasureStaticComponentIdentifier() {
-		let number: Int = 10_000
-		measure {
-			for _ in 0..<number {
-				let id = Position.identifier
-				_ = id
-			}
-		}
-	}
-
-	func testMeasureComponentIdentifier() {
-		let number: Int = 10_000
-		let pos = Position(x: 1, y: 2)
-		measure {
-			for _ in 0..<number {
-				let id = pos.identifier
-				_ = id
-			}
-		}
-	}
 
 }

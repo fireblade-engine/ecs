@@ -52,11 +52,7 @@ public struct FamilyEntitiesAndComponents1<A>: EntityComponentsSequenceProtocol 
     }
 
     public mutating func next() -> (Entity, A)? {
-        guard let entityId = memberIdsIterator.next() else {
-            return nil
-        }
-
-        guard
+        guard let entityId = memberIdsIterator.next(),
             let entity = nexus.get(entity: entityId),
             let compA: A = nexus.get(for: entityId)
             else {

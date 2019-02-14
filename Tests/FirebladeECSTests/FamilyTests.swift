@@ -22,6 +22,12 @@ class FamilyTests: XCTestCase {
         super.tearDown()
     }
     
+    func createDefaultEntity(name: String?) {
+        let e = nexus.create(entity: name)
+        e.assign(Position(x: 1, y: 2))
+        e.assign(Color())
+    }
+    
     func testFamilyCreation() {
         
         let family = nexus.family(requires: Position.self,
@@ -53,47 +59,30 @@ class FamilyTests: XCTestCase {
     func testFamilyAbandoned() {
         
         XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 0)
-        
         _ = nexus.family(requires: Position.self)
-        
         XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
-        
         let entity = nexus.create(entity: "eimer")
         entity.assign(Position(x: 1, y: 1))
-        
         XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
-        
         entity.remove(Position.self)
-        
-        // FIXME: the family trait should vanish when no entity with revlevant component is present anymore
-        
         XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
-        
         nexus.destroy(entity: entity)
-        
         XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
         
     }
     
     func testFamilyLateMember() {
-        
         let eEarly = nexus.create(entity: "eary").assign(Position(x: 1, y: 2))
-        
         XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 0)
-        
         let family = nexus.family(requires: Position.self)
-        
         XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
-        
         let eLate = nexus.create(entity: "late").assign(Position(x: 1, y: 2))
-        
         XCTAssertTrue(family.isMember(eEarly))
         XCTAssertTrue(family.isMember(eLate))
         
     }
     
     func testFamilyExchange() {
-        
         let number: Int = 10
         
         for i in 0..<number {
@@ -151,12 +140,6 @@ class FamilyTests: XCTestCase {
         familyB.forEach { (vel: Velocity?) in
             XCTAssertNotNil(vel)
         }
-    }
-    
-    func createDefaultEntity(name: String?) {
-        let e = nexus.create(entity: name)
-        e.assign(Position(x: 1, y: 2))
-        e.assign(Color())
     }
     
     func testFamilyBulkDestroy() {

@@ -31,6 +31,25 @@ class TypedFamilyPerformanceTests: XCTestCase {
         super.tearDown()
     }
     
+    func testMeasureTraitMatching() {
+        
+        let a = nexus.create(entity: "a")
+        a.assign(Position(x: 1, y: 2))
+        a.assign(Name(name: "myName"))
+        a.assign(Velocity(a: 3.14))
+        a.assign(EmptyComponent())
+        
+        let isMatch = nexus.family(requiresAll: Position.self, Velocity.self,
+                                   excludesAll: Party.self)
+        
+        measure {
+            for _ in 0..<10_000 {
+                let success = isMatch.canBecomeMember(a)
+                XCTAssert(success)
+            }
+        }
+    }
+    
     func testPerformanceTypedFamilyEntities() {
         let family = nexus.family(requires: Position.self, excludesAll: Party.self)
         

@@ -19,6 +19,9 @@ let package = Package(
             dependencies: []),
         .testTarget(
             name: "FirebladeECSTests",
+            dependencies: ["FirebladeECS"]),
+        .testTarget(
+            name: "FirebladeECSPerformanceTests",
             dependencies: ["FirebladeECS"])
     ]
 )

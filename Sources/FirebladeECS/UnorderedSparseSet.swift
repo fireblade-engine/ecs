@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 30.10.17.
 //
 
-public class UnorderedSparseSet<Element> {
+open class UnorderedSparseSet<Element> {
     public typealias Index = Int
     public typealias Key = Int
 
@@ -14,8 +14,8 @@ public class UnorderedSparseSet<Element> {
         public let element: Element
     }
 
-    internal var dense: ContiguousArray<Entry>
-    internal var sparse: [Index: Key]
+    public private(set) var dense: ContiguousArray<Entry>
+    public private(set) var sparse: [Index: Key]
 
     public init() {
         sparse = [Index: Key]()
@@ -30,6 +30,7 @@ public class UnorderedSparseSet<Element> {
     public var isEmpty: Bool { return dense.isEmpty }
     public var capacity: Int { return sparse.count }
 
+    @inlinable
     public func contains(_ key: Key) -> Bool {
         return find(at: key) != nil
     }
@@ -58,6 +59,7 @@ public class UnorderedSparseSet<Element> {
     ///
     /// - Parameter key: the key
     /// - Returns: the element or nil of key not found.
+    @inlinable
     public func get(at key: Key) -> Element? {
         guard let (_, element) = find(at: key) else {
             return nil
@@ -66,6 +68,7 @@ public class UnorderedSparseSet<Element> {
         return element
     }
 
+    @inlinable
     public func get(unsafeAt key: Key) -> Element {
         return find(at: key).unsafelyUnwrapped.1
     }
@@ -108,7 +111,8 @@ public class UnorderedSparseSet<Element> {
         return dense.removeLast()
     }
 
-    private func find(at key: Key) -> (Int, Element)? {
+    @inlinable
+    public func find(at key: Key) -> (Int, Element)? {
         guard let denseIndex = sparse[key], denseIndex < count else {
             return nil
         }

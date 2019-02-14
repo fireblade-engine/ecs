@@ -28,11 +28,8 @@ public extension Nexus {
 
         /// test if component is already assigned
         guard !has(componentId: componentId, entityIdx: entityIdx) else {
-            // FIXME: this is still open to debate
-            // a) we replace the component
-            // b) we copy the properties
-            // c) we assert fail
             report("ComponentAdd collision: \(entityIdx) already has a component \(component)")
+            assertionFailure("ComponentAdd collision: \(entityIdx) already has a component \(component)")
             return
         }
 

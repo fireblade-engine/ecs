@@ -14,7 +14,7 @@ public extension Nexus {
         guard let uniforms: UniformComponents = componentsByType[componentId] else {
             return false
         }
-        return uniforms.has(entityIdx)
+        return uniforms.contains(entityIdx)
     }
 
     final func count(components entityId: EntityIdentifier) -> Int {
@@ -37,7 +37,7 @@ public extension Nexus {
         if componentsByType[componentId] == nil {
             componentsByType[componentId] = UniformComponents()
         }
-        componentsByType[componentId]?.add(component, at: entityIdx)
+        componentsByType[componentId]?.insert(component, at: entityIdx)
 
         // assigns the component id to the entity id
         if componentIdsByEntity[entityIdx] == nil {

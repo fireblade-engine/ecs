@@ -12,7 +12,7 @@ public class ManagedContiguousArray<Element>: UniformStorage {
     private var store: ContiguousArray<Element?> = []
 
     public init(minCount: Int = 4096) {
-        chunkSize = minCount
+        chunkSize = MemoryLayout<Element>.stride * 512
         store = ContiguousArray<Element?>(repeating: nil, count: minCount)
     }
 
@@ -79,7 +79,7 @@ public class ManagedContiguousArray<Element>: UniformStorage {
 
     private func calculateCapacity(to index: Index) -> Int {
         let delta = Float(index) / Float(chunkSize)
-        let multiplier = Int(delta) + 1
+        let multiplier = Int(delta.rounded(.up)) + 1
         return multiplier * chunkSize
     }
 }

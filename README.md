@@ -1,6 +1,6 @@
 # Fireblade ECS (Entity-Component-System)
 [![Build Status](https://travis-ci.com/fireblade-engine/ecs.svg?branch=master)](https://travis-ci.com/fireblade-engine/ecs)
-[![version 0.5.1](https://img.shields.io/badge/version-0.5.1-brightgreen.svg)](releases/tag/v0.5.1)
+[![version 0.6.0](https://img.shields.io/badge/version-0.6.0-brightgreen.svg)](releases/tag/v0.6.0)
 [![license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 [![swift version](https://img.shields.io/badge/swift-4.2-brightgreen.svg)](#)
 [![platforms](https://img.shields.io/badge/platforms-%20macOS%20|%20iOS%20|%20tvOS%20|%20watchOS%20|%20linux%20-brightgreen.svg)](#)
@@ -33,7 +33,7 @@ import PackageDescription
 let package = Package(
     name: "YourPackageName",
     dependencies: [
-        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.5.1")
+        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.6.0")
     ],
     targets: [
         .target(
@@ -48,10 +48,10 @@ let package = Package(
 
 The core element in the Fireblade-ECS is the [Nexus](https://en.wiktionary.org/wiki/nexus#Noun). 
 It acts as a centralized way to store, access and manage entities and their components. 
-A single `Nexus` may hold up to 4294967295 `Entities` at a time.
-You may use more than one `Nexus`.
+A single `Nexus` may (theoretically) hold up to 4294967295 `Entities` at a time.   
+You may use more than one `Nexus` at a time.
 
-Initialize a nexus with
+Initialize a `Nexus` with
 
 ```swift
 let nexus = Nexus()
@@ -74,12 +74,15 @@ class Movement: Component {
 and assign instances of them to an `Entity` with
 
 ```swift
-myEntity.assign(Movement())
+let movement = Movement()
+myEntity.assign(movement)
 ```
 
-This ECS uses a grouping approach for entities with the same component types to optimize and ease up access to them.   
-Entities with the same component types may be accessed via a so called `family`. 
-A `family` has entities as members and component types as family traits.
+### Families
+
+This ECS uses a grouping approach for entities with the same component types to optimize cache locality and ease up access to them.   
+Entities with the __same component types__ may belong to one `Family`. 
+A `Family` has entities as members and component types as family traits.
 
 Create a family by calling `.family` with a set of traits on the nexus.
 A family that containts only entities with a `Movement` and `PlayerInput` component, but no `Texture` component is created by
@@ -92,7 +95,7 @@ let family = nexus.family(requiresAll: Movement.self, PlayerInput.self,
 These entities are cached in the nexus for efficient access and iteration.
 Families conform to the [Sequence](https://developer.apple.com/documentation/swift/sequence) so that members (components) 
 may be iterated and accessed like any other sequence in Swift.   
-Access a familiy's components directly on the family instance. To get each entity to the accessed components call `family.entityAndComponents`.
+Access a familiy's components directly on the family instance. To get family entities and access components at the same time call `family.entityAndComponents`.
 If you are only interested in a family's entities call `family.entities`.
 
 ```swift
@@ -150,6 +153,34 @@ class PlayerMovementSystem {
 	}
 }
 ```
+
+### Singles
+
+A `Single` on the other hand is a special kind of family that holds exactly **one** entity with exactly **one** component for the entire lifetime of the Nexus. This may come in handy if you have components that have a [Singleton](https://en.wikipedia.org/wiki/Singleton_(mathematics)) character. Single components must conform to the `SingleComponent` protocol and will not be available through regular family iteration.
+
+```swift
+final class GameState: SingleComponent {
+    var quitGame: Bool = false
+}
+class GameLogicSystem {
+    let gameState: Single<GameState>
+    
+    init(nexus: Nexus) {
+        gameState = nexus.single(GameState.self)
+    }
+    
+    func update() {
+        // update your game sate here
+        gameState.component.quitGame = true
+        
+        // entity access is provided as well
+        _ = gameState.entity
+    }
+}
+
+```
+
+## Demo
 
 See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) to get started.
 

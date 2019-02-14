@@ -58,6 +58,10 @@ public class ManagedContiguousArray<Element>: UniformStorage {
 		return store[index]
 	}
 
+    public func get(unsafeAt index: Index) -> Element {
+        return store[index].unsafelyUnwrapped
+    }
+
 	@discardableResult
 	public func remove(at index: Index) -> Bool {
 		if store[index] != nil {

@@ -66,6 +66,10 @@ public class UnorderedSparseSet<Element> {
         return element
     }
 
+    public func get(unsafeAt key: Key) -> Element {
+        return find(at: key).unsafelyUnwrapped.1
+    }
+
     /// Removes the element entry for given key in O(1).
     ///
     /// - Parameter key: the key

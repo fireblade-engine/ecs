@@ -15,7 +15,7 @@ extension Nexus {
 
     // swiftlint:disable function_default_parameter_at_end
 	@discardableResult
-     public func create(entity name: String? = nil, with assignedComponents: Component...) -> Entity {
+    public func create(entity name: String? = nil, with assignedComponents: Component...) -> Entity {
 		let newEntityIndex: EntityIndex = nextEntityIdx()
 		let newEntityIdentifier: EntityIdentifier = newEntityIndex.identifier
         let newEntity = Entity(nexus: self, id: newEntityIdentifier, name: name)
@@ -38,6 +38,10 @@ extension Nexus {
 	public func get(entity entityId: EntityIdentifier) -> Entity? {
 		return entityStorage.get(at: entityId.index)
 	}
+
+    public func get(unsafeEntity entityId: EntityIdentifier) -> Entity {
+        return entityStorage.get(unsafeAt: entityId.index)
+    }
 
 	@discardableResult
 	public func destroy(entity: Entity) -> Bool {

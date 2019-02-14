@@ -23,26 +23,23 @@ class SingleTests: XCTestCase {
     }
     
     func testSingleCreation() {
-        let single = nexus.single(requires: Position.self,
-                                  excludesAll: Name.self)
+        let single = nexus.single(SingleGameState.self)
         XCTAssertEqual(single.nexus, self.nexus)
         XCTAssertTrue(single.nexus === self.nexus)
         XCTAssertEqual(single.traits.requiresAll.count, 1)
-        XCTAssertEqual(single.traits.excludesAll.count, 1)
+        XCTAssertEqual(single.traits.excludesAll.count, 0)
         
         XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
         XCTAssertEqual(nexus.familyMembersByTraits.values.count, 1)
         
-        let traits = FamilyTraitSet(requiresAll: [Position.self], excludesAll: [Name.self])
+        let traits = FamilyTraitSet(requiresAll: [SingleGameState.self], excludesAll: [])
         XCTAssertEqual(single.traits, traits)
     }
     
     func testSingleReuse() {
-        let singleA = nexus.single(requires: Position.self,
-                                   excludesAll: Name.self)
+        let singleA = nexus.single(SingleGameState.self)
         
-        let singleB = nexus.single(requires: Position.self,
-                                   excludesAll: Name.self)
+        let singleB = nexus.single(SingleGameState.self)
         
         XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
         XCTAssertEqual(nexus.familyMembersByTraits.values.count, 1)
@@ -52,16 +49,12 @@ class SingleTests: XCTestCase {
     
     
     func testSingleEntityAndComponentCreation() {
-        let single = nexus.single(requires: Position.self,
-                                  excludesAll: Name.self)
-        XCTAssertNil(single.entity)
-        XCTAssertNil(single.component)
-        let pos = Position(x: 1, y: 2)
-        nexus.create(with: pos)
+        let single = nexus.single(SingleGameState.self)
+        let gameState = SingleGameState()
         XCTAssertNotNil(single.entity)
         XCTAssertNotNil(single.component)
-        XCTAssertEqual(single.component?.x, pos.x)
-        XCTAssertEqual(single.component?.y, pos.y)
+        XCTAssertEqual(single.component.shouldQuit, gameState.shouldQuit)
+        XCTAssertEqual(single.component.playerHealth, gameState.playerHealth)
         
     }
 }

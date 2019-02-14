@@ -64,9 +64,20 @@ public extension Nexus {
         return uniformComponents.get(at: entityId.index)
     }
 
+    final func get(unsafeComponent componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component {
+        let uniformComponents: UniformComponents = componentsByType[componentId].unsafelyUnwrapped
+        return uniformComponents.get(unsafeAt: entityId.index)
+    }
+
     final func get<C>(for entityId: EntityIdentifier) -> C? where C: Component {
         let componentId: ComponentIdentifier = C.identifier
         return get(componentId: componentId, entityIdx: entityId.index)
+    }
+
+    final func get<C>(unsafeComponentFor entityId: EntityIdentifier) -> C where C: Component {
+        let component: Component = get(unsafeComponent: C.identifier, for: entityId)
+        /// components are guaranteed to be reference tyes so unsafeDowncast is applicable here
+        return unsafeDowncast(component, to: C.self)
     }
 
     final func get(components entityId: EntityIdentifier) -> SparseComponentIdentifierSet? {

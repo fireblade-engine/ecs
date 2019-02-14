@@ -62,3 +62,10 @@ class ExampleSystem {
 	}
 
 }
+
+
+final class SingleGameState: SingleComponent {
+    var shouldQuit: Bool = false
+    var playerHealth: Int = 67
+    
+}

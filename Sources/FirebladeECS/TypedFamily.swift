@@ -17,6 +17,7 @@ public protocol TypedFamilyProtocol: Equatable, Sequence {
     var nexus: Nexus { get }
 
     var count: Int { get }
+    var isEmpty: Bool { get }
 
     var memberIds: UniformEntityIdentifiers { get }
     var entities: FamilyEntities { get }
@@ -45,6 +46,10 @@ public extension TypedFamilyProtocol {
         return memberIds.count
     }
 
+    @inlinable var isEmpty: Bool {
+        return memberIds.isEmpty
+    }
+
     @inlinable var entities: FamilyEntities {
         return FamilyEntities(nexus, memberIds)
     }
@@ -58,7 +63,6 @@ public protocol ComponentIteratorProtocol: IteratorProtocol {
     associatedtype TypedFamily: TypedFamilyProtocol
 
     var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier> { get }
-    var nexus: Nexus { get }
 
     init(_ nexus: Nexus, _ family: TypedFamily)
 }

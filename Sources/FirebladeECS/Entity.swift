@@ -15,11 +15,6 @@ public struct Entity: UniqueEntityIdentifiable {
 		self.identifier = id
 		self.name = name
 	}
-
-    // MARK: Equatable
-    public static func == (lhs: Entity, rhs: Entity) -> Bool {
-        return lhs.identifier == rhs.identifier
-    }
 }
 
 // MARK: - number of components
@@ -65,16 +60,6 @@ public extension Entity {
 		nexus.assign(component: component, to: self)
 		return self
 	}
-
-	@discardableResult
-	static func += <C>(lhs: Entity, rhs: C) -> Entity where C: Component {
-		return lhs.assign(rhs)
-	}
-
-	@discardableResult
-	static func << <C>(lhs: Entity, rhs: C) -> Entity where C: Component {
-		return lhs.assign(rhs)
-	}
 }
 
 // MARK: - remove component(s)
@@ -97,16 +82,6 @@ public extension Entity {
 
 	func clear() {
 		nexus.clear(componentes: identifier)
-	}
-
-	@discardableResult
-	static func -= <C>(lhs: Entity, rhs: C) -> Entity where C: Component {
-		return lhs.remove(rhs)
-	}
-
-	@discardableResult
-	static func -= <C>(lhs: Entity, rhs: C.Type) -> Entity where C: Component {
-		return lhs.remove(rhs)
 	}
 }
 

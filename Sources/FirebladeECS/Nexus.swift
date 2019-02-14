@@ -22,45 +22,45 @@ public typealias TraitEntityIdHashSet = [TraitEntityIdHash: EntityIdInFamilyInde
 public typealias SparseComponentIdentifierSet = UnorderedSparseSet<ComponentIdentifier>
 
 public protocol NexusDelegate: class {
-	func nexusEventOccurred(_ event: ECSEvent)
-	func nexusRecoverableErrorOccurred(_ message: String)
+    func nexusEventOccurred(_ event: ECSEvent)
+    func nexusRecoverableErrorOccurred(_ message: String)
 }
 
 public class Nexus: Equatable {
-	public weak var delegate: NexusDelegate?
+    public weak var delegate: NexusDelegate?
 
-	/// - Index: index value matching entity identifier shifted to Int
-	/// - Value: each element is a entity instance
-	internal var entityStorage: Entities
+    /// - Index: index value matching entity identifier shifted to Int
+    /// - Value: each element is a entity instance
+    internal var entityStorage: Entities
 
-	/// - Key: component type identifier
-	/// - Value: each element is a component instance of the same type (uniform). New component instances are appended.
-	internal var componentsByType: [ComponentIdentifier: UniformComponents]
+    /// - Key: component type identifier
+    /// - Value: each element is a component instance of the same type (uniform). New component instances are appended.
+    internal var componentsByType: [ComponentIdentifier: UniformComponents]
 
-	/// - Key: entity id as index
-	/// - Value: each element is a component identifier associated with this entity
-	internal var componentIdsByEntity: [EntityIndex: SparseComponentIdentifierSet]
+    /// - Key: entity id as index
+    /// - Value: each element is a component identifier associated with this entity
+    internal var componentIdsByEntity: [EntityIndex: SparseComponentIdentifierSet]
 
-	/// - Values: entity ids that are currently not used
-	internal var freeEntities: ContiguousArray<EntityIdentifier>
+    /// - Values: entity ids that are currently not used
+    internal var freeEntities: ContiguousArray<EntityIdentifier>
 
-	//var familiesByTraitHash: [FamilyTraitSetHash: Family]
-	internal var familyMembersByTraits: [FamilyTraitSet: UniformEntityIdentifiers]
+    //var familiesByTraitHash: [FamilyTraitSetHash: Family]
+    internal var familyMembersByTraits: [FamilyTraitSet: UniformEntityIdentifiers]
 
-	public init() {
-		entityStorage = Entities()
-		componentsByType = [:]
-		componentIdsByEntity = [:]
-		freeEntities = ContiguousArray<EntityIdentifier>()
-		familyMembersByTraits = [:]
-	}
+    public init() {
+        entityStorage = Entities()
+        componentsByType = [:]
+        componentIdsByEntity = [:]
+        freeEntities = ContiguousArray<EntityIdentifier>()
+        familyMembersByTraits = [:]
+    }
 
     public final func clear() {
         for entity: Entity in entityStorage {
             destroy(entity: entity)
         }
 
-        entityStorage.clear()
+        entityStorage.removeAll()
         freeEntities.removeAll()
 
         assert(entityStorage.isEmpty)
@@ -74,28 +74,28 @@ public class Nexus: Equatable {
         familyMembersByTraits.removeAll()
     }
 
-	deinit {
+    deinit {
         clear()
-	}
+    }
 
     // MARK: Equatable
     public static func == (lhs: Nexus, rhs: Nexus) -> Bool {
         return lhs.entityStorage == rhs.entityStorage &&
-        lhs.componentIdsByEntity == rhs.componentIdsByEntity &&
-        lhs.freeEntities == rhs.freeEntities &&
-        lhs.familyMembersByTraits == rhs.familyMembersByTraits &&
-        lhs.componentsByType.count == rhs.componentsByType.count
-        // TODO: components are not equatable yet
+            lhs.componentIdsByEntity == rhs.componentIdsByEntity &&
+            lhs.freeEntities == rhs.freeEntities &&
+            lhs.familyMembersByTraits == rhs.familyMembersByTraits &&
+            lhs.componentsByType.keys == rhs.componentsByType.keys
+        // NOTE: components are not equatable (yet)
     }
 }
 
 // MARK: - nexus delegate
 extension Nexus {
-	internal func notify(_ event: ECSEvent) {
-		delegate?.nexusEventOccurred(event)
-	}
+    internal func notify(_ event: ECSEvent) {
+        delegate?.nexusEventOccurred(event)
+    }
 
-	internal func report(_ message: String) {
-		delegate?.nexusRecoverableErrorOccurred(message)
-	}
+    internal func report(_ message: String) {
+        delegate?.nexusRecoverableErrorOccurred(message)
+    }
 }

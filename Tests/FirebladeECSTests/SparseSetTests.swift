@@ -476,7 +476,7 @@ class SparseSetTests: XCTestCase {
         XCTAssertEqual(set.count, num)
         XCTAssertFalse(set.isEmpty)
 
-        set.clear()
+        set.removeAll()
 
         XCTAssertEqual(set.count, 0)
         XCTAssertTrue(set.isEmpty)

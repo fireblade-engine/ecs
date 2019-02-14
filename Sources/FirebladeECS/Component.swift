@@ -9,8 +9,8 @@ public protocol Component: class, TypeIdentifiable {}
 public typealias ComponentIdentifier = ObjectIdentifier
 
 public extension Component {
-	var identifier: ComponentIdentifier { return typeObjectIdentifier }
-	static var identifier: ComponentIdentifier { return typeObjectIdentifier }
+	static var identifier: ComponentIdentifier { return Self.typeObjectIdentifier }
+    var identifier: ComponentIdentifier { return self.typeObjectIdentifier }
 }
 
 /// TypeIdentifiable
@@ -22,6 +22,5 @@ public protocol TypeIdentifiable {
 
 public extension TypeIdentifiable {
     static var typeObjectIdentifier: ObjectIdentifier { return ObjectIdentifier(Self.self) }
-
     var typeObjectIdentifier: ObjectIdentifier { return Self.typeObjectIdentifier }
 }

@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 14.02.19.
 //
 
-@testable import FirebladeECS
+import FirebladeECS
 import XCTest
 
 class ComponentTests: XCTestCase {

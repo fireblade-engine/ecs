@@ -93,7 +93,7 @@ let family = nexus.family(requiresAll: Movement.self, PlayerInput.self,
 ```
 
 These entities are cached in the nexus for efficient access and iteration.
-Families conform to the [Sequence](https://developer.apple.com/documentation/swift/sequence) so that members (components) 
+Families conform to the [Sequence](https://developer.apple.com/documentation/swift/sequence) protocol so that members (components) 
 may be iterated and accessed like any other sequence in Swift.   
 Access a familiy's components directly on the family instance. To get family entities and access components at the same time call `family.entityAndComponents`.
 If you are only interested in a family's entities call `family.entities`.
@@ -193,7 +193,7 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 * [Christian Treffs](https://github.com/ctreffs) - *Initial work*
 * [Manuel Weidmann](https://github.com/vyo)
 
-See also the list of [contributors](project/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/fireblade-engine/ecs/blob/master/project/contributors) who participated in this project.
 
 ## License
 

@@ -14,8 +14,8 @@ open class UnorderedSparseSet<Element>: MutableCollection, RandomAccessCollectio
         public let element: Element
     }
 
-    public private(set) var dense: ContiguousArray<Entry>
-    public private(set) var sparse: [Index: Key]
+    @usableFromInline var dense: ContiguousArray<Entry>
+    @usableFromInline var sparse: [Index: Key]
 
     public init() {
         sparse = [Index: Key]()

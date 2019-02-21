@@ -99,3 +99,10 @@ extension Nexus {
         delegate?.nexusRecoverableErrorOccurred(message)
     }
 }
+
+// MARK: - CustomDebugStringConvertible
+extension Nexus: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return "Nexus<Entities:\(numEntities) Components:\(numComponents) Families:\(numFamilies)>"
+    }
+}

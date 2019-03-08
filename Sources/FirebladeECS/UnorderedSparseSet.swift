@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 30.10.17.
 //
 
-open class UnorderedSparseSet<Element>: MutableCollection, RandomAccessCollection {
+open class UnorderedSparseSet<Element> {
     public typealias Index = Int
     public typealias Key = Int
 
@@ -28,7 +28,6 @@ open class UnorderedSparseSet<Element>: MutableCollection, RandomAccessCollectio
 
     public var count: Int { return dense.count }
     public var isEmpty: Bool { return dense.isEmpty }
-    public var capacity: Int { return sparse.count }
 
     @inlinable
     public func contains(_ key: Key) -> Bool {
@@ -126,19 +125,10 @@ open class UnorderedSparseSet<Element>: MutableCollection, RandomAccessCollectio
         return (denseIndex, entry.element)
     }
 
-    // MARK: Collection
-    @inlinable
-    public func index(after index: Index) -> Int {
-        return dense.index(after: index)
-    }
-
     @inlinable
     public subscript(position: Index) -> Element {
         get {
-            guard let element: Element = get(at: position) else {
-                fatalError("no element at index \(position)")
-            }
-            return element
+            return get(unsafeAt: position)
         }
 
         set(newValue) {
@@ -146,18 +136,17 @@ open class UnorderedSparseSet<Element>: MutableCollection, RandomAccessCollectio
         }
     }
 
-    @inlinable public var startIndex: Index {
-        return dense.startIndex
+    @inlinable public var first: Element? {
+        return dense.first?.element
     }
 
-    @inlinable public var endIndex: Index {
-        return dense.endIndex
+    @inlinable public var last: Element? {
+        return dense.last?.element
     }
 }
 
-extension UnorderedSparseSet.Entry: Equatable where UnorderedSparseSet.Element: Equatable { }
-
-extension UnorderedSparseSet: Equatable where UnorderedSparseSet.Element: Equatable {
+extension UnorderedSparseSet.Entry: Equatable where Element: Equatable { }
+extension UnorderedSparseSet: Equatable where Element: Equatable {
     public static func == (lhs: UnorderedSparseSet<Element>, rhs: UnorderedSparseSet<Element>) -> Bool {
         return lhs.dense == rhs.dense && lhs.sparse == rhs.sparse
     }

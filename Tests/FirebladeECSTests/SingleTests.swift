@@ -56,4 +56,12 @@ class SingleTests: XCTestCase {
         XCTAssertEqual(single.component.playerHealth, gameState.playerHealth)
         
     }
+    
+    func testSingleCreationOnExistingFamilyMember() {
+        _ = nexus.create(entity: "AnotherEntity", with: Position(x: 1, y: 2))
+        let singleGame = SingleGameState()
+        _ = nexus.create(entity: "CrashEntity", with: singleGame)
+        let single = nexus.single(SingleGameState.self)
+        XCTAssertTrue(singleGame === single.component)
+    }
 }

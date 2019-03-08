@@ -500,8 +500,8 @@ class SparseSetTests: XCTestCase {
 
         XCTAssertEqual(characters.count, 11)
 
-        let string: String = characters.reduce("") { res, char in
-            res + "\(char)"
+        let string: String = characters.dense.reduce("") { res, char in
+            res + "\(char.element)"
         }
 
         // NOTE: this tests only dense insertion order, this is no guarantee for the real ordering.
@@ -538,5 +538,18 @@ class SparseSetTests: XCTestCase {
         XCTAssertEqual(characters[90], "r")
         XCTAssertEqual(characters[34], "l")
         XCTAssertEqual(characters[140], "d")
+    }
+    
+    func testStartEndIndex() {
+        
+        let set = UnorderedSparseSet<Character>()
+        
+        set.insert("C", at: 33)
+        set.insert("A", at: 11)
+        set.insert("B", at: 22)
+        
+        let mapped = set.dense.map { $0.element }
+        
+        XCTAssertEqual(mapped, ["C", "A", "B"])
     }
 }

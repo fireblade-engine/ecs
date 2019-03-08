@@ -19,7 +19,6 @@ public typealias FamilyTraitSetHash = Int
 public typealias TraitEntityIdHash = Int
 public typealias EntityIdInFamilyIndex = Int
 public typealias TraitEntityIdHashSet = [TraitEntityIdHash: EntityIdInFamilyIndex]
-public typealias SparseComponentIdentifierSet = UnorderedSparseSet<ComponentIdentifier>
 
 public protocol NexusDelegate: class {
     func nexusEventOccurred(_ event: ECSEvent)
@@ -39,7 +38,7 @@ public class Nexus: Equatable {
 
     /// - Key: entity id as index
     /// - Value: each element is a component identifier associated with this entity
-    internal var componentIdsByEntity: [EntityIndex: SparseComponentIdentifierSet]
+    internal var componentIdsByEntity: [EntityIndex: ComponentSet]
 
     /// - Values: entity ids that are currently not used
     internal var freeEntities: ContiguousArray<EntityIdentifier>
@@ -56,7 +55,8 @@ public class Nexus: Equatable {
     }
 
     public final func clear() {
-        for entity: Entity in entityStorage {
+        var iter = entityStorage.makeIterator()
+        while let entity = iter.next() {
             destroy(entity: entity)
         }
 

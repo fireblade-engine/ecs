@@ -12,12 +12,11 @@ public extension Nexus {
 
 	func canBecomeMember(_ entity: Entity, in traits: FamilyTraitSet) -> Bool {
 		let entityIdx: EntityIndex = entity.identifier.index
-		guard let componentIds: SparseComponentIdentifierSet = componentIdsByEntity[entityIdx] else {
+		guard let componentIds = componentIdsByEntity[entityIdx] else {
 			assertionFailure("no component set defined for entity: \(entity)")
 			return false
 		}
-		let componentSet = ComponentSet(componentIds)
-		return traits.isMatch(components: componentSet)
+		return traits.isMatch(components: componentIds)
 	}
 
 	func members(withFamilyTraits traits: FamilyTraitSet) -> UniformEntityIdentifiers {

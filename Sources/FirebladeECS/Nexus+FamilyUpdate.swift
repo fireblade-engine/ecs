@@ -18,7 +18,8 @@ extension Nexus {
 
     final func update(familyMembership traits: FamilyTraitSet) {
         // FIXME: iterating all entities is costly for many entities
-        for entity: Entity in entityStorage {
+        var iter = entityStorage.makeIterator()
+        while let entity = iter.next() {
             update(membership: traits, for: entity.identifier)
         }
     }
@@ -32,7 +33,7 @@ extension Nexus {
 
     final func update(membership traits: FamilyTraitSet, for entityId: EntityIdentifier) {
         let entityIdx: EntityIndex = entityId.index
-        guard let componentIds: SparseComponentIdentifierSet = componentIdsByEntity[entityIdx] else {
+        guard let componentIds = componentIdsByEntity[entityIdx] else {
             // no components - so skip
             return
         }
@@ -43,9 +44,7 @@ extension Nexus {
             return
         }
 
-        // TODO: get rid of set creation for comparison by conforming UnorderedSparseSet to SetAlgebra
-        let componentsSet = ComponentSet(componentIds)
-        let isMatch: Bool = traits.isMatch(components: componentsSet)
+        let isMatch: Bool = traits.isMatch(components: componentIds)
 
         switch (isMatch, isMember) {
         case (true, false):

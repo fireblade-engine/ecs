@@ -41,9 +41,9 @@ public extension Nexus {
 
         // assigns the component id to the entity id
         if componentIdsByEntity[entityIdx] == nil {
-            componentIdsByEntity[entityIdx] = SparseComponentIdentifierSet()
+            componentIdsByEntity[entityIdx] = ComponentSet()
         }
-        componentIdsByEntity[entityIdx]?.insert(componentId, at: componentId.hashValue)
+        componentIdsByEntity[entityIdx]?.insert(componentId) //, at: componentId.hashValue)
 
         update(familyMembership: entityId)
 
@@ -77,7 +77,7 @@ public extension Nexus {
         return unsafeDowncast(component, to: C.self)
     }
 
-    final func get(components entityId: EntityIdentifier) -> SparseComponentIdentifierSet? {
+    final func get(components entityId: EntityIdentifier) -> ComponentSet? {
         return componentIdsByEntity[entityId.index]
     }
 
@@ -88,7 +88,7 @@ public extension Nexus {
         // delete component instance
         componentsByType[componentId]?.remove(at: entityIdx)
         // unasign component from entity
-        componentIdsByEntity[entityIdx]?.remove(at: componentId.hashValue)
+        componentIdsByEntity[entityIdx]?.remove(componentId) //.hashValue)
 
         update(familyMembership: entityId)
 
@@ -98,11 +98,15 @@ public extension Nexus {
 
     @discardableResult
     final func clear(componentes entityId: EntityIdentifier) -> Bool {
-        guard let allComponents: SparseComponentIdentifierSet = get(components: entityId) else {
+        guard let allComponents = get(components: entityId) else {
             report("clearing components form entity \(entityId) with no components")
             return false
         }
-        let removedAll: Bool = allComponents.reduce(true) { $0 && remove(component: $1, from: entityId) }
+        var iter = allComponents.makeIterator()
+        var removedAll: Bool = true
+        while let component = iter.next() {
+            removedAll = removedAll && remove(component: component, from: entityId)
+        }
         return removedAll
     }
 }

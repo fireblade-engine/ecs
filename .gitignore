@@ -12,7 +12,10 @@
 *.moved-aside
 *.pbxuser
 *.perspectivev3
+*.rb
+*.sh
 *.xccheckout
+*.xcconfig
 *.xcscmblueprint
 ._*
 .apdisk
@@ -39,6 +42,7 @@ fastlane/Preview.html
 fastlane/report.xml
 fastlane/screenshots
 fastlane/test_output
+Gemfile*
 Icon
 Network Trash Folder
 Package.resolved

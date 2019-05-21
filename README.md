@@ -1,8 +1,8 @@
 # Fireblade ECS (Entity-Component-System)
 [![Build Status](https://travis-ci.com/fireblade-engine/ecs.svg?branch=master)](https://travis-ci.com/fireblade-engine/ecs)
-[![version 0.6.0](https://img.shields.io/badge/version-0.6.0-brightgreen.svg)](releases/tag/v0.6.0)
+[![version 0.7.0](https://img.shields.io/badge/version-0.7.0-brightgreen.svg)](releases/tag/v0.7.0)
 [![license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
-[![swift version](https://img.shields.io/badge/swift-4.2-brightgreen.svg)](#)
+[![swift version](https://img.shields.io/badge/swift-5.0-brightgreen.svg)](#)
 [![platforms](https://img.shields.io/badge/platforms-%20macOS%20|%20iOS%20|%20tvOS%20|%20watchOS%20|%20linux%20-brightgreen.svg)](#)
 
 This is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component-System](https://en.wikipedia.org/wiki/Entity–component–system) implementation in Swift. It is developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
@@ -21,19 +21,19 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Installing
 
-Fireblade ECS is available for all platforms that support [Swift 4.2](https://swift.org/) and higher and the [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager).
+Fireblade ECS is available for all platforms that support [Swift 5.0](https://swift.org/) and higher and the [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager).
 
 Extend the following lines in your `Package.swift` file or use it to create a new project.
 
 ```swift
-// swift-tools-version:4.2
+// swift-tools-version:5.0
 
 import PackageDescription
 
 let package = Package(
     name: "YourPackageName",
     dependencies: [
-        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.6.0")
+        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.7.0")
     ],
     targets: [
         .target(

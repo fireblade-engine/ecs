@@ -29,6 +29,7 @@
 .fseventsd
 .LSOverride
 .Spotlight-V100
+.swiftpm/
 .TemporaryItems
 .Trashes
 .VolumeIcon.icns

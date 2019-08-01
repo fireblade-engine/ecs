@@ -10,6 +10,7 @@
 import FirebladeECS
 import XCTest
 
+
 class AccessTests: XCTestCase {
 
     func testReadOnly() {

@@ -26,7 +26,8 @@ extension Nexus {
 
     final func update(familyMembership entityId: EntityIdentifier) {
         // FIXME: iterating all families is costly for many families
-        for (traits, _) in familyMembersByTraits {
+        var iter = familyMembersByTraits.keys.makeIterator()
+        while let traits = iter.next() {
             update(membership: traits, for: entityId)
         }
     }

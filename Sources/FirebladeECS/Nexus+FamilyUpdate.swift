@@ -48,12 +48,12 @@ extension Nexus {
         switch (isMatch, isMember) {
         case (true, false):
             add(entityWithId: entityId, toFamilyWithTraits: traits)
-            notify(FamilyMemberAdded(member: entityId, toFamily: traits))
+            delegate?.nexusEventOccurred(FamilyMemberAdded(member: entityId, toFamily: traits))
             return
 
         case (false, true):
             remove(entityWithId: entityId, fromFamilyWithTraits: traits)
-            notify(FamilyMemberRemoved(member: entityId, from: traits))
+            delegate?.nexusEventOccurred(FamilyMemberRemoved(member: entityId, from: traits))
             return
 
         default:

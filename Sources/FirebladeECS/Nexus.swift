@@ -74,17 +74,6 @@ extension Nexus: Equatable {
     }
 }
 
-// MARK: - nexus delegate
-extension Nexus {
-    internal func notify(_ event: ECSEvent) {
-        delegate?.nexusEventOccurred(event)
-    }
-
-    internal func report(_ message: String) {
-        delegate?.nexusRecoverableErrorOccurred(message)
-    }
-}
-
 // MARK: - CustomDebugStringConvertible
 extension Nexus: CustomDebugStringConvertible {
     public var debugDescription: String {

@@ -19,7 +19,7 @@ public protocol TypedFamilyProtocol: Equatable, Sequence {
     var count: Int { get }
     var isEmpty: Bool { get }
 
-    var memberIds: UniformEntityIdentifiers { get }
+    var memberIds: UnorderedSparseSet<EntityIdentifier> { get }
     var entities: FamilyEntities { get }
     var entityAndComponents: EntityComponentsSequence { get }
 
@@ -38,7 +38,7 @@ public extension TypedFamilyProtocol {
         return nexus.isMember(entity, in: traits)
     }
 
-    @inlinable var memberIds: UniformEntityIdentifiers {
+    @inlinable var memberIds: UnorderedSparseSet<EntityIdentifier> {
         return nexus.members(withFamilyTraits: traits)
     }
 
@@ -79,7 +79,7 @@ public struct FamilyEntities: LazySequenceProtocol, IteratorProtocol {
     public let nexus: Nexus
     public var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier>
 
-    public init(_ nexus: Nexus, _ memberIds: UniformEntityIdentifiers) {
+    public init(_ nexus: Nexus, _ memberIds: UnorderedSparseSet<EntityIdentifier>) {
         self.nexus = nexus
         memberIdsIterator = memberIds.makeIterator()
     }

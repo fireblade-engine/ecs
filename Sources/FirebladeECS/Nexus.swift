@@ -10,24 +10,23 @@ public class Nexus {
 
     /// - Index: index value matching entity identifier shifted to Int
     /// - Value: each element is a entity instance
-    @usableFromInline internal var entityStorage: Entities
+    @usableFromInline var entityStorage: UnorderedSparseSet<Entity>
 
     /// - Key: component type identifier
     /// - Value: each element is a component instance of the same type (uniform). New component instances are appended.
-    @usableFromInline internal var componentsByType: [ComponentIdentifier: UniformComponents]
+    @usableFromInline internal var componentsByType: [ComponentIdentifier: ManagedContiguousArray<Component>]
 
     /// - Key: entity id as index
     /// - Value: each element is a component identifier associated with this entity
-    @usableFromInline internal var componentIdsByEntity: [EntityIdentifier: ComponentSet]
+    @usableFromInline internal var componentIdsByEntity: [EntityIdentifier: Set<ComponentIdentifier>]
 
     /// - Values: entity ids that are currently not used
     @usableFromInline internal var freeEntities: ContiguousArray<EntityIdentifier>
 
-    //var familiesByTraitHash: [FamilyTraitSetHash: Family]
-    @usableFromInline internal var familyMembersByTraits: [FamilyTraitSet: UniformEntityIdentifiers]
+    @usableFromInline internal var familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier>]
 
     public init() {
-        entityStorage = Entities()
+        entityStorage = UnorderedSparseSet<Entity>()
         componentsByType = [:]
         componentIdsByEntity = [:]
         freeEntities = ContiguousArray<EntityIdentifier>()

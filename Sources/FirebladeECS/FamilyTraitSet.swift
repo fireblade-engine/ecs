@@ -6,14 +6,14 @@
 //
 
 public struct FamilyTraitSet {
-    public let requiresAll: ComponentSet
-    public let excludesAll: ComponentSet
+    public let requiresAll: Set<ComponentIdentifier>
+    public let excludesAll: Set<ComponentIdentifier>
 
     public let setHash: Int
 
     public init(requiresAll: [Component.Type], excludesAll: [Component.Type]) {
-        let requiresAll = ComponentSet(requiresAll.map { $0.identifier })
-        let excludesAll = ComponentSet(excludesAll.map { $0.identifier })
+        let requiresAll = Set<ComponentIdentifier>(requiresAll.map { $0.identifier })
+        let excludesAll = Set<ComponentIdentifier>(excludesAll.map { $0.identifier })
 
         let valid: Bool = FamilyTraitSet.isValid(requiresAll: requiresAll, excludesAll: excludesAll)
         precondition(valid, "invalid family trait created - requiresAll: \(requiresAll), excludesAll: \(excludesAll)")
@@ -25,23 +25,23 @@ public struct FamilyTraitSet {
 
     // MARK: - match
     @inlinable
-    public func isMatch(components: ComponentSet) -> Bool {
+    public func isMatch(components: Set<ComponentIdentifier>) -> Bool {
         return hasAll(components) && hasNone(components)
     }
 
     @inlinable
-    public func hasAll(_ components: ComponentSet) -> Bool {
+    public func hasAll(_ components: Set<ComponentIdentifier>) -> Bool {
         return requiresAll.isSubset(of: components)
     }
 
     @inlinable
-    public func hasNone(_ components: ComponentSet) -> Bool {
+    public func hasNone(_ components: Set<ComponentIdentifier>) -> Bool {
         return excludesAll.isDisjoint(with: components)
     }
 
     // MARK: - valid
     @inlinable
-    public static func isValid(requiresAll: ComponentSet, excludesAll: ComponentSet) -> Bool {
+    public static func isValid(requiresAll: Set<ComponentIdentifier>, excludesAll: Set<ComponentIdentifier>) -> Bool {
         return !requiresAll.isEmpty &&
             requiresAll.isDisjoint(with: excludesAll)
     }

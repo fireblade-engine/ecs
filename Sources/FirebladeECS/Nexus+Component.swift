@@ -11,7 +11,7 @@ public extension Nexus {
     }
 
     final func has(componentId: ComponentIdentifier, entityId: EntityIdentifier) -> Bool {
-        guard let uniforms: UniformComponents = componentsByType[componentId] else {
+        guard let uniforms = componentsByType[componentId] else {
             return false
         }
         return uniforms.contains(entityId.index)
@@ -34,13 +34,13 @@ public extension Nexus {
 
         // add component instances to uniform component stores
         if componentsByType[componentId] == nil {
-            componentsByType[componentId] = UniformComponents()
+            componentsByType[componentId] = ManagedContiguousArray<Component>()
         }
         componentsByType[componentId]?.insert(component, at: entityId.index)
 
         // assigns the component id to the entity id
         if componentIdsByEntity[entityId] == nil {
-            componentIdsByEntity[entityId] = ComponentSet()
+            componentIdsByEntity[entityId] = Set<ComponentIdentifier>()
         }
         componentIdsByEntity[entityId]?.insert(componentId) //, at: componentId.hashValue)
 
@@ -54,14 +54,14 @@ public extension Nexus {
     }
 
     final func get(component componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
-        guard let uniformComponents: UniformComponents = componentsByType[componentId] else {
+        guard let uniformComponents = componentsByType[componentId] else {
             return nil
         }
         return uniformComponents.get(at: entityId.index)
     }
 
     final func get(unsafeComponent componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component {
-        let uniformComponents: UniformComponents = componentsByType[componentId].unsafelyUnwrapped
+        let uniformComponents = componentsByType[componentId].unsafelyUnwrapped
         return uniformComponents.get(unsafeAt: entityId.index)
     }
 
@@ -76,7 +76,7 @@ public extension Nexus {
         return unsafeDowncast(component, to: C.self)
     }
 
-    final func get(components entityId: EntityIdentifier) -> ComponentSet? {
+    final func get(components entityId: EntityIdentifier) -> Set<ComponentIdentifier>? {
         return componentIdsByEntity[entityId]
     }
 
@@ -110,7 +110,7 @@ public extension Nexus {
 
 private extension Nexus {
     final func get<C>(componentId: ComponentIdentifier, entityId: EntityIdentifier) -> C? where C: Component {
-        guard let uniformComponents: UniformComponents = componentsByType[componentId] else {
+        guard let uniformComponents = componentsByType[componentId] else {
             return nil
         }
         return uniformComponents.get(at: entityId.index) as? C

@@ -12,7 +12,7 @@ extension Nexus {
             return
         }
 
-        familyMembersByTraits[traits] = UniformEntityIdentifiers()
+        familyMembersByTraits[traits] = UnorderedSparseSet<EntityIdentifier>()
         update(familyMembership: traits)
     }
 

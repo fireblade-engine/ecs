@@ -13,6 +13,12 @@ private let kFibA: UInt = 0x9e3779b9 // = 2654435769 aka Fibonacci Hash a value 
 #error("unsupported architecture")
 #endif
 
+/// entity id ^ component identifier hash
+public typealias EntityComponentHash = Int
+
+/// component object identifier hash value
+public typealias ComponentTypeHash = Int
+
 // MARK: - hash combine
 /// Calculates the combined hash of two values. This implementation is based on boost::hash_combine.
 /// Will always produce the same result for the same combination of seed and value during the single run of a program.

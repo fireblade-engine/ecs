@@ -15,7 +15,7 @@ public extension Nexus {
         precondition(family.count <= 1, "Singleton count of \(S.self) must be 0 or 1: \(family.count)")
         let entityId: EntityIdentifier
         if family.isEmpty {
-            entityId = create(entity: "\(S.self)", with: S()).identifier
+            entityId = createEntity(with: S()).identifier
         } else {
             entityId = family.memberIds.first.unsafelyUnwrapped
         }

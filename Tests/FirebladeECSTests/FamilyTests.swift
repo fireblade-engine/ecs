@@ -22,8 +22,8 @@ class FamilyTests: XCTestCase {
         super.tearDown()
     }
     
-    func createDefaultEntity(name: String?) {
-        let e = nexus.create(entity: name)
+    func createDefaultEntity() {
+        let e = nexus.createEntity()
         e.assign(Position(x: 1, y: 2))
         e.assign(Color())
     }
@@ -65,7 +65,7 @@ class FamilyTests: XCTestCase {
         XCTAssertEqual(nexus.numFamilies, 1)
         XCTAssertEqual(nexus.numComponents, 0)
         XCTAssertEqual(nexus.numEntities, 0)
-        let entity = nexus.create(entity: "eimer")
+        let entity = nexus.createEntity()
         XCTAssertFalse(entity.has(Position.self))
         XCTAssertEqual(nexus.numFamilies, 1)
         XCTAssertEqual(nexus.numComponents, 0)
@@ -87,7 +87,7 @@ class FamilyTests: XCTestCase {
     }
     
     func testFamilyLateMember() {
-        let eEarly = nexus.create(entity: "early").assign(Position(x: 1, y: 2))
+        let eEarly = nexus.createEntity(with: Position(x: 1, y: 2))
         XCTAssertEqual(nexus.numFamilies, 0)
         XCTAssertEqual(nexus.numComponents, 1)
         XCTAssertEqual(nexus.numEntities, 1)
@@ -95,7 +95,7 @@ class FamilyTests: XCTestCase {
         XCTAssertEqual(nexus.numFamilies, 1)
         XCTAssertEqual(nexus.numComponents, 1)
         XCTAssertEqual(nexus.numEntities, 1)
-        let eLate = nexus.create(entity: "late").assign(Position(x: 1, y: 2))
+        let eLate = nexus.createEntity(with: Position(x: 1, y: 2))
         XCTAssertEqual(nexus.numFamilies, 1)
         XCTAssertEqual(nexus.numComponents, 2)
         XCTAssertEqual(nexus.numEntities, 2)
@@ -107,7 +107,7 @@ class FamilyTests: XCTestCase {
         let number: Int = 10
         
         for i in 0..<number {
-            nexus.create(entity: "\(i)").assign(Position(x: i + 1, y: i + 2))
+            nexus.createEntity(with: Position(x: i + 1, y: i + 2))
         }
         
         let familyA = nexus.family(requires: Position.self,
@@ -144,8 +144,8 @@ class FamilyTests: XCTestCase {
     func testFamilyMemberBasicIteration() {
         
         for i in 0..<1000 {
-            nexus.create(entity: "\(i)").assign(Position(x: i + 1, y: i + 2))
-            nexus.create(entity: "\(i)").assign(Velocity(a: Float(i)))
+            nexus.createEntity(with: Position(x: i + 1, y: i + 2))
+            nexus.createEntity(with: Velocity(a: Float(i)))
         }
         
         let familyA = nexus.family(requires: Position.self,
@@ -167,7 +167,7 @@ class FamilyTests: XCTestCase {
         let count = 10_000
         
         for _ in 0..<count {
-            createDefaultEntity(name: nil)
+            createDefaultEntity()
         }
         
         let family = nexus.family(requires: Position.self)
@@ -187,7 +187,7 @@ class FamilyTests: XCTestCase {
         XCTAssertEqual(family.memberIds.count, (count / 2))
         
         for _ in 0..<count {
-            createDefaultEntity(name: nil)
+            createDefaultEntity()
         }
         
         XCTAssertEqual(family.memberIds.count, count + (count / 2))

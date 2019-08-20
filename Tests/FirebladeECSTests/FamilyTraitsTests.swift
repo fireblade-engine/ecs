@@ -36,7 +36,7 @@ class FamilyTraitsTests: XCTestCase {
 
     func testTraitMatching() {
 
-        let a = nexus.create(entity: "a")
+        let a = nexus.createEntity()
         a.assign(Position(x: 1, y: 2))
         a.assign(Name(name: "myName"))
         a.assign(Velocity(a: 3.14))

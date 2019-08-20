@@ -58,9 +58,9 @@ class SingleTests: XCTestCase {
     }
     
     func testSingleCreationOnExistingFamilyMember() {
-        _ = nexus.create(entity: "AnotherEntity", with: Position(x: 1, y: 2))
+        _ = nexus.createEntity(with: Position(x: 1, y: 2))
         let singleGame = SingleGameState()
-        _ = nexus.create(entity: "CrashEntity", with: singleGame)
+        _ = nexus.createEntity(with: singleGame)
         let single = nexus.single(SingleGameState.self)
         XCTAssertTrue(singleGame === single.component)
     }

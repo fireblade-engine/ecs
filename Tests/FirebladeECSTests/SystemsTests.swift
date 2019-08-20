@@ -104,15 +104,15 @@ class SystemsTests: XCTestCase {
         XCTAssertEqual(nexus.freeEntities.count, 0)
     }
     
-    func createDefaultEntity(name: String?) {
-        let e = nexus.create(entity: name)
+    func createDefaultEntity() {
+        let e = nexus.createEntity()
         e.assign(Position(x: 1, y: 2))
         e.assign(Color())
     }
     
     func batchCreateEntities(count: Int) {
         for _ in 0..<count {
-            createDefaultEntity(name: nil)
+            createDefaultEntity()
         }
     }
     

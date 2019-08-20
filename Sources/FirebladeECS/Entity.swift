@@ -5,17 +5,19 @@
 //  Created by Christian Treffs on 08.10.17.
 //
 
-public struct Entity: UniqueEntityIdentifiable, Equatable {
-	public internal(set) var identifier = EntityIdentifier.invalid
-	public var name: String?
-	public let nexus: Nexus
+public struct Entity: UniqueEntityIdentifiable {
+    @usableFromInline unowned let nexus: Nexus // FIXME: weak/unowned reference?
 
-    internal init(nexus: Nexus, id: EntityIdentifier, name: String? = nil) {
+    public private(set) var identifier: EntityIdentifier = .invalid
+
+    internal init(nexus: Nexus, id: EntityIdentifier) {
 		self.nexus = nexus
 		self.identifier = id
-		self.name = name
 	}
 }
+
+// MARK: - Equatable
+extension Entity: Equatable { }
 
 // MARK: - number of components
 public extension Entity {

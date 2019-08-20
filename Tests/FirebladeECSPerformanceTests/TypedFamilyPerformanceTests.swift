@@ -18,7 +18,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
         nexus = Nexus()
         
         for i in 0..<numEntities {
-            nexus.create(entity: "\(i)").assign(Position(x: 1 + i, y: 2 + i),
+            nexus.createEntity().assign(Position(x: 1 + i, y: 2 + i),
                                                 Name(name: "myName\(i)"),
                                                 Velocity(a: 3.14),
                                                 EmptyComponent(),
@@ -33,7 +33,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
     
     func testMeasureTraitMatching() {
         
-        let a = nexus.create(entity: "a")
+        let a = nexus.createEntity()
         a.assign(Position(x: 1, y: 2))
         a.assign(Name(name: "myName"))
         a.assign(Velocity(a: 3.14))

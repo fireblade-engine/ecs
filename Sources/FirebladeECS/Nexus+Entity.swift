@@ -13,15 +13,20 @@ extension Nexus {
 		return nextReused.index
 	}
 
-    // swiftlint:disable function_default_parameter_at_end
+    @discardableResult
+    public func createEntity() -> Entity {
+        let newEntityIndex: EntityIndex = nextEntityIdx()
+        let newEntityIdentifier: EntityIdentifier = newEntityIndex.identifier
+        let newEntity = Entity(nexus: self, id: newEntityIdentifier)
+        entityStorage.insert(newEntity, at: newEntityIndex)
+        notify(EntityCreated(entityId: newEntityIdentifier))
+        return newEntity
+    }
+
 	@discardableResult
-    public func create(entity name: String? = nil, with assignedComponents: Component...) -> Entity {
-		let newEntityIndex: EntityIndex = nextEntityIdx()
-		let newEntityIdentifier: EntityIdentifier = newEntityIndex.identifier
-        let newEntity = Entity(nexus: self, id: newEntityIdentifier, name: name)
-		entityStorage.insert(newEntity, at: newEntityIndex)
-		notify(EntityCreated(entityId: newEntityIdentifier))
-        assignedComponents.forEach { newEntity.assign($0) }
+    public func createEntity(with components: Component...) -> Entity {
+		let newEntity = createEntity()
+        components.forEach { newEntity.assign($0) }
         return newEntity
     }
     // swiftlint:enable function_default_parameter_at_end

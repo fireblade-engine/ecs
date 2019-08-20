@@ -5,13 +5,8 @@
 //  Created by Christian Treffs on 09.10.17.
 //
 
-public protocol NexusDelegate: class {
-    func nexusEventOccurred(_ event: ECSEvent)
-    func nexusRecoverableErrorOccurred(_ message: String)
-}
-
-public class Nexus: Equatable {
-    public weak var delegate: NexusDelegate?
+public class Nexus {
+    public weak var delegate: NexusEventDelegate?
 
     /// - Index: index value matching entity identifier shifted to Int
     /// - Value: each element is a entity instance
@@ -62,8 +57,10 @@ public class Nexus: Equatable {
     deinit {
         clear()
     }
+}
 
-    // MARK: Equatable
+// MARK: - Equatable
+extension Nexus: Equatable {
     public static func == (lhs: Nexus, rhs: Nexus) -> Bool {
         return lhs.entityStorage == rhs.entityStorage &&
             lhs.componentIdsByEntity == rhs.componentIdsByEntity &&

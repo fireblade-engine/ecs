@@ -5,25 +5,29 @@
 //  Created by Christian Treffs on 09.10.17.
 //
 
-public class Nexus {
-    public weak var delegate: NexusEventDelegate?
+public final class Nexus {
+    public final weak var delegate: NexusEventDelegate?
 
-    /// - Index: index value matching entity identifier shifted to Int
-    /// - Value: each element is a entity instance
-    @usableFromInline var entityStorage: UnorderedSparseSet<Entity>
+    /// Main entity storage.
+    /// Entities are tightly packed by EntityIdentifier.
+    @usableFromInline final var entityStorage: UnorderedSparseSet<Entity>
 
-    /// - Key: component type identifier
-    /// - Value: each element is a component instance of the same type (uniform). New component instances are appended.
-    @usableFromInline internal var componentsByType: [ComponentIdentifier: ManagedContiguousArray<Component>]
+    /// - Key: ComponentIdentifier aka component type.
+    /// - Value: Array of component instances of same type (uniform).
+    ///          New component instances are appended.
+    @usableFromInline final var componentsByType: [ComponentIdentifier: ManagedContiguousArray<Component>]
 
-    /// - Key: entity id as index
-    /// - Value: each element is a component identifier associated with this entity
-    @usableFromInline internal var componentIdsByEntity: [EntityIdentifier: Set<ComponentIdentifier>]
+    /// - Key: EntityIdentifier aka entity index
+    /// - Value: Set of unique component types (ComponentIdentifier).
+    ///          Each element is a component identifier associated with this entity.
+    @usableFromInline final var componentIdsByEntity: [EntityIdentifier: Set<ComponentIdentifier>]
 
-    /// - Values: entity ids that are currently not used
-    @usableFromInline internal var freeEntities: ContiguousArray<EntityIdentifier>
+    /// Entity ids that are currently not used.
+    @usableFromInline final var freeEntities: ContiguousArray<EntityIdentifier>
 
-    @usableFromInline internal var familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier>]
+    /// - Key: FamilyTraitSet aka component types that make up one distinct family.
+    /// - Value: Tightly packed EntityIdentifiers that represent the association of an entity to the family.
+    @usableFromInline final var familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier>]
 
     public init() {
         entityStorage = UnorderedSparseSet<Entity>()
@@ -60,7 +64,7 @@ public class Nexus {
 
 // MARK: - Equatable
 extension Nexus: Equatable {
-    public static func == (lhs: Nexus, rhs: Nexus) -> Bool {
+    @inlinable public static func == (lhs: Nexus, rhs: Nexus) -> Bool {
         return lhs.entityStorage == rhs.entityStorage &&
             lhs.componentIdsByEntity == rhs.componentIdsByEntity &&
             lhs.freeEntities == rhs.freeEntities &&
@@ -84,6 +88,6 @@ extension Nexus {
 // MARK: - CustomDebugStringConvertible
 extension Nexus: CustomDebugStringConvertible {
     public var debugDescription: String {
-        return "Nexus<Entities:\(numEntities) Components:\(numComponents) Families:\(numFamilies)>"
+        return "<Nexus entities:\(numEntities) components:\(numComponents) families:\(numFamilies)>"
     }
 }

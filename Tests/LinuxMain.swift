@@ -1,4 +1,4 @@
-@testable import FirebladeECSTests
+import FirebladeECSTests
 import XCTest
 
 XCTMain([

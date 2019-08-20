@@ -32,15 +32,14 @@ extension Nexus {
     }
 
     final func update(membership traits: FamilyTraitSet, for entityId: EntityIdentifier) {
-        let entityIdx: EntityIndex = entityId.index
-        guard let componentIds = componentIdsByEntity[entityIdx] else {
+        guard let componentIds = componentIdsByEntity[entityId] else {
             // no components - so skip
             return
         }
 
         let isMember: Bool = self.isMember(entity: entityId, inFamilyWithTraits: traits)
         if !exists(entity: entityId) && isMember {
-            remove(entityWithId: entityId, andIndex: entityIdx, fromFamilyWithTraits: traits)
+            remove(entityWithId: entityId, fromFamilyWithTraits: traits)
             return
         }
 
@@ -48,12 +47,12 @@ extension Nexus {
 
         switch (isMatch, isMember) {
         case (true, false):
-            add(entityWithId: entityId, andIndex: entityIdx, toFamilyWithTraits: traits)
+            add(entityWithId: entityId, toFamilyWithTraits: traits)
             notify(FamilyMemberAdded(member: entityId, toFamily: traits))
             return
 
         case (false, true):
-            remove(entityWithId: entityId, andIndex: entityIdx, fromFamilyWithTraits: traits)
+            remove(entityWithId: entityId, fromFamilyWithTraits: traits)
             notify(FamilyMemberRemoved(member: entityId, from: traits))
             return
 
@@ -62,13 +61,13 @@ extension Nexus {
         }
     }
 
-    final func add(entityWithId entityId: EntityIdentifier, andIndex entityIdx: EntityIndex, toFamilyWithTraits traits: FamilyTraitSet) {
+    final func add(entityWithId entityId: EntityIdentifier, toFamilyWithTraits traits: FamilyTraitSet) {
         precondition(familyMembersByTraits[traits] != nil)
-        familyMembersByTraits[traits].unsafelyUnwrapped.insert(entityId, at: entityIdx)
+        familyMembersByTraits[traits].unsafelyUnwrapped.insert(entityId, at: entityId.index)
     }
 
-    final func remove(entityWithId entityId: EntityIdentifier, andIndex entityIdx: EntityIndex, fromFamilyWithTraits traits: FamilyTraitSet) {
+    final func remove(entityWithId entityId: EntityIdentifier, fromFamilyWithTraits traits: FamilyTraitSet) {
         precondition(familyMembersByTraits[traits] != nil)
-        familyMembersByTraits[traits].unsafelyUnwrapped.remove(at: entityIdx)
+        familyMembersByTraits[traits].unsafelyUnwrapped.remove(at: entityId.index)
     }
 }

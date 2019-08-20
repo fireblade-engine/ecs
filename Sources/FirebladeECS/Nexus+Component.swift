@@ -10,26 +10,25 @@ public extension Nexus {
         return componentsByType.reduce(0) { $0 + $1.value.count }
     }
 
-    final func has(componentId: ComponentIdentifier, entityIdx: EntityIndex) -> Bool {
+    final func has(componentId: ComponentIdentifier, entityId: EntityIdentifier) -> Bool {
         guard let uniforms: UniformComponents = componentsByType[componentId] else {
             return false
         }
-        return uniforms.contains(entityIdx)
+        return uniforms.contains(entityId.index)
     }
 
     final func count(components entityId: EntityIdentifier) -> Int {
-        return componentIdsByEntity[entityId.index]?.count ?? 0
+        return componentIdsByEntity[entityId]?.count ?? 0
     }
 
     final func assign(component: Component, to entity: Entity) {
         let componentId: ComponentIdentifier = component.identifier
-        let entityIdx: EntityIndex = entity.identifier.index
         let entityId: EntityIdentifier = entity.identifier
 
         /// test if component is already assigned
-        guard !has(componentId: componentId, entityIdx: entityIdx) else {
-            report("ComponentAdd collision: \(entityIdx) already has a component \(component)")
-            assertionFailure("ComponentAdd collision: \(entityIdx) already has a component \(component)")
+        guard !has(componentId: componentId, entityId: entityId) else {
+            report("ComponentAdd collision: \(entityId) already has a component \(component)")
+            assertionFailure("ComponentAdd collision: \(entityId) already has a component \(component)")
             return
         }
 
@@ -37,13 +36,13 @@ public extension Nexus {
         if componentsByType[componentId] == nil {
             componentsByType[componentId] = UniformComponents()
         }
-        componentsByType[componentId]?.insert(component, at: entityIdx)
+        componentsByType[componentId]?.insert(component, at: entityId.index)
 
         // assigns the component id to the entity id
-        if componentIdsByEntity[entityIdx] == nil {
-            componentIdsByEntity[entityIdx] = ComponentSet()
+        if componentIdsByEntity[entityId] == nil {
+            componentIdsByEntity[entityId] = ComponentSet()
         }
-        componentIdsByEntity[entityIdx]?.insert(componentId) //, at: componentId.hashValue)
+        componentIdsByEntity[entityId]?.insert(componentId) //, at: componentId.hashValue)
 
         update(familyMembership: entityId)
 
@@ -68,7 +67,7 @@ public extension Nexus {
 
     final func get<C>(for entityId: EntityIdentifier) -> C? where C: Component {
         let componentId: ComponentIdentifier = C.identifier
-        return get(componentId: componentId, entityIdx: entityId.index)
+        return get(componentId: componentId, entityId: entityId)
     }
 
     final func get<C>(unsafeComponentFor entityId: EntityIdentifier) -> C where C: Component {
@@ -78,17 +77,15 @@ public extension Nexus {
     }
 
     final func get(components entityId: EntityIdentifier) -> ComponentSet? {
-        return componentIdsByEntity[entityId.index]
+        return componentIdsByEntity[entityId]
     }
 
     @discardableResult
     final func remove(component componentId: ComponentIdentifier, from entityId: EntityIdentifier) -> Bool {
-        let entityIdx: EntityIndex = entityId.index
-
         // delete component instance
-        componentsByType[componentId]?.remove(at: entityIdx)
+        componentsByType[componentId]?.remove(at: entityId.index)
         // unasign component from entity
-        componentIdsByEntity[entityIdx]?.remove(componentId) //.hashValue)
+        componentIdsByEntity[entityId]?.remove(componentId)
 
         update(familyMembership: entityId)
 
@@ -112,10 +109,10 @@ public extension Nexus {
 }
 
 private extension Nexus {
-    final func get<C>(componentId: ComponentIdentifier, entityIdx: EntityIndex) -> C? where C: Component {
+    final func get<C>(componentId: ComponentIdentifier, entityId: EntityIdentifier) -> C? where C: Component {
         guard let uniformComponents: UniformComponents = componentsByType[componentId] else {
             return nil
         }
-        return uniformComponents.get(at: entityIdx) as? C
+        return uniformComponents.get(at: entityId.index) as? C
     }
 }

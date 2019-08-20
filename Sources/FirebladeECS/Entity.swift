@@ -11,7 +11,7 @@
 ///  It only consists of a unique id (EntityIdentifier).
 ///  Components can be assigned to an entity to give it behavior or functionality.
 ///  An entity creates the relationship between all it's assigned components.
-public struct Entity: UniqueEntityIdentifiable {
+public struct Entity {
     @usableFromInline unowned let nexus: Nexus
 
     /// The unique entity identifier.
@@ -36,7 +36,7 @@ public struct Entity: UniqueEntityIdentifiable {
     /// Checks if a component with a given component identifier is assigned to this entity.
     /// - Parameter compId: the component identifier.
     public func has(_ compId: ComponentIdentifier) -> Bool {
-        return nexus.has(componentId: compId, entityIdx: identifier.index)
+        return nexus.has(componentId: compId, entityId: identifier)
     }
 
     /// Checks if this entity has any components.

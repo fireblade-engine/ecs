@@ -27,13 +27,14 @@ class HashingTests: XCTestCase {
         
         var hashSet: Set<Int> = Set<Int>()
         
-        var range: CountableRange<EntityIdentifier> = 0 ..< 1_000_000
+        var range: CountableRange<UInt32> = 0 ..< 1_000_000
         
         let maxComponents: Int = 1000
         let components: [Int] = (0..<maxComponents).map { _ in makeComponent() }
         
         var index: Int = 0
-        while let eId: EntityIdentifier = range.popLast() {
+        while let idx: UInt32 = range.popLast() {
+            let eId = EntityIdentifier(idx)
             
             let entityId: EntityIdentifier = eId
             let c = (index % maxComponents)

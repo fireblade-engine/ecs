@@ -13,11 +13,19 @@ public struct Components3<A, B, C>: ComponentsProviding where A: Component, B: C
         componentTypes = [A.self, B.self, C.self]
     }
 
-    public static func getComponents(nexus: Nexus, entityId: EntityIdentifier) -> (A, B, C) {
+    public static func components(nexus: Nexus, entityId: EntityIdentifier) -> (A, B, C) {
         let compA: A = nexus.get(unsafeComponentFor: entityId)
         let compB: B = nexus.get(unsafeComponentFor: entityId)
         let compC: C = nexus.get(unsafeComponentFor: entityId)
         return (compA, compB, compC)
+    }
+
+    public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, A, B, C) {
+        let entity: Entity = nexus.get(unsafeEntity: entityId)
+        let compA: A = nexus.get(unsafeComponentFor: entityId)
+        let compB: B = nexus.get(unsafeComponentFor: entityId)
+        let compC: C = nexus.get(unsafeComponentFor: entityId)
+        return (entity, compA, compB, compC)
     }
 }
 

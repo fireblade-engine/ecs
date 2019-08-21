@@ -13,12 +13,21 @@ public struct Components4<A, B, C, D>: ComponentsProviding where A: Component, B
         componentTypes = [A.self, B.self, C.self, D.self]
     }
 
-    public static func getComponents(nexus: Nexus, entityId: EntityIdentifier) -> (A, B, C, D) {
+    public static func components(nexus: Nexus, entityId: EntityIdentifier) -> (A, B, C, D) {
         let compA: A = nexus.get(unsafeComponentFor: entityId)
         let compB: B = nexus.get(unsafeComponentFor: entityId)
         let compC: C = nexus.get(unsafeComponentFor: entityId)
         let compD: D = nexus.get(unsafeComponentFor: entityId)
         return (compA, compB, compC, compD)
+    }
+
+    public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, A, B, C, D) {
+        let entity: Entity = nexus.get(unsafeEntity: entityId)
+        let compA: A = nexus.get(unsafeComponentFor: entityId)
+        let compB: B = nexus.get(unsafeComponentFor: entityId)
+        let compC: C = nexus.get(unsafeComponentFor: entityId)
+        let compD: D = nexus.get(unsafeComponentFor: entityId)
+        return (entity, compA, compB, compC, compD)
     }
 }
 

@@ -14,9 +14,15 @@ public struct Components1<A>: ComponentsProviding where A: Component {
         componentTypes = [A.self]
     }
 
-    public static func getComponents(nexus: Nexus, entityId: EntityIdentifier) -> (A) {
+    public static func components(nexus: Nexus, entityId: EntityIdentifier) -> (A) {
         let compA: A = nexus.get(unsafeComponentFor: entityId)
         return (compA)
+    }
+
+    public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, A) {
+        let entity: Entity = nexus.get(unsafeEntity: entityId)
+        let compA: A = nexus.get(unsafeComponentFor: entityId)
+        return (entity, compA)
     }
 }
 

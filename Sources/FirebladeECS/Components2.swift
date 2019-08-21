@@ -13,10 +13,17 @@ public struct Components2<A, B>: ComponentsProviding where A: Component, B: Comp
     public init(_ components: (A.Type, B.Type)) {
         componentTypes = [ A.self, B.self]
     }
-    public static func getComponents(nexus: Nexus, entityId: EntityIdentifier) -> (A, B) {
+    public static func components(nexus: Nexus, entityId: EntityIdentifier) -> (A, B) {
         let compA: A = nexus.get(unsafeComponentFor: entityId)
         let compB: B = nexus.get(unsafeComponentFor: entityId)
         return (compA, compB)
+    }
+
+    public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, A, B) {
+        let entity: Entity = nexus.get(unsafeEntity: entityId)
+        let compA: A = nexus.get(unsafeComponentFor: entityId)
+        let compB: B = nexus.get(unsafeComponentFor: entityId)
+        return (entity, compA, compB)
     }
 }
 

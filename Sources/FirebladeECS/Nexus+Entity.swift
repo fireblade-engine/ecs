@@ -18,7 +18,7 @@ extension Nexus {
         let newEntityIdentifier: EntityIdentifier = nextEntityId()
         let newEntity = Entity(nexus: self, id: newEntityIdentifier)
         entityStorage.insert(newEntity, at: newEntityIdentifier.index)
-        delegate?.nexusEventOccurred(EntityCreated(entityId: newEntityIdentifier))
+        delegate?.nexusEvent(EntityCreated(entityId: newEntityIdentifier))
         return newEntity
     }
 
@@ -51,7 +51,7 @@ extension Nexus {
         let entityId: EntityIdentifier = entity.identifier
 
         guard entityStorage.remove(at: entityId.index) != nil else {
-            delegate?.nexusRecoverableErrorOccurred("EntityRemove failure: no entity \(entityId) to remove")
+            delegate?.nexusNonFatalError("EntityRemove failure: no entity \(entityId) to remove")
             return false
         }
 
@@ -61,7 +61,7 @@ extension Nexus {
 
         freeEntities.append(entityId)
 
-        delegate?.nexusEventOccurred(EntityDestroyed(entityId: entityId))
+        delegate?.nexusEvent(EntityDestroyed(entityId: entityId))
         return true
     }
 }

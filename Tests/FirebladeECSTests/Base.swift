@@ -54,7 +54,7 @@ final class SingleGameState: SingleComponent {
 
 
 class ExampleSystem {
-    private let family: Family<Components2<Position, Velocity>>
+    private let family: Family2<Position, Velocity>
     
     init(nexus: Nexus) {
         family = nexus.family(requiresAll: Position.self, Velocity.self, excludesAll: EmptyComponent.self)
@@ -92,7 +92,7 @@ class ColorSystem {
 }
 
 class PositionSystem {
-    let positions: Family<Components1<Position>>
+    let positions: Family1<Position>
     
     var velocity: Double = 4.0
     

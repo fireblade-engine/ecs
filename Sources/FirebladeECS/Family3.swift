@@ -1,13 +1,13 @@
 //
-//  Components3.swift
+//  Family3.swift
 //  
 //
 //  Created by Christian Treffs on 21.08.19.
 //
 
-public typealias Family3<A: Component, B: Component, C: Component> = Family<Components3<A, B, C>>
+public typealias Family3<A: Component, B: Component, C: Component> = Family<Requires3<A, B, C>>
 
-public struct Components3<A, B, C>: ComponentsProviding where A: Component, B: Component, C: Component {
+public struct Requires3<A, B, C>: FamilyRequirementsManaging where A: Component, B: Component, C: Component {
     public let componentTypes: [Component.Type]
     public init(_ types: (A.Type, B.Type, C.Type)) {
         componentTypes = [A.self, B.self, C.self]

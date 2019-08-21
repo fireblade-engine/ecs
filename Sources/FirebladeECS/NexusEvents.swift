@@ -1,48 +1,48 @@
 //
-//	Events.swift
+//	NexusEvents.swift
 //  FirebladeECS
 //
 //  Created by Christian Treffs on 08.10.17.
 //
 
-public protocol ECSEvent {}
+public protocol NexusEvent {}
 
-public struct EntityCreated: ECSEvent {
+public struct EntityCreated: NexusEvent {
 	public let entityId: EntityIdentifier
 }
 
-public struct EntityDestroyed: ECSEvent {
+public struct EntityDestroyed: NexusEvent {
 	public let entityId: EntityIdentifier
 }
 
-public struct ComponentAdded: ECSEvent {
+public struct ComponentAdded: NexusEvent {
 	public let component: ComponentIdentifier
 	public let toEntity: EntityIdentifier
 }
 
-public struct ComponentUpdated: ECSEvent {
+public struct ComponentUpdated: NexusEvent {
 	public let atEnity: EntityIdentifier
 }
 
-public struct ComponentRemoved: ECSEvent {
+public struct ComponentRemoved: NexusEvent {
 	public let component: ComponentIdentifier
 	public let from: EntityIdentifier
 }
 
-public struct FamilyMemberAdded: ECSEvent {
+public struct FamilyMemberAdded: NexusEvent {
 	public let member: EntityIdentifier
 	public let toFamily: FamilyTraitSet
 }
 
-public struct FamilyMemberRemoved: ECSEvent {
+public struct FamilyMemberRemoved: NexusEvent {
 	public let member: EntityIdentifier
 	public let from: FamilyTraitSet
 }
 
-public struct FamilyCreated: ECSEvent {
+public struct FamilyCreated: NexusEvent {
 	public let family: FamilyTraitSet
 }
 
-public struct FamilyDestroyed: ECSEvent {
+public struct FamilyDestroyed: NexusEvent {
 	public let family: FamilyTraitSet
 }

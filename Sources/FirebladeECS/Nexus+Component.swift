@@ -27,7 +27,7 @@ public extension Nexus {
 
         /// test if component is already assigned
         guard !has(componentId: componentId, entityId: entityId) else {
-            delegate?.nexusRecoverableErrorOccurred("ComponentAdd collision: \(entityId) already has a component \(component)")
+            delegate?.nexusNonFatalError("ComponentAdd collision: \(entityId) already has a component \(component)")
             assertionFailure("ComponentAdd collision: \(entityId) already has a component \(component)")
             return
         }
@@ -46,37 +46,37 @@ public extension Nexus {
 
         update(familyMembership: entityId)
 
-        delegate?.nexusEventOccurred(ComponentAdded(component: componentId, toEntity: entity.identifier))
+        delegate?.nexusEvent(ComponentAdded(component: componentId, toEntity: entity.identifier))
     }
 
     final func assign<C>(component: C, to entity: Entity) where C: Component {
         assign(component: component, to: entity)
     }
 
-    final func get(component componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
+    @inlinable final func get(component componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
         guard let uniformComponents = componentsByType[componentId] else {
             return nil
         }
         return uniformComponents.get(at: entityId.index)
     }
 
-    final func get(unsafeComponent componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component {
+    @inlinable final func get(unsafeComponent componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component {
         let uniformComponents = componentsByType[componentId].unsafelyUnwrapped
         return uniformComponents.get(unsafeAt: entityId.index)
     }
 
-    final func get<C>(for entityId: EntityIdentifier) -> C? where C: Component {
+    @inlinable final func get<C>(for entityId: EntityIdentifier) -> C? where C: Component {
         let componentId: ComponentIdentifier = C.identifier
         return get(componentId: componentId, entityId: entityId)
     }
 
-    final func get<C>(unsafeComponentFor entityId: EntityIdentifier) -> C where C: Component {
+    @inlinable final func get<C>(unsafeComponentFor entityId: EntityIdentifier) -> C where C: Component {
         let component: Component = get(unsafeComponent: C.identifier, for: entityId)
         /// components are guaranteed to be reference tyes so unsafeDowncast is applicable here
         return unsafeDowncast(component, to: C.self)
     }
 
-    final func get(components entityId: EntityIdentifier) -> Set<ComponentIdentifier>? {
+    @inlinable final func get(components entityId: EntityIdentifier) -> Set<ComponentIdentifier>? {
         return componentIdsByEntity[entityId]
     }
 
@@ -89,14 +89,14 @@ public extension Nexus {
 
         update(familyMembership: entityId)
 
-        delegate?.nexusEventOccurred(ComponentRemoved(component: componentId, from: entityId))
+        delegate?.nexusEvent(ComponentRemoved(component: componentId, from: entityId))
         return true
     }
 
     @discardableResult
     final func removeAll(componentes entityId: EntityIdentifier) -> Bool {
         guard let allComponents = get(components: entityId) else {
-            delegate?.nexusRecoverableErrorOccurred("clearing components form entity \(entityId) with no components")
+            delegate?.nexusNonFatalError("clearing components form entity \(entityId) with no components")
             return false
         }
         var iter = allComponents.makeIterator()
@@ -108,8 +108,8 @@ public extension Nexus {
     }
 }
 
-private extension Nexus {
-    final func get<C>(componentId: ComponentIdentifier, entityId: EntityIdentifier) -> C? where C: Component {
+extension Nexus {
+    @inlinable final func get<C>(componentId: ComponentIdentifier, entityId: EntityIdentifier) -> C? where C: Component {
         guard let uniformComponents = componentsByType[componentId] else {
             return nil
         }

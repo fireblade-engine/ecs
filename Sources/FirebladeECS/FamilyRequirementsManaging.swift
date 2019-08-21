@@ -1,11 +1,11 @@
 //
-//  ComponentsProviding.swift
+//  FamilyRequirementsManaging.swift
 //  
 //
 //  Created by Christian Treffs on 21.08.19.
 //
 
-public protocol ComponentsProviding {
+public protocol FamilyRequirementsManaging {
     associatedtype Components
     associatedtype ComponentTypes
     associatedtype EntityAndComponents

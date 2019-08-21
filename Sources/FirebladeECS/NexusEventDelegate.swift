@@ -6,6 +6,6 @@
 //
 
 public protocol NexusEventDelegate: class {
-    func nexusEventOccurred(_ event: ECSEvent)
-    func nexusRecoverableErrorOccurred(_ message: String)
+    func nexusEvent(_ event: NexusEvent)
+    func nexusNonFatalError(_ message: String)
 }

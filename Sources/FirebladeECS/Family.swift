@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 21.08.19.
 //
 
-public struct Family<R> where R: ComponentsProviding {
+public struct Family<R> where R: FamilyRequirementsManaging {
     @usableFromInline unowned let nexus: Nexus
     public let traits: FamilyTraitSet
 

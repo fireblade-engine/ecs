@@ -1,13 +1,13 @@
 //
-//  Components2.swift
+//  Family2.swift
 //  
 //
 //  Created by Christian Treffs on 21.08.19.
 //
 
-public typealias Family2<A: Component, B: Component> = Family<Components2<A, B>>
+public typealias Family2<A: Component, B: Component> = Family<Requires2<A, B>>
 
-public struct Components2<A, B>: ComponentsProviding where A: Component, B: Component {
+public struct Requires2<A, B>: FamilyRequirementsManaging where A: Component, B: Component {
     public let componentTypes: [Component.Type]
 
     public init(_ components: (A.Type, B.Type)) {

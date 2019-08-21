@@ -1,13 +1,13 @@
 //
-//  Components4.swift
+//  Family4.swift
 //  
 //
 //  Created by Christian Treffs on 21.08.19.
 //
 
-public typealias Family4<A: Component, B: Component, C: Component, D: Component> = Family<Components4<A, B, C, D>>
+public typealias Family4<A: Component, B: Component, C: Component, D: Component> = Family<Requires4<A, B, C, D>>
 
-public struct Components4<A, B, C, D>: ComponentsProviding where A: Component, B: Component, C: Component, D: Component {
+public struct Requires4<A, B, C, D>: FamilyRequirementsManaging where A: Component, B: Component, C: Component, D: Component {
     public let componentTypes: [Component.Type]
     public init(_ types: (A.Type, B.Type, C.Type, D.Type)) {
         componentTypes = [A.self, B.self, C.self, D.self]

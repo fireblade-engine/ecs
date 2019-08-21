@@ -5,7 +5,7 @@ github_url: "https://github.com/fireblade-engine/ecs"
 hide_documentation_coverage: false
 min_acl: "public"
 module: "FirebladeECS"
-module_version: 0.4.2
+module_version: 0.9.0
 output: "docs"
 readme: "README.md"
 skip_undocumented: false

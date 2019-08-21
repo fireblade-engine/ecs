@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 28.10.17.
 //
 
-public class ManagedContiguousArray<Element>: UniformStorage {
+public class ManagedContiguousArray<Element> {
     public typealias Index = Int
     private let chunkSize: Int
     private var size: Int = 0
@@ -85,7 +85,7 @@ public class ManagedContiguousArray<Element>: UniformStorage {
 }
 
 // MARK: - Equatable
-extension ManagedContiguousArray: Equatable where ManagedContiguousArray.Element: Equatable {
+extension ManagedContiguousArray: Equatable where Element: Equatable {
     public static func == (lhs: ManagedContiguousArray<Element>, rhs: ManagedContiguousArray<Element>) -> Bool {
         return lhs.store == rhs.store
     }

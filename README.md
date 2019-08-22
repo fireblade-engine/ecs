@@ -1,6 +1,6 @@
 # Fireblade ECS (Entity-Component-System)
 [![Build Status](https://travis-ci.com/fireblade-engine/ecs.svg?branch=master)](https://travis-ci.com/fireblade-engine/ecs)
-[![version 0.9.0](https://img.shields.io/badge/version-0.9.0-brightgreen.svg)](releases/tag/v0.9.0)
+[![version 0.9.1](https://img.shields.io/badge/version-0.9.1-brightgreen.svg)](releases/tag/v0.9.1)
 [![license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 [![swift version](https://img.shields.io/badge/swift-5.0-brightgreen.svg)](#)
 [![platforms](https://img.shields.io/badge/platforms-%20macOS%20|%20iOS%20|%20tvOS%20|%20watchOS%20|%20linux%20-brightgreen.svg)](#)
@@ -17,7 +17,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 * [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager)
 * [Swiftlint](https://github.com/realm/SwiftLint) for linting - (optional)
-* [Jazzy](https://github.com/realm/jazzy) for documentation - (optional)
+* [SwiftEnv](https://swiftenv.fuller.li/) for Swift version management - (optional)
 
 ### 💻 Installing
 
@@ -33,7 +33,7 @@ import PackageDescription
 let package = Package(
     name: "YourPackageName",
     dependencies: [
-        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.9.0")
+        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.9.1")
     ],
     targets: [
         .target(

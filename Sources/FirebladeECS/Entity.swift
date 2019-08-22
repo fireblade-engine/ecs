@@ -104,4 +104,9 @@ public struct Entity {
 }
 
 // MARK: - Equatable
-extension Entity: Equatable { }
+extension Entity: Equatable {
+    public static func == (lhs: Entity, rhs: Entity) -> Bool {
+        return lhs.nexus == rhs.nexus &&
+               lhs.identifier == rhs.identifier
+    }
+}

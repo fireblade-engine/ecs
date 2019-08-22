@@ -1,6 +1,10 @@
-import FirebladeECSTests
 import XCTest
 
-XCTMain([
-    testCase(FirebladeECSTests.allTests)
-])
+import FirebladeECSPerformanceTests
+import FirebladeECSTests
+
+var tests = [XCTestCaseEntry]()
+tests += FirebladeECSPerformanceTests.__allTests()
+tests += FirebladeECSTests.__allTests()
+
+XCTMain(tests)

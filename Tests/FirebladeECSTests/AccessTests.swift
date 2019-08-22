@@ -10,7 +10,7 @@
 import FirebladeECS
 import XCTest
 
-
+#if swift(>=5.1)
 class AccessTests: XCTestCase {
 
     func testReadOnly() {
@@ -42,3 +42,4 @@ class AccessTests: XCTestCase {
 
     }
 }
+#endif

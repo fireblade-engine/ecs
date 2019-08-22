@@ -19,6 +19,8 @@ build_project:
 
 test_project:
   stage: test
+  variables:
+    GIT_DEPTH: "50"
   script:
     - swift package reset
     - swift test

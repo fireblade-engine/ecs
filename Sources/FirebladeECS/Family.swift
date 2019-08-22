@@ -124,4 +124,9 @@ extension Family {
 extension Family.EntityComponentIterator: LazySequenceProtocol { }
 
 // MARK: - Equatable
-extension Family: Equatable { }
+extension Family: Equatable {
+    public static func == (lhs: Family<R>, rhs: Family<R>) -> Bool {
+        return lhs.nexus == rhs.nexus &&
+               lhs.traits == rhs.traits
+    }
+}

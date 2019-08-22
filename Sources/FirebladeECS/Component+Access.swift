@@ -5,6 +5,7 @@
 //  Created by Christian Treffs on 25.06.19.
 //
 
+#if swift(>=5.1)
 @dynamicMemberLookup
 public struct ReadableOnly<Comp> where Comp: Component {
     @usableFromInline let component: Comp
@@ -31,3 +32,4 @@ public struct Writable<Comp> where Comp: Component {
         nonmutating set { component[keyPath: keyPath] = newValue }
     }
 }
+#endif

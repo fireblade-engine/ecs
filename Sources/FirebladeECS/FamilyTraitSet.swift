@@ -15,8 +15,8 @@ public struct FamilyTraitSet {
         let requiresAll = Set<ComponentIdentifier>(requiresAll.map { $0.identifier })
         let excludesAll = Set<ComponentIdentifier>(excludesAll.map { $0.identifier })
 
-        let valid: Bool = FamilyTraitSet.isValid(requiresAll: requiresAll, excludesAll: excludesAll)
-        precondition(valid, "invalid family trait created - requiresAll: \(requiresAll), excludesAll: \(excludesAll)")
+        precondition(FamilyTraitSet.isValid(requiresAll: requiresAll, excludesAll: excludesAll),
+                     "invalid family trait created - requiresAll: \(requiresAll), excludesAll: \(excludesAll)")
 
         self.requiresAll = requiresAll
         self.excludesAll = excludesAll

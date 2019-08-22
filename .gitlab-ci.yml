@@ -1,0 +1,28 @@
+image: swift:5.0
+
+#before_script:
+  #- eval "$(curl -sL https://swiftenv.fuller.li/install.sh)"
+
+stages: 
+  - test
+  - build_release
+  
+build_project:
+  stage: build_release
+  script:
+    - swift package reset
+    - swift build -c release
+  tags:
+    - docker
+  only:
+    - master
+
+test_project:
+  stage: test
+  variables:
+    GIT_DEPTH: "50"
+  script:
+    - swift package reset
+    - swift test
+  tags:
+    - docker

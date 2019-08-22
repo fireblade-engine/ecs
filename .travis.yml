@@ -1,19 +1,20 @@
-language: swift
-matrix: 
-  include: 
-    - 
-      name: "Xcode 11"
+matrix:
+  include:
+    - name: "Xcode 11"
       os: osx
       osx_image: xcode11
-    - 
+      language: swift
+    
+    - name: "Linux Swift 5.0"
+      os: linux
       dist: trusty
+      sudo: required
+      language: swift
       env: 
         - SWIFT_VERSION=5.0
-      install: 
-        - "eval \"$(curl -sL https://swiftenv.fuller.li/install.sh)\""
-      name: "Linux Swift 5.0"
-      os: linux
-      sudo: required
-script: 
-  - "swift package reset"
-  - "swift test"
+      install:
+        - eval "$(curl -sL https://swiftenv.fuller.li/install.sh)"
+
+script:
+  - swift package reset
+  - swift test

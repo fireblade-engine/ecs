@@ -12,12 +12,13 @@ class HashingTests: XCTestCase {
     
     func makeComponent() -> Int {
         let upperBound: Int = 44
-        let high = UInt(arc4random()) << UInt(upperBound)
-        let low = UInt(arc4random())
-        assert(high.leadingZeroBitCount < 64 - upperBound)
-        assert(high.trailingZeroBitCount >= upperBound)
-        assert(low.leadingZeroBitCount >= 32)
-        assert(low.trailingZeroBitCount <= 32)
+        let range = UInt32.min...UInt32.max
+        let high = UInt(UInt32.random(in: range)) << UInt(upperBound)
+        let low = UInt(UInt32.random(in: range))
+        XCTAssertTrue(high.leadingZeroBitCount < 64 - upperBound)
+        XCTAssertTrue(high.trailingZeroBitCount >= upperBound)
+        XCTAssertTrue(low.leadingZeroBitCount >= 32)
+        XCTAssertTrue(low.trailingZeroBitCount <= 32)
         let rand: UInt = high | low
         let cH = Int(bitPattern: rand)
         return cH

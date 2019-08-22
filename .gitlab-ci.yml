@@ -13,7 +13,6 @@ build_project:
     - swift package reset
     - swift build
   tags:
-    - swift
     - docker
 
 test_project:
@@ -22,5 +21,4 @@ test_project:
     - swift package reset
     - swift test
   tags:
-    - swift
     - docker

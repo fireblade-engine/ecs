@@ -1,6 +1,6 @@
 //
 //  Family4.swift
-//  
+//
 //
 //  Created by Christian Treffs on 21.08.19.
 //
@@ -38,7 +38,7 @@ extension Nexus {
         _ componentC: C.Type,
         _ componentD: D.Type,
         excludesAll excludedComponents: Component.Type...
-        ) -> Family4<A, B, C, D> where A: Component, B: Component, C: Component, D: Component {
+    ) -> Family4<A, B, C, D> where A: Component, B: Component, C: Component, D: Component {
         return Family4(
             nexus: self,
             requiresAll: (componentA, componentB, componentC, componentD),

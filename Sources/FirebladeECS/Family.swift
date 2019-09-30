@@ -1,6 +1,6 @@
 //
 //  Family.swift
-//  
+//
 //
 //  Created by Christian Treffs on 21.08.19.
 //
@@ -127,6 +127,6 @@ extension Family.EntityComponentIterator: LazySequenceProtocol { }
 extension Family: Equatable {
     public static func == (lhs: Family<R>, rhs: Family<R>) -> Bool {
         return lhs.nexus == rhs.nexus &&
-               lhs.traits == rhs.traits
+            lhs.traits == rhs.traits
     }
 }

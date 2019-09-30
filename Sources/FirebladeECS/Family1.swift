@@ -1,6 +1,6 @@
 //
 //  Family1.swift
-//  
+//
 //
 //  Created by Christian Treffs on 21.08.19.
 //
@@ -32,7 +32,7 @@ extension Nexus {
         excludesAll excludedComponents: Component.Type...
     ) -> Family1<A> where A: Component {
         return Family1<A>(nexus: self,
-                         requiresAll: componentA,
-                         excludesAll: excludedComponents)
+                          requiresAll: componentA,
+                          excludesAll: excludedComponents)
     }
 }

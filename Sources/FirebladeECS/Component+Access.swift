@@ -1,6 +1,6 @@
 //
 //  Component+Access.swift
-//  
+//
 //
 //  Created by Christian Treffs on 25.06.19.
 //

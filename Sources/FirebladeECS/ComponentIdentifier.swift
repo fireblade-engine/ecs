@@ -1,6 +1,6 @@
 //
 //  ComponentIdentifier.swift
-//  
+//
 //
 //  Created by Christian Treffs on 20.08.19.
 //

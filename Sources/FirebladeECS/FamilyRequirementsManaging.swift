@@ -9,6 +9,7 @@ public protocol FamilyRequirementsManaging {
     associatedtype Components
     associatedtype ComponentTypes
     associatedtype EntityAndComponents
+    associatedtype RelativesDescending
 
     init(_ types: ComponentTypes)
 
@@ -16,4 +17,5 @@ public protocol FamilyRequirementsManaging {
 
     static func components(nexus: Nexus, entityId: EntityIdentifier) -> Components
     static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> EntityAndComponents
+    static func relativesDescending(nexus: Nexus, parentId: EntityIdentifier, childId: EntityIdentifier) -> RelativesDescending
 }

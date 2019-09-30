@@ -101,6 +101,12 @@ public struct Entity {
     public func destroy() {
         nexus.destroy(entity: self)
     }
+
+    public func addChild(_ entity: Entity) {
+    }
+
+    public func removeChild(_ entity: Entity) {
+    }
 }
 
 // MARK: - Equatable

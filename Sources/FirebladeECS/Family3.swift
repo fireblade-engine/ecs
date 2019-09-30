@@ -30,6 +30,16 @@ public struct Requires3<A, B, C>: FamilyRequirementsManaging where A: Component,
         let compC: C = nexus.get(unsafeComponentFor: entityId)
         return (entity, compA, compB, compC)
     }
+    public static func relativesDescending(nexus: Nexus, parentId: EntityIdentifier, childId: EntityIdentifier) ->
+        (parent: (A, B, C), child: (A, B, C)) {
+            let pcA: A = nexus.get(unsafeComponentFor: parentId)
+            let pcB: B = nexus.get(unsafeComponentFor: parentId)
+            let pcC: C = nexus.get(unsafeComponentFor: parentId)
+            let ccA: A = nexus.get(unsafeComponentFor: childId)
+            let ccB: B = nexus.get(unsafeComponentFor: childId)
+            let ccC: C = nexus.get(unsafeComponentFor: childId)
+            return (parent: (pcA, pcB, pcC), child: (ccA, ccB, ccC))
+    }
 }
 
 extension Nexus {

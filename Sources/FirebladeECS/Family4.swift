@@ -32,6 +32,19 @@ public struct Requires4<A, B, C, D>: FamilyRequirementsManaging where A: Compone
         let compD: D = nexus.get(unsafeComponentFor: entityId)
         return (entity, compA, compB, compC, compD)
     }
+
+    public static func relativesDescending(nexus: Nexus, parentId: EntityIdentifier, childId: EntityIdentifier) ->
+        (parent: (A, B, C, D), child: (A, B, C, D)) {
+            let pcA: A = nexus.get(unsafeComponentFor: parentId)
+            let pcB: B = nexus.get(unsafeComponentFor: parentId)
+            let pcC: C = nexus.get(unsafeComponentFor: parentId)
+            let pcD: D = nexus.get(unsafeComponentFor: parentId)
+            let ccA: A = nexus.get(unsafeComponentFor: childId)
+            let ccB: B = nexus.get(unsafeComponentFor: childId)
+            let ccC: C = nexus.get(unsafeComponentFor: childId)
+            let ccD: D = nexus.get(unsafeComponentFor: childId)
+            return (parent: (pcA, pcB, pcC, pcD), child: (ccA, ccB, ccC, ccD))
+    }
 }
 
 extension Nexus {

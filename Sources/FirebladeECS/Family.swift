@@ -40,6 +40,14 @@ public struct Family<R> where R: FamilyRequirementsManaging {
     }
 }
 
+// MARK: - Equatable
+extension Family: Equatable {
+    public static func == (lhs: Family<R>, rhs: Family<R>) -> Bool {
+        return lhs.nexus == rhs.nexus &&
+            lhs.traits == rhs.traits
+    }
+}
+
 extension Family: Sequence {
     __consuming public func makeIterator() -> ComponentsIterator {
         return ComponentsIterator(family: self)
@@ -123,10 +131,30 @@ extension Family {
 
 extension Family.EntityComponentIterator: LazySequenceProtocol { }
 
-// MARK: - Equatable
-extension Family: Equatable {
-    public static func == (lhs: Family<R>, rhs: Family<R>) -> Bool {
-        return lhs.nexus == rhs.nexus &&
-            lhs.traits == rhs.traits
+// MARK: - relatives iterator
+
+extension Family {
+    @inlinable public var descendRelatives: RelativesIterator {
+        return RelativesIterator(family: self)
+    }
+
+    public struct RelativesIterator: IteratorProtocol {
+        @usableFromInline var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier>
+        @usableFromInline unowned let nexus: Nexus
+
+        public init(family: Family<R>) {
+            self.nexus = family.nexus
+            memberIdsIterator = family.memberIds.makeIterator()
+        }
+
+        public mutating func next() -> R.RelativesDescending? {
+            guard let parentId = memberIdsIterator.next() else {
+                return nil
+            }
+
+            fatalError("implement")
+        }
     }
 }
+
+extension Family.RelativesIterator: LazySequenceProtocol { }

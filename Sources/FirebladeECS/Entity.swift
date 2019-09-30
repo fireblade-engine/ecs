@@ -102,10 +102,27 @@ public struct Entity {
         nexus.destroy(entity: self)
     }
 
-    public func addChild(_ entity: Entity) {
+    /// Add an entity as child.
+    /// - Parameter entity: The child entity.
+    @discardableResult
+    public func addChild(_ entity: Entity) -> Bool {
+        return false
     }
 
-    public func removeChild(_ entity: Entity) {
+    /// Remove entity as child.
+    /// - Parameter entity: The child entity.
+    @discardableResult
+    public func removeChild(_ entity: Entity) -> Bool {
+        return false
+    }
+
+    /// Removes all children from this entity.
+    public func removeAllChildren() {
+    }
+
+    /// Returns the number of children for this entity.
+    public var numChildren: Int {
+        return 0
     }
 }
 

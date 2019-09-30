@@ -65,7 +65,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
                     _ = entity
 
                     loopCount += 1
-                }
+            }
         }
 
         XCTAssertEqual(loopCount, family.count * 10)
@@ -81,7 +81,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
                 .forEach { (position: Position) in
                     _ = position
                     loopCount += 1
-                }
+            }
         }
 
         XCTAssertEqual(loopCount, numEntities * 10)
@@ -103,7 +103,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
                     _ = position
 
                     loopCount += 1
-                }
+            }
         }
 
         XCTAssertEqual(loopCount, family.count * 10)
@@ -127,7 +127,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
                     _ = position
 
                     loopCount += 1
-                }
+            }
         }
 
         XCTAssertEqual(loopCount, family.count * 10)
@@ -150,7 +150,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
                     _ = velocity
 
                     loopCount += 1
-                }
+            }
         }
 
         XCTAssertEqual(loopCount, family.count * 10)
@@ -175,7 +175,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
                     _ = velocity
 
                     loopCount += 1
-                }
+            }
         }
 
         XCTAssertEqual(loopCount, family.count * 10)
@@ -199,7 +199,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
                     _ = name
 
                     loopCount += 1
-                }
+            }
         }
 
         XCTAssertEqual(loopCount, family.count * 10)
@@ -225,7 +225,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
                     _ = name
 
                     loopCount += 1
-                }
+            }
         }
 
         XCTAssertEqual(loopCount, family.count * 10)
@@ -250,7 +250,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
                     _ = color
 
                     loopCount += 1
-                }
+            }
         }
 
         XCTAssertEqual(loopCount, family.count * 10)
@@ -277,7 +277,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
                     _ = color
 
                     loopCount += 1
-                }
+            }
         }
 
         XCTAssertEqual(loopCount, family.count * 10)
@@ -330,7 +330,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
                     _ = empty
 
                     loopCount += 1
-                }
+            }
         }
 
         XCTAssertEqual(loopCount, family.count * 10)

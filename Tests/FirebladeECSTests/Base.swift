@@ -79,7 +79,7 @@ class ColorSystem {
                 color.r = 1
                 color.g = 2
                 color.b = 3
-            }
+        }
     }
 }
 
@@ -106,6 +106,6 @@ class PositionSystem {
 
                 pos.x = x
                 pos.y = y
-            }
+        }
     }
 }

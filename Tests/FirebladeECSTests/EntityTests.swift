@@ -9,20 +9,16 @@ import FirebladeECS
 import XCTest
 
 class EntityTests: XCTestCase {
-
-	func testEntityIdentifierAndIndex() {
-
-		let min = EntityIdentifier(.min)
-		XCTAssertEqual(min.index, Int(UInt32.min))
+    func testEntityIdentifierAndIndex() {
+        let min = EntityIdentifier(.min)
+        XCTAssertEqual(min.index, Int(UInt32.min))
 
         let uRand = UInt32.random(in: UInt32.min...UInt32.max)
-		let rand = EntityIdentifier(uRand)
-		XCTAssertEqual(rand.index, Int(uRand))
+        let rand = EntityIdentifier(uRand)
+        XCTAssertEqual(rand.index, Int(uRand))
 
-		let max = EntityIdentifier(.max)
-		XCTAssertEqual(max, EntityIdentifier.invalid)
+        let max = EntityIdentifier(.max)
+        XCTAssertEqual(max, EntityIdentifier.invalid)
         XCTAssertEqual(max.index, Int(UInt32.max))
-
-	}
-
+    }
 }

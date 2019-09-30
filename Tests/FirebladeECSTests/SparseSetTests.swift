@@ -9,7 +9,6 @@
 import XCTest
 
 class SparseSetTests: XCTestCase {
-
     var set: UnorderedSparseSet<Position>!
 
     override func setUp() {
@@ -23,7 +22,6 @@ class SparseSetTests: XCTestCase {
     }
 
     func testSparseSetAdd() {
-
         let num: Int = 100
 
         for idx in 0..<num {
@@ -47,7 +45,6 @@ class SparseSetTests: XCTestCase {
     }
 
     func testSparseSetAddAndReplace() {
-
         let p1 = Position(x: 1, y: 1)
         let p2 = Position(x: 2, y: 2)
 
@@ -60,11 +57,9 @@ class SparseSetTests: XCTestCase {
 
         XCTAssertEqual(set.get(at: 10)?.x, p2.x)
         XCTAssertEqual(set.count, 1)
-
     }
 
     func testSparseSetGet() {
-
         let p1 = Position(x: 1, y: 1)
 
         set.insert(p1, at: 10)
@@ -79,7 +74,6 @@ class SparseSetTests: XCTestCase {
     }
 
     func testSparseSetRemove() {
-
         let num: Int = 7
 
         for idx in 0..<num {
@@ -358,7 +352,6 @@ class SparseSetTests: XCTestCase {
         XCTAssertEqual(set.sparse[5], nil)
         XCTAssertEqual(set.sparse[6], nil)
         XCTAssertEqual(set.sparse[7], nil)
-
     }
 
     func testSparseSetRemoveAndAdd() {
@@ -384,11 +377,9 @@ class SparseSetTests: XCTestCase {
         XCTAssertEqual(set.get(at: 56)?.x, 56)
         XCTAssertEqual(set.get(at: 99)?.x, 99)
         XCTAssertEqual(set.get(at: 3)?.x, 3)
-
     }
 
     func testSparseSetRemoveNonPresent() {
-
         XCTAssertTrue(set.isEmpty)
         XCTAssertNil(set.remove(at: 100))
         XCTAssertTrue(set.isEmpty)
@@ -427,11 +418,9 @@ class SparseSetTests: XCTestCase {
         XCTAssertTrue(set.get(at: 0) === a)
 
         XCTAssertEqual(set.count, 1)
-
     }
 
     func testSparseSetNonCongiuousData() {
-
         var indices: Set<Int> = [0, 30, 1, 21, 78, 56, 99, 3]
 
         for idx in indices {
@@ -462,7 +451,6 @@ class SparseSetTests: XCTestCase {
     }
 
     func testSparseSetClear() {
-
         let num: Int = 100
 
         XCTAssertEqual(set.count, 0)
@@ -506,27 +494,26 @@ class SparseSetTests: XCTestCase {
 
         // NOTE: this tests only dense insertion order, this is no guarantee for the real ordering.
         XCTAssertEqual(string, "Hello World")
-
     }
-    
+
     func testSubscript() {
         let characters = UnorderedSparseSet<Character>()
-        
+
         characters[4] = "H"
         characters[13] = "e"
         characters[44] = "l"
         characters[123] = "l"
         characters[89] = "o"
-        
+
         characters[66] = " "
         characters[77] = "W"
         characters[55] = "o"
         characters[90] = "r"
         characters[34] = "l"
         characters[140] = "d"
-        
+
         XCTAssertEqual(characters.count, 11)
-        
+
         XCTAssertEqual(characters[4], "H")
         XCTAssertEqual(characters[13], "e")
         XCTAssertEqual(characters[44], "l")
@@ -539,17 +526,16 @@ class SparseSetTests: XCTestCase {
         XCTAssertEqual(characters[34], "l")
         XCTAssertEqual(characters[140], "d")
     }
-    
+
     func testStartEndIndex() {
-        
         let set = UnorderedSparseSet<Character>()
-        
+
         set.insert("C", at: 33)
         set.insert("A", at: 11)
         set.insert("B", at: 22)
-        
+
         let mapped = set.dense.map { $0.element }
-        
+
         XCTAssertEqual(mapped, ["C", "A", "B"])
     }
 }

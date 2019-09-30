@@ -6,7 +6,7 @@ extension ComponentTests {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__ComponentTests = [
-        ("testComponentIdentifier", testComponentIdentifier),
+        ("testComponentIdentifier", testComponentIdentifier)
     ]
 }
 
@@ -15,7 +15,7 @@ extension EntityTests {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__EntityTests = [
-        ("testEntityIdentifierAndIndex", testEntityIdentifierAndIndex),
+        ("testEntityIdentifierAndIndex", testEntityIdentifierAndIndex)
     ]
 }
 
@@ -30,7 +30,7 @@ extension FamilyTests {
         ("testFamilyExchange", testFamilyExchange),
         ("testFamilyLateMember", testFamilyLateMember),
         ("testFamilyMemberBasicIteration", testFamilyMemberBasicIteration),
-        ("testFamilyReuse", testFamilyReuse),
+        ("testFamilyReuse", testFamilyReuse)
     ]
 }
 
@@ -40,7 +40,7 @@ extension FamilyTraitsTests {
     // to regenerate.
     static let __allTests__FamilyTraitsTests = [
         ("testTraitCommutativity", testTraitCommutativity),
-        ("testTraitMatching", testTraitMatching),
+        ("testTraitMatching", testTraitMatching)
     ]
 }
 
@@ -49,7 +49,7 @@ extension HashingTests {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__HashingTests = [
-        ("testCollisionsInCritialRange", testCollisionsInCritialRange),
+        ("testCollisionsInCritialRange", testCollisionsInCritialRange)
     ]
 }
 
@@ -63,7 +63,7 @@ extension NexusTests {
         ("testComponentRetrieval", testComponentRetrieval),
         ("testComponentUniqueness", testComponentUniqueness),
         ("testEntityCreate", testEntityCreate),
-        ("testEntityDestroy", testEntityDestroy),
+        ("testEntityDestroy", testEntityDestroy)
     ]
 }
 
@@ -75,7 +75,7 @@ extension SingleTests {
         ("testSingleCreation", testSingleCreation),
         ("testSingleCreationOnExistingFamilyMember", testSingleCreationOnExistingFamilyMember),
         ("testSingleEntityAndComponentCreation", testSingleEntityAndComponentCreation),
-        ("testSingleReuse", testSingleReuse),
+        ("testSingleReuse", testSingleReuse)
     ]
 }
 
@@ -95,7 +95,7 @@ extension SparseSetTests {
         ("testSparseSetRemoveAndAdd", testSparseSetRemoveAndAdd),
         ("testSparseSetRemoveNonPresent", testSparseSetRemoveNonPresent),
         ("testStartEndIndex", testStartEndIndex),
-        ("testSubscript", testSubscript),
+        ("testSubscript", testSubscript)
     ]
 }
 
@@ -104,7 +104,7 @@ extension SystemsTests {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__SystemsTests = [
-        ("testSystemsUpdate", testSystemsUpdate),
+        ("testSystemsUpdate", testSystemsUpdate)
     ]
 }
 
@@ -118,7 +118,7 @@ public func __allTests() -> [XCTestCaseEntry] {
         testCase(NexusTests.__allTests__NexusTests),
         testCase(SingleTests.__allTests__SingleTests),
         testCase(SparseSetTests.__allTests__SparseSetTests),
-        testCase(SystemsTests.__allTests__SystemsTests),
+        testCase(SystemsTests.__allTests__SystemsTests)
     ]
 }
 #endif

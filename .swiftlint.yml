@@ -1,7 +1,6 @@
 included:
   - Sources
 excluded:
-  - Tests
   - docs
   - build
 identifier_name:

@@ -6,7 +6,8 @@
 //
 
 extension Nexus {
-    @inlinable internal func nextEntityId() -> EntityIdentifier {
+    @inlinable
+    internal func nextEntityId() -> EntityIdentifier {
         guard let nextReused: EntityIdentifier = freeEntities.popLast() else {
             return EntityIdentifier(UInt32(entityStorage.count))
         }

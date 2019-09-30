@@ -64,7 +64,8 @@ public final class Nexus {
 
 // MARK: - Equatable
 extension Nexus: Equatable {
-    @inlinable public static func == (lhs: Nexus, rhs: Nexus) -> Bool {
+    @inlinable
+    public static func == (lhs: Nexus, rhs: Nexus) -> Bool {
         return lhs.entityStorage == rhs.entityStorage &&
             lhs.componentIdsByEntity == rhs.componentIdsByEntity &&
             lhs.freeEntities == rhs.freeEntities &&

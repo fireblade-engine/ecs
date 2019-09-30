@@ -5,10 +5,13 @@
 //  Created by Christian Treffs on 21.08.19.
 //
 
+// swiftlint:disable large_tuple
+
 public typealias Family5<A: Component, B: Component, C: Component, D: Component, E: Component> = Family<Requires5<A, B, C, D, E>>
 
 public struct Requires5<A, B, C, D, E>: FamilyRequirementsManaging where A: Component, B: Component, C: Component, D: Component, E: Component {
     public let componentTypes: [Component.Type]
+
     public init(_ types: (A.Type, B.Type, C.Type, D.Type, E.Type)) {
         componentTypes = [A.self, B.self, C.self, D.self, E.self]
     }

@@ -19,6 +19,7 @@ public struct Requires2<A, B>: FamilyRequirementsManaging where A: Component, B:
         return (compA, compB)
     }
 
+    // swiftlint:disable:next large_tuple
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, A, B) {
         let entity: Entity = nexus.get(unsafeEntity: entityId)
         let compA: A = nexus.get(unsafeComponentFor: entityId)

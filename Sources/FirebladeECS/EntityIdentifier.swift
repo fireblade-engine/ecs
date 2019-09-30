@@ -25,7 +25,8 @@ extension EntityIdentifier: Equatable { }
 extension EntityIdentifier: Hashable { }
 
 extension EntityIdentifier: Comparable {
-    @inlinable public static func < (lhs: EntityIdentifier, rhs: EntityIdentifier) -> Bool {
+    @inlinable
+    public static func < (lhs: EntityIdentifier, rhs: EntityIdentifier) -> Bool {
         return lhs.index < rhs.index
     }
 }

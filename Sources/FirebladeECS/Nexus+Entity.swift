@@ -56,6 +56,8 @@ extension Nexus {
             return false
         }
 
+        removeAllChildren(from: entity)
+
         if removeAll(componentes: entityId) {
             update(familyMembership: entityId)
         }

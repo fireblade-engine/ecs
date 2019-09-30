@@ -106,23 +106,24 @@ public struct Entity {
     /// - Parameter entity: The child entity.
     @discardableResult
     public func addChild(_ entity: Entity) -> Bool {
-        return false
+        return nexus.addChild(entity, to: self)
     }
 
     /// Remove entity as child.
     /// - Parameter entity: The child entity.
     @discardableResult
     public func removeChild(_ entity: Entity) -> Bool {
-        return false
+        return nexus.removeChild(entity, from: self)
     }
 
     /// Removes all children from this entity.
     public func removeAllChildren() {
+        return nexus.removeAllChildren(from: self)
     }
 
     /// Returns the number of children for this entity.
     public var numChildren: Int {
-        return 0
+        return nexus.numChildren(for: self)
     }
 }
 

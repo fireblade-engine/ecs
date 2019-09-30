@@ -29,12 +29,15 @@ public final class Nexus {
     /// - Value: Tightly packed EntityIdentifiers that represent the association of an entity to the family.
     @usableFromInline final var familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier>]
 
+    @usableFromInline final var parentChildrenMap: [EntityIdentifier: Set<EntityIdentifier>]
+
     public init() {
         entityStorage = UnorderedSparseSet<Entity>()
         componentsByType = [:]
         componentIdsByEntity = [:]
         freeEntities = ContiguousArray<EntityIdentifier>()
         familyMembersByTraits = [:]
+        parentChildrenMap = [:]
     }
 
     public final func clear() {
@@ -55,6 +58,7 @@ public final class Nexus {
         componentsByType.removeAll()
         componentIdsByEntity.removeAll()
         familyMembersByTraits.removeAll()
+        parentChildrenMap.removeAll()
     }
 
     deinit {

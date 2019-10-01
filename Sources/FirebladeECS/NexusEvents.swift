@@ -46,3 +46,13 @@ public struct FamilyCreated: NexusEvent {
 public struct FamilyDestroyed: NexusEvent {
     public let family: FamilyTraitSet
 }
+
+public struct ChildAdded: NexusEvent {
+    public let parent: EntityIdentifier
+    public let child: EntityIdentifier
+}
+
+public struct ChildRemoved: NexusEvent {
+    public let parent: EntityIdentifier
+    public let child: EntityIdentifier
+}

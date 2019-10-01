@@ -94,8 +94,10 @@ class SceneGraphTests: XCTestCase {
 
         func addChild(to parent: Entity, index: Int) -> Entity {
             let randComp = otherComponents.randomElement()!
-            let child = nexus.createEntity(with: Index(index: index), randComp)
+            let badChild = nexus.createEntity(with: randComp)
+            let child = nexus.createEntity(with: Index(index: index))
             parent.addChild(child)
+            parent.addChild(badChild)
             return child
         }
 
@@ -106,16 +108,20 @@ class SceneGraphTests: XCTestCase {
             parent = addChild(to: parent, index: i)
         }
 
-        XCTAssertEqual(nexus.numEntities, 10)
+        XCTAssertEqual(nexus.numEntities, 19)
 
         var parentSum: Int = 0
         var childSum: Int = 0
+
+        var lastIndex: Int = -1
 
         nexus
             .family(requires: Index.self)
             .descendRelatives(from: root)
             .forEach { (parent: Index, child: Index) in
                 XCTAssertEqual(parent.index + 1, child.index)
+                XCTAssertGreaterThan(parent.index, lastIndex)
+                lastIndex = parent.index
                 parentSum += parent.index
                 childSum += child.index
         }

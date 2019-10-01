@@ -143,7 +143,7 @@ extension Family {
         @usableFromInline unowned let nexus: Nexus
         @usableFromInline let familyTraits: FamilyTraitSet
 
-        @usableFromInline var relatives: [(EntityIdentifier, EntityIdentifier)]
+        @usableFromInline var relatives: ContiguousArray<(EntityIdentifier, EntityIdentifier)>
 
         public init(family: Family<R>, root: Entity) {
             self.nexus = family.nexus

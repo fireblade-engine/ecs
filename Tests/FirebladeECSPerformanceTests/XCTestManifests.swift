@@ -7,7 +7,7 @@ extension ComponentTests {
     // to regenerate.
     static let __allTests__ComponentTests = [
         ("testMeasureComponentIdentifier", testMeasureComponentIdentifier),
-        ("testMeasureStaticComponentIdentifier", testMeasureStaticComponentIdentifier),
+        ("testMeasureStaticComponentIdentifier", testMeasureStaticComponentIdentifier)
     ]
 }
 
@@ -17,7 +17,7 @@ extension HashingPerformanceTests {
     // to regenerate.
     static let __allTests__HashingPerformanceTests = [
         ("testMeasureCombineHash", testMeasureCombineHash),
-        ("testMeasureSetOfSetHash", testMeasureSetOfSetHash),
+        ("testMeasureSetOfSetHash", testMeasureSetOfSetHash)
     ]
 }
 
@@ -38,7 +38,7 @@ extension TypedFamilyPerformanceTests {
         ("testPerformanceTypedFamilyFourComponents", testPerformanceTypedFamilyFourComponents),
         ("testPerformanceTypedFamilyOneComponent", testPerformanceTypedFamilyOneComponent),
         ("testPerformanceTypedFamilyThreeComponents", testPerformanceTypedFamilyThreeComponents),
-        ("testPerformanceTypedFamilyTwoComponents", testPerformanceTypedFamilyTwoComponents),
+        ("testPerformanceTypedFamilyTwoComponents", testPerformanceTypedFamilyTwoComponents)
     ]
 }
 
@@ -46,7 +46,7 @@ public func __allTests() -> [XCTestCaseEntry] {
     return [
         testCase(ComponentTests.__allTests__ComponentTests),
         testCase(HashingPerformanceTests.__allTests__HashingPerformanceTests),
-        testCase(TypedFamilyPerformanceTests.__allTests__TypedFamilyPerformanceTests),
+        testCase(TypedFamilyPerformanceTests.__allTests__TypedFamilyPerformanceTests)
     ]
 }
 #endif

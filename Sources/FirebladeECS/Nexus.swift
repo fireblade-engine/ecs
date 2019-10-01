@@ -29,12 +29,17 @@ public final class Nexus {
     /// - Value: Tightly packed EntityIdentifiers that represent the association of an entity to the family.
     @usableFromInline final var familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier>]
 
+    /// - Key: A parent entity id.
+    /// - Value: Adjacency Set of all associated children.
+    @usableFromInline final var parentChildrenMap: [EntityIdentifier: Set<EntityIdentifier>]
+
     public init() {
         entityStorage = UnorderedSparseSet<Entity>()
         componentsByType = [:]
         componentIdsByEntity = [:]
         freeEntities = ContiguousArray<EntityIdentifier>()
         familyMembersByTraits = [:]
+        parentChildrenMap = [:]
     }
 
     public final func clear() {
@@ -55,6 +60,7 @@ public final class Nexus {
         componentsByType.removeAll()
         componentIdsByEntity.removeAll()
         familyMembersByTraits.removeAll()
+        parentChildrenMap.removeAll()
     }
 
     deinit {
@@ -64,12 +70,14 @@ public final class Nexus {
 
 // MARK: - Equatable
 extension Nexus: Equatable {
-    @inlinable public static func == (lhs: Nexus, rhs: Nexus) -> Bool {
+    @inlinable
+    public static func == (lhs: Nexus, rhs: Nexus) -> Bool {
         return lhs.entityStorage == rhs.entityStorage &&
             lhs.componentIdsByEntity == rhs.componentIdsByEntity &&
             lhs.freeEntities == rhs.freeEntities &&
             lhs.familyMembersByTraits == rhs.familyMembersByTraits &&
-            lhs.componentsByType.keys == rhs.componentsByType.keys
+            lhs.componentsByType.keys == rhs.componentsByType.keys &&
+            lhs.parentChildrenMap == rhs.parentChildrenMap
         // NOTE: components are not equatable (yet)
     }
 }

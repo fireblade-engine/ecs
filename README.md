@@ -1,9 +1,9 @@
 # Fireblade ECS (Entity-Component-System)
 [![Build Status](https://travis-ci.com/fireblade-engine/ecs.svg?branch=master)](https://travis-ci.com/fireblade-engine/ecs)
-[![version 0.9.1](https://img.shields.io/badge/version-0.9.1-brightgreen.svg)](releases/tag/v0.9.1)
 [![license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
-[![swift version](https://img.shields.io/badge/swift-5.0-brightgreen.svg)](#)
-[![platforms](https://img.shields.io/badge/platforms-%20macOS%20|%20iOS%20|%20tvOS%20|%20watchOS%20|%20linux%20-brightgreen.svg)](#)
+[![swift version](https://img.shields.io/badge/swift-5.0+-brightgreen.svg)](https://swift.org/download)
+[![platforms](https://img.shields.io/badge/platforms-%20macOS%20|%20iOS%20|%20tvOS%20|%20watchOS-brightgreen.svg)](#)
+[![platforms](https://img.shields.io/badge/platforms-linux-brightgreen.svg)](#)
 
 This is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component-System](https://en.wikipedia.org/wiki/Entity–component–system) implementation in Swift. It is developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
 
@@ -33,7 +33,7 @@ import PackageDescription
 let package = Package(
     name: "YourPackageName",
     dependencies: [
-        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.9.1")
+        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.10.0")
     ],
     targets: [
         .target(
@@ -182,6 +182,37 @@ class GameLogicSystem {
     }
 }
 
+```
+
+### 👫 Relatives
+
+This ECS implementation provides an integrated way of creating a [directed acyclic graph (DAG)](https://en.wikipedia.org/wiki/Directed_acyclic_graph) hierarchy of entities by forming parent-child relationships. Entities can become children of a parent entity. In family terms they become **relatives**. Families provide iteration over these relationships.   
+The entity hierachy implementation does not use an additional component therefore keeping the hierarchy intact over different component-families.
+This feature is especially useful for implenting a [scene graph](https://en.wikipedia.org/wiki/Scene_graph). 
+
+```swift
+// create entities with 0 to n components
+let parent: Entity = nexus.createEntity(with: Position(x: 1, y: 1), SomeOtherComponent(...))
+let child: Entity  = nexus.createEntity(with: Position(x: 2, y: 2))
+let child2: Entity = nexus.createEntity(with: Position(x: 3, y: 3), MySpecialComponent(...))
+
+// create relationships between entities
+parent.addChild(child)
+child.addChild(child2)
+// or remove them
+// parent.removeChild(child)
+
+// iterate over component families descending the graph
+nexus.family(requires: Position.self)
+     .descendRelatives(from: parent) // provide the start entity (aka root "node")
+     .forEach { (parent: Position, child: Position) in
+        // parent: the current parent component
+        // child: the current child component
+        
+        // update your components hierarchically
+        child.x += parent.x
+        child.y += parent.y
+     }
 ```
 
 ## 🧪 Demo

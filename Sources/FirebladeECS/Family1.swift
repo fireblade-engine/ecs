@@ -1,6 +1,6 @@
 //
 //  Family1.swift
-//  
+//
 //
 //  Created by Christian Treffs on 21.08.19.
 //
@@ -24,6 +24,12 @@ public struct Requires1<A>: FamilyRequirementsManaging where A: Component {
         let compA: A = nexus.get(unsafeComponentFor: entityId)
         return (entity, compA)
     }
+
+    public static func relativesDescending(nexus: Nexus, parentId: EntityIdentifier, childId: EntityIdentifier) -> (parent: A, child: A) {
+        let parentCompA: A = nexus.get(unsafeComponentFor: parentId)
+        let childCompA: A = nexus.get(unsafeComponentFor: childId)
+        return (parent: parentCompA, child: childCompA)
+    }
 }
 
 extension Nexus {
@@ -32,7 +38,7 @@ extension Nexus {
         excludesAll excludedComponents: Component.Type...
     ) -> Family1<A> where A: Component {
         return Family1<A>(nexus: self,
-                         requiresAll: componentA,
-                         excludesAll: excludedComponents)
+                          requiresAll: componentA,
+                          excludesAll: excludedComponents)
     }
 }

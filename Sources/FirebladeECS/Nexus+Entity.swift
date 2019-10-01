@@ -6,7 +6,8 @@
 //
 
 extension Nexus {
-    @inlinable internal func nextEntityId() -> EntityIdentifier {
+    @inlinable
+    internal func nextEntityId() -> EntityIdentifier {
         guard let nextReused: EntityIdentifier = freeEntities.popLast() else {
             return EntityIdentifier(UInt32(entityStorage.count))
         }
@@ -54,6 +55,8 @@ extension Nexus {
             delegate?.nexusNonFatalError("EntityRemove failure: no entity \(entityId) to remove")
             return false
         }
+
+        removeAllChildren(from: entity)
 
         if removeAll(componentes: entityId) {
             update(familyMembership: entityId)

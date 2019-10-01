@@ -9,7 +9,6 @@ import FirebladeECS
 import XCTest
 
 class ComponentTests: XCTestCase {
-
     func testMeasureStaticComponentIdentifier() {
         let number: Int = 10_000
         measure {
@@ -19,7 +18,7 @@ class ComponentTests: XCTestCase {
             }
         }
     }
-    
+
     func testMeasureComponentIdentifier() {
         let number: Int = 10_000
         let pos = Position(x: 1, y: 2)

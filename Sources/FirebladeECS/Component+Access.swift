@@ -1,6 +1,6 @@
 //
 //  Component+Access.swift
-//  
+//
 //
 //  Created by Christian Treffs on 25.06.19.
 //
@@ -14,7 +14,8 @@ public struct ReadableOnly<Comp> where Comp: Component {
         self.component = component
     }
 
-    @inlinable public subscript<C>(dynamicMember keyPath: KeyPath<Comp, C>) -> C {
+    @inlinable
+    public subscript<C>(dynamicMember keyPath: KeyPath<Comp, C>) -> C {
         return component[keyPath: keyPath]
     }
 }
@@ -27,7 +28,8 @@ public struct Writable<Comp> where Comp: Component {
         self.component = component
     }
 
-    @inlinable public subscript<C>(dynamicMember keyPath: ReferenceWritableKeyPath<Comp, C>) -> C {
+    @inlinable
+    public subscript<C>(dynamicMember keyPath: ReferenceWritableKeyPath<Comp, C>) -> C {
         nonmutating get { return component[keyPath: keyPath] }
         nonmutating set { component[keyPath: keyPath] = newValue }
     }

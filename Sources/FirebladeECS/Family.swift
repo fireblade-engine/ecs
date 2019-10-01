@@ -1,6 +1,6 @@
 //
 //  Family.swift
-//  
+//
 //
 //  Created by Christian Treffs on 21.08.19.
 //
@@ -37,6 +37,14 @@ public struct Family<R> where R: FamilyRequirementsManaging {
     @inlinable
     public func isMember(_ entity: Entity) -> Bool {
         return nexus.isMember(entity, in: traits)
+    }
+}
+
+// MARK: - Equatable
+extension Family: Equatable {
+    public static func == (lhs: Family<R>, rhs: Family<R>) -> Bool {
+        return lhs.nexus == rhs.nexus &&
+            lhs.traits == rhs.traits
     }
 }
 
@@ -123,10 +131,57 @@ extension Family {
 
 extension Family.EntityComponentIterator: LazySequenceProtocol { }
 
-// MARK: - Equatable
-extension Family: Equatable {
-    public static func == (lhs: Family<R>, rhs: Family<R>) -> Bool {
-        return lhs.nexus == rhs.nexus &&
-               lhs.traits == rhs.traits
+// MARK: - relatives iterator
+
+extension Family {
+    @inlinable
+    public func descendRelatives(from root: Entity) -> RelativesIterator {
+        return RelativesIterator(family: self, root: root)
+    }
+
+    public struct RelativesIterator: IteratorProtocol {
+        @usableFromInline unowned let nexus: Nexus
+        @usableFromInline let familyTraits: FamilyTraitSet
+
+        @usableFromInline var relatives: ContiguousArray<(EntityIdentifier, EntityIdentifier)>
+
+        public init(family: Family<R>, root: Entity) {
+            self.nexus = family.nexus
+            self.familyTraits = family.traits
+
+            // FIXME: this is not the most efficient way to aggregate all parent child tuples
+            // Problems:
+            // - allocates new memory
+            // - needs to be build on every iteration
+            // - relies on isMember check
+            self.relatives = []
+            self.relatives.reserveCapacity(family.memberIds.count)
+            aggregateRelativesBreathFirst(root.identifier)
+            relatives.reverse()
+        }
+
+        mutating func aggregateRelativesBreathFirst(_ parent: EntityIdentifier) {
+            guard let children = nexus.parentChildrenMap[parent] else {
+                return
+            }
+            children
+                .compactMap { child in
+                    guard nexus.isMember(child, in: familyTraits) else {
+                        return nil
+                    }
+                    relatives.append((parent, child))
+                    return child
+                }
+            .forEach { aggregateRelativesBreathFirst($0) }
+        }
+
+        public mutating func next() -> R.RelativesDescending? {
+            guard let (parentId, childId) = relatives.popLast() else {
+                return nil
+            }
+            return R.relativesDescending(nexus: nexus, parentId: parentId, childId: childId)
+        }
     }
 }
+
+extension Family.RelativesIterator: LazySequenceProtocol { }

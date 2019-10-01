@@ -14,7 +14,7 @@ public protocol Component: class {
     var identifier: ComponentIdentifier { get }
 }
 
-public extension Component {
-	static var identifier: ComponentIdentifier { return ComponentIdentifier(Self.self) }
-    @inlinable var identifier: ComponentIdentifier { return Self.identifier }
+extension Component {
+    public static var identifier: ComponentIdentifier { return ComponentIdentifier(Self.self) }
+    @inlinable public var identifier: ComponentIdentifier { return Self.identifier }
 }

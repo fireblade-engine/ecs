@@ -11,3 +11,14 @@ script:
   - swift package reset
   - swift build
   - swift test
+env:
+  - BADGE=linux
+  - BADGE=osx
+# hack to get some OS-specific badges 
+# see: https://github.com/travis-ci/travis-ci/issues/9579
+matrix:
+  exclude:
+    - os: linux
+      env: BADGE=osx
+    - os: osx
+      env: BADGE=linux

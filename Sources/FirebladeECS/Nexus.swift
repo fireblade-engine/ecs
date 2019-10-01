@@ -76,7 +76,8 @@ extension Nexus: Equatable {
             lhs.componentIdsByEntity == rhs.componentIdsByEntity &&
             lhs.freeEntities == rhs.freeEntities &&
             lhs.familyMembersByTraits == rhs.familyMembersByTraits &&
-            lhs.componentsByType.keys == rhs.componentsByType.keys
+            lhs.componentsByType.keys == rhs.componentsByType.keys &&
+            lhs.parentChildrenMap == rhs.parentChildrenMap
         // NOTE: components are not equatable (yet)
     }
 }

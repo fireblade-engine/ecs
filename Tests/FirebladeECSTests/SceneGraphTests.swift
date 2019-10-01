@@ -63,16 +63,30 @@ class SceneGraphTests: XCTestCase {
 
     func testDescendRelatives() {
         let nttParrent = nexus.createEntity(with: Position(x: 1, y: 1))
-        let nttChild1 = nexus.createEntity(with: Position(x: 2, y: 2))
+        let child1Pos = Position(x: 2, y: 2)
+        let nttChild1 = nexus.createEntity(with: child1Pos)
 
         nttParrent.addChild(nttChild1)
 
         let family = nexus.family(requires: Position.self)
 
+        var counter: Int = 0
+
+        XCTAssertEqual(child1Pos.x, 2)
+        XCTAssertEqual(child1Pos.y, 2)
+
         family
-            .descendRelatives.forEach { (_: Position, _: Position) in
-                // TODO:
+            .descendRelatives(from: nttParrent)
+            .forEach { (parent: Position, child: Position) in
+                defer { counter += 1 }
+
+                child.x += parent.x
+                child.y += parent.y
         }
+
+        XCTAssertEqual(counter, 1)
+        XCTAssertEqual(child1Pos.x, 3)
+        XCTAssertEqual(child1Pos.y, 3)
     }
 
 }

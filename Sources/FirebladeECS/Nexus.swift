@@ -29,6 +29,8 @@ public final class Nexus {
     /// - Value: Tightly packed EntityIdentifiers that represent the association of an entity to the family.
     @usableFromInline final var familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier>]
 
+    /// - Key: A parent entity id.
+    /// - Value: Adjacency Set of all associated children.
     @usableFromInline final var parentChildrenMap: [EntityIdentifier: Set<EntityIdentifier>]
 
     public init() {

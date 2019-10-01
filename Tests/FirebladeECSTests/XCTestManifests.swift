@@ -74,7 +74,8 @@ extension SceneGraphTests {
     // to regenerate.
     static let __allTests__SceneGraphTests = [
         ("testAddChild", testAddChild),
-        ("testDescendRelatives", testDescendRelatives),
+        ("testDescendRelativesOnlyFamilyMembers", testDescendRelativesOnlyFamilyMembers),
+        ("testDescendRelativesSimple", testDescendRelativesSimple),
         ("testRemoveAllChildren", testRemoveAllChildren),
         ("testRemoveChild", testRemoveChild)
     ]

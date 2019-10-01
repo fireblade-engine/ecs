@@ -61,7 +61,7 @@ class SceneGraphTests: XCTestCase {
         XCTAssertEqual(nttParrent.numChildren, 0)
     }
 
-    func testDescendRelatives() {
+    func testDescendRelativesSimple() {
         let nttParrent = nexus.createEntity(with: Position(x: 1, y: 1))
         let child1Pos = Position(x: 2, y: 2)
         let nttChild1 = nexus.createEntity(with: child1Pos)
@@ -87,6 +87,41 @@ class SceneGraphTests: XCTestCase {
         XCTAssertEqual(counter, 1)
         XCTAssertEqual(child1Pos.x, 3)
         XCTAssertEqual(child1Pos.y, 3)
+    }
+
+    func testDescendRelativesOnlyFamilyMembers() {
+        let otherComponents: [Component] = [Position(x: 0, y: 0), Velocity(a: 0), Party(partying: true), Color(), Name(name: "")]
+
+        func addChild(to parent: Entity, index: Int) -> Entity {
+            let randComp = otherComponents.randomElement()!
+            let child = nexus.createEntity(with: Index(index: index), randComp)
+            parent.addChild(child)
+            return child
+        }
+
+        let root = nexus.createEntity(with: Index(index: 0))
+
+        var parent: Entity = root
+        for i in 1..<10 {
+            parent = addChild(to: parent, index: i)
+        }
+
+        XCTAssertEqual(nexus.numEntities, 10)
+
+        var parentSum: Int = 0
+        var childSum: Int = 0
+
+        nexus
+            .family(requires: Index.self)
+            .descendRelatives(from: root)
+            .forEach { (parent: Index, child: Index) in
+                XCTAssertEqual(parent.index + 1, child.index)
+                parentSum += parent.index
+                childSum += child.index
+        }
+
+        XCTAssertEqual(parentSum, 36)
+        XCTAssertEqual(childSum, 45)
     }
 
 }

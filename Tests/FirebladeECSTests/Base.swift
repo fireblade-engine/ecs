@@ -45,6 +45,14 @@ class Color: Component {
     var b: UInt8 = 0
 }
 
+class Index: Component {
+    var index: Int
+
+    init(index: Int) {
+        self.index = index
+    }
+}
+
 final class SingleGameState: SingleComponent {
     var shouldQuit: Bool = false
     var playerHealth: Int = 67

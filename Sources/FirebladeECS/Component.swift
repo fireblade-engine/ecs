@@ -7,9 +7,8 @@
 
 /// **Component**
 ///
-/// A component represents the raw data for one aspect of the object,
-/// and how it interacts with the world.
-public protocol Component: class {
+/// A component represents the raw data for one aspect of an object.
+public protocol Component: class, Codable {
     static var identifier: ComponentIdentifier { get }
     var identifier: ComponentIdentifier { get }
 }

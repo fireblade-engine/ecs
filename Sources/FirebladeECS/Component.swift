@@ -14,6 +14,5 @@ public protocol Component: class, Codable {
 }
 
 extension Component {
-    public static var identifier: ComponentIdentifier { return ComponentIdentifier(Self.self) }
     @inlinable public var identifier: ComponentIdentifier { return Self.identifier }
 }

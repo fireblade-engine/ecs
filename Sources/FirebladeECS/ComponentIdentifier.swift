@@ -7,12 +7,20 @@
 
 /// Identifies a component by it's meta type
 public struct ComponentIdentifier: Identifiable {
-    public let id: ObjectIdentifier
+    public let id: String
 
-    init<T>(_ type: T.Type) where T: Component {
-        self.id = ObjectIdentifier(type)
+    public init<T>(_ componentType: T.Type) where T: Component {
+        defer { Nexus.register(component: T.self, using: self) }
+
+        self.id = String(reflecting: componentType)
     }
 }
 
 extension ComponentIdentifier: Equatable { }
 extension ComponentIdentifier: Hashable { }
+extension ComponentIdentifier: Codable { }
+extension ComponentIdentifier: Comparable {
+    public static func < (lhs: ComponentIdentifier, rhs: ComponentIdentifier) -> Bool {
+        return lhs.id < rhs.id
+    }
+}

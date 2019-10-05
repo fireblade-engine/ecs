@@ -17,10 +17,9 @@ extension Nexus {
     @discardableResult
     public func createEntity() -> Entity {
         let newEntityIdentifier: EntityIdentifier = nextEntityId()
-        let newEntity = Entity(nexus: self, id: newEntityIdentifier)
-        entityStorage.insert(newEntity, at: newEntityIdentifier.id)
+        entityStorage.insert(newEntityIdentifier, at: newEntityIdentifier.id)
         delegate?.nexusEvent(EntityCreated(entityId: newEntityIdentifier))
-        return newEntity
+        return Entity(nexus: self, id: newEntityIdentifier)
     }
 
     @discardableResult
@@ -40,23 +39,29 @@ extension Nexus {
     }
 
     public func get(entity entityId: EntityIdentifier) -> Entity? {
-        return entityStorage.get(at: entityId.id)
+        guard let id = entityStorage.get(at: entityId.id) else {
+            return nil
+        }
+        return Entity(nexus: self, id: id)
     }
 
     public func get(unsafeEntity entityId: EntityIdentifier) -> Entity {
-        return entityStorage.get(unsafeAt: entityId.id)
+        return Entity(nexus: self, id: entityStorage.get(unsafeAt: entityId.id))
     }
 
     @discardableResult
     public func destroy(entity: Entity) -> Bool {
-        let entityId: EntityIdentifier = entity.identifier
+        return self.destroy(entityId: entity.identifier)
+    }
 
+    @discardableResult
+    public func destroy(entityId: EntityIdentifier) -> Bool {
         guard entityStorage.remove(at: entityId.id) != nil else {
             delegate?.nexusNonFatalError("EntityRemove failure: no entity \(entityId) to remove")
             return false
         }
 
-        removeAllChildren(from: entity)
+        removeAllChildren(from: entityId)
 
         if removeAll(componentes: entityId) {
             update(familyMembership: entityId)

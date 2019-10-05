@@ -35,8 +35,12 @@ extension Nexus {
     }
 
     public final func removeAllChildren(from parent: Entity) {
-        childrenByParentEntity[parent.identifier]?.forEach { removeChild($0, from: parent.identifier) }
-        return childrenByParentEntity[parent.identifier] = nil
+        self.removeAllChildren(from: parent.identifier)
+    }
+
+    public final func removeAllChildren(from parentId: EntityIdentifier) {
+        childrenByParentEntity[parentId]?.forEach { removeChild($0, from: parentId) }
+        return childrenByParentEntity[parentId] = nil
     }
 
     public final func numChildren(for entity: Entity) -> Int {

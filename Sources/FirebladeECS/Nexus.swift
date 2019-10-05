@@ -6,9 +6,12 @@
 //
 
 public final class Nexus {
+    /// Static version string.
+    public static let version: String = "1.0.0"
+
     /// Main entity storage.
     /// Entities are tightly packed by EntityIdentifier.
-    @usableFromInline final var entityStorage: UnorderedSparseSet<Entity>
+    @usableFromInline final var entityStorage: UnorderedSparseSet<EntityIdentifier>
 
     /// Entity ids that are currently not used.
     @usableFromInline final var freeEntities: [EntityIdentifier]
@@ -33,13 +36,27 @@ public final class Nexus {
 
     public final weak var delegate: NexusEventDelegate?
 
-    public init() {
-        entityStorage = UnorderedSparseSet<Entity>()
-        componentsByType = [:]
-        componentIdsByEntity = [:]
-        freeEntities = []
-        familyMembersByTraits = [:]
-        childrenByParentEntity = [:]
+    public convenience init() {
+        self.init(entityStorage: UnorderedSparseSet<EntityIdentifier>(),
+                  componentsByType: [:],
+                  componentsByEntity: [:],
+                  freeEntities: [],
+                  familyMembersByTraits: [:],
+                  childrenByParentEntity: [:])
+    }
+
+    internal init(entityStorage: UnorderedSparseSet<EntityIdentifier>,
+                  componentsByType: [ComponentIdentifier: UnorderedSparseSet<Component>],
+                  componentsByEntity: [EntityIdentifier: Set<ComponentIdentifier>],
+                  freeEntities: [EntityIdentifier],
+                  familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier>],
+                  childrenByParentEntity: [EntityIdentifier: Set<EntityIdentifier>]) {
+        self.entityStorage = entityStorage
+        self.componentsByType = componentsByType
+        self.componentIdsByEntity = componentsByEntity
+        self.freeEntities = freeEntities
+        self.familyMembersByTraits = familyMembersByTraits
+        self.childrenByParentEntity = childrenByParentEntity
     }
 
     deinit {
@@ -47,24 +64,35 @@ public final class Nexus {
     }
 
     public final func clear() {
-        var iter = entityStorage.makeIterator()
-        while let entity = iter.next() {
-            destroy(entity: entity)
-        }
-
+        entityStorage.forEach { destroy(entityId: $0) }
         entityStorage.removeAll()
         freeEntities.removeAll()
-
-        assert(entityStorage.isEmpty)
-        assert(componentsByType.values.reduce(0) { $0 + $1.count } == 0)
-        assert(componentIdsByEntity.values.reduce(0) { $0 + $1.count } == 0)
-        assert(freeEntities.isEmpty)
-        assert(familyMembersByTraits.values.reduce(0) { $0 + $1.count } == 0)
-
         componentsByType.removeAll()
         componentIdsByEntity.removeAll()
         familyMembersByTraits.removeAll()
         childrenByParentEntity.removeAll()
+    }
+
+    public static var knownUniqueComponentTypes: Set<ComponentIdentifier> {
+        return Set<ComponentIdentifier>(componentDecoderMap.keys)
+    }
+
+    internal static var componentDecoderMap: [ComponentIdentifier: (Decoder) throws -> Component] = [:]
+
+    /// Register a component type uniquely with the Nexus implementation.
+    /// - Parameters:
+    ///   - componentType: The component meta type.
+    ///   - identifier: The unique identifier.
+    internal static func register<C>(component componentType: C.Type, using identifier: ComponentIdentifier) where C: Component {
+        precondition(componentDecoderMap[identifier] == nil, "Component type collision: \(identifier) already in use.")
+        componentDecoderMap[identifier] = { try C(from: $0) }
+    }
+}
+
+// MARK: - Errors
+extension Nexus {
+    public enum Error: Swift.Error {
+        case versionMismatch(required: String, provided: String)
     }
 }
 

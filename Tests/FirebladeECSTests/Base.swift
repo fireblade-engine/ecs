@@ -7,9 +7,12 @@
 
 import FirebladeECS
 
-class EmptyComponent: Component { }
+class EmptyComponent: Component {
+    static let identifier: ComponentIdentifier = .init(EmptyComponent.self)
+}
 
 class Name: Component {
+    static let identifier: ComponentIdentifier = .init(Name.self)
     var name: String
     init(name: String) {
         self.name = name
@@ -17,6 +20,7 @@ class Name: Component {
 }
 
 class Position: Component {
+    static let identifier: ComponentIdentifier = .init(Position.self)
     var x: Int
     var y: Int
     init(x: Int, y: Int) {
@@ -26,6 +30,7 @@ class Position: Component {
 }
 
 class Velocity: Component {
+    static let identifier: ComponentIdentifier = .init(Velocity.self)
     var a: Float
     init(a: Float) {
         self.a = a
@@ -33,6 +38,7 @@ class Velocity: Component {
 }
 
 class Party: Component {
+    static let identifier: ComponentIdentifier = .init(Party.self)
     var partying: Bool
     init(partying: Bool) {
         self.partying = partying
@@ -40,12 +46,14 @@ class Party: Component {
 }
 
 class Color: Component {
+    static let identifier: ComponentIdentifier = .init(Color.self)
     var r: UInt8 = 0
     var g: UInt8 = 0
     var b: UInt8 = 0
 }
 
 class Index: Component {
+    static let identifier: ComponentIdentifier = .init(Index.self)
     var index: Int
 
     init(index: Int) {
@@ -54,6 +62,7 @@ class Index: Component {
 }
 
 final class SingleGameState: SingleComponent {
+    static let identifier: ComponentIdentifier = .init(SingleGameState.self)
     var shouldQuit: Bool = false
     var playerHealth: Int = 67
 }

@@ -72,3 +72,6 @@ extension FamilyTraitSet: CustomDebugStringConvertible {
         return "<FamilyTraitSet [requiresAll:\(requiresAll.debugDescription) excludesAll: \(excludesAll.debugDescription)]>"
     }
 }
+
+// MARK: - Codable
+extension FamilyTraitSet: Codable { }

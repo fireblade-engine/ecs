@@ -1,6 +1,6 @@
 //
 //  TypeIdentifierPerformanceTests.swift
-//  
+//
 //
 //  Created by Christian Treffs on 05.10.19.
 //
@@ -9,7 +9,7 @@ import XCTest
 
 final class TypeIdentifierPerformanceTests: XCTestCase {
     let maxIterations: Int = 100_000
-    
+
     // 0.056 sec
     func testPerformanceObjectIdentifier() {
         measure {
@@ -24,7 +24,7 @@ final class TypeIdentifierPerformanceTests: XCTestCase {
             }
         }
     }
-    
+
     // 1.451 sec
     func testPerformanceStringDescribing() {
         measure {
@@ -39,7 +39,7 @@ final class TypeIdentifierPerformanceTests: XCTestCase {
             }
         }
     }
-    
+
     // 1.587 sec
     func testPerformanceStringReflecting() {
         measure {
@@ -54,7 +54,7 @@ final class TypeIdentifierPerformanceTests: XCTestCase {
             }
         }
     }
-    
+
     // 2.817 sec
     func testPerformanceMirrorReflectingDescription() {
         measure {
@@ -69,5 +69,5 @@ final class TypeIdentifierPerformanceTests: XCTestCase {
             }
         }
     }
-    
+
 }

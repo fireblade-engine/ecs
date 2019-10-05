@@ -13,7 +13,7 @@ class EmptyComponent: Component {
 
 class Name: Component {
     static let identifier: ComponentIdentifier = .init(Name.self)
-    
+
     var name: String
     init(name: String) {
         self.name = name
@@ -22,7 +22,7 @@ class Name: Component {
 
 class Position: Component {
     static var identifier: ComponentIdentifier = .init(Position.self)
-    
+
     var x: Int
     var y: Int
     init(x: Int, y: Int) {
@@ -33,7 +33,7 @@ class Position: Component {
 
 class Velocity: Component {
     static var identifier: ComponentIdentifier = .init(Velocity.self)
-    
+
     var a: Float
     init(a: Float) {
         self.a = a
@@ -42,7 +42,7 @@ class Velocity: Component {
 
 class Party: Component {
     static var identifier: ComponentIdentifier = .init(Party.self)
-    
+
     var partying: Bool
     init(partying: Bool) {
         self.partying = partying
@@ -51,7 +51,7 @@ class Party: Component {
 
 class Color: Component {
     static var identifier: ComponentIdentifier = .init(Color.self)
-    
+
     var r: UInt8 = 0
     var g: UInt8 = 0
     var b: UInt8 = 0
@@ -74,7 +74,7 @@ class ExampleSystem {
 
 final class SingleGameState: SingleComponent {
     static var identifier: ComponentIdentifier = .init(SingleGameState.self)
-    
+
     var shouldQuit: Bool = false
     var playerHealth: Int = 67
 }

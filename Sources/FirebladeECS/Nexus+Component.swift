@@ -14,7 +14,7 @@ extension Nexus {
         guard let uniforms = componentsByType[componentId] else {
             return false
         }
-        return uniforms.contains(entityId.index)
+        return uniforms.contains(entityId.id)
     }
 
     public final func count(components entityId: EntityIdentifier) -> Int {
@@ -36,7 +36,7 @@ extension Nexus {
         if componentsByType[componentId] == nil {
             componentsByType[componentId] = ManagedContiguousArray<Component>()
         }
-        componentsByType[componentId]?.insert(component, at: entityId.index)
+        componentsByType[componentId]?.insert(component, at: entityId.id)
 
         // assigns the component id to the entity id
         if componentIdsByEntity[entityId] == nil {
@@ -58,13 +58,13 @@ extension Nexus {
         guard let uniformComponents = componentsByType[componentId] else {
             return nil
         }
-        return uniformComponents.get(at: entityId.index)
+        return uniformComponents.get(at: entityId.id)
     }
 
     @inlinable
     public final func get(unsafeComponent componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component {
         let uniformComponents = componentsByType[componentId].unsafelyUnwrapped
-        return uniformComponents.get(unsafeAt: entityId.index)
+        return uniformComponents.get(unsafeAt: entityId.id)
     }
 
     @inlinable
@@ -88,7 +88,7 @@ extension Nexus {
     @discardableResult
     public final func remove(component componentId: ComponentIdentifier, from entityId: EntityIdentifier) -> Bool {
         // delete component instance
-        componentsByType[componentId]?.remove(at: entityId.index)
+        componentsByType[componentId]?.remove(at: entityId.id)
         // unasign component from entity
         componentIdsByEntity[entityId]?.remove(componentId)
 
@@ -117,6 +117,6 @@ extension Nexus {
         guard let uniformComponents = componentsByType[componentId] else {
             return nil
         }
-        return uniformComponents.get(at: entityId.index) as? C
+        return uniformComponents.get(at: entityId.id) as? C
     }
 }

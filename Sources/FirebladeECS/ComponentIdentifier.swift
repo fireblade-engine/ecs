@@ -6,11 +6,11 @@
 //
 
 /// Identifies a component by it's meta type
-public struct ComponentIdentifier {
-    @usableFromInline let objectIdentifier: ObjectIdentifier
+public struct ComponentIdentifier: Identifiable {
+    public let id: ObjectIdentifier
 
     init<T>(_ type: T.Type) where T: Component {
-        self.objectIdentifier = ObjectIdentifier(type)
+        self.id = ObjectIdentifier(type)
     }
 }
 

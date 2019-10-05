@@ -31,6 +31,6 @@ extension Nexus {
     }
 
     public func isMember(entity entityId: EntityIdentifier, inFamilyWithTraits traits: FamilyTraitSet) -> Bool {
-        return members(withFamilyTraits: traits).contains(entityId.index)
+        return members(withFamilyTraits: traits).contains(entityId.id)
     }
 }

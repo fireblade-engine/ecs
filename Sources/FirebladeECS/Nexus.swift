@@ -6,40 +6,44 @@
 //
 
 public final class Nexus {
-    public final weak var delegate: NexusEventDelegate?
-
     /// Main entity storage.
     /// Entities are tightly packed by EntityIdentifier.
     @usableFromInline final var entityStorage: UnorderedSparseSet<Entity>
 
+    /// Entity ids that are currently not used.
+    @usableFromInline final var freeEntities: [EntityIdentifier]
+
     /// - Key: ComponentIdentifier aka component type.
     /// - Value: Array of component instances of same type (uniform).
     ///          New component instances are appended.
-    @usableFromInline final var componentsByType: [ComponentIdentifier: ManagedContiguousArray<Component>]
+    @usableFromInline final var componentsByType: [ComponentIdentifier: UnorderedSparseSet<Component>]
 
     /// - Key: EntityIdentifier aka entity index
     /// - Value: Set of unique component types (ComponentIdentifier).
     ///          Each element is a component identifier associated with this entity.
     @usableFromInline final var componentIdsByEntity: [EntityIdentifier: Set<ComponentIdentifier>]
 
-    /// Entity ids that are currently not used.
-    @usableFromInline final var freeEntities: ContiguousArray<EntityIdentifier>
+    /// - Key: A parent entity id.
+    /// - Value: Adjacency Set of all associated children.
+    @usableFromInline final var childrenByParentEntity: [EntityIdentifier: Set<EntityIdentifier>]
 
     /// - Key: FamilyTraitSet aka component types that make up one distinct family.
     /// - Value: Tightly packed EntityIdentifiers that represent the association of an entity to the family.
     @usableFromInline final var familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier>]
 
-    /// - Key: A parent entity id.
-    /// - Value: Adjacency Set of all associated children.
-    @usableFromInline final var parentChildrenMap: [EntityIdentifier: Set<EntityIdentifier>]
+    public final weak var delegate: NexusEventDelegate?
 
     public init() {
         entityStorage = UnorderedSparseSet<Entity>()
         componentsByType = [:]
         componentIdsByEntity = [:]
-        freeEntities = ContiguousArray<EntityIdentifier>()
+        freeEntities = []
         familyMembersByTraits = [:]
-        parentChildrenMap = [:]
+        childrenByParentEntity = [:]
+    }
+
+    deinit {
+        clear()
     }
 
     public final func clear() {
@@ -60,11 +64,7 @@ public final class Nexus {
         componentsByType.removeAll()
         componentIdsByEntity.removeAll()
         familyMembersByTraits.removeAll()
-        parentChildrenMap.removeAll()
-    }
-
-    deinit {
-        clear()
+        childrenByParentEntity.removeAll()
     }
 }
 
@@ -77,7 +77,7 @@ extension Nexus: Equatable {
             lhs.freeEntities == rhs.freeEntities &&
             lhs.familyMembersByTraits == rhs.familyMembersByTraits &&
             lhs.componentsByType.keys == rhs.componentsByType.keys &&
-            lhs.parentChildrenMap == rhs.parentChildrenMap
+            lhs.childrenByParentEntity == rhs.childrenByParentEntity
         // NOTE: components are not equatable (yet)
     }
 }

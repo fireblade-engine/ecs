@@ -64,11 +64,11 @@ extension Nexus {
 
     final func add(entityWithId entityId: EntityIdentifier, toFamilyWithTraits traits: FamilyTraitSet) {
         precondition(familyMembersByTraits[traits] != nil)
-        familyMembersByTraits[traits].unsafelyUnwrapped.insert(entityId, at: entityId.id)
+        familyMembersByTraits[traits]!.insert(entityId, at: entityId.id)
     }
 
     final func remove(entityWithId entityId: EntityIdentifier, fromFamilyWithTraits traits: FamilyTraitSet) {
         precondition(familyMembersByTraits[traits] != nil)
-        familyMembersByTraits[traits].unsafelyUnwrapped.remove(at: entityId.id)
+        familyMembersByTraits[traits]!.remove(at: entityId.id)
     }
 }

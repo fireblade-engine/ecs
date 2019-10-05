@@ -61,11 +61,13 @@ extension FamilyTraitSet: Hashable {
     }
 }
 
-extension FamilyTraitSet: CustomStringConvertible, CustomDebugStringConvertible {
+extension FamilyTraitSet: CustomStringConvertible {
     @inlinable public var description: String {
         return "<FamilyTraitSet [requiresAll:\(requiresAll.description) excludesAll:\(excludesAll.description)]>"
     }
+}
 
+extension FamilyTraitSet: CustomDebugStringConvertible {
     @inlinable public var debugDescription: String {
         return "<FamilyTraitSet [requiresAll:\(requiresAll.debugDescription) excludesAll: \(excludesAll.debugDescription)]>"
     }

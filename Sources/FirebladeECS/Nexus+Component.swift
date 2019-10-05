@@ -34,7 +34,7 @@ extension Nexus {
 
         // add component instances to uniform component stores
         if componentsByType[componentId] == nil {
-            componentsByType[componentId] = ManagedContiguousArray<Component>()
+            componentsByType[componentId] = UnorderedSparseSet<Component>()
         }
         componentsByType[componentId]?.insert(component, at: entityId.id)
 

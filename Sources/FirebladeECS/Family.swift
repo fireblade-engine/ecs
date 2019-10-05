@@ -161,7 +161,7 @@ extension Family {
         }
 
         mutating func aggregateRelativesBreathFirst(_ parent: EntityIdentifier) {
-            guard let children = nexus.parentChildrenMap[parent] else {
+            guard let children = nexus.childrenByParentEntity[parent] else {
                 return
             }
             children

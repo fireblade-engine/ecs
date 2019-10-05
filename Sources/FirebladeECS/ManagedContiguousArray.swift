@@ -5,27 +5,26 @@
 //  Created by Christian Treffs on 28.10.17.
 //
 
-public class ManagedContiguousArray<Element> {
+public struct ManagedContiguousArray<Element> {
     public typealias Index = Int
-    private let chunkSize: Int
-    private var size: Int = 0
-    private var store: ContiguousArray<Element?> = []
+
+    @usableFromInline let chunkSize: Int
+    @usableFromInline var size: Int = 0
+    @usableFromInline var store: ContiguousArray<Element?> = []
 
     public init(minCount: Int = 4096) {
         chunkSize = minCount
         store = ContiguousArray<Element?>(repeating: nil, count: minCount)
     }
 
-    deinit {
-        clear()
-    }
-
+    @inline(__always)
     public var count: Int {
         return size
     }
 
     @discardableResult
-    public func insert(_ element: Element, at index: Int) -> Bool {
+    @inlinable
+    public mutating func insert(_ element: Element, at index: Int) -> Bool {
         if needsToGrow(index) {
             grow(to: index)
         }
@@ -35,6 +34,8 @@ public class ManagedContiguousArray<Element> {
         store[index] = element
         return true
     }
+
+    @inlinable
     public func contains(_ index: Index) -> Bool {
         if store.count <= index {
             return false
@@ -42,16 +43,19 @@ public class ManagedContiguousArray<Element> {
         return store[index] != nil
     }
 
+    @inline(__always)
     public func get(at index: Index) -> Element? {
         return store[index]
     }
 
+    @inline(__always)
     public func get(unsafeAt index: Index) -> Element {
         return store[index].unsafelyUnwrapped
     }
 
     @discardableResult
-    public func remove(at index: Index) -> Bool {
+    @inlinable
+    public mutating func remove(at index: Index) -> Bool {
         if store[index] != nil {
             size -= 1
         }
@@ -62,22 +66,26 @@ public class ManagedContiguousArray<Element> {
         return true
     }
 
-    public func clear(keepingCapacity: Bool = false) {
+    @inlinable
+    public mutating func clear(keepingCapacity: Bool = false) {
         size = 0
         store.removeAll(keepingCapacity: keepingCapacity)
     }
 
-    private func needsToGrow(_ index: Index) -> Bool {
+    @inlinable
+    func needsToGrow(_ index: Index) -> Bool {
         return index > store.count - 1
     }
 
-    private func grow(to index: Index) {
+    @inlinable
+    mutating func grow(to index: Index) {
         let newCapacity: Int = calculateCapacity(to: index)
         let newCount: Int = newCapacity - store.count
         store += ContiguousArray<Element?>(repeating: nil, count: newCount)
     }
 
-    private func calculateCapacity(to index: Index) -> Int {
+    @inlinable
+    func calculateCapacity(to index: Index) -> Int {
         let delta = Float(index) / Float(chunkSize)
         let multiplier = Int(delta.rounded(.up)) + 1
         return multiplier * chunkSize
@@ -90,3 +98,6 @@ extension ManagedContiguousArray: Equatable where Element: Equatable {
         return lhs.store == rhs.store
     }
 }
+
+// MARK: - Codable
+extension ManagedContiguousArray: Codable where Element: Codable { }

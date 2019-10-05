@@ -59,7 +59,7 @@ extension Family: LazySequenceProtocol { }
 // MARK: - components iterator
 extension Family {
     public struct ComponentsIterator: IteratorProtocol {
-        @usableFromInline var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier>
+        @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier>.ElementIterator
         @usableFromInline unowned let nexus: Nexus
 
         public init(family: Family<R>) {
@@ -86,7 +86,7 @@ extension Family {
     }
 
     public struct EntityIterator: IteratorProtocol {
-        @usableFromInline var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier>
+        @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier>.ElementIterator
         @usableFromInline unowned let nexus: Nexus
 
         public init(family: Family<R>) {
@@ -112,7 +112,7 @@ extension Family {
     }
 
     public struct EntityComponentIterator: IteratorProtocol {
-        @usableFromInline var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier>
+        @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier>.ElementIterator
         @usableFromInline unowned let nexus: Nexus
 
         public init(family: Family<R>) {

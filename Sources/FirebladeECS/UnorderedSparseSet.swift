@@ -18,8 +18,12 @@ public struct UnorderedSparseSet<Element> {
     @usableFromInline var sparse: [Index: Key]
 
     public init() {
-        sparse = [Index: Key]()
-        dense = ContiguousArray<Entry>()
+        self.init(sparse: [:], dense: [])
+    }
+
+    init(sparse: [Index: Key], dense: ContiguousArray<Entry>) {
+        self.sparse = sparse
+        self.dense = dense
     }
 
     public var count: Int { return dense.count }
@@ -138,8 +142,21 @@ public struct UnorderedSparseSet<Element> {
 
 // MARK: - Sequence
 extension UnorderedSparseSet: Sequence {
-    public __consuming func makeIterator() -> UnorderedSparseSetIterator<Element> {
-        return UnorderedSparseSetIterator<Element>(self)
+    public __consuming func makeIterator() -> ElementIterator {
+        return ElementIterator(self)
+    }
+
+    // MARK: - UnorderedSparseSetIterator
+    public struct ElementIterator: IteratorProtocol {
+        public private(set) var iterator: IndexingIterator<ContiguousArray<UnorderedSparseSet<Element>.Entry>>
+
+        public init(_ sparseSet: UnorderedSparseSet<Element>) {
+            iterator = sparseSet.dense.makeIterator()
+        }
+
+        public mutating func next() -> Element? {
+            return iterator.next()?.element
+        }
     }
 }
 
@@ -154,16 +171,3 @@ extension UnorderedSparseSet: Equatable where Element: Equatable {
 // MARK: - Codable
 extension UnorderedSparseSet.Entry: Codable where Element: Codable { }
 extension UnorderedSparseSet: Codable where Element: Codable { }
-
-// MARK: - UnorderedSparseSetIterator
-public struct UnorderedSparseSetIterator<Element>: IteratorProtocol {
-    public private(set) var iterator: IndexingIterator<ContiguousArray<UnorderedSparseSet<Element>.Entry>>
-
-    public init(_ sparseSet: UnorderedSparseSet<Element>) {
-        iterator = sparseSet.dense.makeIterator()
-    }
-
-    public mutating func next() -> Element? {
-        return iterator.next()?.element
-    }
-}

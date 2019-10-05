@@ -26,12 +26,12 @@ class NexusTests: XCTestCase {
 
         let e0 = nexus.createEntity()
 
-        XCTAssertEqual(e0.identifier.index, 0)
+        XCTAssertEqual(e0.identifier.id, 0)
         XCTAssertEqual(nexus.numEntities, 1)
 
         let e1 = nexus.createEntity(with: Name(name: "Entity 1"))
 
-        XCTAssert(e1.identifier.index == 1)
+        XCTAssert(e1.identifier.id == 1)
         XCTAssert(nexus.numEntities == 2)
 
         //FIXME: XCTAssertNil(e0.name)
@@ -43,7 +43,7 @@ class NexusTests: XCTestCase {
         XCTAssertEqual(nexus.numEntities, 2)
 
         let e1: Entity = nexus.get(entity: EntityIdentifier(1))!
-        XCTAssertEqual(e1.identifier.index, 1)
+        XCTAssertEqual(e1.identifier.id, 1)
 
         XCTAssertTrue(nexus.destroy(entity: e1))
         XCTAssertFalse(nexus.destroy(entity: e1))

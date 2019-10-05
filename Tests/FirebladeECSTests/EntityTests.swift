@@ -11,15 +11,15 @@ import XCTest
 class EntityTests: XCTestCase {
     func testEntityIdentifierAndIndex() {
         let min = EntityIdentifier(.min)
-        XCTAssertEqual(min.index, Int(UInt32.min))
+        XCTAssertEqual(min.id, Int(UInt32.min))
 
         let uRand = UInt32.random(in: UInt32.min...UInt32.max)
         let rand = EntityIdentifier(uRand)
-        XCTAssertEqual(rand.index, Int(uRand))
+        XCTAssertEqual(rand.id, Int(uRand))
 
         let max = EntityIdentifier(.max)
         XCTAssertEqual(max, EntityIdentifier.invalid)
-        XCTAssertEqual(max.index, Int(UInt32.max))
+        XCTAssertEqual(max.id, Int(UInt32.max))
     }
 
     func testEntityIdentifierComparison() {

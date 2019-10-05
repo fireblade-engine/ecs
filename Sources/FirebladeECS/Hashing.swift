@@ -66,14 +66,14 @@ public func hash<H: Sequence>(combine hashables: H) -> Int where H.Element: Hash
 // MARK: - entity component hash
 extension EntityComponentHash {
     internal static func compose(entityId: EntityIdentifier, componentTypeHash: ComponentTypeHash) -> EntityComponentHash {
-        let entityIdSwapped = UInt(entityId.index).byteSwapped // needs to be 64 bit
+        let entityIdSwapped = UInt(entityId.id).byteSwapped // needs to be 64 bit
         let componentTypeHashUInt = UInt(bitPattern: componentTypeHash)
         let hashUInt: UInt = componentTypeHashUInt ^ entityIdSwapped
         return Int(bitPattern: hashUInt)
     }
 
     internal static func decompose(_ hash: EntityComponentHash, with entityId: EntityIdentifier) -> ComponentTypeHash {
-        let entityIdSwapped = UInt(entityId.index).byteSwapped
+        let entityIdSwapped = UInt(entityId.id).byteSwapped
         let entityIdSwappedInt = Int(bitPattern: entityIdSwapped)
         return hash ^ entityIdSwappedInt
     }

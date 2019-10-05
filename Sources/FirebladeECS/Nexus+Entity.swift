@@ -18,7 +18,7 @@ extension Nexus {
     public func createEntity() -> Entity {
         let newEntityIdentifier: EntityIdentifier = nextEntityId()
         let newEntity = Entity(nexus: self, id: newEntityIdentifier)
-        entityStorage.insert(newEntity, at: newEntityIdentifier.index)
+        entityStorage.insert(newEntity, at: newEntityIdentifier.id)
         delegate?.nexusEvent(EntityCreated(entityId: newEntityIdentifier))
         return newEntity
     }
@@ -36,22 +36,22 @@ extension Nexus {
     }
 
     public func exists(entity entityId: EntityIdentifier) -> Bool {
-        return entityStorage.contains(entityId.index)
+        return entityStorage.contains(entityId.id)
     }
 
     public func get(entity entityId: EntityIdentifier) -> Entity? {
-        return entityStorage.get(at: entityId.index)
+        return entityStorage.get(at: entityId.id)
     }
 
     public func get(unsafeEntity entityId: EntityIdentifier) -> Entity {
-        return entityStorage.get(unsafeAt: entityId.index)
+        return entityStorage.get(unsafeAt: entityId.id)
     }
 
     @discardableResult
     public func destroy(entity: Entity) -> Bool {
         let entityId: EntityIdentifier = entity.identifier
 
-        guard entityStorage.remove(at: entityId.index) != nil else {
+        guard entityStorage.remove(at: entityId.id) != nil else {
             delegate?.nexusNonFatalError("EntityRemove failure: no entity \(entityId) to remove")
             return false
         }

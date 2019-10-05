@@ -93,11 +93,6 @@ public struct UnorderedSparseSet<Element> {
         dense.removeAll(keepingCapacity: keepingCapacity)
     }
 
-    @inlinable
-    public func makeIterator() -> UnorderedSparseSetIterator<Element> {
-        return UnorderedSparseSetIterator<Element>(self)
-    }
-
     /// Removes an element from the set and retuns it in O(1).
     /// The removed element is replaced with the last element of the set.
     ///
@@ -138,6 +133,13 @@ public struct UnorderedSparseSet<Element> {
 
     @inlinable public var last: Element? {
         return dense.last?.element
+    }
+}
+
+// MARK: - Sequence
+extension UnorderedSparseSet: Sequence {
+    public __consuming func makeIterator() -> UnorderedSparseSetIterator<Element> {
+        return UnorderedSparseSetIterator<Element>(self)
     }
 }
 

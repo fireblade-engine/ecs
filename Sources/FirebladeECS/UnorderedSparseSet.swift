@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 30.10.17.
 //
 
-open class UnorderedSparseSet<Element> {
+public struct UnorderedSparseSet<Element> {
     public typealias Index = Int
     public typealias Key = Int
 
@@ -20,10 +20,6 @@ open class UnorderedSparseSet<Element> {
     public init() {
         sparse = [Index: Key]()
         dense = ContiguousArray<Entry>()
-    }
-
-    deinit {
-        removeAll()
     }
 
     public var count: Int { return dense.count }
@@ -42,7 +38,7 @@ open class UnorderedSparseSet<Element> {
     ///   - key: the key
     /// - Returns: true if new, false if replaced.
     @discardableResult
-    public func insert(_ element: Element, at key: Key) -> Bool {
+    public mutating func insert(_ element: Element, at key: Key) -> Bool {
         if let (denseIndex, _) = find(at: key) {
             dense[denseIndex] = Entry(key: key, element: element)
             return false
@@ -77,7 +73,7 @@ open class UnorderedSparseSet<Element> {
     /// - Parameter key: the key
     /// - Returns: removed value or nil if key not found.
     @discardableResult
-    public func remove(at key: Key) -> Entry? {
+    public mutating func remove(at key: Key) -> Entry? {
         guard let (denseIndex, _) = find(at: key) else {
             return nil
         }
@@ -92,7 +88,7 @@ open class UnorderedSparseSet<Element> {
     }
 
     @inlinable
-    public func removeAll(keepingCapacity: Bool = false) {
+    public mutating func removeAll(keepingCapacity: Bool = false) {
         sparse.removeAll(keepingCapacity: keepingCapacity)
         dense.removeAll(keepingCapacity: keepingCapacity)
     }
@@ -107,7 +103,7 @@ open class UnorderedSparseSet<Element> {
     ///
     /// - Parameter denseIndex: the dense index
     /// - Returns: the element entry
-    private func swapRemove(at denseIndex: Int) -> Entry {
+    private mutating func swapRemove(at denseIndex: Int) -> Entry {
         dense.swapAt(denseIndex, dense.count - 1)
         return dense.removeLast()
     }
@@ -145,12 +141,17 @@ open class UnorderedSparseSet<Element> {
     }
 }
 
+// MARK: - Equatable
 extension UnorderedSparseSet.Entry: Equatable where Element: Equatable { }
 extension UnorderedSparseSet: Equatable where Element: Equatable {
     public static func == (lhs: UnorderedSparseSet<Element>, rhs: UnorderedSparseSet<Element>) -> Bool {
         return lhs.dense == rhs.dense && lhs.sparse == rhs.sparse
     }
 }
+
+// MARK: - Codable
+extension UnorderedSparseSet.Entry: Codable where Element: Codable { }
+extension UnorderedSparseSet: Codable where Element: Codable { }
 
 // MARK: - UnorderedSparseSetIterator
 public struct UnorderedSparseSetIterator<Element>: IteratorProtocol {

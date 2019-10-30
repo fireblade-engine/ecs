@@ -1,11 +1,11 @@
-# Fireblade ECS (Entity-Component-System)
+# Fireblade ECS (Entity-Component System)
 [![Build Status](https://travis-ci.com/fireblade-engine/ecs.svg?branch=master)](https://travis-ci.com/fireblade-engine/ecs)
 [![license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 [![swift version](https://img.shields.io/badge/swift-5.0+-brightgreen.svg)](https://swift.org/download)
 [![platforms](https://img.shields.io/badge/platforms-%20macOS%20|%20iOS%20|%20tvOS%20|%20watchOS-brightgreen.svg)](#)
 [![platforms](https://img.shields.io/badge/platforms-linux-brightgreen.svg)](#)
 
-This is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component-System](https://en.wikipedia.org/wiki/Entity–component–system) implementation in Swift. It is developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
+This is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component System](https://en.wikipedia.org/wiki/Entity_component_system) implementation in Swift. It is developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
 
 See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) to get started.
 
@@ -219,16 +219,16 @@ nexus.family(requires: Position.self)
 
 See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) to get started.
 
-## Versioning
+## 🏷️ Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](tags). 
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/fireblade-engine/ecs/tags). 
 
 ## ✍️ Authors
 
 * [Christian Treffs](https://github.com/ctreffs) - *Initial work*
 * [Manuel Weidmann](https://github.com/vyo)
 
-See also the list of [contributors](https://github.com/fireblade-engine/ecs/blob/master/project/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/fireblade-engine/ecs/contributors) who participated in this project.
 
 ## 🔏 License
 

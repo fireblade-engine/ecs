@@ -5,12 +5,14 @@
 //  Created by Christian Treffs on 05.10.19.
 //
 
+import FirebladeECS
 import XCTest
 
 final class TypeIdentifierPerformanceTests: XCTestCase {
     let maxIterations: Int = 100_000
 
-    // 0.056 sec
+    // release: 0.000 sec
+    // debug:   0.051 sec
     func testPerformanceObjectIdentifier() {
         measure {
             for _ in 0..<maxIterations {
@@ -25,7 +27,24 @@ final class TypeIdentifierPerformanceTests: XCTestCase {
         }
     }
 
-    // 1.451 sec
+    /// release: 1.034 sec
+    /// debug:
+    func testPerformanceHash() {
+        measure {
+            for _ in 0..<maxIterations {
+                _ = StringHashing.singer_djb2(String(describing: Color.self))
+                _ = StringHashing.singer_djb2(String(describing: EmptyComponent.self))
+                _ = StringHashing.singer_djb2(String(describing: Name.self))
+                _ = StringHashing.singer_djb2(String(describing: Party.self))
+                _ = StringHashing.singer_djb2(String(describing: Position.self))
+                _ = StringHashing.singer_djb2(String(describing: SingleGameState.self))
+                _ = StringHashing.singer_djb2(String(describing: Velocity.self))
+            }
+        }
+    }
+
+    /// release: 1.034 sec
+    /// debug:   1.287 sec
     func testPerformanceStringDescribing() {
         measure {
             for _ in 0..<maxIterations {
@@ -40,7 +59,8 @@ final class TypeIdentifierPerformanceTests: XCTestCase {
         }
     }
 
-    // 1.587 sec
+    /// release: 1.187 sec
+    /// debug:   1.498 sec
     func testPerformanceStringReflecting() {
         measure {
             for _ in 0..<maxIterations {
@@ -55,7 +75,8 @@ final class TypeIdentifierPerformanceTests: XCTestCase {
         }
     }
 
-    // 2.817 sec
+    /// release: 2.102 sec
+    /// debug:   2.647 sec
     func testPerformanceMirrorReflectingDescription() {
         measure {
             for _ in 0..<maxIterations {

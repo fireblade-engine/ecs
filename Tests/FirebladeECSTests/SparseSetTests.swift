@@ -5,6 +5,7 @@
 //  Created by Christian Treffs on 31.10.17.
 //
 
+#if DEBUG
 @testable import FirebladeECS
 import XCTest
 
@@ -539,3 +540,4 @@ class SparseSetTests: XCTestCase {
         XCTAssertEqual(mapped, ["C", "A", "B"])
     }
 }
+#endif

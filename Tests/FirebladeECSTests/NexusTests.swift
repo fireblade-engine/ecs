@@ -5,7 +5,8 @@
 //  Created by Christian Treffs on 09.10.17.
 //
 
-import FirebladeECS
+#if DEBUG
+@testable import FirebladeECS
 import XCTest
 
 class NexusTests: XCTestCase {
@@ -158,3 +159,4 @@ class NexusTests: XCTestCase {
         XCTAssert(pB.y != pA.y)
     }
 }
+#endif

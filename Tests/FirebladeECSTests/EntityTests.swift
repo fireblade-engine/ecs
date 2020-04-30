@@ -5,7 +5,8 @@
 //  Created by Christian Treffs on 22.10.17.
 //
 
-import FirebladeECS
+#if DEBUG
+@testable import FirebladeECS
 import XCTest
 
 class EntityTests: XCTestCase {
@@ -27,3 +28,4 @@ class EntityTests: XCTestCase {
         XCTAssertTrue(EntityIdentifier(23) > EntityIdentifier(4))
     }
 }
+#endif

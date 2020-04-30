@@ -8,12 +8,6 @@
 import FirebladeECS
 import XCTest
 
-#if DEBUG
-let isDebug: Bool = true
-#else
-let isDebug: Bool = false
-#endif
-
 class HashingPerformanceTests: XCTestCase {
 
     /// release:  0.726 sec
@@ -51,7 +45,7 @@ class HashingPerformanceTests: XCTestCase {
     /// release: 0.098 sec
     /// debug:  16.702 sec
     func testMeasureBernsteinDjb2() throws {
-        try XCTSkipIf(isDebug)
+        #if !DEBUG
         let string = "The quick brown fox jumps over the lazy dog"
         measure {
             for _ in 0..<1_000_000 {
@@ -59,6 +53,7 @@ class HashingPerformanceTests: XCTestCase {
                 _ = hash
             }
         }
+        #endif
     }
 
     /// release: 0.087 sec
@@ -76,7 +71,7 @@ class HashingPerformanceTests: XCTestCase {
     /// release: 0.088 sec
     /// debug:  30.766 sec
     func testMeasureSDBM() throws {
-        try XCTSkipIf(isDebug)
+        #if !DEBUG
         let string = "The quick brown fox jumps over the lazy dog"
         measure {
             for _ in 0..<1_000_000 {
@@ -84,12 +79,13 @@ class HashingPerformanceTests: XCTestCase {
                 _ = hash
             }
         }
+        #endif
     }
 
     /// release: 0.036 sec
     /// debug:   0.546 sec
     func testMeasureSwiftHasher() throws {
-        try XCTSkipIf(isDebug)
+        #if !DEBUG
         let string = "The quick brown fox jumps over the lazy dog"
         measure {
             for _ in 0..<1_000_000 {
@@ -99,6 +95,7 @@ class HashingPerformanceTests: XCTestCase {
                 _ = hash
             }
         }
+        #endif
     }
 
 }

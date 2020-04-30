@@ -10,7 +10,8 @@ import XCTest
 
 class ComponentIdentifierTests: XCTestCase {
 
-    /// debug:  0.456 sec
+    /// release: 0.034 sec
+    /// debug:   0.456 sec
     func testMeasureStaticComponentIdentifier() {
         let number: Int = 1_000_000
         measure {
@@ -21,7 +22,8 @@ class ComponentIdentifierTests: XCTestCase {
         }
     }
 
-    /// debug: 0.413 sec
+    /// release: 0.036 sec
+    /// debug:   0.413 sec
     func testMeasureComponentIdentifier() {
         let number: Int = 1_000_000
         let pos = Position(x: 1, y: 2)

@@ -30,7 +30,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
         super.tearDown()
     }
 
-    /// release: 0.011 sec
+    /// release: 0.007 sec
     /// debug:   0.017 sec
     func testMeasureTraitMatching() {
         let a = nexus.createEntity()
@@ -92,7 +92,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
         XCTAssertEqual(loopCount, numEntities * 10)
     }
 
-    /// release: 0.003 sec
+    /// release: 0.002 sec
     /// debug:   0.010 sec
     func testPerformanceTypedFamilyOneComponent() {
         let family = nexus.family(requires: Position.self, excludesAll: Party.self)
@@ -116,7 +116,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
         XCTAssertEqual(loopCount, family.count * 10)
     }
 
-    /// release: 0.004 sec
+    /// release: 0.002 sec
     /// debug:   0.016 sec
     func testPerformanceTypedFamilyEntityOneComponent() {
         let family = nexus.family(requires: Position.self, excludesAll: Party.self)
@@ -142,7 +142,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
         XCTAssertEqual(loopCount, family.count * 10)
     }
 
-    /// release: 0.005 sec
+    /// release: 0.002 sec
     /// debug:   0.016 sec
     func testPerformanceTypedFamilyTwoComponents() {
         let family = nexus.family(requiresAll: Position.self, Velocity.self, excludesAll: Party.self)
@@ -167,7 +167,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
         XCTAssertEqual(loopCount, family.count * 10)
     }
 
-    /// release: 0.006 sec
+    /// release: 0.003 sec
     func testPerformanceTypedFamilyEntityTwoComponents() {
         let family = nexus.family(requiresAll: Position.self, Velocity.self, excludesAll: Party.self)
 
@@ -193,7 +193,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
         XCTAssertEqual(loopCount, family.count * 10)
     }
 
-    /// release: 0.007 sec
+    /// release: 0.004 sec
     func testPerformanceTypedFamilyThreeComponents() {
         let family = nexus.family(requiresAll: Position.self, Velocity.self, Name.self, excludesAll: Party.self)
 
@@ -218,7 +218,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
         XCTAssertEqual(loopCount, family.count * 10)
     }
 
-    /// release: 0.008 sec
+    /// release: 0.004 sec
     func testPerformanceTypedFamilyEntityThreeComponents() {
         let family = nexus.family(requiresAll: Position.self, Velocity.self, Name.self, excludesAll: Party.self)
 
@@ -245,7 +245,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
         XCTAssertEqual(loopCount, family.count * 10)
     }
 
-    /// release: 0.009 sec
+    /// release: 0.004 sec
     func testPerformanceTypedFamilyFourComponents() {
         let family = nexus.family(requiresAll: Position.self, Velocity.self, Name.self, Color.self, excludesAll: Party.self)
 
@@ -271,7 +271,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
         XCTAssertEqual(loopCount, family.count * 10)
     }
 
-    /// release:  0.010 sec
+    /// release:  0.005 sec
     func testPerformanceTypedFamilyEntityFourComponents() {
         let family = nexus.family(requiresAll: Position.self, Velocity.self, Name.self, Color.self, excludesAll: Party.self)
 
@@ -299,7 +299,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
         XCTAssertEqual(loopCount, family.count * 10)
     }
 
-    /// release: 0.012 sec
+    /// release: 0.005 sec
     func testPerformanceTypedFamilyFiveComponents() {
         let family = nexus.family(requiresAll: Position.self, Velocity.self, Name.self, Color.self, EmptyComponent.self, excludesAll: Party.self)
 
@@ -325,7 +325,7 @@ class TypedFamilyPerformanceTests: XCTestCase {
         XCTAssertEqual(loopCount, family.count * 10)
     }
 
-    /// release: 0.012 sec
+    /// release: 0.006 sec
     func testPerformanceTypedFamilyEntityFiveComponents() {
         let family = nexus.family(requiresAll: Position.self, Velocity.self, Name.self, Color.self, EmptyComponent.self, excludesAll: Party.self)
 

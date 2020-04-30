@@ -16,7 +16,7 @@ public final class Nexus {
     /// - Key: ComponentIdentifier aka component type.
     /// - Value: Array of component instances of same type (uniform).
     ///          New component instances are appended.
-    @usableFromInline final var componentsByType: [ComponentIdentifier: UnorderedSparseSet<Component>]
+    @usableFromInline final var componentsByType: [ComponentIdentifier: ManagedContiguousArray<Component>]
 
     /// - Key: EntityIdentifier aka entity index
     /// - Value: Set of unique component types (ComponentIdentifier).
@@ -43,7 +43,7 @@ public final class Nexus {
     }
 
     internal init(entityStorage: UnorderedSparseSet<EntityIdentifier>,
-                  componentsByType: [ComponentIdentifier: UnorderedSparseSet<Component>],
+                  componentsByType: [ComponentIdentifier: ManagedContiguousArray<Component>],
                   componentsByEntity: [EntityIdentifier: Set<ComponentIdentifier>],
                   freeEntities: [EntityIdentifier],
                   familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier>],

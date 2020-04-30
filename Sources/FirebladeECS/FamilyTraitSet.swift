@@ -23,7 +23,6 @@ public struct FamilyTraitSet {
         self.setHash = FirebladeECS.hash(combine: [requiresAll, excludesAll])
     }
 
-    // MARK: - match
     @inlinable
     public func isMatch(components: Set<ComponentIdentifier>) -> Bool {
         return hasAll(components) && hasNone(components)
@@ -39,7 +38,6 @@ public struct FamilyTraitSet {
         return excludesAll.isDisjoint(with: components)
     }
 
-    // MARK: - valid
     @inlinable
     public static func isValid(requiresAll: Set<ComponentIdentifier>, excludesAll: Set<ComponentIdentifier>) -> Bool {
         return !requiresAll.isEmpty &&
@@ -47,14 +45,12 @@ public struct FamilyTraitSet {
     }
 }
 
-// MARK: - Equatable
 extension FamilyTraitSet: Equatable {
     public static func == (lhs: FamilyTraitSet, rhs: FamilyTraitSet) -> Bool {
         return lhs.setHash == rhs.setHash
     }
 }
 
-// MARK: - Hashable
 extension FamilyTraitSet: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(setHash)
@@ -72,6 +68,3 @@ extension FamilyTraitSet: CustomDebugStringConvertible {
         return "<FamilyTraitSet [requiresAll:\(requiresAll.debugDescription) excludesAll: \(excludesAll.debugDescription)]>"
     }
 }
-
-// MARK: - Codable
-extension FamilyTraitSet: Codable { }

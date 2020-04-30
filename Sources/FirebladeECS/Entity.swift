@@ -127,10 +127,20 @@ public struct Entity {
     }
 }
 
-// MARK: - Equatable
 extension Entity: Equatable {
     public static func == (lhs: Entity, rhs: Entity) -> Bool {
-        return lhs.nexus == rhs.nexus &&
-            lhs.identifier == rhs.identifier
+        lhs.nexus === rhs.nexus && lhs.identifier == rhs.identifier
+    }
+}
+
+extension Entity: CustomStringConvertible {
+    public var description: String {
+        "<Entity id:\(identifier.id)>"
+    }
+}
+
+extension Entity: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        "<Entity id:\(identifier.id) numComponents:\(numComponents)>"
     }
 }

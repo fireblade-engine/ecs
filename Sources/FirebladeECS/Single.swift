@@ -29,7 +29,13 @@ public struct Single<A> where A: SingleComponent {
     public let entityId: EntityIdentifier
 }
 
-extension Single: Equatable { }
+extension Single: Equatable {
+    public static func == (lhs: Single<A>, rhs: Single<A>) -> Bool {
+        lhs.traits == rhs.traits &&
+            lhs.entityId == rhs.entityId &&
+            lhs.nexus === rhs.nexus
+    }
+}
 
 extension Single where A: SingleComponent {
     @inlinable public var component: A {

@@ -25,29 +25,29 @@ public struct FamilyTraitSet {
 
     @inlinable
     public func isMatch(components: Set<ComponentIdentifier>) -> Bool {
-        return hasAll(components) && hasNone(components)
+        hasAll(components) && hasNone(components)
     }
 
     @inlinable
     public func hasAll(_ components: Set<ComponentIdentifier>) -> Bool {
-        return requiresAll.isSubset(of: components)
+        requiresAll.isSubset(of: components)
     }
 
     @inlinable
     public func hasNone(_ components: Set<ComponentIdentifier>) -> Bool {
-        return excludesAll.isDisjoint(with: components)
+        excludesAll.isDisjoint(with: components)
     }
 
     @inlinable
     public static func isValid(requiresAll: Set<ComponentIdentifier>, excludesAll: Set<ComponentIdentifier>) -> Bool {
-        return !requiresAll.isEmpty &&
+        !requiresAll.isEmpty &&
             requiresAll.isDisjoint(with: excludesAll)
     }
 }
 
 extension FamilyTraitSet: Equatable {
     public static func == (lhs: FamilyTraitSet, rhs: FamilyTraitSet) -> Bool {
-        return lhs.setHash == rhs.setHash
+        lhs.setHash == rhs.setHash
     }
 }
 
@@ -59,12 +59,12 @@ extension FamilyTraitSet: Hashable {
 
 extension FamilyTraitSet: CustomStringConvertible {
     @inlinable public var description: String {
-        return "<FamilyTraitSet [requiresAll:\(requiresAll.description) excludesAll:\(excludesAll.description)]>"
+        "<FamilyTraitSet [requiresAll:\(requiresAll.description) excludesAll:\(excludesAll.description)]>"
     }
 }
 
 extension FamilyTraitSet: CustomDebugStringConvertible {
     @inlinable public var debugDescription: String {
-        return "<FamilyTraitSet [requiresAll:\(requiresAll.debugDescription) excludesAll: \(excludesAll.debugDescription)]>"
+        "<FamilyTraitSet [requiresAll:\(requiresAll.debugDescription) excludesAll: \(excludesAll.debugDescription)]>"
     }
 }

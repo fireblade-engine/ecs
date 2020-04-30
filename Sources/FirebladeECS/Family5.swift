@@ -62,7 +62,7 @@ extension Nexus {
         _ componentE: E.Type,
         excludesAll excludedComponents: Component.Type...
     ) -> Family5<A, B, C, D, E> where A: Component, B: Component, C: Component, D: Component, E: Component {
-        return Family5(
+        Family5(
             nexus: self,
             requiresAll: (componentA, componentB, componentC, componentD, componentE),
             excludesAll: excludedComponents

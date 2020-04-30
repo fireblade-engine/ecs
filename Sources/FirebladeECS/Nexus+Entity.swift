@@ -31,11 +31,11 @@ extension Nexus {
 
     /// Number of entities in nexus.
     public var numEntities: Int {
-        return entityStorage.count
+        entityStorage.count
     }
 
     public func exists(entity entityId: EntityIdentifier) -> Bool {
-        return entityStorage.contains(entityId.id)
+        entityStorage.contains(entityId.id)
     }
 
     public func get(entity entityId: EntityIdentifier) -> Entity? {
@@ -46,12 +46,12 @@ extension Nexus {
     }
 
     public func get(unsafeEntity entityId: EntityIdentifier) -> Entity {
-        return Entity(nexus: self, id: entityStorage.get(unsafeAt: entityId.id))
+        Entity(nexus: self, id: entityStorage.get(unsafeAt: entityId.id))
     }
 
     @discardableResult
     public func destroy(entity: Entity) -> Bool {
-        return self.destroy(entityId: entity.identifier)
+        self.destroy(entityId: entity.identifier)
     }
 
     @discardableResult

@@ -22,7 +22,7 @@ extension Nexus {
     }
 
     public final func removeChild(_ child: Entity, from parent: Entity) -> Bool {
-        return removeChild(child.identifier, from: parent.identifier)
+        removeChild(child.identifier, from: parent.identifier)
     }
 
     @discardableResult
@@ -44,6 +44,6 @@ extension Nexus {
     }
 
     public final func numChildren(for entity: Entity) -> Int {
-        return childrenByParentEntity[entity.identifier]?.count ?? 0
+        childrenByParentEntity[entity.identifier]?.count ?? 0
     }
 }

@@ -26,12 +26,12 @@ public struct UnorderedSparseSet<Element> {
         self.dense = dense
     }
 
-    public var count: Int { return dense.count }
-    public var isEmpty: Bool { return dense.isEmpty }
+    public var count: Int { dense.count }
+    public var isEmpty: Bool { dense.isEmpty }
 
     @inlinable
     public func contains(_ key: Key) -> Bool {
-        return find(at: key) != nil
+        find(at: key) != nil
     }
 
     /// Inset an element for a given key into the set in O(1).
@@ -69,7 +69,7 @@ public struct UnorderedSparseSet<Element> {
 
     @inlinable
     public func get(unsafeAt key: Key) -> Element {
-        return find(at: key).unsafelyUnwrapped.1
+        find(at: key).unsafelyUnwrapped.1
     }
 
     /// Removes the element entry for given key in O(1).
@@ -123,7 +123,7 @@ public struct UnorderedSparseSet<Element> {
     @inlinable
     public subscript(position: Index) -> Element {
         get {
-            return get(unsafeAt: position)
+            get(unsafeAt: position)
         }
 
         set(newValue) {
@@ -132,18 +132,18 @@ public struct UnorderedSparseSet<Element> {
     }
 
     @inlinable public var first: Element? {
-        return dense.first?.element
+        dense.first?.element
     }
 
     @inlinable public var last: Element? {
-        return dense.last?.element
+        dense.last?.element
     }
 }
 
 // MARK: - Sequence
 extension UnorderedSparseSet: Sequence {
     public __consuming func makeIterator() -> ElementIterator {
-        return ElementIterator(self)
+        ElementIterator(self)
     }
 
     // MARK: - UnorderedSparseSetIterator
@@ -155,7 +155,7 @@ extension UnorderedSparseSet: Sequence {
         }
 
         public mutating func next() -> Element? {
-            return iterator.next()?.element
+            iterator.next()?.element
         }
     }
 }
@@ -164,7 +164,7 @@ extension UnorderedSparseSet: Sequence {
 extension UnorderedSparseSet.Entry: Equatable where Element: Equatable { }
 extension UnorderedSparseSet: Equatable where Element: Equatable {
     public static func == (lhs: UnorderedSparseSet<Element>, rhs: UnorderedSparseSet<Element>) -> Bool {
-        return lhs.dense == rhs.dense && lhs.sparse == rhs.sparse
+        lhs.dense == rhs.dense && lhs.sparse == rhs.sparse
     }
 }
 

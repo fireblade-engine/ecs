@@ -24,24 +24,24 @@ public struct Entity {
 
     /// Returns the number of components for this entity.
     public var numComponents: Int {
-        return nexus.count(components: identifier)
+        nexus.count(components: identifier)
     }
 
     /// Checks if a component with given type is assigned to this entity.
     /// - Parameter type: the component type.
     public func has<C>(_ type: C.Type) -> Bool where C: Component {
-        return has(type.identifier)
+        has(type.identifier)
     }
 
     /// Checks if a component with a given component identifier is assigned to this entity.
     /// - Parameter compId: the component identifier.
     public func has(_ compId: ComponentIdentifier) -> Bool {
-        return nexus.has(componentId: compId, entityId: identifier)
+        nexus.has(componentId: compId, entityId: identifier)
     }
 
     /// Checks if this entity has any components.
     public var hasComponents: Bool {
-        return nexus.count(components: identifier) > 0
+        nexus.count(components: identifier) > 0
     }
 
     /// Add one or more components to this entity.
@@ -74,14 +74,14 @@ public struct Entity {
     /// - Parameter component: the component.
     @discardableResult
     public func remove<C>(_ component: C) -> Entity where C: Component {
-        return remove(component.identifier)
+        remove(component.identifier)
     }
 
     /// Remove a component by type from this entity.
     /// - Parameter compType: the component type.
     @discardableResult
     public func remove<C>(_ compType: C.Type) -> Entity where C: Component {
-        return remove(compType.identifier)
+        remove(compType.identifier)
     }
 
     /// Remove a component by id from this entity.
@@ -106,24 +106,24 @@ public struct Entity {
     /// - Parameter entity: The child entity.
     @discardableResult
     public func addChild(_ entity: Entity) -> Bool {
-        return nexus.addChild(entity, to: self)
+        nexus.addChild(entity, to: self)
     }
 
     /// Remove entity as child.
     /// - Parameter entity: The child entity.
     @discardableResult
     public func removeChild(_ entity: Entity) -> Bool {
-        return nexus.removeChild(entity, from: self)
+        nexus.removeChild(entity, from: self)
     }
 
     /// Removes all children from this entity.
     public func removeAllChildren() {
-        return nexus.removeAllChildren(from: self)
+        nexus.removeAllChildren(from: self)
     }
 
     /// Returns the number of children for this entity.
     public var numChildren: Int {
-        return nexus.numChildren(for: self)
+        nexus.numChildren(for: self)
     }
 }
 

@@ -32,7 +32,6 @@ class FamilyTests: XCTestCase {
         let family = nexus.family(requires: Position.self,
                                   excludesAll: Name.self)
 
-        XCTAssertEqual(family.nexus, self.nexus)
         XCTAssertTrue(family.nexus === self.nexus)
         XCTAssertEqual(nexus.numFamilies, 1)
         XCTAssertEqual(nexus.numComponents, 0)
@@ -74,11 +73,11 @@ class FamilyTests: XCTestCase {
         XCTAssertEqual(nexus.numComponents, 1)
         XCTAssertEqual(nexus.numEntities, 1)
         entity.remove(Position.self)
-        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numFamilies, 0)
         XCTAssertEqual(nexus.numComponents, 0)
         XCTAssertEqual(nexus.numEntities, 1)
         nexus.destroy(entity: entity)
-        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numFamilies, 0)
         XCTAssertEqual(nexus.numComponents, 0)
         XCTAssertEqual(nexus.numEntities, 0)
     }
@@ -133,7 +132,7 @@ class FamilyTests: XCTestCase {
                 entity.remove(velocity)
         }
 
-        XCTAssertEqual(familyA.count, 10)
+        XCTAssertEqual(familyA.count, 0)
         XCTAssertEqual(familyB.count, 0)
     }
 

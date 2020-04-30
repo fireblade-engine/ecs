@@ -51,5 +51,18 @@ class HashingTests: XCTestCase {
             XCTAssert(EntityComponentHash.decompose(h, with: entityId) == cH)
         }
     }
+
+    func testStringHashes() throws {
+        let string = "EiMersaufEn1"
+
+        XCTAssertEqual(StringHashing.bernstein_djb2(string), 13447802024599246090)
+        XCTAssertEqual(StringHashing.singer_djb2(string), 5428736256651916664)
+        XCTAssertEqual(StringHashing.sdbm(string), 15559770072020577201)
+
+        XCTAssertEqual(StringHashing.bernstein_djb2("gamedev"), 229466792000542)
+        XCTAssertEqual(StringHashing.singer_djb2("gamedev"), 2867840411746895486)
+        XCTAssertEqual(StringHashing.sdbm("gamedev"), 2761443862055442870)
+
+    }
 }
 #endif

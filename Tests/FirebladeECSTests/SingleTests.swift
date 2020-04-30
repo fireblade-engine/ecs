@@ -24,7 +24,6 @@ class SingleTests: XCTestCase {
 
     func testSingleCreation() {
         let single = nexus.single(SingleGameState.self)
-        XCTAssertEqual(single.nexus, self.nexus)
         XCTAssertTrue(single.nexus === self.nexus)
         XCTAssertEqual(single.traits.requiresAll.count, 1)
         XCTAssertEqual(single.traits.excludesAll.count, 0)

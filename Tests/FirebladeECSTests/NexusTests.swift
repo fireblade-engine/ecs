@@ -34,9 +34,6 @@ class NexusTests: XCTestCase {
 
         XCTAssert(e1.identifier.id == 1)
         XCTAssert(nexus.numEntities == 2)
-
-        //FIXME: XCTAssertNil(e0.name)
-        //FIXME: XCTAssertEqual(e1.name, "Entity 1")
     }
 
     func testEntityDestroy() {

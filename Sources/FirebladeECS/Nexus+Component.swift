@@ -7,7 +7,7 @@
 
 extension Nexus {
     public final var numComponents: Int {
-        return componentsByType.reduce(0) { $0 + $1.value.count }
+        componentsByType.reduce(0) { $0 + $1.value.count }
     }
 
     public final func has(componentId: ComponentIdentifier, entityId: EntityIdentifier) -> Bool {
@@ -18,14 +18,14 @@ extension Nexus {
     }
 
     public final func count(components entityId: EntityIdentifier) -> Int {
-        return componentIdsByEntity[entityId]?.count ?? 0
+        componentIdsByEntity[entityId]?.count ?? 0
     }
 
     public final func assign(component: Component, to entity: Entity) {
         let componentId: ComponentIdentifier = component.identifier
         let entityId: EntityIdentifier = entity.identifier
 
-        /// test if component is already assigned
+        // test if component is already assigned
         guard !has(componentId: componentId, entityId: entityId) else {
             delegate?.nexusNonFatalError("ComponentAdd collision: \(entityId) already has a component \(component)")
             assertionFailure("ComponentAdd collision: \(entityId) already has a component \(component)")
@@ -34,7 +34,7 @@ extension Nexus {
 
         // add component instances to uniform component stores
         if componentsByType[componentId] == nil {
-            componentsByType[componentId] = ManagedContiguousArray<Component>()
+            componentsByType[componentId] = UnorderedSparseSet<Component>()
         }
         componentsByType[componentId]?.insert(component, at: entityId.id)
 
@@ -76,13 +76,13 @@ extension Nexus {
     @inlinable
     public final func get<C>(unsafeComponentFor entityId: EntityIdentifier) -> C where C: Component {
         let component: Component = get(unsafeComponent: C.identifier, for: entityId)
-        /// components are guaranteed to be reference tyes so unsafeDowncast is applicable here
+        // components are guaranteed to be reference tyes so unsafeDowncast is applicable here
         return unsafeDowncast(component, to: C.self)
     }
 
     @inlinable
     public final func get(components entityId: EntityIdentifier) -> Set<ComponentIdentifier>? {
-        return componentIdsByEntity[entityId]
+        componentIdsByEntity[entityId]
     }
 
     @discardableResult

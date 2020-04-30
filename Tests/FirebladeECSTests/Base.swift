@@ -7,7 +7,9 @@
 
 import FirebladeECS
 
-class EmptyComponent: Component { }
+class EmptyComponent: Component {
+
+}
 
 class Name: Component {
     var name: String

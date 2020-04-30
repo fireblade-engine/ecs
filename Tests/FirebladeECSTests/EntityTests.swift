@@ -5,7 +5,8 @@
 //  Created by Christian Treffs on 22.10.17.
 //
 
-import FirebladeECS
+#if DEBUG
+@testable import FirebladeECS
 import XCTest
 
 class EntityTests: XCTestCase {
@@ -21,9 +22,5 @@ class EntityTests: XCTestCase {
         XCTAssertEqual(max, EntityIdentifier.invalid)
         XCTAssertEqual(max.id, Int(UInt32.max))
     }
-
-    func testEntityIdentifierComparison() {
-        XCTAssertTrue(EntityIdentifier(1) < EntityIdentifier(2))
-        XCTAssertTrue(EntityIdentifier(23) > EntityIdentifier(4))
-    }
 }
+#endif

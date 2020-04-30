@@ -29,17 +29,23 @@ public struct Single<A> where A: SingleComponent {
     public let entityId: EntityIdentifier
 }
 
-extension Single: Equatable { }
+extension Single: Equatable {
+    public static func == (lhs: Single<A>, rhs: Single<A>) -> Bool {
+        lhs.traits == rhs.traits &&
+            lhs.entityId == rhs.entityId &&
+            lhs.nexus === rhs.nexus
+    }
+}
 
 extension Single where A: SingleComponent {
     @inlinable public var component: A {
-        /// Since we guarantee that the component will always be present by managing the complete lifecycle of the entity
-        /// and component assignment we may unsafelyUnwrap here.
-        /// Since components will allways be of reference type (class) we may use unsafeDowncast here for performance reasons.
+        // Since we guarantee that the component will always be present by managing the complete lifecycle of the entity
+        // and component assignment we may unsafelyUnwrap here.
+        // Since components will allways be of reference type (class) we may use unsafeDowncast here for performance reasons.
         return nexus.get(unsafeComponentFor: entityId)
     }
 
     public var entity: Entity {
-        return nexus.get(entity: entityId).unsafelyUnwrapped
+        nexus.get(entity: entityId).unsafelyUnwrapped
     }
 }

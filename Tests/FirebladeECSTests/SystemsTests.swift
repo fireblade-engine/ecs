@@ -5,6 +5,7 @@
 //  Created by Christian Treffs on 10.05.18.
 //
 
+#if DEBUG
 @testable import FirebladeECS
 import XCTest
 
@@ -124,3 +125,4 @@ class SystemsTests: XCTestCase {
         }
     }
 }
+#endif

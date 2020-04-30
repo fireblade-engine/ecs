@@ -1,5 +1,5 @@
 //
-//  ComponentPerformanceTests.swift
+//  ComponentIdentifierTests.swift
 //  FirebladeECSPerformanceTests
 //
 //  Created by Christian Treffs on 14.02.19.
@@ -8,9 +8,11 @@
 import FirebladeECS
 import XCTest
 
-class ComponentTests: XCTestCase {
+class ComponentIdentifierTests: XCTestCase {
+
+    /// debug:  0.456 sec
     func testMeasureStaticComponentIdentifier() {
-        let number: Int = 10_000
+        let number: Int = 1_000_000
         measure {
             for _ in 0..<number {
                 let id = Position.identifier
@@ -19,8 +21,9 @@ class ComponentTests: XCTestCase {
         }
     }
 
+    /// debug: 0.413 sec
     func testMeasureComponentIdentifier() {
-        let number: Int = 10_000
+        let number: Int = 1_000_000
         let pos = Position(x: 1, y: 2)
         measure {
             for _ in 0..<number {

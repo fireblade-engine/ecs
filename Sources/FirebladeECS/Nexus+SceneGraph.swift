@@ -8,11 +8,11 @@
 extension Nexus {
     public final func addChild(_ child: Entity, to parent: Entity) -> Bool {
         let inserted: Bool
-        if parentChildrenMap[parent.identifier] == nil {
-            parentChildrenMap[parent.identifier] = [child.identifier]
+        if childrenByParentEntity[parent.identifier] == nil {
+            childrenByParentEntity[parent.identifier] = [child.identifier]
             inserted = true
         } else {
-            let (isNewMember, _) = parentChildrenMap[parent.identifier]!.insert(child.identifier)
+            let (isNewMember, _) = childrenByParentEntity[parent.identifier]!.insert(child.identifier)
             inserted = isNewMember
         }
         if inserted {
@@ -22,12 +22,12 @@ extension Nexus {
     }
 
     public final func removeChild(_ child: Entity, from parent: Entity) -> Bool {
-        return removeChild(child.identifier, from: parent.identifier)
+        removeChild(child.identifier, from: parent.identifier)
     }
 
     @discardableResult
     public final func removeChild(_ child: EntityIdentifier, from parent: EntityIdentifier) -> Bool {
-        let removed: Bool = parentChildrenMap[parent]?.remove(child) != nil
+        let removed: Bool = childrenByParentEntity[parent]?.remove(child) != nil
         if removed {
             delegate?.nexusEvent(ChildRemoved(parent: parent, child: child))
         }
@@ -35,11 +35,15 @@ extension Nexus {
     }
 
     public final func removeAllChildren(from parent: Entity) {
-        parentChildrenMap[parent.identifier]?.forEach { removeChild($0, from: parent.identifier) }
-        return parentChildrenMap[parent.identifier] = nil
+        self.removeAllChildren(from: parent.identifier)
+    }
+
+    public final func removeAllChildren(from parentId: EntityIdentifier) {
+        childrenByParentEntity[parentId]?.forEach { removeChild($0, from: parentId) }
+        return childrenByParentEntity[parentId] = nil
     }
 
     public final func numChildren(for entity: Entity) -> Int {
-        return parentChildrenMap[entity.identifier]?.count ?? 0
+        childrenByParentEntity[entity.identifier]?.count ?? 0
     }
 }

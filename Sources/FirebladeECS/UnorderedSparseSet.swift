@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 30.10.17.
 //
 
-open class UnorderedSparseSet<Element> {
+public struct UnorderedSparseSet<Element> {
     public typealias Index = Int
     public typealias Key = Int
 
@@ -18,20 +18,20 @@ open class UnorderedSparseSet<Element> {
     @usableFromInline var sparse: [Index: Key]
 
     public init() {
-        sparse = [Index: Key]()
-        dense = ContiguousArray<Entry>()
+        self.init(sparse: [:], dense: [])
     }
 
-    deinit {
-        removeAll()
+    init(sparse: [Index: Key], dense: ContiguousArray<Entry>) {
+        self.sparse = sparse
+        self.dense = dense
     }
 
-    public var count: Int { return dense.count }
-    public var isEmpty: Bool { return dense.isEmpty }
+    public var count: Int { dense.count }
+    public var isEmpty: Bool { dense.isEmpty }
 
     @inlinable
     public func contains(_ key: Key) -> Bool {
-        return find(at: key) != nil
+        find(at: key) != nil
     }
 
     /// Inset an element for a given key into the set in O(1).
@@ -42,7 +42,7 @@ open class UnorderedSparseSet<Element> {
     ///   - key: the key
     /// - Returns: true if new, false if replaced.
     @discardableResult
-    public func insert(_ element: Element, at key: Key) -> Bool {
+    public mutating func insert(_ element: Element, at key: Key) -> Bool {
         if let (denseIndex, _) = find(at: key) {
             dense[denseIndex] = Entry(key: key, element: element)
             return false
@@ -69,7 +69,7 @@ open class UnorderedSparseSet<Element> {
 
     @inlinable
     public func get(unsafeAt key: Key) -> Element {
-        return find(at: key).unsafelyUnwrapped.1
+        find(at: key).unsafelyUnwrapped.1
     }
 
     /// Removes the element entry for given key in O(1).
@@ -77,7 +77,7 @@ open class UnorderedSparseSet<Element> {
     /// - Parameter key: the key
     /// - Returns: removed value or nil if key not found.
     @discardableResult
-    public func remove(at key: Key) -> Entry? {
+    public mutating func remove(at key: Key) -> Entry? {
         guard let (denseIndex, _) = find(at: key) else {
             return nil
         }
@@ -92,14 +92,9 @@ open class UnorderedSparseSet<Element> {
     }
 
     @inlinable
-    public func removeAll(keepingCapacity: Bool = false) {
+    public mutating func removeAll(keepingCapacity: Bool = false) {
         sparse.removeAll(keepingCapacity: keepingCapacity)
         dense.removeAll(keepingCapacity: keepingCapacity)
-    }
-
-    @inlinable
-    public func makeIterator() -> UnorderedSparseSetIterator<Element> {
-        return UnorderedSparseSetIterator<Element>(self)
     }
 
     /// Removes an element from the set and retuns it in O(1).
@@ -107,7 +102,7 @@ open class UnorderedSparseSet<Element> {
     ///
     /// - Parameter denseIndex: the dense index
     /// - Returns: the element entry
-    private func swapRemove(at denseIndex: Int) -> Entry {
+    private mutating func swapRemove(at denseIndex: Int) -> Entry {
         dense.swapAt(denseIndex, dense.count - 1)
         return dense.removeLast()
     }
@@ -128,7 +123,7 @@ open class UnorderedSparseSet<Element> {
     @inlinable
     public subscript(position: Index) -> Element {
         get {
-            return get(unsafeAt: position)
+            get(unsafeAt: position)
         }
 
         set(newValue) {
@@ -137,30 +132,42 @@ open class UnorderedSparseSet<Element> {
     }
 
     @inlinable public var first: Element? {
-        return dense.first?.element
+        dense.first?.element
     }
 
     @inlinable public var last: Element? {
-        return dense.last?.element
+        dense.last?.element
     }
 }
 
+// MARK: - Sequence
+extension UnorderedSparseSet: Sequence {
+    public __consuming func makeIterator() -> ElementIterator {
+        ElementIterator(self)
+    }
+
+    // MARK: - UnorderedSparseSetIterator
+    public struct ElementIterator: IteratorProtocol {
+        public private(set) var iterator: IndexingIterator<ContiguousArray<UnorderedSparseSet<Element>.Entry>>
+
+        public init(_ sparseSet: UnorderedSparseSet<Element>) {
+            iterator = sparseSet.dense.makeIterator()
+        }
+
+        public mutating func next() -> Element? {
+            iterator.next()?.element
+        }
+    }
+}
+
+// MARK: - Equatable
 extension UnorderedSparseSet.Entry: Equatable where Element: Equatable { }
 extension UnorderedSparseSet: Equatable where Element: Equatable {
     public static func == (lhs: UnorderedSparseSet<Element>, rhs: UnorderedSparseSet<Element>) -> Bool {
-        return lhs.dense == rhs.dense && lhs.sparse == rhs.sparse
+        lhs.dense == rhs.dense && lhs.sparse == rhs.sparse
     }
 }
 
-// MARK: - UnorderedSparseSetIterator
-public struct UnorderedSparseSetIterator<Element>: IteratorProtocol {
-    public private(set) var iterator: IndexingIterator<ContiguousArray<UnorderedSparseSet<Element>.Entry>>
-
-    public init(_ sparseSet: UnorderedSparseSet<Element>) {
-        iterator = sparseSet.dense.makeIterator()
-    }
-
-    public mutating func next() -> Element? {
-        return iterator.next()?.element
-    }
-}
+// MARK: - Codable
+extension UnorderedSparseSet.Entry: Codable where Element: Codable { }
+extension UnorderedSparseSet: Codable where Element: Codable { }

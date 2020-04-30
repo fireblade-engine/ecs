@@ -37,8 +37,8 @@ extension Nexus {
         requires componentA: A.Type,
         excludesAll excludedComponents: Component.Type...
     ) -> Family1<A> where A: Component {
-        return Family1<A>(nexus: self,
-                          requiresAll: componentA,
-                          excludesAll: excludedComponents)
+        Family1<A>(nexus: self,
+                   requiresAll: componentA,
+                   excludesAll: excludedComponents)
     }
 }

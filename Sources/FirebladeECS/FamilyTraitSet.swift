@@ -23,50 +23,48 @@ public struct FamilyTraitSet {
         self.setHash = FirebladeECS.hash(combine: [requiresAll, excludesAll])
     }
 
-    // MARK: - match
     @inlinable
     public func isMatch(components: Set<ComponentIdentifier>) -> Bool {
-        return hasAll(components) && hasNone(components)
+        hasAll(components) && hasNone(components)
     }
 
     @inlinable
     public func hasAll(_ components: Set<ComponentIdentifier>) -> Bool {
-        return requiresAll.isSubset(of: components)
+        requiresAll.isSubset(of: components)
     }
 
     @inlinable
     public func hasNone(_ components: Set<ComponentIdentifier>) -> Bool {
-        return excludesAll.isDisjoint(with: components)
+        excludesAll.isDisjoint(with: components)
     }
 
-    // MARK: - valid
     @inlinable
     public static func isValid(requiresAll: Set<ComponentIdentifier>, excludesAll: Set<ComponentIdentifier>) -> Bool {
-        return !requiresAll.isEmpty &&
+        !requiresAll.isEmpty &&
             requiresAll.isDisjoint(with: excludesAll)
     }
 }
 
-// MARK: - Equatable
 extension FamilyTraitSet: Equatable {
     public static func == (lhs: FamilyTraitSet, rhs: FamilyTraitSet) -> Bool {
-        return lhs.setHash == rhs.setHash
+        lhs.setHash == rhs.setHash
     }
 }
 
-// MARK: - Hashable
 extension FamilyTraitSet: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(setHash)
     }
 }
 
-extension FamilyTraitSet: CustomStringConvertible, CustomDebugStringConvertible {
+extension FamilyTraitSet: CustomStringConvertible {
     @inlinable public var description: String {
-        return "<FamilyTraitSet [requiresAll:\(requiresAll.description) excludesAll:\(excludesAll.description)]>"
+        "<FamilyTraitSet [requiresAll:\(requiresAll.description) excludesAll:\(excludesAll.description)]>"
     }
+}
 
+extension FamilyTraitSet: CustomDebugStringConvertible {
     @inlinable public var debugDescription: String {
-        return "<FamilyTraitSet [requiresAll:\(requiresAll.debugDescription) excludesAll: \(excludesAll.debugDescription)]>"
+        "<FamilyTraitSet [requiresAll:\(requiresAll.debugDescription) excludesAll: \(excludesAll.debugDescription)]>"
     }
 }

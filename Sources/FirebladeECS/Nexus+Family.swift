@@ -7,7 +7,7 @@
 
 extension Nexus {
     public final var numFamilies: Int {
-        return familyMembersByTraits.keys.count
+        familyMembersByTraits.keys.count
     }
 
     public func canBecomeMember(_ entity: Entity, in traits: FamilyTraitSet) -> Bool {
@@ -19,18 +19,18 @@ extension Nexus {
     }
 
     public func members(withFamilyTraits traits: FamilyTraitSet) -> UnorderedSparseSet<EntityIdentifier> {
-        return familyMembersByTraits[traits] ?? UnorderedSparseSet<EntityIdentifier>()
+        familyMembersByTraits[traits] ?? UnorderedSparseSet<EntityIdentifier>()
     }
 
     public func isMember(_ entity: Entity, in family: FamilyTraitSet) -> Bool {
-        return isMember(entity.identifier, in: family)
+        isMember(entity.identifier, in: family)
     }
 
     public func isMember(_ entityId: EntityIdentifier, in family: FamilyTraitSet) -> Bool {
-        return isMember(entity: entityId, inFamilyWithTraits: family)
+        isMember(entity: entityId, inFamilyWithTraits: family)
     }
 
     public func isMember(entity entityId: EntityIdentifier, inFamilyWithTraits traits: FamilyTraitSet) -> Bool {
-        return members(withFamilyTraits: traits).contains(entityId.id)
+        members(withFamilyTraits: traits).contains(entityId.id)
     }
 }

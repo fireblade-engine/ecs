@@ -8,12 +8,12 @@
 extension Entity {
     @inlinable
     public func get<C>() -> C? where C: Component {
-        return nexus.get(for: identifier)
+        nexus.get(for: identifier)
     }
 
     @inlinable
     public func get<A>(component compType: A.Type = A.self) -> A? where A: Component {
-        return nexus.get(for: identifier)
+        nexus.get(for: identifier)
     }
 
     @inlinable

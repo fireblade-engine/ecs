@@ -5,6 +5,7 @@
 //  Created by Christian Treffs on 31.10.17.
 //
 
+#if DEBUG
 @testable import FirebladeECS
 import XCTest
 
@@ -387,7 +388,7 @@ class SparseSetTests: XCTestCase {
 
     func testSparseSetDoubleRemove() {
         class AClass { }
-        let set = UnorderedSparseSet<AClass>()
+        var set = UnorderedSparseSet<AClass>()
         let a = AClass()
         let b = AClass()
         set.insert(a, at: 0)
@@ -471,7 +472,7 @@ class SparseSetTests: XCTestCase {
     }
 
     func testSparseSetReduce() {
-        let characters = UnorderedSparseSet<Character>()
+        var characters = UnorderedSparseSet<Character>()
 
         characters.insert("H", at: 4)
         characters.insert("e", at: 13)
@@ -497,7 +498,7 @@ class SparseSetTests: XCTestCase {
     }
 
     func testSubscript() {
-        let characters = UnorderedSparseSet<Character>()
+        var characters = UnorderedSparseSet<Character>()
 
         characters[4] = "H"
         characters[13] = "e"
@@ -528,7 +529,7 @@ class SparseSetTests: XCTestCase {
     }
 
     func testStartEndIndex() {
-        let set = UnorderedSparseSet<Character>()
+        var set = UnorderedSparseSet<Character>()
 
         set.insert("C", at: 33)
         set.insert("A", at: 11)
@@ -539,3 +540,4 @@ class SparseSetTests: XCTestCase {
         XCTAssertEqual(mapped, ["C", "A", "B"])
     }
 }
+#endif

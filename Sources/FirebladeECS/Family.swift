@@ -18,39 +18,38 @@ public struct Family<R> where R: FamilyRequirementsManaging {
     }
 
     @inlinable public var memberIds: UnorderedSparseSet<EntityIdentifier> {
-        return nexus.members(withFamilyTraits: traits)
+        nexus.members(withFamilyTraits: traits)
     }
 
     @inlinable public var count: Int {
-        return memberIds.count
+        memberIds.count
     }
 
     @inlinable public var isEmpty: Bool {
-        return memberIds.isEmpty
+        memberIds.isEmpty
     }
 
     @inlinable
     public func canBecomeMember(_ entity: Entity) -> Bool {
-        return nexus.canBecomeMember(entity, in: traits)
+        nexus.canBecomeMember(entity, in: traits)
     }
 
     @inlinable
     public func isMember(_ entity: Entity) -> Bool {
-        return nexus.isMember(entity, in: traits)
+        nexus.isMember(entity, in: traits)
     }
 }
 
-// MARK: - Equatable
 extension Family: Equatable {
     public static func == (lhs: Family<R>, rhs: Family<R>) -> Bool {
-        return lhs.nexus == rhs.nexus &&
+        lhs.nexus === rhs.nexus &&
             lhs.traits == rhs.traits
     }
 }
 
 extension Family: Sequence {
     __consuming public func makeIterator() -> ComponentsIterator {
-        return ComponentsIterator(family: self)
+        ComponentsIterator(family: self)
     }
 }
 
@@ -59,7 +58,7 @@ extension Family: LazySequenceProtocol { }
 // MARK: - components iterator
 extension Family {
     public struct ComponentsIterator: IteratorProtocol {
-        @usableFromInline var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier>
+        @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier>.ElementIterator
         @usableFromInline unowned let nexus: Nexus
 
         public init(family: Family<R>) {
@@ -82,11 +81,11 @@ extension Family.ComponentsIterator: LazySequenceProtocol { }
 // MARK: - entity iterator
 extension Family {
     @inlinable public var entities: EntityIterator {
-        return EntityIterator(family: self)
+        EntityIterator(family: self)
     }
 
     public struct EntityIterator: IteratorProtocol {
-        @usableFromInline var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier>
+        @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier>.ElementIterator
         @usableFromInline unowned let nexus: Nexus
 
         public init(family: Family<R>) {
@@ -108,11 +107,11 @@ extension Family.EntityIterator: LazySequenceProtocol { }
 // MARK: - entity component iterator
 extension Family {
     @inlinable public var entityAndComponents: EntityComponentIterator {
-        return EntityComponentIterator(family: self)
+        EntityComponentIterator(family: self)
     }
 
     public struct EntityComponentIterator: IteratorProtocol {
-        @usableFromInline var memberIdsIterator: UnorderedSparseSetIterator<EntityIdentifier>
+        @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier>.ElementIterator
         @usableFromInline unowned let nexus: Nexus
 
         public init(family: Family<R>) {
@@ -136,7 +135,7 @@ extension Family.EntityComponentIterator: LazySequenceProtocol { }
 extension Family {
     @inlinable
     public func descendRelatives(from root: Entity) -> RelativesIterator {
-        return RelativesIterator(family: self, root: root)
+        RelativesIterator(family: self, root: root)
     }
 
     public struct RelativesIterator: IteratorProtocol {
@@ -161,7 +160,7 @@ extension Family {
         }
 
         mutating func aggregateRelativesBreathFirst(_ parent: EntityIdentifier) {
-            guard let children = nexus.parentChildrenMap[parent] else {
+            guard let children = nexus.childrenByParentEntity[parent] else {
                 return
             }
             children

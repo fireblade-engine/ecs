@@ -20,10 +20,6 @@ public struct ComponentAdded: NexusEvent {
     public let toEntity: EntityIdentifier
 }
 
-public struct ComponentUpdated: NexusEvent {
-    public let atEnity: EntityIdentifier
-}
-
 public struct ComponentRemoved: NexusEvent {
     public let component: ComponentIdentifier
     public let from: EntityIdentifier

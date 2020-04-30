@@ -13,7 +13,6 @@ extension Nexus {
         }
 
         familyMembersByTraits[traits] = UnorderedSparseSet<EntityIdentifier>()
-        defer { delegate?.nexusEvent(FamilyCreated(family: traits)) }
         update(familyMembership: traits)
     }
 
@@ -67,10 +66,5 @@ extension Nexus {
 
     final func remove(entityWithId entityId: EntityIdentifier, fromFamilyWithTraits traits: FamilyTraitSet) {
         familyMembersByTraits[traits]!.remove(at: entityId.id)
-        if familyMembersByTraits[traits]!.isEmpty {
-            // delete family if no more entities are present
-            familyMembersByTraits[traits] = nil
-            delegate?.nexusEvent(FamilyDestroyed(family: traits))
-        }
     }
 }

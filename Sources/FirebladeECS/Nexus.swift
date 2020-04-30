@@ -6,9 +6,6 @@
 //
 
 public final class Nexus {
-    /// Static version string.
-    public static let version: String = "1.0.0"
-
     /// Main entity storage.
     /// Entities are tightly packed by EntityIdentifier.
     @usableFromInline final var entityStorage: UnorderedSparseSet<EntityIdentifier>
@@ -74,45 +71,30 @@ public final class Nexus {
     }
 
     public static var knownUniqueComponentTypes: Set<ComponentIdentifier> {
-        return Set<ComponentIdentifier>(componentDecoderMap.keys)
-    }
-
-    internal static var componentDecoderMap: [ComponentIdentifier: (Decoder) throws -> Component] = [:]
-
-    /// Register a component type uniquely with the Nexus implementation.
-    /// - Parameters:
-    ///   - componentType: The component meta type.
-    ///   - identifier: The unique identifier.
-    internal static func register<C>(component componentType: C.Type, using identifier: ComponentIdentifier) where C: Component {
-        precondition(componentDecoderMap[identifier] == nil, "Component type collision: \(identifier) already in use.")
-        componentDecoderMap[identifier] = { try C(from: $0) }
+        Set<ComponentIdentifier>(stableComponentIdentifierMap.keys.map { ComponentIdentifier(hash: $0) })
     }
 }
 
-// MARK: - Errors
+// MARK: - centralized component identifier mapping
 extension Nexus {
-    public enum Error: Swift.Error {
-        case versionMismatch(required: String, provided: String)
-    }
-}
+    internal static var stableComponentIdentifierMap: [ComponentIdentifier.Hash: ComponentIdentifier.StableId] = [:]
 
-// MARK: - Equatable
-extension Nexus: Equatable {
-    @inlinable
-    public static func == (lhs: Nexus, rhs: Nexus) -> Bool {
-        return lhs.entityStorage == rhs.entityStorage &&
-            lhs.componentIdsByEntity == rhs.componentIdsByEntity &&
-            lhs.freeEntities == rhs.freeEntities &&
-            lhs.familyMembersByTraits == rhs.familyMembersByTraits &&
-            lhs.componentsByType.keys == rhs.componentsByType.keys &&
-            lhs.childrenByParentEntity == rhs.childrenByParentEntity
-        // NOTE: components are not equatable (yet)
+    internal static func makeOrGetComponentId<C>(_ componentType: C.Type) -> ComponentIdentifier.Hash where C: Component {
+        /// object identifier hash (only stable during runtime) - arbitrary hash is ok.
+        let objIdHash = ObjectIdentifier(componentType).hashValue
+        // if we do not know this component type yet - we register a stable identifier generator for it.
+        if stableComponentIdentifierMap[objIdHash] == nil {
+            let string = String(describing: C.self)
+            let stableHash = StringHashing.singer_djb2(string)
+            stableComponentIdentifierMap[objIdHash] = stableHash
+        }
+        return objIdHash
     }
 }
 
 // MARK: - CustomDebugStringConvertible
 extension Nexus: CustomDebugStringConvertible {
     public var debugDescription: String {
-        return "<Nexus entities:\(numEntities) components:\(numComponents) families:\(numFamilies)>"
+        "<Nexus entities:\(numEntities) components:\(numComponents) families:\(numFamilies)>"
     }
 }

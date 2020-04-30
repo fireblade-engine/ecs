@@ -83,3 +83,52 @@ extension EntityComponentHash {
         return EntityIdentifier(UInt32(truncatingIfNeeded: entityId))
     }
 }
+
+// MARK: - string hashing
+/// https://stackoverflow.com/a/52440609
+public enum StringHashing {
+    /// *Waren Singer djb2*
+    ///
+    /// <https://stackoverflow.com/a/43149500>
+    public static func singer_djb2(_ utf8String: String) -> UInt {
+        var hash = UInt(5381)
+        var iter = utf8String.unicodeScalars.makeIterator()
+        while let char = iter.next() {
+            hash = 127 * (hash & 0x00ffffffffffffff) + UInt(char.value)
+        }
+        return hash
+    }
+
+    /// *Dan Bernstein djb2*
+    ///
+    /// This algorithm (k=33) was first reported by dan bernstein many years ago in comp.lang.c.
+    /// Another version of this algorithm (now favored by bernstein) uses xor: hash(i) = hash(i - 1) * 33 ^ str[i];
+    /// The magic of number 33 (why it works better than many other constants, prime or not) has never been adequately explained.
+    ///
+    /// <http://www.cse.yorku.ca/~oz/hash.html>
+    public static func bernstein_djb2(_ string: String) -> UInt {
+        var hash: UInt = 5381
+        var iter = string.unicodeScalars.makeIterator()
+        while let char = iter.next() {
+            hash = (hash << 5) &+ hash &+ UInt(char.value)
+            //hash = ((hash << 5) + hash) + UInt(c.value)
+        }
+        return hash
+    }
+
+    /// *sdbm*
+    ///
+    /// This algorithm was created for sdbm (a public-domain reimplementation of ndbm) database library.
+    /// It was found to do well in scrambling bits, causing better distribution of the keys and fewer splits.
+    /// It also happens to be a good general hashing function with good distribution.
+    ///
+    /// <http://www.cse.yorku.ca/~oz/hash.html>
+    public static func sdbm(_ string: String) -> UInt {
+        var hash: UInt = 0
+        var iter = string.unicodeScalars.makeIterator()
+        while let char = iter.next() {
+            hash = (UInt(char.value) &+ (hash << 6) &+ (hash << 16))
+        }
+        return hash
+    }
+}

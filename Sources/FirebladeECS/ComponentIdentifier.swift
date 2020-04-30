@@ -6,21 +6,19 @@
 //
 
 /// Identifies a component by it's meta type
-public struct ComponentIdentifier: Identifiable {
-    public let id: String
+public struct ComponentIdentifier {
+    @usableFromInline
+    typealias Hash = Int
+    @usableFromInline
+    typealias StableId = UInt
+    @usableFromInline let hash: Hash
+}
 
-    public init<T>(_ componentType: T.Type) where T: Component {
-        defer { Nexus.register(component: T.self, using: self) }
-
-        self.id = String(reflecting: componentType)
+extension ComponentIdentifier {
+    @usableFromInline init<C>(_ componentType: C.Type) where C: Component {
+        self.hash = Nexus.makeOrGetComponentId(componentType)
     }
 }
 
 extension ComponentIdentifier: Equatable { }
 extension ComponentIdentifier: Hashable { }
-extension ComponentIdentifier: Codable { }
-extension ComponentIdentifier: Comparable {
-    public static func < (lhs: ComponentIdentifier, rhs: ComponentIdentifier) -> Bool {
-        return lhs.id < rhs.id
-    }
-}

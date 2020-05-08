@@ -9,7 +9,7 @@ public struct Family<R> where R: FamilyRequirementsManaging {
     @usableFromInline unowned let nexus: Nexus
     public let traits: FamilyTraitSet
 
-    public init(nexus: Nexus, requiresAll: @autoclosure () -> (R.ComponentTypes), excludesAll: [Component.Type]) {
+    public init(nexus: Nexus, requiresAll: @autoclosure () -> R.ComponentTypes, excludesAll: [Component.Type]) {
         let required = R(requiresAll())
         self.nexus = nexus
         let traits = FamilyTraitSet(requiresAll: required.componentTypes, excludesAll: excludesAll)

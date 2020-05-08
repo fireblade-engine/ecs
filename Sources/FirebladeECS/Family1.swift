@@ -10,11 +10,11 @@ public typealias Family1<A: Component> = Family<Requires1<A>>
 public struct Requires1<A>: FamilyRequirementsManaging where A: Component {
     public let componentTypes: [Component.Type]
 
-    public init(_ components: (A.Type)) {
+    public init(_ components: A.Type) {
         componentTypes = [A.self]
     }
 
-    public static func components(nexus: Nexus, entityId: EntityIdentifier) -> (A) {
+    public static func components(nexus: Nexus, entityId: EntityIdentifier) -> A {
         let compA: A = nexus.get(unsafeComponentFor: entityId)
         return (compA)
     }

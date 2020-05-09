@@ -1,7 +1,4 @@
-image: swift:5.2.2
-
-#before_script:
-  #- eval "$(curl -sL https://swiftenv.fuller.li/install.sh)"
+image: swift:5.1.2
 
 stages: 
   - test

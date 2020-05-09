@@ -76,7 +76,7 @@ extension Nexus {
     @inlinable
     public final func get<C>(unsafeComponentFor entityId: EntityIdentifier) -> C where C: Component {
         let component: Component = get(unsafeComponent: C.identifier, for: entityId)
-        // components are guaranteed to be reference tyes so unsafeDowncast is applicable here
+        // components are guaranteed to be reference types so unsafeDowncast is applicable here
         return unsafeDowncast(component, to: C.self)
     }
 
@@ -89,7 +89,7 @@ extension Nexus {
     public final func remove(component componentId: ComponentIdentifier, from entityId: EntityIdentifier) -> Bool {
         // delete component instance
         componentsByType[componentId]?.remove(at: entityId.id)
-        // unasign component from entity
+        // un-assign component from entity
         componentIdsByEntity[entityId]?.remove(componentId)
 
         update(familyMembership: entityId)
@@ -99,7 +99,7 @@ extension Nexus {
     }
 
     @discardableResult
-    public final func removeAll(componentes entityId: EntityIdentifier) -> Bool {
+    public final func removeAll(components entityId: EntityIdentifier) -> Bool {
         guard let allComponents = get(components: entityId) else {
             delegate?.nexusNonFatalError("clearing components form entity \(entityId) with no components")
             return false

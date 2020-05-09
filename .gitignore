@@ -27,12 +27,14 @@
 .DocumentRevisions-V100
 .DS_Store
 .fseventsd
+.idea/
 .LSOverride
 .Spotlight-V100
 .swiftpm/
 .TemporaryItems
 .Trashes
 .VolumeIcon.icns
+.vscode/
 /*.xcodeproj
 /.build
 /Packages

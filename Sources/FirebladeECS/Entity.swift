@@ -94,7 +94,7 @@ public struct Entity {
 
     /// Remove all components from this entity.
     public func removeAll() {
-        nexus.removeAll(componentes: identifier)
+        nexus.removeAll(components: identifier)
     }
 
     /// Destroy this entity.

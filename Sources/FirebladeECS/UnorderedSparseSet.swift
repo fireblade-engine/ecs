@@ -97,7 +97,7 @@ public struct UnorderedSparseSet<Element> {
         dense.removeAll(keepingCapacity: keepingCapacity)
     }
 
-    /// Removes an element from the set and retuns it in O(1).
+    /// Removes an element from the set and returns it in O(1).
     /// The removed element is replaced with the last element of the set.
     ///
     /// - Parameter denseIndex: the dense index

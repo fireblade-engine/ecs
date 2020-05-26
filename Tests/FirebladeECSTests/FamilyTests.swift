@@ -5,7 +5,6 @@
 //  Created by Christian Treffs on 09.10.17.
 //
 
-#if DEBUG
 @testable import FirebladeECS
 import XCTest
 
@@ -186,4 +185,3 @@ class FamilyTests: XCTestCase {
         XCTAssertEqual(family.memberIds.count, count + (count / 2))
     }
 }
-#endif

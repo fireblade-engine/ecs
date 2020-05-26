@@ -5,7 +5,6 @@
 //  Created by Christian Treffs on 16.10.17.
 //
 
-#if DEBUG
 @testable import FirebladeECS
 import XCTest
 
@@ -65,4 +64,3 @@ class HashingTests: XCTestCase {
 
     }
 }
-#endif

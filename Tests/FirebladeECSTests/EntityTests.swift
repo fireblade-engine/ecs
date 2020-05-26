@@ -5,7 +5,6 @@
 //  Created by Christian Treffs on 22.10.17.
 //
 
-#if DEBUG
 @testable import FirebladeECS
 import XCTest
 
@@ -23,4 +22,3 @@ class EntityTests: XCTestCase {
         XCTAssertEqual(max.id, Int(UInt32.max))
     }
 }
-#endif

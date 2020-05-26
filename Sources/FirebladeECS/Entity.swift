@@ -125,6 +125,37 @@ public struct Entity {
     public var numChildren: Int {
         nexus.numChildren(for: self)
     }
+
+    /// Returns an iterator over all components of this entity.
+    @inlinable
+    public func makeComponentsIterator() -> ComponentsIterator {
+        ComponentsIterator(nexus: nexus, entityIdentifier: identifier)
+    }
+
+    /// Returns a sequence of all componenents of this entity.
+    @inlinable
+    public func allComponents() -> AnySequence<Component> {
+        AnySequence { self.makeComponentsIterator() }
+    }
+}
+
+extension Entity {
+    public struct ComponentsIterator: IteratorProtocol {
+        private var iterator: AnyIterator<Component>
+
+        @usableFromInline
+        init(nexus: Nexus, entityIdentifier: EntityIdentifier) {
+            if let comps = nexus.get(components: entityIdentifier) {
+                iterator = AnyIterator<Component>(comps.compactMap { nexus.get(component: $0, for: entityIdentifier) }.makeIterator())
+            } else {
+                iterator = AnyIterator { nil }
+            }
+        }
+
+        public mutating func next() -> Component? {
+            iterator.next()
+        }
+    }
 }
 
 extension Entity: Equatable {

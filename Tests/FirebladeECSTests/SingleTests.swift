@@ -5,7 +5,6 @@
 //  Created by Christian Treffs on 13.02.19.
 //
 
-#if DEBUG
 @testable import FirebladeECS
 import XCTest
 
@@ -63,4 +62,3 @@ class SingleTests: XCTestCase {
         XCTAssertTrue(singleGame === single.component)
     }
 }
-#endif

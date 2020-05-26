@@ -5,7 +5,6 @@
 //  Created by Christian Treffs on 22.10.17.
 //
 
-#if DEBUG
 @testable import FirebladeECS
 import XCTest
 
@@ -22,5 +21,33 @@ class EntityTests: XCTestCase {
         XCTAssertEqual(max, EntityIdentifier.invalid)
         XCTAssertEqual(max.id, Int(UInt32.max))
     }
+
+    func testAllComponentsOfEntity() {
+        let nexus = Nexus()
+
+        let pos = Position(x: 1, y: 2)
+        let name = Name(name: "Hello")
+        let vel = Velocity(a: 1.234)
+
+        let entity = nexus.createEntity()
+        entity.assign(pos)
+        entity.assign(name)
+        entity.assign(vel)
+
+        let expectedComponents: [Component] = [pos, name, vel]
+        let allComponents = entity.allComponents()
+
+        XCTAssertTrue(allComponents.elementsEqualUnordered(expectedComponents) { $0 === $1 })
+    }
 }
-#endif
+
+extension Sequence {
+    func elementsEqualUnordered<OtherSequence>(_ other: OtherSequence, by areEquivalent: (Element, OtherSequence.Element) throws -> Bool) rethrows -> Bool where OtherSequence: Sequence {
+        for element in self {
+            if try !other.contains(where: { try areEquivalent(element, $0) }) {
+                return false
+            }
+        }
+        return true
+    }
+}

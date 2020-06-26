@@ -68,7 +68,6 @@ extension Nexus: Encodable {
         var componentIdMap: [ComponentIdentifier: SComponentTypeId] = [:]
         var componentInstances: [SComponentId: SComponent] = [:]
         var entityComponentsMap: [EntityIdentifier: Set<SComponentId>] = [:]
-        var componentTypes: [SComponentType] = []
         
         for entitId in self.entityStorage {
             
@@ -85,7 +84,6 @@ extension Nexus: Encodable {
                 } else {
                     sCompTypeId = SComponentTypeId()
                     componentIdMap[componentId] = sCompTypeId
-                    componentTypes.append(SComponentType(typeId: sCompTypeId, typeName: String(describing: type(of: component))))
                 }
                 
                 
@@ -102,7 +100,6 @@ extension Nexus: Encodable {
         
         return SNexus(version: version,
                       entities: entityComponentsMap,
-                      componentTypes: componentTypes,
                       components: componentInstances)
     }
 }
@@ -192,19 +189,11 @@ extension Version: Decodable {
 public struct SNexus {
     public let version: Version
     public let entities: [EntityIdentifier: Set<SComponentId>]
-    public let componentTypes: [SComponentType]
     public let components: [SComponentId: SComponent]
     
 }
 extension SNexus: Encodable { }
 extension SNexus: Decodable { }
-
-public struct SComponentType {
-    public let typeId: SComponentTypeId
-    public let typeName: String
-}
-extension SComponentType: Encodable { }
-extension SComponentType: Decodable { }
 
 public struct SComponent  {
     public enum Keys: String, CodingKey {

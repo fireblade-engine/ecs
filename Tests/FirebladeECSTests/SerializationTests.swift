@@ -30,6 +30,20 @@ public final class SerializationTests: XCTestCase {
         let encoder = JSONEncoder()
         XCTAssertThrowsError(try encoder.encode(nexus))
     }
+    
+    func testDeserialization() throws {
+        let nexus = Nexus()
+        nexus.createEntity(with: Name(name: "myName"))
+        
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(nexus)
+        
+        let decoder = JSONDecoder()
+        let nexus2: Nexus = try decoder.decode(Nexus.self, from: data)
+        
+        XCTAssertEqual(nexus2.numEntities, nexus.numEntities)
+        XCTAssertEqual(nexus2.numComponents, nexus.numComponents)
+    }
 }
 
 // MARK: - Encoding
@@ -41,14 +55,14 @@ extension Nexus: Encodable {
     }
     
     
-    public struct ComponentNotEncodableError: Swift.Error {
+    public struct ComponentNotCodableError: Swift.Error {
         public let localizedDescription: String
         
         init(_ component: Component) {
-            localizedDescription = "Component `\(type(of: component))` must conform to `\(Encodable.self)` protocol to be encoded."
+            localizedDescription = "Component `\(type(of: component))` must conform to `\(Codable.self)` protocol to be encoded and decoded."
         }
     }
-
+    
     final func serialize() throws -> SNexus {
         let version = Version(major: 0, minor: 0, patch: 1)
         
@@ -81,14 +95,12 @@ extension Nexus: Encodable {
                 
                 let sCompId: SComponentId = SComponentId()
                 
-                if let encodableComponent = component as? (Component & Encodable) {
-                    let sComp = SComponent(typeId: sCompTypeId, instance: encodableComponent)
-                    componentInstances[sCompId] = sComp
-                    
-                    entityComponentsMap[sEntityId]!.insert(sCompId)
-                } else {
-                    throw ComponentNotEncodableError(component)
-                }
+                
+                let sComp = SComponent(typeId: sCompTypeId, instance: component)
+                componentInstances[sCompId] = sComp
+                
+                entityComponentsMap[sEntityId]!.insert(sCompId)
+                
             }
         }
         
@@ -100,7 +112,24 @@ extension Nexus: Encodable {
 }
 
 // MARK: - Decoding
-
+extension Nexus: Decodable {
+    public convenience init(from decoder: Decoder) throws {
+        
+        let container = try decoder.singleValueContainer()
+        let sNexus = try container.decode(SNexus.self)
+        
+        
+        
+        
+        self.init(entityStorage: UnorderedSparseSet(),
+                  componentsByType: [:],
+                  componentsByEntity: [:],
+                  freeEntities: [],
+                  familyMembersByTraits: [:],
+                  childrenByParentEntity: [:])
+    }
+    
+}
 
 // MARK: - Model
 public typealias SEntityId = UUID
@@ -117,6 +146,32 @@ extension Version: Encodable {
         try container.encode("\(major).\(minor).\(patch)")
     }
 }
+extension Version: Decodable {
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let versionString = try container.decode(String.self)
+        let components = versionString.components(separatedBy: ".")
+        guard components.count == 3 else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Malformed version.")
+        }
+        
+        guard let major = UInt(components[0]) else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Major invalid.")
+        }
+        
+        guard let minor = UInt(components[1]) else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Minor invalid.")
+        }
+        
+        guard let patch = UInt(components[2]) else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Patch invalid.")
+        }
+        
+        self.major = major
+        self.minor = minor
+        self.patch = patch
+    }
+}
 
 public struct SNexus {
     public let version: Version
@@ -125,30 +180,45 @@ public struct SNexus {
     public let components: [SComponentId: SComponent]
     
 }
-extension SNexus:  Encodable { }
+extension SNexus: Encodable { }
+extension SNexus: Decodable { }
 
 public struct SComponentType {
     public let typeId: SComponentTypeId
     public let typeName: String
 }
 extension SComponentType: Encodable { }
+extension SComponentType: Decodable { }
 
 public struct SComponent  {
+    public enum Keys: String, CodingKey {
+        case typeId
+        case instance
+    }
+    
     public let typeId: SComponentTypeId
-    public let instance: (Component & Encodable)
-    public init(typeId: SComponentTypeId, instance: Component & Encodable) {
+    public let instance: Component
+    public init(typeId: SComponentTypeId, instance: Component) {
         self.typeId = typeId
         self.instance = instance
     }
 }
 extension SComponent: Encodable {
-    public enum Keys: String, CodingKey {
-        case typeId
-        case instance
-    }
+    
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: Keys.self)
         try container.encode(typeId, forKey: .typeId)
-        try instance.encode(to: container.superEncoder(forKey: .instance))
+        let bytes = withUnsafeBytes(of: instance) { Data(bytes: $0.baseAddress!, count: MemoryLayout.stride(ofValue: instance)) }
+        try container.encode(bytes, forKey: .instance)
+    }
+}
+extension SComponent: Decodable {
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: Keys.self)
+        self.typeId = try container.decode(SComponentTypeId.self, forKey: .typeId)
+        let instanceData = try container.decode(Data.self, forKey: .instance)
+        self.instance = instanceData.withUnsafeBytes {
+            $0.baseAddress!.load(as: Component.self)
+        }
     }
 }

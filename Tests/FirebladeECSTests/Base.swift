@@ -11,14 +11,14 @@ class EmptyComponent: Component {
 
 }
 
-class Name: Component, Encodable {
+class Name: Component, Codable {
     var name: String
     init(name: String) {
         self.name = name
     }
 }
 
-class Position: Component, Encodable {
+class Position: Component, Codable {
     var x: Int
     var y: Int
     init(x: Int, y: Int) {
@@ -27,7 +27,7 @@ class Position: Component, Encodable {
     }
 }
 
-class Velocity: Component, Encodable {
+class Velocity: Component, Codable {
     var a: Float
     init(a: Float) {
         self.a = a

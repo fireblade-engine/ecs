@@ -31,8 +31,7 @@ extension Nexus: Encodable {
                     fatalError("could not get entity for \(componentId)")
                 }
                 let componentStableInstanceHash = ComponentIdentifier.makeStableInstanceHash(component: component, entityId: entitId)
-                let componentStableTypeHash = ComponentIdentifier.makeStableTypeHash(component: component)
-                componentInstances[componentStableInstanceHash] = SComponent(typeId: componentStableTypeHash, instance: component)
+                componentInstances[componentStableInstanceHash] = SComponent(instance: component)
                 entityComponentsMap[entitId]?.insert(componentStableInstanceHash)
             }
         }
@@ -138,34 +137,25 @@ extension SNexus: Encodable { }
 extension SNexus: Decodable { }
 
 internal struct SComponent {
-    enum Keys: String, CodingKey {
-        case typeId
-        case instance
-    }
-
-    let typeId: ComponentIdentifier.StableId
     let instance: Component
 
-    init(typeId: ComponentIdentifier.StableId, instance: Component) {
-        self.typeId = typeId
+    init(instance: Component) {
         self.instance = instance
     }
 }
 extension SComponent: Encodable {
     public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: Keys.self)
-        try container.encode(typeId, forKey: .typeId)
+        var container = encoder.singleValueContainer()
         let bytes = withUnsafeBytes(of: instance) {
             Data(bytes: $0.baseAddress!, count: MemoryLayout.stride(ofValue: instance))
         }
-        try container.encode(bytes, forKey: .instance)
+        try container.encode(bytes)
     }
 }
 extension SComponent: Decodable {
     public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: Keys.self)
-        self.typeId = try container.decode(ComponentIdentifier.StableId.self, forKey: .typeId)
-        let instanceData = try container.decode(Data.self, forKey: .instance)
+        let container = try decoder.singleValueContainer()
+        let instanceData = try container.decode(Data.self)
         self.instance = instanceData.withUnsafeBytes {
             $0.baseAddress!.load(as: Component.self)
         }

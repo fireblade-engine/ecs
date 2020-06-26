@@ -23,23 +23,31 @@ public final class SerializationTests: XCTestCase {
         print(String(data: data, encoding: .utf8)!)
     }
     
-    func testFailSerialization() {
-        let nexus = Nexus()
-        nexus.createEntity(with: Party(partying: true))
-        
-        let encoder = JSONEncoder()
-        XCTAssertThrowsError(try encoder.encode(nexus))
-    }
-    
     func testDeserialization() throws {
         let nexus = Nexus()
-        nexus.createEntity(with: Name(name: "myName"))
+        let firstEntity = nexus.createEntity(with: Name(name: "myName"), Position(x: 1, y: 2))
+        let secondEntity = nexus.createEntity(with: Velocity(a: 3.14), Party(partying: true))
         
         let encoder = JSONEncoder()
         let data = try encoder.encode(nexus)
         
         let decoder = JSONDecoder()
         let nexus2: Nexus = try decoder.decode(Nexus.self, from: data)
+        
+        
+        let firstEntity2 = nexus2.get(entity: firstEntity.identifier)!
+        XCTAssertTrue(firstEntity2.has(Name.self))
+        XCTAssertTrue(firstEntity2.has(Position.self))
+        XCTAssertEqual(firstEntity2.get(component: Name.self)?.name, "myName")
+        XCTAssertEqual(firstEntity2.get(component: Position.self)?.x, 1)
+        XCTAssertEqual(firstEntity2.get(component: Position.self)?.y, 2)
+        
+        
+        let secondEntity2 = nexus2.get(entity: secondEntity.identifier)!
+        XCTAssertTrue(secondEntity2.has(Velocity.self))
+        XCTAssertTrue(secondEntity2.has(Party.self))
+        XCTAssertEqual(secondEntity2.get(component: Velocity.self)?.a, 3.14)
+        XCTAssertEqual(secondEntity2.get(component: Party.self)?.partying, true)
         
         XCTAssertEqual(nexus2.numEntities, nexus.numEntities)
         XCTAssertEqual(nexus2.numComponents, nexus.numComponents)
@@ -54,29 +62,17 @@ extension Nexus: Encodable {
         try container.encode(serialized)
     }
     
-    
-    public struct ComponentNotCodableError: Swift.Error {
-        public let localizedDescription: String
-        
-        init(_ component: Component) {
-            localizedDescription = "Component `\(type(of: component))` must conform to `\(Codable.self)` protocol to be encoded and decoded."
-        }
-    }
-    
     final func serialize() throws -> SNexus {
         let version = Version(major: 0, minor: 0, patch: 1)
         
         var componentIdMap: [ComponentIdentifier: SComponentTypeId] = [:]
         var componentInstances: [SComponentId: SComponent] = [:]
-        var entityComponentsMap: [SEntityId: Set<SComponentId>] = [:]
+        var entityComponentsMap: [EntityIdentifier: Set<SComponentId>] = [:]
         var componentTypes: [SComponentType] = []
         
         for entitId in self.entityStorage {
-            let sEntityId: SEntityId
-            sEntityId = SEntityId()
             
-            
-            entityComponentsMap[sEntityId] = []
+            entityComponentsMap[entitId] = []
             let componentIds = self.get(components: entitId) ?? []
             
             
@@ -99,7 +95,7 @@ extension Nexus: Encodable {
                 let sComp = SComponent(typeId: sCompTypeId, instance: component)
                 componentInstances[sCompId] = sComp
                 
-                entityComponentsMap[sEntityId]!.insert(sCompId)
+                entityComponentsMap[entitId]!.insert(sCompId)
                 
             }
         }
@@ -118,23 +114,43 @@ extension Nexus: Decodable {
         let container = try decoder.singleValueContainer()
         let sNexus = try container.decode(SNexus.self)
         
+        self.init()
         
+        for (entityId, componentSet) in sNexus.entities {
+            let entity = self.createEntity(entityId: entityId)
+            
+            for sCompId in componentSet {
+                guard let sComp = sNexus.components[sCompId] else {
+                    throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Could not find component instance for \(sCompId)."))
+                }
+                entity.assign(sComp.instance)
+            }
+            
+        }
         
-        
-        self.init(entityStorage: UnorderedSparseSet(),
-                  componentsByType: [:],
-                  componentsByEntity: [:],
-                  freeEntities: [],
-                  familyMembersByTraits: [:],
-                  childrenByParentEntity: [:])
     }
     
 }
 
 // MARK: - Model
-public typealias SEntityId = UUID
 public typealias SComponentId = UUID
 public typealias SComponentTypeId = UUID
+
+extension EntityIdentifier: Encodable {
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(id)
+    }
+}
+extension EntityIdentifier: Decodable {
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let id = try container.decode(UInt32.self)
+        self.init(id)
+    }
+}
+
+
 public struct Version {
     public let major: UInt
     public let minor: UInt
@@ -175,7 +191,7 @@ extension Version: Decodable {
 
 public struct SNexus {
     public let version: Version
-    public let entities: [SEntityId: Set<SComponentId>]
+    public let entities: [EntityIdentifier: Set<SComponentId>]
     public let componentTypes: [SComponentType]
     public let components: [SComponentId: SComponent]
     

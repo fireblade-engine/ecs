@@ -17,9 +17,13 @@ extension Nexus {
     @discardableResult
     public func createEntity() -> Entity {
         let newEntityIdentifier: EntityIdentifier = nextEntityId()
-        entityStorage.insert(newEntityIdentifier, at: newEntityIdentifier.id)
-        delegate?.nexusEvent(EntityCreated(entityId: newEntityIdentifier))
-        return Entity(nexus: self, id: newEntityIdentifier)
+        return createEntity(entityId: newEntityIdentifier)
+    }
+
+    internal func createEntity(entityId: EntityIdentifier) -> Entity {
+        entityStorage.insert(entityId, at: entityId.id)
+        delegate?.nexusEvent(EntityCreated(entityId: entityId))
+        return Entity(nexus: self, id: entityId)
     }
 
     @discardableResult

@@ -15,12 +15,17 @@ public final class SerializationTests: XCTestCase {
         nexus.createEntity(with: Position(x: 5, y: 18), Name(name: "yourName"))
         
         let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
         let data = try encoder.encode(nexus)
         
         XCTAssertNotNil(data)
-        XCTAssertGreaterThanOrEqual(data.count, 700)
-        print(String(data: data, encoding: .utf8)!)
+        XCTAssertGreaterThanOrEqual(data.count, 400)
+        
+        
+        let encoder2 = JSONEncoder()
+        let data2 = try encoder2.encode(nexus)
+        XCTAssertEqual(data.count, data2.count)
+        //print(String(data: data, encoding: .utf8)!)
+        //print(String(data: data2, encoding: .utf8)!)
     }
     
     func testDeserialization() throws {
@@ -65,36 +70,22 @@ extension Nexus: Encodable {
     final func serialize() throws -> SNexus {
         let version = Version(major: 0, minor: 0, patch: 1)
         
-        var componentIdMap: [ComponentIdentifier: SComponentTypeId] = [:]
-        var componentInstances: [SComponentId: SComponent] = [:]
-        var entityComponentsMap: [EntityIdentifier: Set<SComponentId>] = [:]
+        var componentInstances: [ComponentIdentifier.StableId: SComponent] = [:]
+        var entityComponentsMap: [EntityIdentifier: Set<ComponentIdentifier.StableId>] = [:]
         
         for entitId in self.entityStorage {
             
             entityComponentsMap[entitId] = []
             let componentIds = self.get(components: entitId) ?? []
             
-            
             for componentId in componentIds {
-                let component = self.get(component: componentId, for: entitId)!
-                
-                let sCompTypeId: SComponentTypeId
-                if let typeId = componentIdMap[componentId] {
-                    sCompTypeId = typeId
-                } else {
-                    sCompTypeId = SComponentTypeId()
-                    componentIdMap[componentId] = sCompTypeId
+                guard let component = self.get(component: componentId, for: entitId) else {
+                    fatalError("could not get entity for \(componentId)")
                 }
-                
-                
-                let sCompId: SComponentId = SComponentId()
-                
-                
-                let sComp = SComponent(typeId: sCompTypeId, instance: component)
-                componentInstances[sCompId] = sComp
-                
-                entityComponentsMap[entitId]!.insert(sCompId)
-                
+                let componentStableInstanceHash = ComponentIdentifier.makeStableInstanceHash(component: component, entityId: entitId)
+                let componentStableTypeHash = ComponentIdentifier.makeStableTypeHash(component: component)
+                componentInstances[componentStableInstanceHash] = SComponent(typeId: componentStableTypeHash, instance: component)
+                entityComponentsMap[entitId]!.insert(componentStableInstanceHash)
             }
         }
         
@@ -130,9 +121,6 @@ extension Nexus: Decodable {
 }
 
 // MARK: - Model
-public typealias SComponentId = UUID
-public typealias SComponentTypeId = UUID
-
 extension EntityIdentifier: Encodable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
@@ -153,6 +141,7 @@ public struct Version {
     public let minor: UInt
     public let patch: UInt
 }
+extension Version: Equatable { }
 extension Version: Encodable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
@@ -188,8 +177,8 @@ extension Version: Decodable {
 
 public struct SNexus {
     public let version: Version
-    public let entities: [EntityIdentifier: Set<SComponentId>]
-    public let components: [SComponentId: SComponent]
+    public let entities: [EntityIdentifier: Set<ComponentIdentifier.StableId>]
+    public let components: [ComponentIdentifier.StableId: SComponent]
     
 }
 extension SNexus: Encodable { }
@@ -201,9 +190,9 @@ public struct SComponent  {
         case instance
     }
     
-    public let typeId: SComponentTypeId
+    public let typeId: ComponentIdentifier.StableId
     public let instance: Component
-    public init(typeId: SComponentTypeId, instance: Component) {
+    public init(typeId: ComponentIdentifier.StableId, instance: Component) {
         self.typeId = typeId
         self.instance = instance
     }
@@ -220,7 +209,7 @@ extension SComponent: Encodable {
 extension SComponent: Decodable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: Keys.self)
-        self.typeId = try container.decode(SComponentTypeId.self, forKey: .typeId)
+        self.typeId = try container.decode(ComponentIdentifier.StableId.self, forKey: .typeId)
         let instanceData = try container.decode(Data.self, forKey: .instance)
         self.instance = instanceData.withUnsafeBytes {
             $0.baseAddress!.load(as: Component.self)

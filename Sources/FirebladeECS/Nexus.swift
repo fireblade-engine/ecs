@@ -69,27 +69,6 @@ public final class Nexus {
         familyMembersByTraits.removeAll()
         childrenByParentEntity.removeAll()
     }
-
-    public static var knownUniqueComponentTypes: Set<ComponentIdentifier> {
-        Set<ComponentIdentifier>(stableComponentIdentifierMap.keys.map { ComponentIdentifier(hash: $0) })
-    }
-}
-
-// MARK: - centralized component identifier mapping
-extension Nexus {
-    internal static var stableComponentIdentifierMap: [ComponentIdentifier.Hash: ComponentIdentifier.StableId] = [:]
-
-    internal static func makeOrGetComponentId<C>(_ componentType: C.Type) -> ComponentIdentifier.Hash where C: Component {
-        /// object identifier hash (only stable during runtime) - arbitrary hash is ok.
-        let objIdHash = ObjectIdentifier(componentType).hashValue
-        // if we do not know this component type yet - we register a stable identifier generator for it.
-        if stableComponentIdentifierMap[objIdHash] == nil {
-            let string = String(describing: C.self)
-            let stableHash = StringHashing.singer_djb2(string)
-            stableComponentIdentifierMap[objIdHash] = stableHash
-        }
-        return objIdHash
-    }
 }
 
 // MARK: - CustomDebugStringConvertible

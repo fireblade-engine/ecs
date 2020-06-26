@@ -1,0 +1,5 @@
+ignore:
+  - "Tests/"
+
+comment:
+  layout: header, changes, diff

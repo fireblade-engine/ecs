@@ -12,7 +12,9 @@ script:
   - swift package reset
   - swift build
   - swift test --enable-code-coverage
+  - xcrun llvm-cov show -instr-profile=.build/debug/codecov/default.profdata .build/debug/FirebladeECSPackageTests.xctest/Contents/MacOS/FirebladeECSPackageTests > coverage.txt
+ 
 after_success:
   if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
-    bash <(curl -s https://codecov.io/bash);
+    bash <(curl -s https://codecov.io/bash) -t cec6c76e-219d-4bc2-aa4e-7161c6320342;
   fi

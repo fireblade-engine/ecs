@@ -6,21 +6,9 @@
 //
 
 extension Nexus {
-    @inlinable
-    internal func nextEntityId() -> EntityIdentifier {
-        guard let nextReused: EntityIdentifier = freeEntities.popLast() else {
-            return EntityIdentifier(UInt32(entityStorage.count))
-        }
-        return nextReused
-    }
-
     @discardableResult
     public func createEntity() -> Entity {
-        let newEntityIdentifier: EntityIdentifier = nextEntityId()
-        return createEntity(entityId: newEntityIdentifier)
-    }
-
-    internal func createEntity(entityId: EntityIdentifier) -> Entity {
+        let entityId: EntityIdentifier = entityIdGenerator.nextId()
         entityStorage.insert(entityId, at: entityId.id)
         delegate?.nexusEvent(EntityCreated(entityId: entityId))
         return Entity(nexus: self, id: entityId)
@@ -71,7 +59,7 @@ extension Nexus {
             update(familyMembership: entityId)
         }
 
-        freeEntities.append(entityId)
+        entityIdGenerator.freeId(entityId)
 
         delegate?.nexusEvent(EntityDestroyed(entityId: entityId))
         return true

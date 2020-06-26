@@ -39,6 +39,31 @@ class EntityTests: XCTestCase {
 
         XCTAssertTrue(allComponents.elementsEqualUnordered(expectedComponents) { $0 === $1 })
     }
+    
+    func testEntityIdGenerator() {
+        let generator = EntityIdentifierGenerator()
+        
+        XCTAssertEqual(generator.count, 1)
+        
+        for _ in 0..<100 {
+            _ = generator.nextId()
+        }
+        
+        XCTAssertEqual(generator.count, 1)
+        
+        
+        for i in 10..<60 {
+            generator.freeId(EntityIdentifier(UInt32(i)))
+        }
+        
+        XCTAssertEqual(generator.count, 51)
+     
+        for _ in 0..<50 {
+            _ = generator.nextId()
+        }
+        
+        XCTAssertEqual(generator.count, 1)
+    }
 }
 
 extension Sequence {

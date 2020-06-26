@@ -102,11 +102,18 @@ extension Nexus: Decodable {
         let container = try decoder.singleValueContainer()
         let sNexus = try container.decode(SNexus.self)
         
-        self.init()
+        let entityIds = sNexus.entities.map { $0.key }
         
-        for (entityId, componentSet) in sNexus.entities {
-            let entity = self.createEntity(entityId: entityId)
-            
+        self.init(entityStorage: UnorderedSparseSet(),
+                  componentsByType: [:],
+                  componentsByEntity: [:],
+                  entityIdGenerator: EntityIdentifierGenerator(entityIds),
+                  familyMembersByTraits: [:],
+                  childrenByParentEntity: [:])
+        
+        for componentSet in sNexus.entities.values {
+            let entity = self.createEntity()
+            print(entity.identifier)
             for sCompId in componentSet {
                 guard let sComp = sNexus.components[sCompId] else {
                     throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Could not find component instance for \(sCompId)."))

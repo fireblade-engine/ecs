@@ -11,7 +11,7 @@ public final class Nexus {
     @usableFromInline final var entityStorage: UnorderedSparseSet<EntityIdentifier>
 
     /// Entity ids that are currently not used.
-    @usableFromInline final var freeEntities: [EntityIdentifier]
+    let entityIdGenerator: EntityIdentifierGenerator
 
     /// - Key: ComponentIdentifier aka component type.
     /// - Value: Array of component instances of same type (uniform).
@@ -37,7 +37,7 @@ public final class Nexus {
         self.init(entityStorage: UnorderedSparseSet<EntityIdentifier>(),
                   componentsByType: [:],
                   componentsByEntity: [:],
-                  freeEntities: [],
+                  entityIdGenerator: EntityIdentifierGenerator(),
                   familyMembersByTraits: [:],
                   childrenByParentEntity: [:])
     }
@@ -45,15 +45,15 @@ public final class Nexus {
     internal init(entityStorage: UnorderedSparseSet<EntityIdentifier>,
                   componentsByType: [ComponentIdentifier: ManagedContiguousArray<Component>],
                   componentsByEntity: [EntityIdentifier: Set<ComponentIdentifier>],
-                  freeEntities: [EntityIdentifier],
+                  entityIdGenerator: EntityIdentifierGenerator,
                   familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier>],
                   childrenByParentEntity: [EntityIdentifier: Set<EntityIdentifier>]) {
         self.entityStorage = entityStorage
         self.componentsByType = componentsByType
         self.componentIdsByEntity = componentsByEntity
-        self.freeEntities = freeEntities
         self.familyMembersByTraits = familyMembersByTraits
         self.childrenByParentEntity = childrenByParentEntity
+        self.entityIdGenerator = entityIdGenerator
     }
 
     deinit {
@@ -63,7 +63,6 @@ public final class Nexus {
     public final func clear() {
         entityStorage.forEach { destroy(entityId: $0) }
         entityStorage.removeAll()
-        freeEntities.removeAll()
         componentsByType.removeAll()
         componentIdsByEntity.removeAll()
         familyMembersByTraits.removeAll()

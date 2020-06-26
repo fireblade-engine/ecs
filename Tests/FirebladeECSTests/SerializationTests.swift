@@ -32,6 +32,7 @@ public final class SerializationTests: XCTestCase {
     }
 }
 
+// MARK: - Encoding
 extension Nexus: Encodable {
     public func encode(to encoder: Encoder) throws {
         let serialized = try serialize()
@@ -47,16 +48,14 @@ extension Nexus: Encodable {
             localizedDescription = "Component `\(type(of: component))` must conform to `\(Encodable.self)` protocol to be encoded."
         }
     }
-}
 
-extension Nexus {
     final func serialize() throws -> SNexus {
         let version = Version(major: 0, minor: 0, patch: 1)
         
         var componentIdMap: [ComponentIdentifier: SComponentTypeId] = [:]
         var componentInstances: [SComponentId: SComponent] = [:]
         var entityComponentsMap: [SEntityId: Set<SComponentId>] = [:]
-        
+        var componentTypes: [SComponentType] = []
         
         for entitId in self.entityStorage {
             let sEntityId: SEntityId
@@ -68,6 +67,7 @@ extension Nexus {
             
             
             for componentId in componentIds {
+                let component = self.get(component: componentId, for: entitId)!
                 
                 let sCompTypeId: SComponentTypeId
                 if let typeId = componentIdMap[componentId] {
@@ -75,9 +75,10 @@ extension Nexus {
                 } else {
                     sCompTypeId = SComponentTypeId()
                     componentIdMap[componentId] = sCompTypeId
+                    componentTypes.append(SComponentType(typeId: sCompTypeId, typeName: String(describing: type(of: component))))
                 }
                 
-                let component = self.get(component: componentId, for: entitId)!
+                
                 let sCompId: SComponentId = SComponentId()
                 
                 if let encodableComponent = component as? (Component & Encodable) {
@@ -93,9 +94,15 @@ extension Nexus {
         
         return SNexus(version: version,
                       entities: entityComponentsMap,
+                      componentTypes: componentTypes,
                       components: componentInstances)
     }
 }
+
+// MARK: - Decoding
+
+
+// MARK: - Model
 public typealias SEntityId = UUID
 public typealias SComponentId = UUID
 public typealias SComponentTypeId = UUID
@@ -114,11 +121,17 @@ extension Version: Encodable {
 public struct SNexus {
     public let version: Version
     public let entities: [SEntityId: Set<SComponentId>]
+    public let componentTypes: [SComponentType]
     public let components: [SComponentId: SComponent]
     
 }
 extension SNexus:  Encodable { }
 
+public struct SComponentType {
+    public let typeId: SComponentTypeId
+    public let typeName: String
+}
+extension SComponentType: Encodable { }
 
 public struct SComponent  {
     public let typeId: SComponentTypeId

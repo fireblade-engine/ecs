@@ -5,9 +5,16 @@ language: generic
 sudo: required
 dist: bionic
 osx_image: xcode11
+env: SWIFT_VERSION=5.1
 install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then eval "$(curl -sL https://swiftenv.fuller.li/install.sh)"; fi
 script:
   - swift package reset
   - swift build
-  - swift test
+  - swift test --enable-code-coverage
+  - xcrun llvm-cov show -instr-profile=.build/debug/codecov/default.profdata .build/debug/FirebladeECSPackageTests.xctest/Contents/MacOS/FirebladeECSPackageTests > fireblade_ecs_coverage.txt
+ 
+after_success:
+  if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
+    bash <(curl -s https://codecov.io/bash);
+  fi

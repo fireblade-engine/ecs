@@ -12,7 +12,7 @@ script:
   - swift package reset
   - swift build
   - swift test --enable-code-coverage
-  - xcrun llvm-cov show -instr-profile=.build/debug/codecov/default.profdata .build/debug/FirebladeECSPackageTests.xctest/Contents/MacOS/FirebladeECSPackageTests > fireblade_ecs_coverage.txt
+  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then xcrun llvm-cov show -instr-profile=.build/debug/codecov/default.profdata .build/debug/FirebladeECSPackageTests.xctest/Contents/MacOS/FirebladeECSPackageTests > fireblade_ecs_coverage.txt; fi
  
 after_success:
   if [[ $TRAVIS_OS_NAME == 'osx' ]]; then

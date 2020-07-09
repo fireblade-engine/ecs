@@ -90,11 +90,11 @@ public enum StringHashing {
     /// *Waren Singer djb2*
     ///
     /// <https://stackoverflow.com/a/43149500>
-    public static func singer_djb2(_ utf8String: String) -> UInt {
-        var hash = UInt(5381)
+    public static func singer_djb2(_ utf8String: String) -> UInt64 {
+        var hash = UInt64(5381)
         var iter = utf8String.unicodeScalars.makeIterator()
         while let char = iter.next() {
-            hash &= 127 * (hash & 0x00ffffffffffffff) &+ UInt(char.value)
+            hash = 127 * (hash & 0x00ffffffffffffff) &+ UInt64(char.value)
         }
         return hash
     }

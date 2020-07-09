@@ -85,7 +85,7 @@ extension EntityComponentHash {
 }
 
 // MARK: - string hashing
-/// https://stackoverflow.com/a/52440609
+/// <https://stackoverflow.com/a/52440609>
 public enum StringHashing {
     /// *Waren Singer djb2*
     ///
@@ -111,7 +111,6 @@ public enum StringHashing {
         var iter = string.unicodeScalars.makeIterator()
         while let char = iter.next() {
             hash = (hash << 5) &+ hash &+ UInt(char.value)
-            //hash = ((hash << 5) + hash) + UInt(c.value)
         }
         return hash
     }

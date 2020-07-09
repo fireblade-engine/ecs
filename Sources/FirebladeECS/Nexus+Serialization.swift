@@ -59,7 +59,6 @@ extension Nexus: Decodable {
 
         for componentSet in sNexus.entities.values {
             let entity = self.createEntity()
-            print(entity.identifier)
             for sCompId in componentSet {
                 guard let sComp = sNexus.components[sCompId] else {
                     throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Could not find component instance for \(sCompId)."))

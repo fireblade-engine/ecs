@@ -8,7 +8,7 @@
 public final class Nexus {
     /// Main entity storage.
     /// Entities are tightly packed by EntityIdentifier.
-    @usableFromInline final var entityStorage: UnorderedSparseSet<EntityIdentifier>
+    @usableFromInline final var entityStorage: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Id>
 
     /// Entity ids that are currently not used.
     let entityIdGenerator: EntityIdentifierGenerator
@@ -29,12 +29,12 @@ public final class Nexus {
 
     /// - Key: FamilyTraitSet aka component types that make up one distinct family.
     /// - Value: Tightly packed EntityIdentifiers that represent the association of an entity to the family.
-    @usableFromInline final var familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier>]
+    @usableFromInline final var familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Id>]
 
     public final weak var delegate: NexusEventDelegate?
 
     public convenience init() {
-        self.init(entityStorage: UnorderedSparseSet<EntityIdentifier>(),
+        self.init(entityStorage: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Id>(),
                   componentsByType: [:],
                   componentsByEntity: [:],
                   entityIdGenerator: EntityIdentifierGenerator(),
@@ -42,11 +42,11 @@ public final class Nexus {
                   childrenByParentEntity: [:])
     }
 
-    internal init(entityStorage: UnorderedSparseSet<EntityIdentifier>,
+    internal init(entityStorage: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Id>,
                   componentsByType: [ComponentIdentifier: ManagedContiguousArray<Component>],
                   componentsByEntity: [EntityIdentifier: Set<ComponentIdentifier>],
                   entityIdGenerator: EntityIdentifierGenerator,
-                  familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier>],
+                  familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Id>],
                   childrenByParentEntity: [EntityIdentifier: Set<EntityIdentifier>]) {
         self.entityStorage = entityStorage
         self.componentsByType = componentsByType

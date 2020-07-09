@@ -94,7 +94,7 @@ public enum StringHashing {
         var hash = UInt(5381)
         var iter = utf8String.unicodeScalars.makeIterator()
         while let char = iter.next() {
-            hash = 127 * (hash & 0x00ffffffffffffff) + UInt(char.value)
+            hash &= 127 * (hash & 0x00ffffffffffffff) &+ UInt(char.value)
         }
         return hash
     }

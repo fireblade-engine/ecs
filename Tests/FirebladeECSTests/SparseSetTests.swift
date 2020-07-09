@@ -9,11 +9,11 @@
 import XCTest
 
 class SparseSetTests: XCTestCase {
-    var set: UnorderedSparseSet<Position>!
+    var set: UnorderedSparseSet<Position, Int>!
 
     override func setUp() {
         super.setUp()
-        set = UnorderedSparseSet<Position>()
+        set = UnorderedSparseSet<Position, Int>()
     }
 
     override func tearDown() {
@@ -387,7 +387,7 @@ class SparseSetTests: XCTestCase {
 
     func testSparseSetDoubleRemove() {
         class AClass { }
-        var set = UnorderedSparseSet<AClass>()
+        var set = UnorderedSparseSet<AClass, Int>()
         let a = AClass()
         let b = AClass()
         set.insert(a, at: 0)
@@ -471,7 +471,7 @@ class SparseSetTests: XCTestCase {
     }
 
     func testSparseSetReduce() {
-        var characters = UnorderedSparseSet<Character>()
+        var characters = UnorderedSparseSet<Character, Int>()
 
         characters.insert("H", at: 4)
         characters.insert("e", at: 13)
@@ -497,7 +497,7 @@ class SparseSetTests: XCTestCase {
     }
 
     func testSubscript() {
-        var characters = UnorderedSparseSet<Character>()
+        var characters = UnorderedSparseSet<Character, Int>()
 
         characters[4] = "H"
         characters[13] = "e"
@@ -528,7 +528,7 @@ class SparseSetTests: XCTestCase {
     }
 
     func testStartEndIndex() {
-        var set = UnorderedSparseSet<Character>()
+        var set = UnorderedSparseSet<Character, Int>()
 
         set.insert("C", at: 33)
         set.insert("A", at: 11)
@@ -537,5 +537,23 @@ class SparseSetTests: XCTestCase {
         let mapped = set.dense.map { $0.element }
 
         XCTAssertEqual(mapped, ["C", "A", "B"])
+    }
+
+    func testAlternativeKey() {
+
+        var set = UnorderedSparseSet<Character, String>()
+
+        set.insert("A", at: "a")
+        set.insert("C", at: "c")
+        set.insert("B", at: "b")
+
+        let mapped = set.dense.map { $0.element }
+        XCTAssertEqual(mapped, ["A", "C", "B"])
+        let keyValues = set.sparse.sorted(by: { $0.value < $1.value }).map { ($0.key, $0.value) }
+        for (a, b) in zip(keyValues, [("a", 0), ("c", 1), ("b", 2)]) {
+            XCTAssertEqual(a.0, b.0)
+            XCTAssertEqual(a.1, b.1)
+        }
+
     }
 }

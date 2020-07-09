@@ -109,6 +109,7 @@ extension SparseSetTests {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__SparseSetTests = [
+        ("testAlternativeKey", testAlternativeKey),
         ("testSparseSetAdd", testSparseSetAdd),
         ("testSparseSetAddAndReplace", testSparseSetAddAndReplace),
         ("testSparseSetClear", testSparseSetClear),

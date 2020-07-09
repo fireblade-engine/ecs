@@ -5,23 +5,36 @@
 //  Created by Christian Treffs on 30.10.17.
 //
 
-public struct UnorderedSparseSet<Element> {
-    public typealias Index = Int
-    public typealias Key = Int
+/// An (unordered) sparse set.
+///
+/// - `Element`: the element (instance) to store.
+/// - `Key`: the unique, hashable datastructure to use as a key to retrieve
+///          an element from the sparse set.
+///
+/// See <https://github.com/bombela/sparseset/blob/master/src/lib.rs> for a reference implementation.
+public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
+    /// An index into the dense store.
+    public typealias DenseIndex = Int
+
+    /// A sparse store holding indices into the dense mapped to key.
+    public typealias SparseStore = [Key: DenseIndex]
+
+    /// A dense store holding all the entries.
+    public typealias DenseStore = ContiguousArray<Entry>
 
     public struct Entry {
         public let key: Key
         public let element: Element
     }
 
-    @usableFromInline var dense: ContiguousArray<Entry>
-    @usableFromInline var sparse: [Index: Key]
+    @usableFromInline var dense: DenseStore
+    @usableFromInline var sparse: SparseStore
 
     public init() {
         self.init(sparse: [:], dense: [])
     }
 
-    init(sparse: [Index: Key], dense: ContiguousArray<Entry>) {
+    init(sparse: SparseStore, dense: DenseStore) {
         self.sparse = sparse
         self.dense = dense
     }
@@ -120,8 +133,18 @@ public struct UnorderedSparseSet<Element> {
         return (denseIndex, entry.element)
     }
 
+    @inlinable public var first: Element? {
+        dense.first?.element
+    }
+
+    @inlinable public var last: Element? {
+        dense.last?.element
+    }
+}
+
+extension UnorderedSparseSet where Key == Int {
     @inlinable
-    public subscript(position: Index) -> Element {
+    public subscript(position: DenseIndex) -> Element {
         get {
             get(unsafeAt: position)
         }
@@ -129,14 +152,6 @@ public struct UnorderedSparseSet<Element> {
         set(newValue) {
             insert(newValue, at: position)
         }
-    }
-
-    @inlinable public var first: Element? {
-        dense.first?.element
-    }
-
-    @inlinable public var last: Element? {
-        dense.last?.element
     }
 }
 
@@ -148,9 +163,9 @@ extension UnorderedSparseSet: Sequence {
 
     // MARK: - UnorderedSparseSetIterator
     public struct ElementIterator: IteratorProtocol {
-        public private(set) var iterator: IndexingIterator<ContiguousArray<UnorderedSparseSet<Element>.Entry>>
+        public private(set) var iterator: IndexingIterator<ContiguousArray<UnorderedSparseSet<Element, Key>.Entry>>
 
-        public init(_ sparseSet: UnorderedSparseSet<Element>) {
+        public init(_ sparseSet: UnorderedSparseSet<Element, Key>) {
             iterator = sparseSet.dense.makeIterator()
         }
 
@@ -163,7 +178,7 @@ extension UnorderedSparseSet: Sequence {
 // MARK: - Equatable
 extension UnorderedSparseSet.Entry: Equatable where Element: Equatable { }
 extension UnorderedSparseSet: Equatable where Element: Equatable {
-    public static func == (lhs: UnorderedSparseSet<Element>, rhs: UnorderedSparseSet<Element>) -> Bool {
+    public static func == (lhs: UnorderedSparseSet<Element, Key>, rhs: UnorderedSparseSet<Element, Key>) -> Bool {
         lhs.dense == rhs.dense && lhs.sparse == rhs.sparse
     }
 }

@@ -15,7 +15,7 @@ public struct UnorderedSparseSet<Element> {
     }
 
     @usableFromInline var dense: ContiguousArray<Entry>
-    @usableFromInline var sparse: [Index: Key]
+    @usableFromInline var sparse: [Key: Index]
 
     public init() {
         self.init(sparse: [:], dense: [])

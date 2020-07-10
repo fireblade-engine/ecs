@@ -70,6 +70,7 @@ public final class Nexus {
         childrenByParentEntity.removeAll()
     }
 
+    @available(swift, deprecated: 0.12.0)
     public static var knownUniqueComponentTypes: Set<ComponentIdentifier> {
         Set<ComponentIdentifier>(stableComponentIdentifierMap.keys.map { ComponentIdentifier(hash: $0) })
     }

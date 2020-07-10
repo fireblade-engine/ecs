@@ -10,7 +10,7 @@ public struct ComponentIdentifier {
     @usableFromInline
     typealias Hash = Int
     @usableFromInline
-    typealias StableId = UInt
+    typealias StableId = UInt64
 
     @usableFromInline let hash: Hash
 }

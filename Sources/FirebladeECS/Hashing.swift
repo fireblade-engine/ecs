@@ -5,9 +5,9 @@
 //  Created by Christian Treffs on 16.10.17.
 //
 
-#if arch(x86_64) || arch(arm64) // 64 bit
+#if arch(x86_64) || arch(arm64) || arch(powerpc64) || arch(powerpc64le) || arch(s390x) // 64 bit
 private let kFibA: UInt = 0x9e3779b97f4a7c15 // = 11400714819323198485 aka Fibonacci Hash a value for 2^64; calculate by: 2^64 / (golden ratio)
-#elseif arch(i386) || arch(arm) // 32 bit
+#elseif arch(i386) || arch(arm) || os(watchOS) // 32 bit
 private let kFibA: UInt = 0x9e3779b9 // = 2654435769 aka Fibonacci Hash a value for 2^32; calculate by: 2^32 / (golden ratio)
 #else
 #error("unsupported architecture")
@@ -85,16 +85,16 @@ extension EntityComponentHash {
 }
 
 // MARK: - string hashing
-/// https://stackoverflow.com/a/52440609
+/// <https://stackoverflow.com/a/52440609>
 public enum StringHashing {
     /// *Waren Singer djb2*
     ///
     /// <https://stackoverflow.com/a/43149500>
-    public static func singer_djb2(_ utf8String: String) -> UInt {
-        var hash = UInt(5381)
+    public static func singer_djb2(_ utf8String: String) -> UInt64 {
+        var hash: UInt64 = 5381
         var iter = utf8String.unicodeScalars.makeIterator()
         while let char = iter.next() {
-            hash = 127 * (hash & 0x00ffffffffffffff) + UInt(char.value)
+            hash = 127 * (hash & 0xFFFFFFFFFFFFFF) &+ UInt64(char.value)
         }
         return hash
     }
@@ -106,12 +106,11 @@ public enum StringHashing {
     /// The magic of number 33 (why it works better than many other constants, prime or not) has never been adequately explained.
     ///
     /// <http://www.cse.yorku.ca/~oz/hash.html>
-    public static func bernstein_djb2(_ string: String) -> UInt {
-        var hash: UInt = 5381
+    public static func bernstein_djb2(_ string: String) -> UInt64 {
+        var hash: UInt64 = 5381
         var iter = string.unicodeScalars.makeIterator()
         while let char = iter.next() {
-            hash = (hash << 5) &+ hash &+ UInt(char.value)
-            //hash = ((hash << 5) + hash) + UInt(c.value)
+            hash = (hash << 5) &+ hash &+ UInt64(char.value)
         }
         return hash
     }
@@ -123,11 +122,11 @@ public enum StringHashing {
     /// It also happens to be a good general hashing function with good distribution.
     ///
     /// <http://www.cse.yorku.ca/~oz/hash.html>
-    public static func sdbm(_ string: String) -> UInt {
-        var hash: UInt = 0
+    public static func sdbm(_ string: String) -> UInt64 {
+        var hash: UInt64 = 0
         var iter = string.unicodeScalars.makeIterator()
         while let char = iter.next() {
-            hash = (UInt(char.value) &+ (hash << 6) &+ (hash << 16))
+            hash = (UInt64(char.value) &+ (hash << 6) &+ (hash << 16))
         }
         return hash
     }

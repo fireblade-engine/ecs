@@ -18,7 +18,7 @@ public final class SerializationTests: XCTestCase {
         let data = try encoder.encode(nexus)
 
         XCTAssertNotNil(data)
-        XCTAssertEqual(data.count, 307)
+        XCTAssertGreaterThanOrEqual(data.count, 307)
 
         let encoder2 = JSONEncoder()
         let data2 = try encoder2.encode(nexus)

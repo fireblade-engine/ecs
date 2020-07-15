@@ -12,8 +12,8 @@ internal final class EntityIdentifierGenerator {
         stack.count
     }
 
-    init() {
-        stack = [0]
+    convenience init() {
+        self.init([EntityIdentifier(0)])
     }
 
     init(_ entityIds: [EntityIdentifier]) {

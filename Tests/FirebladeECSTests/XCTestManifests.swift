@@ -26,7 +26,8 @@ extension EntityTests {
     // to regenerate.
     static let __allTests__EntityTests = [
         ("testAllComponentsOfEntity", testAllComponentsOfEntity),
-        ("testEntityIdentifierAndIndex", testEntityIdentifierAndIndex)
+        ("testEntityIdentifierAndIndex", testEntityIdentifierAndIndex),
+        ("testEntityIdGenerator", testEntityIdGenerator)
     ]
 }
 

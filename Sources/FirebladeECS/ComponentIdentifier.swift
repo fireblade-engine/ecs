@@ -25,16 +25,6 @@ extension ComponentIdentifier {
     internal static func makeRuntimeHash<C>(_ componentType: C.Type) -> Hash where C: Component {
         ObjectIdentifier(componentType).hashValue
     }
-
-    internal static func makeStableTypeHash(component: Component) -> StableId {
-        let componentTypeString = String(describing: type(of: component))
-        return StringHashing.singer_djb2(componentTypeString)
-    }
-
-    internal static func makeStableInstanceHash(component: Component, entityId: EntityIdentifier) -> StableId {
-        let componentTypeString = String(describing: type(of: component)) + String(entityId.id)
-        return StringHashing.singer_djb2(componentTypeString)
-    }
 }
 
 extension ComponentIdentifier: Equatable { }

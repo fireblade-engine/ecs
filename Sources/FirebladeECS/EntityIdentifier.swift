@@ -21,4 +21,3 @@ public struct EntityIdentifier {
 
 extension EntityIdentifier: Equatable { }
 extension EntityIdentifier: Hashable { }
-extension EntityIdentifier: Codable { }

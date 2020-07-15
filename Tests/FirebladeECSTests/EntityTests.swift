@@ -31,13 +31,55 @@ class EntityTests: XCTestCase {
 
         let entity = nexus.createEntity()
         entity.assign(pos)
-        entity.assign(name)
-        entity.assign(vel)
+        entity.assign(name, vel)
 
         let expectedComponents: [Component] = [pos, name, vel]
         let allComponents = entity.allComponents()
 
         XCTAssertTrue(allComponents.elementsEqualUnordered(expectedComponents) { $0 === $1 })
+    }
+
+    func testEntityEquality() {
+        let nexus = Nexus()
+
+        let entityA = nexus.createEntity()
+        let entityB = nexus.createEntity()
+
+        XCTAssertEqual(entityA, entityA)
+        XCTAssertNotEqual(entityA, entityB)
+    }
+
+    func testRemoveAllComponentsFromEntity() {
+        let nexus = Nexus()
+
+        let entity = nexus.createEntity(with: Position(x: 1, y: 2), Name(name: "MyEntity"))
+        XCTAssertEqual(entity.numComponents, 2)
+        entity.removeAll()
+        XCTAssertEqual(entity.numComponents, 0)
+    }
+
+    func testEntityIdGenerator() {
+        let generator = EntityIdentifierGenerator()
+
+        XCTAssertEqual(generator.count, 1)
+
+        for _ in 0..<100 {
+            _ = generator.nextId()
+        }
+
+        XCTAssertEqual(generator.count, 1)
+
+        for i in 10..<60 {
+            generator.freeId(EntityIdentifier(UInt32(i)))
+        }
+
+        XCTAssertEqual(generator.count, 51)
+
+        for _ in 0..<50 {
+            _ = generator.nextId()
+        }
+
+        XCTAssertEqual(generator.count, 1)
     }
 }
 

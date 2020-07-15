@@ -18,7 +18,12 @@ public struct ComponentIdentifier {
 extension ComponentIdentifier {
     @usableFromInline
     init<C>(_ componentType: C.Type) where C: Component {
-        self.hash = Nexus.makeOrGetComponentId(componentType)
+        self.hash = Self.makeRuntimeHash(componentType)
+    }
+
+    /// object identifier hash (only stable during runtime) - arbitrary hash is ok.
+    internal static func makeRuntimeHash<C>(_ componentType: C.Type) -> Hash where C: Component {
+        ObjectIdentifier(componentType).hashValue
     }
 }
 

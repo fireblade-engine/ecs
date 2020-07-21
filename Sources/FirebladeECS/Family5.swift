@@ -50,6 +50,10 @@ public struct Requires5<A, B, C, D, E>: FamilyRequirementsManaging where A: Comp
             return (parent: (pcA, pcB, pcC, pcD, pcE),
                     child: (ccA, ccB, ccC, ccD, ccE))
     }
+
+    public static func createMember(nexus: Nexus, components: (A, B, C, D, E)) -> Entity {
+        nexus.createEntity(with: components.0, components.1, components.2, components.3, components.4)
+    }
 }
 
 extension Nexus {

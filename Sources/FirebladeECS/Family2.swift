@@ -15,6 +15,7 @@ public struct Requires2<A, B>: FamilyRequirementsManaging where A: Component, B:
     public init(_ components: (A.Type, B.Type)) {
         componentTypes = [ A.self, B.self]
     }
+
     public static func components(nexus: Nexus, entityId: EntityIdentifier) -> (A, B) {
         let compA: A = nexus.get(unsafeComponentFor: entityId)
         let compB: B = nexus.get(unsafeComponentFor: entityId)
@@ -34,6 +35,10 @@ public struct Requires2<A, B>: FamilyRequirementsManaging where A: Component, B:
         let ccA: A = nexus.get(unsafeComponentFor: childId)
         let ccB: B = nexus.get(unsafeComponentFor: childId)
         return (parent: (pcA, pcB), child: (ccA, ccB))
+    }
+
+    public static func createMember(nexus: Nexus, components: (A, B)) -> Entity {
+        nexus.createEntity(with: components.0, components.1)
     }
 }
 

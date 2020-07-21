@@ -30,6 +30,10 @@ public struct Requires1<A>: FamilyRequirementsManaging where A: Component {
         let childCompA: A = nexus.get(unsafeComponentFor: childId)
         return (parent: parentCompA, child: childCompA)
     }
+
+    public static func createMember(nexus: Nexus, components: A) -> Entity {
+        nexus.createEntity(with: components)
+    }
 }
 
 extension Nexus {

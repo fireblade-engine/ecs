@@ -45,6 +45,10 @@ public struct Requires4<A, B, C, D>: FamilyRequirementsManaging where A: Compone
             let ccD: D = nexus.get(unsafeComponentFor: childId)
             return (parent: (pcA, pcB, pcC, pcD), child: (ccA, ccB, ccC, ccD))
     }
+
+    public static func createMember(nexus: Nexus, components: (A, B, C, D)) -> Entity {
+        nexus.createEntity(with: components.0, components.1, components.2, components.3)
+    }
 }
 
 extension Nexus {

@@ -4,19 +4,15 @@ import PackageDescription
 let package = Package(
     name: "FirebladeECS",
     products: [
-        .library(
-            name: "FirebladeECS",
-            targets: ["FirebladeECS"])
+        .library(name: "FirebladeECS",
+                 targets: ["FirebladeECS"])
     ],
     targets: [
-        .target(
-            name: "FirebladeECS",
-            dependencies: []),
-        .testTarget(
-            name: "FirebladeECSTests",
-            dependencies: ["FirebladeECS"]),
-        .testTarget(
-            name: "FirebladeECSPerformanceTests",
-            dependencies: ["FirebladeECS"])
-    ]
+        .target(name: "FirebladeECS"),
+        .testTarget(name: "FirebladeECSTests",
+                    dependencies: ["FirebladeECS"]),
+        .testTarget(name: "FirebladeECSPerformanceTests",
+                    dependencies: ["FirebladeECS"])
+    ],
+    swiftLanguageVersions: [.v5]
 )

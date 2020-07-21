@@ -31,4 +31,23 @@ extension Entity {
         let compC: C? = get(component: C.self)
         return (compA, compB, compC)
     }
+
+    @inlinable
+    public subscript<C: Component, Value>(_ componentKeyPath: WritableKeyPath<C, Value>) -> Value? {
+        nonmutating set {
+            guard var comp = self.get(component: C.self),
+                let value = newValue else {
+                    return
+            }
+            comp[keyPath: componentKeyPath] = value
+        }
+        get {
+            self.get(component: C.self)?[keyPath: componentKeyPath]
+        }
+    }
+
+    @inlinable
+    public subscript<C: Component>(_ componentType: C.Type) -> C? {
+        self.get(component: componentType)
+    }
 }

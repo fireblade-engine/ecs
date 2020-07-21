@@ -81,6 +81,33 @@ class EntityTests: XCTestCase {
 
         XCTAssertEqual(generator.count, 1)
     }
+
+    func testEntitySubscripts() {
+        let nexus = Nexus()
+        let pos = Position(x: 12, y: 45)
+        let name = Name(name: "SomeName")
+        let entity = nexus.createEntity(with: pos, name)
+
+        XCTAssertEqual(entity[\Position.x], 12)
+        XCTAssertEqual(entity[\Position.y], 45)
+        XCTAssertEqual(entity[\Name.name], "SomeName")
+
+        entity[\Position.x] = 67
+        entity[\Position.y] = 89
+        entity[\Name.name] = "AnotherName"
+
+        XCTAssertEqual(entity[\Position.x], 67)
+        XCTAssertEqual(entity[\Position.y], 89)
+        XCTAssertEqual(entity[\Name.name], "AnotherName")
+
+        entity[\Velocity.a] = 123
+        XCTAssertNil(entity[\Velocity.a])
+
+        entity[Position.self]?.x = 1234
+        XCTAssertEqual(entity[Position.self]?.x, 1234)
+        XCTAssertNil(entity[Velocity.self]?.a)
+    }
+
 }
 
 extension Sequence {

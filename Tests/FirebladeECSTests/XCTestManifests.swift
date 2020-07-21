@@ -29,6 +29,7 @@ extension EntityTests {
         ("testEntityEquality", testEntityEquality),
         ("testEntityIdentifierAndIndex", testEntityIdentifierAndIndex),
         ("testEntityIdGenerator", testEntityIdGenerator),
+        ("testEntitySubscripts", testEntitySubscripts),
         ("testRemoveAllComponentsFromEntity", testRemoveAllComponentsFromEntity)
     ]
 }

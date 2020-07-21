@@ -184,4 +184,37 @@ class FamilyTests: XCTestCase {
 
         XCTAssertEqual(family.memberIds.count, count + (count / 2))
     }
+
+    func testFamilyCreateMembers() {
+        let position = Position(x: 0, y: 1)
+        let name = Name(name: "SomeName")
+        let velocity = Velocity(a: 123)
+        let party = Party(partying: true)
+        let color = Color()
+
+        let family1 = nexus.family(requires: Position.self, excludesAll: Name.self)
+        XCTAssertTrue(family1.isEmpty)
+        family1.createMember(with: position)
+        XCTAssertEqual(family1.count, 1)
+
+        let family2 = nexus.family(requiresAll: Position.self, Name.self)
+        XCTAssertTrue(family2.isEmpty)
+        family2.createMember(with: (position, name))
+        XCTAssertEqual(family2.count, 1)
+
+        let family3 = nexus.family(requiresAll: Position.self, Name.self, Velocity.self)
+        XCTAssertTrue(family3.isEmpty)
+        family3.createMember(with: (position, name, velocity))
+        XCTAssertEqual(family3.count, 1)
+
+        let family4 = nexus.family(requiresAll: Position.self, Name.self, Velocity.self, Party.self)
+        XCTAssertTrue(family4.isEmpty)
+        family4.createMember(with: (position, name, velocity, party))
+        XCTAssertEqual(family4.count, 1)
+
+        let family5 = nexus.family(requiresAll: Position.self, Name.self, Velocity.self, Party.self, Color.self)
+        XCTAssertTrue(family5.isEmpty)
+        family5.createMember(with: (position, name, velocity, party, color))
+        XCTAssertEqual(family5.count, 1)
+    }
 }

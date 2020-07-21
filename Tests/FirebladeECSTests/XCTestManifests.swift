@@ -41,6 +41,7 @@ extension FamilyTests {
     static let __allTests__FamilyTests = [
         ("testFamilyAbandoned", testFamilyAbandoned),
         ("testFamilyBulkDestroy", testFamilyBulkDestroy),
+        ("testFamilyCreateMembers", testFamilyCreateMembers),
         ("testFamilyCreation", testFamilyCreation),
         ("testFamilyExchange", testFamilyExchange),
         ("testFamilyLateMember", testFamilyLateMember),

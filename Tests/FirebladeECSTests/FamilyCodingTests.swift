@@ -62,7 +62,7 @@ final class FamilyCodingTests: XCTestCase {
 
         var jsonEncoder = JSONEncoder()
         let encodedData = try family.encodeMembers(using: &jsonEncoder)
-        XCTAssertGreaterThanOrEqual(encodedData.count, 190)
+        XCTAssertGreaterThanOrEqual(encodedData.count, 91)
     }
 
     func testDecodingFamily2() throws {

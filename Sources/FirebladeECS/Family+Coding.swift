@@ -1,5 +1,5 @@
 //
-//  Family+Codable.swift
+//  Family+Coding.swift
 //
 //
 //  Created by Christian Treffs on 22.07.20.
@@ -9,14 +9,11 @@ private struct FamilyMemberContainer<R> where R: FamilyRequirementsManaging {
     let components: [R.Components]
 }
 
-extension FamilyMemberContainer: Decodable where R: FamilyDecoding {
-    init(from decoder: Decoder) throws {
-        var familyContainer = try decoder.unkeyedContainer()
-        let strategy = decoder.userInfo[.nexusCodingStrategy] as? CodingStrategy ?? DefaultCodingStrategy()
-        self.components = try R.decode(componentsIn: &familyContainer, using: strategy)
-    }
+extension CodingUserInfoKey {
+    fileprivate static let nexusCodingStrategy = CodingUserInfoKey(rawValue: "nexusCodingStrategy")!
 }
 
+// MARK: - encoding
 extension FamilyMemberContainer: Encodable where R: FamilyEncoding {
     func encode(to encoder: Encoder) throws {
         let strategy = encoder.userInfo[.nexusCodingStrategy] as? CodingStrategy ?? DefaultCodingStrategy()
@@ -25,7 +22,6 @@ extension FamilyMemberContainer: Encodable where R: FamilyEncoding {
     }
 }
 
-// MARK: - encoding
 public protocol TopLevelEncoder {
     /// The type this encoder produces.
     associatedtype Output
@@ -54,6 +50,14 @@ extension Family where R: FamilyEncoding {
 }
 
 // MARK: - decoding
+extension FamilyMemberContainer: Decodable where R: FamilyDecoding {
+    init(from decoder: Decoder) throws {
+        var familyContainer = try decoder.unkeyedContainer()
+        let strategy = decoder.userInfo[.nexusCodingStrategy] as? CodingStrategy ?? DefaultCodingStrategy()
+        self.components = try R.decode(componentsIn: &familyContainer, using: strategy)
+    }
+}
+
 public protocol TopLevelDecoder {
     /// The type this decoder accepts.
     associatedtype Input
@@ -80,22 +84,3 @@ extension Family where R: FamilyDecoding {
         }
     }
 }
-
-extension CodingUserInfoKey {
-    fileprivate static let nexusCodingStrategy = CodingUserInfoKey(rawValue: "nexusCodingStrategy")!
-}
-
-// MARK: - foundation
-#if canImport(Foundation)
-import class Foundation.JSONEncoder
-import class Foundation.JSONDecoder
-
-import class Foundation.PropertyListEncoder
-import class Foundation.PropertyListDecoder
-
-extension JSONEncoder: TopLevelEncoder { }
-extension JSONDecoder: TopLevelDecoder { }
-
-extension PropertyListEncoder: TopLevelEncoder { }
-extension PropertyListDecoder: TopLevelDecoder { }
-#endif

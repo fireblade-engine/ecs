@@ -36,12 +36,14 @@ class Velocity: Component {
     }
 }
 
-class Party: Component {
+final class Party: Component {
     var partying: Bool
+
     init(partying: Bool) {
         self.partying = partying
     }
 }
+extension Party: Codable { }
 
 final class Color: Component {
     var r: UInt8

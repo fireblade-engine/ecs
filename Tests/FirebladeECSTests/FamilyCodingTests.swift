@@ -221,4 +221,125 @@ final class FamilyCodingTests: XCTestCase {
         try family.decodeMembers(from: jsonData, using: &jsonDecoder)
         XCTAssertEqual(family.count, 2)
     }
+
+    func testEncodeFamily5() throws {
+        let nexus = Nexus()
+
+        let family = nexus.family(requiresAll: MyComponent.self, YourComponent.self, Position.self, Color.self, Party.self)
+        family.createMember(with: (MyComponent(name: "My Name", flag: true), YourComponent(number: 1.23), Position(x: 1, y: 2), Color(r: 1, g: 2, b: 3), Party(partying: true)))
+        family.createMember(with: (MyComponent(name: "Your Name", flag: false), YourComponent(number: 3.45), Position(x: 3, y: 4), Color(r: 4, g: 5, b: 6), Party(partying: false)))
+        XCTAssertEqual(family.count, 2)
+
+        var jsonEncoder = JSONEncoder()
+        let encodedData = try family.encodeMembers(using: &jsonEncoder)
+        XCTAssertGreaterThanOrEqual(encodedData.count, 320)
+    }
+
+    func testDecodeFamily5() throws {
+        let jsonString = """
+        [
+          {
+            "Color": {
+              "r": 1,
+              "g": 2,
+              "b": 3
+            },
+            "Position": {
+              "x": 1,
+              "y": 2
+            },
+            "MyComponent": {
+              "name": "My Name",
+              "flag": true
+            },
+            "YourComponent": {
+              "number": 1.23
+            },
+            "Party": {
+              "partying": true
+            }
+          },
+          {
+            "Color": {
+              "r": 4,
+              "g": 5,
+              "b": 6
+            },
+            "Position": {
+              "x": 3,
+              "y": 4
+            },
+            "MyComponent": {
+              "name": "Your Name",
+              "flag": false
+            },
+            "YourComponent": {
+              "number": 3.45
+            },
+            "Party": {
+              "partying": false
+            }
+          }
+        ]
+        """
+
+        let jsonData = jsonString.data(using: .utf8)!
+
+        let nexus = Nexus()
+
+        let family = nexus.family(requiresAll: YourComponent.self, MyComponent.self, Position.self, Color.self, Party.self)
+        XCTAssertTrue(family.isEmpty)
+        var jsonDecoder = JSONDecoder()
+        try family.decodeMembers(from: jsonData, using: &jsonDecoder)
+        XCTAssertEqual(family.count, 2)
+    }
+
+    func testFailDecodingFamily() {
+
+        let jsonString = """
+        [
+          {
+            "Color": {
+              "r": 1,
+              "g": 2,
+              "b": 3
+            },
+            "Position": {
+              "x": 1,
+              "y": 2
+            },
+            "YourComponent": {
+              "number": 1.23
+            },
+            "Party": {
+              "partying": true
+            }
+          },
+          {
+            "Color": {
+              "r": 4,
+              "g": 5,
+              "b": 6
+            },
+            "Position": {
+              "x": 3,
+              "y": 4
+            },
+            "YourComponent": {
+              "number": 3.45
+            },
+            "Party": {
+              "partying": false
+            }
+          }
+        ]
+        """
+        let jsonData = jsonString.data(using: .utf8)!
+        var jsonDecoder = JSONDecoder()
+
+        let nexus = Nexus()
+
+        let family = nexus.family(requiresAll: YourComponent.self, MyComponent.self)
+        XCTAssertThrowsError(try family.decodeMembers(from: jsonData, using: &jsonDecoder))
+    }
 }

@@ -56,6 +56,27 @@ public struct Requires5<A, B, C, D, E>: FamilyRequirementsManaging where A: Comp
     }
 }
 
+extension Requires5: FamilyEncoding where A: Encodable, B: Encodable, C: Encodable, D: Encodable, E: Encodable {
+    public static func encode(components: (A, B, C, D, E), into container: inout KeyedEncodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws {
+        try container.encode(components.0, forKey: strategy.codingKey(for: A.self))
+        try container.encode(components.1, forKey: strategy.codingKey(for: B.self))
+        try container.encode(components.2, forKey: strategy.codingKey(for: C.self))
+        try container.encode(components.3, forKey: strategy.codingKey(for: D.self))
+        try container.encode(components.4, forKey: strategy.codingKey(for: E.self))
+    }
+}
+
+extension Requires5: FamilyDecoding where A: Decodable, B: Decodable, C: Decodable, D: Decodable, E: Decodable {
+    public static func decode(componentsIn container: KeyedDecodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws -> (A, B, C, D, E) {
+        let compA = try container.decode(A.self, forKey: strategy.codingKey(for: A.self))
+        let compB = try container.decode(B.self, forKey: strategy.codingKey(for: B.self))
+        let compC = try container.decode(C.self, forKey: strategy.codingKey(for: C.self))
+        let compD = try container.decode(D.self, forKey: strategy.codingKey(for: D.self))
+        let compE = try container.decode(E.self, forKey: strategy.codingKey(for: E.self))
+        return Components(compA, compB, compC, compD, compE)
+    }
+}
+
 extension Nexus {
     // swiftlint:disable function_parameter_count
     public func family<A, B, C, D, E>(

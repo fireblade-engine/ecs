@@ -40,13 +40,16 @@ extension FamilyCodingTests {
     // to regenerate.
     static let __allTests__FamilyCodingTests = [
         ("testDecodeFamily4", testDecodeFamily4),
+        ("testDecodeFamily5", testDecodeFamily5),
         ("testDecodingFamily1", testDecodingFamily1),
         ("testDecodingFamily2", testDecodingFamily2),
         ("testDecodingFamily3", testDecodingFamily3),
         ("testEncodeFamily2", testEncodeFamily2),
         ("testEncodeFamily3", testEncodeFamily3),
         ("testEncodeFamily4", testEncodeFamily4),
-        ("testEncodingFamily1", testEncodingFamily1)
+        ("testEncodeFamily5", testEncodeFamily5),
+        ("testEncodingFamily1", testEncodingFamily1),
+        ("testFailDecodingFamily", testFailDecodingFamily)
     ]
 }
 

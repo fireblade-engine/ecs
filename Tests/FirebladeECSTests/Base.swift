@@ -18,14 +18,16 @@ class Name: Component {
     }
 }
 
-class Position: Component {
+final class Position: Component {
     var x: Int
     var y: Int
+
     init(x: Int, y: Int) {
         self.x = x
         self.y = y
     }
 }
+extension Position: Codable { }
 
 class Velocity: Component {
     var a: Float

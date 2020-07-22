@@ -41,7 +41,9 @@ extension FamilyCodingTests {
     static let __allTests__FamilyCodingTests = [
         ("testDecodingFamily1", testDecodingFamily1),
         ("testDecodingFamily2", testDecodingFamily2),
+        ("testDecodingFamily3", testDecodingFamily3),
         ("testEncodeFamily2", testEncodeFamily2),
+        ("testEncodeFamily3", testEncodeFamily3),
         ("testEncodingFamily1", testEncodingFamily1)
     ]
 }

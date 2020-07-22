@@ -55,6 +55,28 @@ class Index: Component {
     }
 }
 
+final class MyComponent: Component {
+    var name: String
+    var flag: Bool
+
+    init(name: String, flag: Bool) {
+        self.name = name
+        self.flag = flag
+    }
+}
+extension MyComponent: Decodable { }
+extension MyComponent: Encodable { }
+
+final class YourComponent: Component {
+    var number: Float
+
+    init(number: Float) {
+        self.number = number
+    }
+}
+extension YourComponent: Decodable { }
+extension YourComponent: Encodable { }
+
 final class SingleGameState: SingleComponent {
     var shouldQuit: Bool = false
     var playerHealth: Int = 67

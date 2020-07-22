@@ -36,6 +36,18 @@ public struct Requires1<A>: FamilyRequirementsManaging where A: Component {
     }
 }
 
+extension Requires1: FamilyDecoding where A: Decodable {
+    public static func decode(componentsIn container: KeyedDecodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws -> A {
+        try container.decode(A.self, forKey: strategy.codingKey(for: A.self))
+    }
+}
+
+extension Requires1: FamilyEncoding where A: Encodable {
+    public static func encode(components: Components, into container: inout KeyedEncodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws {
+        try container.encode(components, forKey: strategy.codingKey(for: A.self))
+    }
+}
+
 extension Nexus {
     public func family<A>(
         requires componentA: A.Type,

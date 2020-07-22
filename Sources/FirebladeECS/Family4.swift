@@ -51,6 +51,25 @@ public struct Requires4<A, B, C, D>: FamilyRequirementsManaging where A: Compone
     }
 }
 
+extension Requires4: FamilyEncoding where A: Encodable, B: Encodable, C: Encodable, D: Encodable {
+    public static func encode(components: (A, B, C, D), into container: inout KeyedEncodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws {
+        try container.encode(components.0, forKey: strategy.codingKey(for: A.self))
+        try container.encode(components.1, forKey: strategy.codingKey(for: B.self))
+        try container.encode(components.2, forKey: strategy.codingKey(for: C.self))
+        try container.encode(components.3, forKey: strategy.codingKey(for: D.self))
+    }
+}
+
+extension Requires4: FamilyDecoding where A: Decodable, B: Decodable, C: Decodable, D: Decodable {
+    public static func decode(componentsIn container: KeyedDecodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws -> (A, B, C, D) {
+        let compA = try container.decode(A.self, forKey: strategy.codingKey(for: A.self))
+        let compB = try container.decode(B.self, forKey: strategy.codingKey(for: B.self))
+        let compC = try container.decode(C.self, forKey: strategy.codingKey(for: C.self))
+        let compD = try container.decode(D.self, forKey: strategy.codingKey(for: D.self))
+        return Components(compA, compB, compC, compD)
+    }
+}
+
 extension Nexus {
     public func family<A, B, C, D>(
         requiresAll componentA: A.Type,

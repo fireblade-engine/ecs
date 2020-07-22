@@ -43,11 +43,18 @@ class Party: Component {
     }
 }
 
-class Color: Component {
-    var r: UInt8 = 0
-    var g: UInt8 = 0
-    var b: UInt8 = 0
+final class Color: Component {
+    var r: UInt8
+    var g: UInt8
+    var b: UInt8
+
+    init(r: UInt8 = 0, g: UInt8 = 0, b: UInt8 = 0) {
+        self.r = r
+        self.g = g
+        self.b = b
+    }
 }
+extension Color: Codable { }
 
 class Index: Component {
     var index: Int

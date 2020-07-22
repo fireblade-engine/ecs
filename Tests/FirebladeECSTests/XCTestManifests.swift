@@ -39,11 +39,13 @@ extension FamilyCodingTests {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__FamilyCodingTests = [
+        ("testDecodeFamily4", testDecodeFamily4),
         ("testDecodingFamily1", testDecodingFamily1),
         ("testDecodingFamily2", testDecodingFamily2),
         ("testDecodingFamily3", testDecodingFamily3),
         ("testEncodeFamily2", testEncodeFamily2),
         ("testEncodeFamily3", testEncodeFamily3),
+        ("testEncodeFamily4", testEncodeFamily4),
         ("testEncodingFamily1", testEncodingFamily1)
     ]
 }

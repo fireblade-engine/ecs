@@ -31,6 +31,8 @@ public final class Nexus {
     /// - Value: Tightly packed EntityIdentifiers that represent the association of an entity to the family.
     @usableFromInline final var familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Id>]
 
+    public final var codingStrategy: CodingStrategy
+
     public final weak var delegate: NexusEventDelegate?
 
     public convenience init() {
@@ -39,7 +41,8 @@ public final class Nexus {
                   componentsByEntity: [:],
                   entityIdGenerator: EntityIdentifierGenerator(),
                   familyMembersByTraits: [:],
-                  childrenByParentEntity: [:])
+                  childrenByParentEntity: [:],
+                  codingStrategy: DefaultCodingStrategy())
     }
 
     internal init(entityStorage: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Id>,
@@ -47,13 +50,15 @@ public final class Nexus {
                   componentsByEntity: [EntityIdentifier: Set<ComponentIdentifier>],
                   entityIdGenerator: EntityIdentifierGenerator,
                   familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Id>],
-                  childrenByParentEntity: [EntityIdentifier: Set<EntityIdentifier>]) {
+                  childrenByParentEntity: [EntityIdentifier: Set<EntityIdentifier>],
+                  codingStrategy: CodingStrategy) {
         self.entityStorage = entityStorage
         self.componentsByType = componentsByType
         self.componentIdsByEntity = componentsByEntity
         self.familyMembersByTraits = familyMembersByTraits
         self.childrenByParentEntity = childrenByParentEntity
         self.entityIdGenerator = entityIdGenerator
+        self.codingStrategy = codingStrategy
     }
 
     deinit {
@@ -74,5 +79,14 @@ public final class Nexus {
 extension Nexus: CustomDebugStringConvertible {
     public var debugDescription: String {
         "<Nexus entities:\(numEntities) components:\(numComponents) families:\(numFamilies)>"
+    }
+}
+
+// MARK: - default coding strategy
+public struct DefaultCodingStrategy: CodingStrategy {
+    public init() { }
+
+    public func codingKey<C>(for componentType: C.Type) -> DynamicCodingKey where C: Component {
+        DynamicCodingKey(stringValue: "\(C.self)")!
     }
 }

@@ -18,14 +18,16 @@ class Name: Component {
     }
 }
 
-class Position: Component {
+final class Position: Component {
     var x: Int
     var y: Int
+
     init(x: Int, y: Int) {
         self.x = x
         self.y = y
     }
 }
+extension Position: Codable { }
 
 class Velocity: Component {
     var a: Float
@@ -34,18 +36,27 @@ class Velocity: Component {
     }
 }
 
-class Party: Component {
+final class Party: Component {
     var partying: Bool
+
     init(partying: Bool) {
         self.partying = partying
     }
 }
+extension Party: Codable { }
 
-class Color: Component {
-    var r: UInt8 = 0
-    var g: UInt8 = 0
-    var b: UInt8 = 0
+final class Color: Component {
+    var r: UInt8
+    var g: UInt8
+    var b: UInt8
+
+    init(r: UInt8 = 0, g: UInt8 = 0, b: UInt8 = 0) {
+        self.r = r
+        self.g = g
+        self.b = b
+    }
 }
+extension Color: Codable { }
 
 class Index: Component {
     var index: Int
@@ -54,6 +65,28 @@ class Index: Component {
         self.index = index
     }
 }
+
+final class MyComponent: Component {
+    var name: String
+    var flag: Bool
+
+    init(name: String, flag: Bool) {
+        self.name = name
+        self.flag = flag
+    }
+}
+extension MyComponent: Decodable { }
+extension MyComponent: Encodable { }
+
+final class YourComponent: Component {
+    var number: Float
+
+    init(number: Float) {
+        self.number = number
+    }
+}
+extension YourComponent: Decodable { }
+extension YourComponent: Encodable { }
 
 final class SingleGameState: SingleComponent {
     var shouldQuit: Bool = false

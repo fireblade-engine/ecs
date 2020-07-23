@@ -40,6 +40,27 @@ public struct Requires3<A, B, C>: FamilyRequirementsManaging where A: Component,
             let ccC: C = nexus.get(unsafeComponentFor: childId)
             return (parent: (pcA, pcB, pcC), child: (ccA, ccB, ccC))
     }
+
+    public static func createMember(nexus: Nexus, components: (A, B, C)) -> Entity {
+        nexus.createEntity(with: components.0, components.1, components.2)
+    }
+}
+
+extension Requires3: FamilyEncoding where A: Encodable, B: Encodable, C: Encodable {
+    public static func encode(components: (A, B, C), into container: inout KeyedEncodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws {
+        try container.encode(components.0, forKey: strategy.codingKey(for: A.self))
+        try container.encode(components.1, forKey: strategy.codingKey(for: B.self))
+        try container.encode(components.2, forKey: strategy.codingKey(for: C.self))
+    }
+}
+
+extension Requires3: FamilyDecoding where A: Decodable, B: Decodable, C: Decodable {
+    public static func decode(componentsIn container: KeyedDecodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws -> (A, B, C) {
+        let compA = try container.decode(A.self, forKey: strategy.codingKey(for: A.self))
+        let compB = try container.decode(B.self, forKey: strategy.codingKey(for: B.self))
+        let compC = try container.decode(C.self, forKey: strategy.codingKey(for: C.self))
+        return Components(compA, compB, compC)
+    }
 }
 
 extension Nexus {

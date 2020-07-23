@@ -34,7 +34,7 @@ import PackageDescription
 let package = Package(
     name: "YourPackageName",
     dependencies: [
-        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.12.2")
+        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.13.0")
     ],
     targets: [
         .target(
@@ -214,6 +214,28 @@ nexus.family(requires: Position.self)
         child.x += parent.x
         child.y += parent.y
      }
+```
+
+### 🔗 Serialization
+
+
+To serialize/deserialize entities you must conform their assigned components to the `Codable` protocol.  
+Conforming components can then be serialized per family like this:
+
+```swift
+// MyComponent and YourComponent both conform to Component and Codable protocols.
+let nexus = Nexus()
+let family = nexus.family(requiresAll: MyComponent.self, YourComponent.self)
+
+// JSON encode entities from given family.
+var jsonEncoder = JSONEncoder()
+let encodedData = try family.encodeMembers(using: &jsonEncoder)
+
+// Decode entities into given family from JSON. 
+// The decoded entities will be added to the nexus.
+var jsonDecoder = JSONDecoder()
+let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
+
 ```
 
 ## 🧪 Demo

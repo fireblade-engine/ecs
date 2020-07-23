@@ -184,3 +184,17 @@ extension Family {
 }
 
 extension Family.RelativesIterator: LazySequenceProtocol { }
+
+// MARK: - member creation
+extension Family {
+    /// Create a new entity with components required by this family.
+    ///
+    /// Since the created entity will meet the requirements of this family it
+    /// will automatically become member of this family.
+    /// - Parameter components: The components required by this family.
+    /// - Returns: The newly created entity.
+    @discardableResult
+    public func createMember(with components: R.Components) -> Entity {
+        R.createMember(nexus: nexus, components: components)
+    }
+}

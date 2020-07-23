@@ -46,8 +46,8 @@ final class FamilyCodingTests: XCTestCase {
         let family = nexus.family(requires: MyComponent.self)
         XCTAssertTrue(family.isEmpty)
         var jsonDecoder = JSONDecoder()
-        try family.decodeMembers(from: jsonData, using: &jsonDecoder)
-
+        let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
+        XCTAssertEqual(newEntities.count, 2)
         XCTAssertEqual(family.count, 2)
 
     }
@@ -96,7 +96,8 @@ final class FamilyCodingTests: XCTestCase {
         let family = nexus.family(requiresAll: YourComponent.self, MyComponent.self)
         XCTAssertTrue(family.isEmpty)
         var jsonDecoder = JSONDecoder()
-        try family.decodeMembers(from: jsonData, using: &jsonDecoder)
+        let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
+        XCTAssertEqual(newEntities.count, 2)
         XCTAssertEqual(family.count, 2)
     }
 
@@ -150,10 +151,13 @@ final class FamilyCodingTests: XCTestCase {
         let nexus = Nexus()
 
         let family = nexus.family(requiresAll: YourComponent.self, MyComponent.self, Position.self)
+        let family2 = nexus.family(requiresAll: YourComponent.self, MyComponent.self, excludesAll: Index.self)
         XCTAssertTrue(family.isEmpty)
         var jsonDecoder = JSONDecoder()
-        try family.decodeMembers(from: jsonData, using: &jsonDecoder)
+        let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
+        XCTAssertEqual(newEntities.count, 2)
         XCTAssertEqual(family.count, 2)
+        XCTAssertEqual(family2.count, 2)
     }
 
     func testEncodeFamily4() throws {
@@ -218,7 +222,8 @@ final class FamilyCodingTests: XCTestCase {
         let family = nexus.family(requiresAll: YourComponent.self, MyComponent.self, Position.self, Color.self)
         XCTAssertTrue(family.isEmpty)
         var jsonDecoder = JSONDecoder()
-        try family.decodeMembers(from: jsonData, using: &jsonDecoder)
+        let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
+        XCTAssertEqual(newEntities.count, 2)
         XCTAssertEqual(family.count, 2)
     }
 
@@ -290,7 +295,8 @@ final class FamilyCodingTests: XCTestCase {
         let family = nexus.family(requiresAll: YourComponent.self, MyComponent.self, Position.self, Color.self, Party.self)
         XCTAssertTrue(family.isEmpty)
         var jsonDecoder = JSONDecoder()
-        try family.decodeMembers(from: jsonData, using: &jsonDecoder)
+        let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
+        XCTAssertEqual(newEntities.count, 2)
         XCTAssertEqual(family.count, 2)
     }
 

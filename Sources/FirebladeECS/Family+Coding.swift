@@ -76,11 +76,12 @@ extension Family where R: FamilyDecoding {
     /// - Parameters:
     ///   - data: The data decoded by decoder. A unkeyed container of family members (keyed component containers) is expected.
     ///   - decoder: The decoder to use for decoding family member data. Decoder respects the coding strategy set at `nexus.codingStrategy`.
-    public func decodeMembers<Decoder>(from data: Decoder.Input, using decoder: inout Decoder) throws where Decoder: TopLevelDecoder {
+    /// - Returns: returns the newly added entities.
+    @discardableResult
+    public func decodeMembers<Decoder>(from data: Decoder.Input, using decoder: inout Decoder) throws -> [Entity] where Decoder: TopLevelDecoder {
         decoder.userInfo[.nexusCodingStrategy] = nexus.codingStrategy
         let familyMembers = try decoder.decode(FamilyMemberContainer<R>.self, from: data)
-        for components in familyMembers.components {
-            createMember(with: components)
-        }
+        return familyMembers.components
+            .map { createMember(with: $0) }
     }
 }

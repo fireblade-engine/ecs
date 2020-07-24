@@ -90,7 +90,7 @@ Entities with the __same component types__ may belong to one `Family`.
 A `Family` has entities as members and component types as family traits.
 
 Create a family by calling `.family` with a set of traits on the nexus.
-A family that containts only entities with a `Movement` and `PlayerInput` component, but no `Texture` component is created by
+A family that contains only entities with a `Movement` and `PlayerInput` component, but no `Texture` component is created by
 
 ```swift
 let family = nexus.family(requiresAll: Movement.self, PlayerInput.self,
@@ -100,7 +100,7 @@ let family = nexus.family(requiresAll: Movement.self, PlayerInput.self,
 These entities are cached in the nexus for efficient access and iteration.
 Families conform to the [Sequence](https://developer.apple.com/documentation/swift/sequence) protocol so that members (components) 
 may be iterated and accessed like any other sequence in Swift.   
-Access a familiy's components directly on the family instance. To get family entities and access components at the same time call `family.entityAndComponents`.
+Access a family's components directly on the family instance. To get family entities and access components at the same time call `family.entityAndComponents`.
 If you are only interested in a family's entities call `family.entities`.
 
 ```swift
@@ -134,7 +134,7 @@ class PlayerMovementSystem {
 			.entityAndComponents
 			.forEach { (entity: Entity, mov: Movement, input: PlayerInput) in
 			
-			// the currenty entity instance
+			// the current entity instance
 			_ = entity
 
 			// position & velocity component for the current entity
@@ -152,7 +152,7 @@ class PlayerMovementSystem {
 			.entities
 			.forEach { (entity: Entity) in
 			
-			// the currenty entity instance
+			// the current entity instance
 			_ = entity
 		}
 	}
@@ -188,8 +188,8 @@ class GameLogicSystem {
 ### 👫 Relatives
 
 This ECS implementation provides an integrated way of creating a [directed acyclic graph (DAG)](https://en.wikipedia.org/wiki/Directed_acyclic_graph) hierarchy of entities by forming parent-child relationships. Entities can become children of a parent entity. In family terms they become **relatives**. Families provide iteration over these relationships.   
-The entity hierachy implementation does not use an additional component therefore keeping the hierarchy intact over different component-families.
-This feature is especially useful for implenting a [scene graph](https://en.wikipedia.org/wiki/Scene_graph). 
+The entity hierarchy implementation does not use an additional component therefore keeping the hierarchy intact over different component-families.
+This feature is especially useful for implementing a [scene graph](https://en.wikipedia.org/wiki/Scene_graph). 
 
 ```swift
 // create entities with 0 to n components

@@ -9,7 +9,7 @@
 
 This is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component System](https://en.wikipedia.org/wiki/Entity_component_system) implementation in Swift. It is developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
 
-See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) to get started.
+See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) or have a look at [documentation in the wiki](https://github.com/fireblade-engine/ecs/wiki) to get started.
 
 ## 🚀 Getting Started
 
@@ -242,6 +242,10 @@ let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
 ## 🧪 Demo
 
 See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) to get started.
+
+## 📖 Documentation
+
+Consult the [wiki](https://github.com/fireblade-engine/ecs/wiki) for in-depth [documentation](https://github.com/fireblade-engine/ecs/wiki).
 
 ## 🏷️ Versioning
 

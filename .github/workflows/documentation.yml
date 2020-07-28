@@ -2,8 +2,12 @@ name: Documentation
 
 on:
   push:
-    branches:
-      - master
+    branches: [ master ]
+    paths:
+      - .github/workflows/documentation.yml
+      - Sources/FirebladeECS/**.swift
+  pull_request:
+    branches: [ master ]
     paths:
       - .github/workflows/documentation.yml
       - Sources/FirebladeECS/**.swift
@@ -13,16 +17,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-      - name: Generate Documentation
-        uses: SwiftDocOrg/swift-doc@1.0.0-beta.3
+      - uses: actions/checkout@v1
+      - name: Generate documentation
+        uses: SwiftDocOrg/swift-doc@master
         with:
           inputs: "Sources/FirebladeECS"
           output: "Documentation"
-      - name: Publish to GitHub Wiki
-        uses: SwiftDocOrg/github-wiki-publish-action@1.0.0
+      - name: Publish to wiki
+        uses: SwiftDocOrg/github-wiki-publish-action@master
         with:
           path: "Documentation"
         env:
+          GITHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}

@@ -1,10 +1,11 @@
 # Fireblade ECS (Entity-Component System)
 [![Build Status](https://travis-ci.com/fireblade-engine/ecs.svg?branch=master)](https://travis-ci.com/fireblade-engine/ecs)
 [![license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
-[![swift version](https://img.shields.io/badge/swift-5.1+-brightgreen.svg)](https://swift.org/download)
+[![swift version](https://img.shields.io/badge/swift-5.1+-brightgreen.svg)](https://swift.org)
 [![platforms](https://img.shields.io/badge/platforms-%20macOS%20|%20iOS%20|%20tvOS%20|%20watchOS-brightgreen.svg)](#)
 [![platforms](https://img.shields.io/badge/platforms-linux-brightgreen.svg)](#)
 [![codecov](https://codecov.io/gh/fireblade-engine/ecs/branch/master/graph/badge.svg)](https://codecov.io/gh/fireblade-engine/ecs)
+[![documentation](https://github.com/fireblade-engine/ecs/workflows/Documentation/badge.svg)](https://github.com/fireblade-engine/ecs/wiki)
 
 This is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component System](https://en.wikipedia.org/wiki/Entity_component_system) implementation in Swift. It is developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
 

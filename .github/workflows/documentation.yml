@@ -16,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
       - name: Generate Documentation
-        uses: SwiftDocOrg/swift-doc@master
+        uses: SwiftDocOrg/swift-doc@1.0.0-beta.3
         with:
           inputs: "Sources/FirebladeECS"
           output: "Documentation"

@@ -21,7 +21,7 @@ jobs:
       - name: Generate documentation
         uses: SwiftDocOrg/swift-doc@master
         with:
-          inputs: "FirebladeECS"
+          inputs: "Sources/FirebladeECS"
           output: "Documentation"
       - name: Publish to wiki
         uses: SwiftDocOrg/github-wiki-publish-action@master

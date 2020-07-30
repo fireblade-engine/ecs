@@ -387,7 +387,7 @@ class SparseSetTests: XCTestCase {
 
     func testSparseSetDoubleRemove() {
         class AClass { }
-        var set = UnorderedSparseSet<AClass, Int>()
+        let set = UnorderedSparseSet<AClass, Int>()
         let a = AClass()
         let b = AClass()
         set.insert(a, at: 0)
@@ -471,7 +471,7 @@ class SparseSetTests: XCTestCase {
     }
 
     func testSparseSetReduce() {
-        var characters = UnorderedSparseSet<Character, Int>()
+        let characters = UnorderedSparseSet<Character, Int>()
 
         characters.insert("H", at: 4)
         characters.insert("e", at: 13)
@@ -497,7 +497,7 @@ class SparseSetTests: XCTestCase {
     }
 
     func testSubscript() {
-        var characters = UnorderedSparseSet<Character, Int>()
+        let characters = UnorderedSparseSet<Character, Int>()
 
         characters[4] = "H"
         characters[13] = "e"
@@ -528,7 +528,7 @@ class SparseSetTests: XCTestCase {
     }
 
     func testStartEndIndex() {
-        var set = UnorderedSparseSet<Character, Int>()
+        let set = UnorderedSparseSet<Character, Int>()
 
         set.insert("C", at: 33)
         set.insert("A", at: 11)
@@ -541,7 +541,7 @@ class SparseSetTests: XCTestCase {
 
     func testAlternativeKey() {
 
-        var set = UnorderedSparseSet<Character, String>()
+        let set = UnorderedSparseSet<Character, String>()
 
         set.insert("A", at: "a")
         set.insert("C", at: "c")

@@ -46,13 +46,6 @@ extension Nexus {
     ///    Position(x: 1, y: 2)
     ///    Name(name: "Some name")
     /// }
-    ///
-    /// // -- or --
-    ///
-    /// let compA = Position(x: 1, y: 2)
-    /// let compB = Name(name: "Some name")
-    ///
-    /// let newEntity = nexus.createEntity { compA; compB }
     /// ```
     /// - Parameter builder: The component builder.
     /// - Returns: The newly created entity with the provided components assigned.

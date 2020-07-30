@@ -22,31 +22,9 @@ extension Nexus {
     }
 
     public final func assign(component: Component, to entity: Entity) {
-        let componentId: ComponentIdentifier = component.identifier
         let entityId: EntityIdentifier = entity.identifier
-
-        // test if component is already assigned
-        guard !has(componentId: componentId, entityId: entityId) else {
-            delegate?.nexusNonFatalError("ComponentAdd collision: \(entityId) already has a component \(component)")
-            assertionFailure("ComponentAdd collision: \(entityId) already has a component \(component)")
-            return
-        }
-
-        // add component instances to uniform component stores
-        if componentsByType[componentId] == nil {
-            componentsByType[componentId] = ManagedContiguousArray<Component>()
-        }
-        componentsByType[componentId]?.insert(component, at: entityId.id)
-
-        // assigns the component id to the entity id
-        if componentIdsByEntity[entityId] == nil {
-            componentIdsByEntity[entityId] = Set<ComponentIdentifier>()
-        }
-        componentIdsByEntity[entityId]?.insert(componentId) //, at: componentId.hashValue)
-
-        update(familyMembership: entityId)
-
-        delegate?.nexusEvent(ComponentAdded(component: componentId, toEntity: entity.identifier))
+        assign(component: component, entityId: entityId)
+        delegate?.nexusEvent(ComponentAdded(component: component.identifier, toEntity: entity.identifier))
     }
 
     public final func assign<C>(component: C, to entity: Entity) where C: Component {

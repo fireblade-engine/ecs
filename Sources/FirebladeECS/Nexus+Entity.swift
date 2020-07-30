@@ -17,14 +17,14 @@ extension Nexus {
     @discardableResult
     public func createEntity(with components: Component...) -> Entity {
         let newEntity = createEntity()
-        components.forEach { newEntity.assign($0) }
+        assign(components: components, to: newEntity.identifier)
         return newEntity
     }
 
     @discardableResult
     public func createEntity<C>(with components: C) -> Entity where C: Collection, C.Element == Component {
         let entity = self.createEntity()
-        components.forEach { entity.assign($0) }
+        assign(components: components, to: entity.identifier)
         return entity
     }
 

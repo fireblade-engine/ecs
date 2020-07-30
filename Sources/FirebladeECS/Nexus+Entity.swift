@@ -21,6 +21,13 @@ extension Nexus {
         return newEntity
     }
 
+    @discardableResult
+    public func createEntity<C>(with components: C) -> Entity where C: Collection, C.Element == Component {
+        let entity = self.createEntity()
+        components.forEach { entity.assign($0) }
+        return entity
+    }
+
     /// Number of entities in nexus.
     public var numEntities: Int {
         entityStorage.count

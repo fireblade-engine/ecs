@@ -44,7 +44,7 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
 
     @inlinable
     public func contains(_ key: Key) -> Bool {
-        find(at: key) != nil
+        findIndex(at: key) != nil
     }
 
     /// Inset an element for a given key into the set in O(1).
@@ -56,7 +56,7 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
     /// - Returns: true if new, false if replaced.
     @discardableResult
     public mutating func insert(_ element: Element, at key: Key) -> Bool {
-        if let (denseIndex, _) = find(at: key) {
+        if let denseIndex = findIndex(at: key) {
             dense[denseIndex] = Entry(key: key, element: element)
             return false
         }
@@ -73,16 +73,12 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
     /// - Returns: the element or nil of key not found.
     @inlinable
     public func get(at key: Key) -> Element? {
-        guard let (_, element) = find(at: key) else {
-            return nil
-        }
-
-        return element
+        findElement(at: key)
     }
 
     @inlinable
     public func get(unsafeAt key: Key) -> Element {
-        find(at: key).unsafelyUnwrapped.1
+        findElement(at: key).unsafelyUnwrapped
     }
 
     /// Removes the element entry for given key in O(1).
@@ -91,7 +87,7 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
     /// - Returns: removed value or nil if key not found.
     @discardableResult
     public mutating func remove(at key: Key) -> Entry? {
-        guard let (denseIndex, _) = find(at: key) else {
+        guard let denseIndex = findIndex(at: key) else {
             return nil
         }
 
@@ -121,8 +117,16 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
     }
 
     @inlinable
-    public func find(at key: Key) -> (Int, Element)? {
+    func findIndex(at key: Key) -> Int? {
         guard let denseIndex = sparse[key], denseIndex < count else {
+            return nil
+        }
+        return denseIndex
+    }
+
+    @inlinable
+    func findElement(at key: Key) -> Element? {
+        guard let denseIndex = findIndex(at: key) else {
             return nil
         }
         let entry = self.dense[denseIndex]
@@ -130,7 +134,7 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
             return nil
         }
 
-        return (denseIndex, entry.element)
+        return entry.element
     }
 
     @inlinable public var first: Element? {

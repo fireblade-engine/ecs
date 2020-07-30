@@ -12,7 +12,7 @@
 ///          an element from the sparse set.
 ///
 /// See <https://github.com/bombela/sparseset/blob/master/src/lib.rs> for a reference implementation.
-public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
+public final class UnorderedSparseSet<Element, Key: Hashable & Codable> {
     /// An index into the dense store.
     public typealias DenseIndex = Int
 
@@ -30,7 +30,7 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
     @usableFromInline var dense: DenseStore
     @usableFromInline var sparse: SparseStore
 
-    public init() {
+    public convenience init() {
         self.init(sparse: [:], dense: [])
     }
 
@@ -44,7 +44,7 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
 
     @inlinable
     public func contains(_ key: Key) -> Bool {
-        find(at: key) != nil
+        findIndex(at: key) != nil
     }
 
     /// Inset an element for a given key into the set in O(1).
@@ -55,15 +55,15 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
     ///   - key: the key
     /// - Returns: true if new, false if replaced.
     @discardableResult
-    public mutating func insert(_ element: Element, at key: Key) -> Bool {
-        if let (denseIndex, _) = find(at: key) {
+    public func insert(_ element: Element, at key: Key) -> Bool {
+        if let denseIndex = findIndex(at: key) {
             dense[denseIndex] = Entry(key: key, element: element)
             return false
         }
 
         let nIndex = dense.count
         dense.append(Entry(key: key, element: element))
-        sparse[key] = nIndex
+        sparse.updateValue(nIndex, forKey: key)
         return true
     }
 
@@ -73,16 +73,12 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
     /// - Returns: the element or nil of key not found.
     @inlinable
     public func get(at key: Key) -> Element? {
-        guard let (_, element) = find(at: key) else {
-            return nil
-        }
-
-        return element
+        findElement(at: key)
     }
 
     @inlinable
     public func get(unsafeAt key: Key) -> Element {
-        find(at: key).unsafelyUnwrapped.1
+        findElement(at: key).unsafelyUnwrapped
     }
 
     /// Removes the element entry for given key in O(1).
@@ -90,8 +86,8 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
     /// - Parameter key: the key
     /// - Returns: removed value or nil if key not found.
     @discardableResult
-    public mutating func remove(at key: Key) -> Entry? {
-        guard let (denseIndex, _) = find(at: key) else {
+    public func remove(at key: Key) -> Entry? {
+        guard let denseIndex = findIndex(at: key) else {
             return nil
         }
 
@@ -105,7 +101,7 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
     }
 
     @inlinable
-    public mutating func removeAll(keepingCapacity: Bool = false) {
+    public func removeAll(keepingCapacity: Bool = false) {
         sparse.removeAll(keepingCapacity: keepingCapacity)
         dense.removeAll(keepingCapacity: keepingCapacity)
     }
@@ -115,14 +111,22 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
     ///
     /// - Parameter denseIndex: the dense index
     /// - Returns: the element entry
-    private mutating func swapRemove(at denseIndex: Int) -> Entry {
+    private func swapRemove(at denseIndex: Int) -> Entry {
         dense.swapAt(denseIndex, dense.count - 1)
         return dense.removeLast()
     }
 
     @inlinable
-    public func find(at key: Key) -> (Int, Element)? {
+    func findIndex(at key: Key) -> Int? {
         guard let denseIndex = sparse[key], denseIndex < count else {
+            return nil
+        }
+        return denseIndex
+    }
+
+    @inlinable
+    func findElement(at key: Key) -> Element? {
+        guard let denseIndex = findIndex(at: key) else {
             return nil
         }
         let entry = self.dense[denseIndex]
@@ -130,7 +134,7 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
             return nil
         }
 
-        return (denseIndex, entry.element)
+        return entry.element
     }
 
     @inlinable public var first: Element? {

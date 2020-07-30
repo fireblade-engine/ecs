@@ -66,24 +66,41 @@ let nexus = Nexus()
 then create entities by letting the `Nexus` generate them.
 
 ```swift
-let myEntity = nexus.createEntity()
+// an entity without components
+let newEntity = nexus.createEntity()
 ```
 
-You can define `Components` like this
+To define components conform your class to the `Component` protocol
 
 ```swift
-class Movement: Component {
-	var position: (x: Double, y: Double) = (0.0, 1.0)
-	var velocity: Double = 0.1
+final class Position: Component {
+	var x: Int = 0
+	var y: Int = 0
 }
 ```
-and assign instances of them to an `Entity` with
+and assign instances of it to an `Entity` with
 
 ```swift
-let movement = Movement()
-myEntity.assign(movement)
+let position = Position(x: 1, y: 2)
+entity.assign(position)
 ```
 
+You can be more efficient by assigning components while creating an entity.
+
+```swift
+// an entity with two components assigned.
+nexus.createEntity {
+	Position(x: 1, y: 2)
+	Color(.red)
+}
+
+// bulk create entities with multiple components assigned.
+nexus.createEntities(count: 100) { _ in
+	Position()
+	Color()
+}
+
+```
 ### 👪 Families
 
 This ECS uses a grouping approach for entities with the same component types to optimize cache locality and ease up access to them.   

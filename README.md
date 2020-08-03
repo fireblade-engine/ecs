@@ -203,7 +203,7 @@ class GameLogicSystem {
 
 ```
 
-### 👫 Relatives
+### 👫 Relatives (deprecated)
 
 This ECS implementation provides an integrated way of creating a [directed acyclic graph (DAG)](https://en.wikipedia.org/wiki/Directed_acyclic_graph) hierarchy of entities by forming parent-child relationships. Entities can become children of a parent entity. In family terms they become **relatives**. Families provide iteration over these relationships.   
 The entity hierarchy implementation does not use an additional component therefore keeping the hierarchy intact over different component-families.

@@ -86,7 +86,7 @@ extension Nexus {
             return
         }
 
-        familyMembersByTraits[traits] = UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Id>()
+        familyMembersByTraits[traits] = UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx>()
         update(familyMembership: traits)
     }
 

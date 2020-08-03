@@ -146,6 +146,7 @@ extension SparseSetTests {
     // to regenerate.
     static let __allTests__SparseSetTests = [
         ("testAlternativeKey", testAlternativeKey),
+        ("testEquality", testEquality),
         ("testSparseSetAdd", testSparseSetAdd),
         ("testSparseSetAddAndReplace", testSparseSetAddAndReplace),
         ("testSparseSetClear", testSparseSetClear),

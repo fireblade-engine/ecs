@@ -127,10 +127,10 @@ extension Nexus {
     }
 
     func add(entityWithId entityId: EntityIdentifier, toFamilyWithTraits traits: FamilyTraitSet) {
-        familyMembersByTraits[traits]!.insert(entityId, at: entityId.id)
+        familyMembersByTraits[traits].unsafelyUnwrapped.insert(entityId, at: entityId.id)
     }
 
     func remove(entityWithId entityId: EntityIdentifier, fromFamilyWithTraits traits: FamilyTraitSet) {
-        familyMembersByTraits[traits]!.remove(at: entityId.id)
+        familyMembersByTraits[traits].unsafelyUnwrapped.remove(at: entityId.id)
     }
 }

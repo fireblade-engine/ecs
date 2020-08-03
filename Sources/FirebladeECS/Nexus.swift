@@ -87,6 +87,6 @@ public struct DefaultCodingStrategy: CodingStrategy {
     public init() { }
 
     public func codingKey<C>(for componentType: C.Type) -> DynamicCodingKey where C: Component {
-        DynamicCodingKey(stringValue: "\(C.self)")!
+        DynamicCodingKey(stringValue: "\(C.self)").unsafelyUnwrapped
     }
 }

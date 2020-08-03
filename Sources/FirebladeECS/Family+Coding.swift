@@ -10,7 +10,7 @@ private struct FamilyMemberContainer<R> where R: FamilyRequirementsManaging {
 }
 
 extension CodingUserInfoKey {
-    fileprivate static let nexusCodingStrategy = CodingUserInfoKey(rawValue: "nexusCodingStrategy")!
+    fileprivate static let nexusCodingStrategy = CodingUserInfoKey(rawValue: "nexusCodingStrategy").unsafelyUnwrapped
 }
 
 // MARK: - encoding

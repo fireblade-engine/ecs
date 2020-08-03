@@ -6,6 +6,7 @@
 //
 
 extension Nexus {
+    @available(*, deprecated, message: "This will be removed in the next minor update.")
     public final func addChild(_ child: Entity, to parent: Entity) -> Bool {
         let inserted: Bool
         if childrenByParentEntity[parent.identifier] == nil {
@@ -21,10 +22,12 @@ extension Nexus {
         return inserted
     }
 
+    @available(*, deprecated, message: "This will be removed in the next minor update.")
     public final func removeChild(_ child: Entity, from parent: Entity) -> Bool {
         removeChild(child.identifier, from: parent.identifier)
     }
 
+    @available(*, deprecated, message: "This will be removed in the next minor update.")
     @discardableResult
     public final func removeChild(_ child: EntityIdentifier, from parent: EntityIdentifier) -> Bool {
         let removed: Bool = childrenByParentEntity[parent]?.remove(child) != nil
@@ -34,15 +37,18 @@ extension Nexus {
         return removed
     }
 
+    @available(*, deprecated, message: "This will be removed in the next minor update.")
     public final func removeAllChildren(from parent: Entity) {
         self.removeAllChildren(from: parent.identifier)
     }
 
+    @available(*, deprecated, message: "This will be removed in the next minor update.")
     public final func removeAllChildren(from parentId: EntityIdentifier) {
         childrenByParentEntity[parentId]?.forEach { removeChild($0, from: parentId) }
         return childrenByParentEntity[parentId] = nil
     }
 
+    @available(*, deprecated, message: "This will be removed in the next minor update.")
     public final func numChildren(for entity: Entity) -> Int {
         childrenByParentEntity[entity.identifier]?.count ?? 0
     }

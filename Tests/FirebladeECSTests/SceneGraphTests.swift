@@ -8,6 +8,7 @@
 import XCTest
 import FirebladeECS
 
+@available(*, deprecated, message: "This will be removed in the next minor update.")
 class SceneGraphTests: XCTestCase {
 
     var nexus: Nexus!

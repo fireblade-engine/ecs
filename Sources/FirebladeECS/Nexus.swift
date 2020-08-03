@@ -8,7 +8,7 @@
 public final class Nexus {
     /// Main entity storage.
     /// Entities are tightly packed by EntityIdentifier.
-    @usableFromInline final var entityStorage: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Id>
+    @usableFromInline final var entityStorage: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx>
 
     /// Entity ids that are currently not used.
     let entityIdGenerator: EntityIdentifierGenerator
@@ -29,14 +29,14 @@ public final class Nexus {
 
     /// - Key: FamilyTraitSet aka component types that make up one distinct family.
     /// - Value: Tightly packed EntityIdentifiers that represent the association of an entity to the family.
-    @usableFromInline final var familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Id>]
+    @usableFromInline final var familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx>]
 
     public final var codingStrategy: CodingStrategy
 
     public final weak var delegate: NexusEventDelegate?
 
     public convenience init() {
-        self.init(entityStorage: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Id>(),
+        self.init(entityStorage: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx>(),
                   componentsByType: [:],
                   componentsByEntity: [:],
                   entityIdGenerator: EntityIdentifierGenerator(),
@@ -45,11 +45,11 @@ public final class Nexus {
                   codingStrategy: DefaultCodingStrategy())
     }
 
-    internal init(entityStorage: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Id>,
+    internal init(entityStorage: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx>,
                   componentsByType: [ComponentIdentifier: ManagedContiguousArray<Component>],
                   componentsByEntity: [EntityIdentifier: Set<ComponentIdentifier>],
                   entityIdGenerator: EntityIdentifierGenerator,
-                  familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Id>],
+                  familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx>],
                   childrenByParentEntity: [EntityIdentifier: Set<EntityIdentifier>],
                   codingStrategy: CodingStrategy) {
         self.entityStorage = entityStorage
@@ -87,6 +87,6 @@ public struct DefaultCodingStrategy: CodingStrategy {
     public init() { }
 
     public func codingKey<C>(for componentType: C.Type) -> DynamicCodingKey where C: Component {
-        DynamicCodingKey(stringValue: "\(C.self)")!
+        DynamicCodingKey(stringValue: "\(C.self)").unsafelyUnwrapped
     }
 }

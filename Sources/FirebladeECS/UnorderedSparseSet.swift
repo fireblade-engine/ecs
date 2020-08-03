@@ -56,10 +56,6 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
             dense.first?.element
         }
 
-        @inlinable var last: Element? {
-            dense.last?.element
-        }
-
         @inlinable
         func findIndex(at key: Key) -> Int? {
             guard let denseIndex = sparse[key], denseIndex < count else {
@@ -135,6 +131,7 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
         self.init(storage: Storage())
     }
 
+    @usableFromInline
     init(storage: Storage) {
         self.storage = storage
     }
@@ -191,10 +188,6 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
 
     @inlinable public var first: Element? {
         storage.first
-    }
-
-    @inlinable public var last: Element? {
-        storage.last
     }
 }
 

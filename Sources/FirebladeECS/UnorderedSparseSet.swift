@@ -13,15 +13,20 @@
 ///
 /// See <https://github.com/bombela/sparseset/blob/master/src/lib.rs> for a reference implementation.
 public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
-    @usableFromInline final class Storage {
+    // swiftlint:disable nesting
+    @usableFromInline
+    final class Storage {
         /// An index into the dense store.
-        public typealias DenseIndex = Int
+        @usableFromInline
+        typealias DenseIndex = Int
 
         /// A sparse store holding indices into the dense mapped to key.
-        public typealias SparseStore = [Key: DenseIndex]
+        @usableFromInline
+        typealias SparseStore = [Key: DenseIndex]
 
         /// A dense store holding all the entries.
-        public typealias DenseStore = ContiguousArray<Entry>
+        @usableFromInline
+        typealias DenseStore = ContiguousArray<Entry>
 
         @usableFromInline
         struct Entry {
@@ -122,7 +127,8 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
             dense.removeAll(keepingCapacity: keepingCapacity)
         }
 
-        @inlinable func makeIterator() -> IndexingIterator<ContiguousArray<Storage.Entry>> {
+        @inlinable
+        func makeIterator() -> IndexingIterator<ContiguousArray<Storage.Entry>> {
             dense.makeIterator()
         }
     }

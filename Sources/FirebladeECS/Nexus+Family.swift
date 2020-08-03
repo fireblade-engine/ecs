@@ -18,8 +18,8 @@ extension Nexus {
         return traits.isMatch(components: componentIds)
     }
 
-    public func members(withFamilyTraits traits: FamilyTraitSet) -> UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Id> {
-        familyMembersByTraits[traits] ?? UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Id>()
+    public func members(withFamilyTraits traits: FamilyTraitSet) -> UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx> {
+        familyMembersByTraits[traits] ?? UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx>()
     }
 
     public func isMember(_ entity: Entity, in family: FamilyTraitSet) -> Bool {

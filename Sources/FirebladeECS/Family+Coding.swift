@@ -10,7 +10,7 @@ private struct FamilyMemberContainer<R> where R: FamilyRequirementsManaging {
 }
 
 extension CodingUserInfoKey {
-    fileprivate static let nexusCodingStrategy = CodingUserInfoKey(rawValue: "nexusCodingStrategy")!
+    static let nexusCodingStrategy = CodingUserInfoKey(rawValue: "nexusCodingStrategy").unsafelyUnwrapped
 }
 
 // MARK: - encoding
@@ -43,7 +43,7 @@ extension Family where R: FamilyEncoding {
     /// - Returns: The encoded data.
     public func encodeMembers<Encoder>(using encoder: inout Encoder) throws -> Encoder.Output where Encoder: TopLevelEncoder {
         encoder.userInfo[.nexusCodingStrategy] = nexus.codingStrategy
-        let components: [R.Components] = self.map { $0 }
+        let components = [R.Components](self)
         let container = FamilyMemberContainer<R>(components: components)
         return try encoder.encode(container)
     }

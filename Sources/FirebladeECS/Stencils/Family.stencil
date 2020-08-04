@@ -90,6 +90,35 @@ extension Requires{{ idx }}: FamilyDecoding where {{ CompsWhereDecodable }} {
 }
 
 extension Nexus {
+    /// Create a family of entities (aka members) having {{ components.count }} required components.
+    ///
+    /// A family is a collection of entities with uniform components per entity. 
+    /// Entities that will be part of this family will have at least the {{ components.count }} required components, 
+    /// but may have more components assigned.
+    ///
+    /// Families are just views on data, creating them is cheap.
+    /// Use them to iterate efficiently over entities with the same components assigned.
+    /// Families of the same requirements provide a view on the same collection of entities.
+    /// Each family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence. 
+    ///
+    /// **Usage example:**
+    /// ```swift
+    /// let family = nexus.family(requiresAll: {{ CompsSelf }})
+    /// // iterate each entity's components
+    /// family.forEach { ({{ CompsLowercased }}) in 
+    ///   ... 
+    /// }
+    /// ```
+    /// **Note:**
+    /// - Component types must be unique per family
+    /// - Component type order is arbitrary
+    ///
+    /// - Parameters:
+    {% for comp in compsLowercased %}
+    ///   - {{ comp }}: Component type {{ forloop.counter }} required by members of this family.
+    {% endfor %}
+    ///   - excludedComponents: All component types that must not be assigned to an entity in this family.
+    /// - Returns: The family of entities having {{ components.count }} required components each.
     public func family<{{ CompParams }}>(
         {% if components.count == 1 %}requires{% else %}requiresAll{%endif%} {{ CompsParams }},
         excludesAll excludedComponents: Component.Type...

@@ -54,3 +54,9 @@ cleanArtifacts:
 # requires <https://github.com/tcort/markdown-link-check>
 testReadme:
 	markdown-link-check -p -v ./README.md
+
+setupEnvironment:
+	brew update
+	brew install swiftenv
+	brew install swiftlint
+	brew install sourcery

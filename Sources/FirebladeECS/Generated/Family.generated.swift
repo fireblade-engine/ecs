@@ -51,6 +51,33 @@ extension Requires1: FamilyDecoding where Comp1: Decodable {
 }
 
 extension Nexus {
+    /// Create a family of entities (aka members) having 1 required components.
+    ///
+    /// A family is a collection of entities with uniform components per entity.
+    /// Entities that will be part of this family will have at least the 1 required components,
+    /// but may have more components assigned.
+    ///
+    /// Families are just views on data, creating them is cheap.
+    /// Use them to iterate efficiently over entities with the same components assigned.
+    /// Families of the same requirements provide a view on the same collection of entities.
+    /// Each family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence.
+    ///
+    /// **Usage example:**
+    /// ```swift
+    /// let family = nexus.family(requiresAll: Comp1.self)
+    /// // iterate each entity's components
+    /// family.forEach { (comp1) in
+    ///   ...
+    /// }
+    /// ```
+    /// **Note:**
+    /// - Component types must be unique per family
+    /// - Component type order is arbitrary
+    ///
+    /// - Parameters:
+    ///   - comp1: Component type 1 required by members of this family.
+    ///   - excludedComponents: All component types that must not be assigned to an entity in this family.
+    /// - Returns: The family of entities having 1 required components each.
     public func family<Comp1>(
         requires comp1: Comp1.Type,
         excludesAll excludedComponents: Component.Type...
@@ -116,6 +143,34 @@ extension Requires2: FamilyDecoding where Comp1: Decodable, Comp2: Decodable {
 }
 
 extension Nexus {
+    /// Create a family of entities (aka members) having 2 required components.
+    ///
+    /// A family is a collection of entities with uniform components per entity.
+    /// Entities that will be part of this family will have at least the 2 required components,
+    /// but may have more components assigned.
+    ///
+    /// Families are just views on data, creating them is cheap.
+    /// Use them to iterate efficiently over entities with the same components assigned.
+    /// Families of the same requirements provide a view on the same collection of entities.
+    /// Each family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence.
+    ///
+    /// **Usage example:**
+    /// ```swift
+    /// let family = nexus.family(requiresAll: Comp1.self, Comp2.self)
+    /// // iterate each entity's components
+    /// family.forEach { (comp1, comp2) in
+    ///   ...
+    /// }
+    /// ```
+    /// **Note:**
+    /// - Component types must be unique per family
+    /// - Component type order is arbitrary
+    ///
+    /// - Parameters:
+    ///   - comp1: Component type 1 required by members of this family.
+    ///   - comp2: Component type 2 required by members of this family.
+    ///   - excludedComponents: All component types that must not be assigned to an entity in this family.
+    /// - Returns: The family of entities having 2 required components each.
     public func family<Comp1, Comp2>(
         requiresAll comp1: Comp1.Type, _ comp2: Comp2.Type,
         excludesAll excludedComponents: Component.Type...
@@ -187,6 +242,35 @@ extension Requires3: FamilyDecoding where Comp1: Decodable, Comp2: Decodable, Co
 }
 
 extension Nexus {
+    /// Create a family of entities (aka members) having 3 required components.
+    ///
+    /// A family is a collection of entities with uniform components per entity.
+    /// Entities that will be part of this family will have at least the 3 required components,
+    /// but may have more components assigned.
+    ///
+    /// Families are just views on data, creating them is cheap.
+    /// Use them to iterate efficiently over entities with the same components assigned.
+    /// Families of the same requirements provide a view on the same collection of entities.
+    /// Each family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence.
+    ///
+    /// **Usage example:**
+    /// ```swift
+    /// let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self)
+    /// // iterate each entity's components
+    /// family.forEach { (comp1, comp2, comp3) in
+    ///   ...
+    /// }
+    /// ```
+    /// **Note:**
+    /// - Component types must be unique per family
+    /// - Component type order is arbitrary
+    ///
+    /// - Parameters:
+    ///   - comp1: Component type 1 required by members of this family.
+    ///   - comp2: Component type 2 required by members of this family.
+    ///   - comp3: Component type 3 required by members of this family.
+    ///   - excludedComponents: All component types that must not be assigned to an entity in this family.
+    /// - Returns: The family of entities having 3 required components each.
     public func family<Comp1, Comp2, Comp3>(
         requiresAll comp1: Comp1.Type, _ comp2: Comp2.Type, _ comp3: Comp3.Type,
         excludesAll excludedComponents: Component.Type...
@@ -264,6 +348,36 @@ extension Requires4: FamilyDecoding where Comp1: Decodable, Comp2: Decodable, Co
 }
 
 extension Nexus {
+    /// Create a family of entities (aka members) having 4 required components.
+    ///
+    /// A family is a collection of entities with uniform components per entity.
+    /// Entities that will be part of this family will have at least the 4 required components,
+    /// but may have more components assigned.
+    ///
+    /// Families are just views on data, creating them is cheap.
+    /// Use them to iterate efficiently over entities with the same components assigned.
+    /// Families of the same requirements provide a view on the same collection of entities.
+    /// Each family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence.
+    ///
+    /// **Usage example:**
+    /// ```swift
+    /// let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self)
+    /// // iterate each entity's components
+    /// family.forEach { (comp1, comp2, comp3, comp4) in
+    ///   ...
+    /// }
+    /// ```
+    /// **Note:**
+    /// - Component types must be unique per family
+    /// - Component type order is arbitrary
+    ///
+    /// - Parameters:
+    ///   - comp1: Component type 1 required by members of this family.
+    ///   - comp2: Component type 2 required by members of this family.
+    ///   - comp3: Component type 3 required by members of this family.
+    ///   - comp4: Component type 4 required by members of this family.
+    ///   - excludedComponents: All component types that must not be assigned to an entity in this family.
+    /// - Returns: The family of entities having 4 required components each.
     public func family<Comp1, Comp2, Comp3, Comp4>(
         requiresAll comp1: Comp1.Type, _ comp2: Comp2.Type, _ comp3: Comp3.Type, _ comp4: Comp4.Type,
         excludesAll excludedComponents: Component.Type...
@@ -347,6 +461,37 @@ extension Requires5: FamilyDecoding where Comp1: Decodable, Comp2: Decodable, Co
 }
 
 extension Nexus {
+    /// Create a family of entities (aka members) having 5 required components.
+    ///
+    /// A family is a collection of entities with uniform components per entity.
+    /// Entities that will be part of this family will have at least the 5 required components,
+    /// but may have more components assigned.
+    ///
+    /// Families are just views on data, creating them is cheap.
+    /// Use them to iterate efficiently over entities with the same components assigned.
+    /// Families of the same requirements provide a view on the same collection of entities.
+    /// Each family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence.
+    ///
+    /// **Usage example:**
+    /// ```swift
+    /// let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self)
+    /// // iterate each entity's components
+    /// family.forEach { (comp1, comp2, comp3, comp4, comp5) in
+    ///   ...
+    /// }
+    /// ```
+    /// **Note:**
+    /// - Component types must be unique per family
+    /// - Component type order is arbitrary
+    ///
+    /// - Parameters:
+    ///   - comp1: Component type 1 required by members of this family.
+    ///   - comp2: Component type 2 required by members of this family.
+    ///   - comp3: Component type 3 required by members of this family.
+    ///   - comp4: Component type 4 required by members of this family.
+    ///   - comp5: Component type 5 required by members of this family.
+    ///   - excludedComponents: All component types that must not be assigned to an entity in this family.
+    /// - Returns: The family of entities having 5 required components each.
     public func family<Comp1, Comp2, Comp3, Comp4, Comp5>(
         requiresAll comp1: Comp1.Type, _ comp2: Comp2.Type, _ comp3: Comp3.Type, _ comp4: Comp4.Type, _ comp5: Comp5.Type,
         excludesAll excludedComponents: Component.Type...

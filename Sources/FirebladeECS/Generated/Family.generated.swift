@@ -64,7 +64,7 @@ extension Nexus {
     /// Families with the same requirements provide a view on the same collection of entities (aka members).
     /// A family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence.
     ///
-    /// **General usage:**
+    /// **General usage**
     /// ```swift
     /// let family = nexus.family(requires: Comp1.self)
     /// // iterate each entity's components
@@ -72,7 +72,7 @@ extension Nexus {
     ///   ...
     /// }
     /// ```
-    /// **Note:**
+    /// **Caveats**
     /// - Component types must be unique per family
     /// - Component type order is arbitrary
     ///
@@ -156,7 +156,7 @@ extension Nexus {
     /// Families with the same requirements provide a view on the same collection of entities (aka members).
     /// A family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence.
     ///
-    /// **General usage:**
+    /// **General usage**
     /// ```swift
     /// let family = nexus.family(requiresAll: Comp1.self, Comp2.self)
     /// // iterate each entity's components
@@ -164,7 +164,7 @@ extension Nexus {
     ///   ...
     /// }
     /// ```
-    /// **Note:**
+    /// **Caveats**
     /// - Component types must be unique per family
     /// - Component type order is arbitrary
     ///
@@ -255,7 +255,7 @@ extension Nexus {
     /// Families with the same requirements provide a view on the same collection of entities (aka members).
     /// A family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence.
     ///
-    /// **General usage:**
+    /// **General usage**
     /// ```swift
     /// let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self)
     /// // iterate each entity's components
@@ -263,7 +263,7 @@ extension Nexus {
     ///   ...
     /// }
     /// ```
-    /// **Note:**
+    /// **Caveats**
     /// - Component types must be unique per family
     /// - Component type order is arbitrary
     ///
@@ -361,7 +361,7 @@ extension Nexus {
     /// Families with the same requirements provide a view on the same collection of entities (aka members).
     /// A family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence.
     ///
-    /// **General usage:**
+    /// **General usage**
     /// ```swift
     /// let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self)
     /// // iterate each entity's components
@@ -369,7 +369,7 @@ extension Nexus {
     ///   ...
     /// }
     /// ```
-    /// **Note:**
+    /// **Caveats**
     /// - Component types must be unique per family
     /// - Component type order is arbitrary
     ///
@@ -474,7 +474,7 @@ extension Nexus {
     /// Families with the same requirements provide a view on the same collection of entities (aka members).
     /// A family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence.
     ///
-    /// **General usage:**
+    /// **General usage**
     /// ```swift
     /// let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self)
     /// // iterate each entity's components
@@ -482,7 +482,7 @@ extension Nexus {
     ///   ...
     /// }
     /// ```
-    /// **Note:**
+    /// **Caveats**
     /// - Component types must be unique per family
     /// - Component type order is arbitrary
     ///

@@ -11,7 +11,7 @@ lintErrorOnly:
 	@swiftlint lint --quiet | grep error
 
 # Git
-precommit: lint genLinuxTests
+precommit: generateCode lint genLinuxTests
 
 submodule:
 	git submodule init

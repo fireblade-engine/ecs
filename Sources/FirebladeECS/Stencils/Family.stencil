@@ -103,7 +103,7 @@ extension Nexus {
     /// Families with the same requirements provide a view on the same collection of entities (aka members).
     /// A family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence. 
     ///
-    /// **General usage:**
+    /// **General usage**
     /// ```swift
     /// let family = nexus.family({% if components.count == 1 %}requires{% else %}requiresAll{%endif%}: {{ CompsSelf }})
     /// // iterate each entity's components
@@ -111,7 +111,7 @@ extension Nexus {
     ///   ... 
     /// }
     /// ```
-    /// **Note:**
+    /// **Caveats**
     /// - Component types must be unique per family
     /// - Component type order is arbitrary
     ///

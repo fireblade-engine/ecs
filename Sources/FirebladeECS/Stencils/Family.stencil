@@ -1,3 +1,108 @@
+// swiftlint:disable large_tuple
 // swiftlint:disable line_length
 // swiftlint:disable variable_name
 
+{% for idx in 1...5 %}
+{% map 1...idx into components using index %}Comp{{ index }}{% endmap %}
+{% set CompParams %}{{components|join: ", "}}{% endset %} 
+
+{% map components into compWhere using comp %}{{ comp }}: Component{% endmap %}
+{% set CompsWhere %}{{compWhere|join: ", "}}{% endset %} 
+
+{% map components into compEncodable using comp %}{{ comp }}: Encodable{% endmap %}
+{% set CompsWhereEncodable %}{{compEncodable|join: ", "}}{% endset %} 
+
+{% map components into compsDecodable using comp %}{{ comp }}: Decodable{% endmap %}
+{% set CompsWhereDecodable %}{{compsDecodable|join: ", "}}{% endset %} 
+
+{% map components into compTypes using comp %}{{ comp }}.Type{% endmap %}
+{% set CompsTypes %}{{compTypes|join: ", "}}{% endset %} 
+
+{% map components into compSelf using comp %}{{ comp }}.self{% endmap %}
+{% set CompsSelf %}{{compSelf|join: ", "}}{% endset %} 
+
+{% map components into compsLowercased using comp %}{{ comp|lowercase }}{% endmap %}
+{% set CompsLowercased %}{{compsLowercased|join: ", "}}{% endset %} 
+
+{% map components into compsTuple using comp %}components.{{ maploop.counter }}{% endmap %}
+{% set CompsTuple %}{{compsTuple|join: ", "}}{% endset %} 
+
+{% map components into compsParams using comp %}{% if not maploop.first %}_ {% endif %}{{ comp|lowercase }}: {{ comp }}.Type{% endmap %}
+{% set CompsParams %}{{compsParams|join: ", "}}{% endset %} 
+
+
+// MARK: - Family {{ idx }}
+
+public typealias Family{{ idx }}<{{ CompParams }}> = Family<Requires{{ idx }}<{{ CompParams }}>> where {{ CompsWhere }}
+
+public struct Requires{{ idx }}<{{ CompParams }}>: FamilyRequirementsManaging where {{ CompsWhere }} {
+    public let componentTypes: [Component.Type]
+
+    public init(_ components: ({{ CompsTypes }})) {
+        componentTypes = [{{ CompsSelf}}]
+    }
+
+    public static func components(nexus: Nexus, entityId: EntityIdentifier) -> ({{ CompParams }}) {
+        {% for comp in components %}
+        let {{ comp|lowercase }}: {{ comp }} = nexus.get(unsafeComponentFor: entityId)
+        {% endfor %} 
+        return ({{ CompsLowercased }})
+    }
+
+    public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, {{ CompParams }}) {
+        let entity: Entity = nexus.get(unsafeEntity: entityId)
+        {% for comp in components %}
+        let {{ comp|lowercase }}: {{ comp }} = nexus.get(unsafeComponentFor: entityId)
+        {% endfor %} 
+        return (entity, {{ CompsLowercased }})
+    }
+
+    public static func createMember(nexus: Nexus, components: ({{ CompParams }})) -> Entity {
+        {% if compEncodable.count == 1 %}nexus.createEntity(with: components){% else %}nexus.createEntity(with: {{ CompsTuple }}){% endif %}
+    }
+
+    public static func relativesDescending(nexus: Nexus, parentId: EntityIdentifier, childId: EntityIdentifier) -> (parent: {{ CompParams }}, child: {{ CompParams }}) {
+        fatalError()
+    }
+
+}
+
+extension Requires{{ idx }}: FamilyEncoding where {{ CompsWhereEncodable }} {
+    public static func encode(components: ({{ CompParams }}), into container: inout KeyedEncodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws {
+        {% if compEncodable.count == 1 %}
+        try container.encode(components, forKey: strategy.codingKey(for: {{ CompsSelf }}))
+        {% else %}
+        {% for comp in compSelf %}
+        try container.encode(components.{{ forloop.counter0 }}, forKey: strategy.codingKey(for: {{ comp }}))
+        {% endfor %}
+        {% endif %}
+    }
+}
+
+extension Requires{{ idx }}: FamilyDecoding where {{ CompsWhereDecodable }} {
+    public static func decode(componentsIn container: KeyedDecodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws -> ({{ CompParams }}) {
+        {% for comp in components %}
+        let {{ comp|lowercase }} = try container.decode({{ comp }}.self, forKey: strategy.codingKey(for: {{ comp }}.self))
+        {% endfor %}
+        {% if compEncodable.count == 1 %}
+        return {{ CompsLowercased }}
+        {% else %}
+        return Components({{ CompsLowercased }})
+        {% endif %}
+    }
+}
+
+extension Nexus {
+    public func family<{{ CompParams }}>(
+        {% if components.count == 1 %}requires{% else %}requiresAll{%endif%} {{ CompsParams }},
+        excludesAll excludedComponents: Component.Type...
+    ) -> Family{{ idx }}<{{ CompParams }}> where {{ CompsWhere }} {
+        Family{{ idx }}<{{ CompParams }}>(
+            nexus: self,
+            requiresAll: ({{ CompsLowercased }}),
+            excludesAll: excludedComponents
+        )
+    }
+}
+
+{% endfor %}

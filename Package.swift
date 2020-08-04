@@ -8,7 +8,8 @@ let package = Package(
                  targets: ["FirebladeECS"])
     ],
     targets: [
-        .target(name: "FirebladeECS"),
+        .target(name: "FirebladeECS",
+                exclude: ["Stencils"]),
         .testTarget(name: "FirebladeECSTests",
                     dependencies: ["FirebladeECS"]),
         .testTarget(name: "FirebladeECSPerformanceTests",

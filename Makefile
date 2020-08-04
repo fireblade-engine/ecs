@@ -62,4 +62,4 @@ setupEnvironment:
 	brew install sourcery
 
 generateCode:
-	sourcery
+	sourcery --verbose

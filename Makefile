@@ -60,3 +60,6 @@ setupEnvironment:
 	brew install swiftenv
 	brew install swiftlint
 	brew install sourcery
+
+generateCode:
+	sourcery

@@ -35,7 +35,6 @@ public struct Requires1<Comp1>: FamilyRequirementsManaging where Comp1: Componen
         let childcomp1: Comp1 = nexus.get(unsafeComponentFor: childId)
         return (parent: (parentcomp1), child: (childcomp1))
     }
-
 }
 
 extension Requires1: FamilyEncoding where Comp1: Encodable {
@@ -63,7 +62,6 @@ extension Nexus {
         )
     }
 }
-
 
 // MARK: - Family 2
 
@@ -100,7 +98,6 @@ public struct Requires2<Comp1, Comp2>: FamilyRequirementsManaging where Comp1: C
         let childcomp2: Comp2 = nexus.get(unsafeComponentFor: childId)
         return (parent: (parentcomp1, parentcomp2), child: (childcomp1, childcomp2))
     }
-
 }
 
 extension Requires2: FamilyEncoding where Comp1: Encodable, Comp2: Encodable {
@@ -130,7 +127,6 @@ extension Nexus {
         )
     }
 }
-
 
 // MARK: - Family 3
 
@@ -171,7 +167,6 @@ public struct Requires3<Comp1, Comp2, Comp3>: FamilyRequirementsManaging where C
         let childcomp3: Comp3 = nexus.get(unsafeComponentFor: childId)
         return (parent: (parentcomp1, parentcomp2, parentcomp3), child: (childcomp1, childcomp2, childcomp3))
     }
-
 }
 
 extension Requires3: FamilyEncoding where Comp1: Encodable, Comp2: Encodable, Comp3: Encodable {
@@ -203,7 +198,6 @@ extension Nexus {
         )
     }
 }
-
 
 // MARK: - Family 4
 
@@ -248,7 +242,6 @@ public struct Requires4<Comp1, Comp2, Comp3, Comp4>: FamilyRequirementsManaging 
         let childcomp4: Comp4 = nexus.get(unsafeComponentFor: childId)
         return (parent: (parentcomp1, parentcomp2, parentcomp3, parentcomp4), child: (childcomp1, childcomp2, childcomp3, childcomp4))
     }
-
 }
 
 extension Requires4: FamilyEncoding where Comp1: Encodable, Comp2: Encodable, Comp3: Encodable, Comp4: Encodable {
@@ -282,7 +275,6 @@ extension Nexus {
         )
     }
 }
-
 
 // MARK: - Family 5
 
@@ -331,7 +323,6 @@ public struct Requires5<Comp1, Comp2, Comp3, Comp4, Comp5>: FamilyRequirementsMa
         let childcomp5: Comp5 = nexus.get(unsafeComponentFor: childId)
         return (parent: (parentcomp1, parentcomp2, parentcomp3, parentcomp4, parentcomp5), child: (childcomp1, childcomp2, childcomp3, childcomp4, childcomp5))
     }
-
 }
 
 extension Requires5: FamilyEncoding where Comp1: Encodable, Comp2: Encodable, Comp3: Encodable, Comp4: Encodable, Comp5: Encodable {
@@ -367,4 +358,3 @@ extension Nexus {
         )
     }
 }
-

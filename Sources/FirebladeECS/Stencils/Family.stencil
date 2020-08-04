@@ -1,35 +1,24 @@
+// swiftlint:disable function_parameter_count
 // swiftlint:disable large_tuple
-// swiftlint:disable line_length
-// swiftlint:disable variable_name
-
 {% for idx in 1...5 %}
 {% map 1...idx into components using index %}Comp{{ index }}{% endmap %}
 {% set CompParams %}{{components|join: ", "}}{% endset %} 
-
 {% map components into compWhere using comp %}{{ comp }}: Component{% endmap %}
 {% set CompsWhere %}{{compWhere|join: ", "}}{% endset %} 
-
 {% map components into compEncodable using comp %}{{ comp }}: Encodable{% endmap %}
 {% set CompsWhereEncodable %}{{compEncodable|join: ", "}}{% endset %} 
-
 {% map components into compsDecodable using comp %}{{ comp }}: Decodable{% endmap %}
 {% set CompsWhereDecodable %}{{compsDecodable|join: ", "}}{% endset %} 
-
 {% map components into compTypes using comp %}{{ comp }}.Type{% endmap %}
 {% set CompsTypes %}{{compTypes|join: ", "}}{% endset %} 
-
 {% map components into compSelf using comp %}{{ comp }}.self{% endmap %}
 {% set CompsSelf %}{{compSelf|join: ", "}}{% endset %} 
-
 {% map components into compsLowercased using comp %}{{ comp|lowercase }}{% endmap %}
 {% set CompsLowercased %}{{compsLowercased|join: ", "}}{% endset %} 
-
 {% map components into compsTuple using comp %}components.{{ maploop.counter }}{% endmap %}
 {% set CompsTuple %}{{compsTuple|join: ", "}}{% endset %} 
-
 {% map components into compsParams using comp %}{% if not maploop.first %}_ {% endif %}{{ comp|lowercase }}: {{ comp }}.Type{% endmap %}
 {% set CompsParams %}{{compsParams|join: ", "}}{% endset %} 
-
 
 // MARK: - Family {{ idx }}
 
@@ -61,8 +50,17 @@ public struct Requires{{ idx }}<{{ CompParams }}>: FamilyRequirementsManaging wh
         {% if compEncodable.count == 1 %}nexus.createEntity(with: components){% else %}nexus.createEntity(with: {{ CompsTuple }}){% endif %}
     }
 
-    public static func relativesDescending(nexus: Nexus, parentId: EntityIdentifier, childId: EntityIdentifier) -> (parent: {{ CompParams }}, child: {{ CompParams }}) {
-        fatalError()
+    public static func relativesDescending(nexus: Nexus, parentId: EntityIdentifier, childId: EntityIdentifier) -> (parent: ({{ CompParams }}), child: ({{ CompParams }})) {
+        {% for comp in components %}
+        let parent{{ comp|lowercase }}: {{ comp }} = nexus.get(unsafeComponentFor: parentId)
+        {% endfor %}
+        {% for comp in components %}
+        let child{{ comp|lowercase }}: {{ comp }} = nexus.get(unsafeComponentFor: childId)
+        {% endfor %}
+        {% map compsLowercased into compsParent using comp %}parent{{ comp }}{% endmap %}
+        {% map compsLowercased into compsChild using comp %}child{{ comp }}{% endmap %}
+        {% set CompsParentChild %}parent: ({{compsParent|join: ", "}}), child: ({{compsChild|join: ", "}}){% endset %} 
+        return ({{ CompsParentChild }})
     }
 
 }

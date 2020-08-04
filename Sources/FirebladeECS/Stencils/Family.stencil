@@ -94,18 +94,18 @@ extension Requires{{ idx }}: FamilyDecoding where {{ CompsWhereDecodable }} {
 extension Nexus {
     /// Create a family of entities (aka members) having {{ components.count }} required components.
     ///
-    /// A family is a collection of entities with uniform components per entity. 
-    /// Entities that will be part of this family will have at least the {{ components.count }} required components, 
+    /// A family is a collection of entities with uniform component types per entity. 
+    /// Entities that are be part of this family will have at least the {{ components.count }} required components, 
     /// but may have more components assigned.
     ///
-    /// Families are just views on data, creating them is cheap.
+    /// A family is just a view on (component) data, creating them is cheap.
     /// Use them to iterate efficiently over entities with the same components assigned.
-    /// Families of the same requirements provide a view on the same collection of entities.
-    /// Each family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence. 
+    /// Families with the same requirements provide a view on the same collection of entities (aka members).
+    /// A family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence. 
     ///
-    /// **Usage example:**
+    /// **General usage:**
     /// ```swift
-    /// let family = nexus.family(requiresAll: {{ CompsSelf }})
+    /// let family = nexus.family({% if components.count == 1 %}requires{% else %}requiresAll{%endif%}: {{ CompsSelf }})
     /// // iterate each entity's components
     /// family.forEach { ({{ CompsLowercased }}) in 
     ///   ... 

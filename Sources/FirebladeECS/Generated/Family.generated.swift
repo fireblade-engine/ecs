@@ -55,18 +55,18 @@ extension Requires1: FamilyDecoding where Comp1: Decodable {
 extension Nexus {
     /// Create a family of entities (aka members) having 1 required components.
     ///
-    /// A family is a collection of entities with uniform components per entity.
-    /// Entities that will be part of this family will have at least the 1 required components,
+    /// A family is a collection of entities with uniform component types per entity.
+    /// Entities that are be part of this family will have at least the 1 required components,
     /// but may have more components assigned.
     ///
-    /// Families are just views on data, creating them is cheap.
+    /// A family is just a view on (component) data, creating them is cheap.
     /// Use them to iterate efficiently over entities with the same components assigned.
-    /// Families of the same requirements provide a view on the same collection of entities.
-    /// Each family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence.
+    /// Families with the same requirements provide a view on the same collection of entities (aka members).
+    /// A family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence.
     ///
-    /// **Usage example:**
+    /// **General usage:**
     /// ```swift
-    /// let family = nexus.family(requiresAll: Comp1.self)
+    /// let family = nexus.family(requires: Comp1.self)
     /// // iterate each entity's components
     /// family.forEach { (comp1) in
     ///   ...
@@ -147,16 +147,16 @@ extension Requires2: FamilyDecoding where Comp1: Decodable, Comp2: Decodable {
 extension Nexus {
     /// Create a family of entities (aka members) having 2 required components.
     ///
-    /// A family is a collection of entities with uniform components per entity.
-    /// Entities that will be part of this family will have at least the 2 required components,
+    /// A family is a collection of entities with uniform component types per entity.
+    /// Entities that are be part of this family will have at least the 2 required components,
     /// but may have more components assigned.
     ///
-    /// Families are just views on data, creating them is cheap.
+    /// A family is just a view on (component) data, creating them is cheap.
     /// Use them to iterate efficiently over entities with the same components assigned.
-    /// Families of the same requirements provide a view on the same collection of entities.
-    /// Each family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence.
+    /// Families with the same requirements provide a view on the same collection of entities (aka members).
+    /// A family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence.
     ///
-    /// **Usage example:**
+    /// **General usage:**
     /// ```swift
     /// let family = nexus.family(requiresAll: Comp1.self, Comp2.self)
     /// // iterate each entity's components
@@ -246,16 +246,16 @@ extension Requires3: FamilyDecoding where Comp1: Decodable, Comp2: Decodable, Co
 extension Nexus {
     /// Create a family of entities (aka members) having 3 required components.
     ///
-    /// A family is a collection of entities with uniform components per entity.
-    /// Entities that will be part of this family will have at least the 3 required components,
+    /// A family is a collection of entities with uniform component types per entity.
+    /// Entities that are be part of this family will have at least the 3 required components,
     /// but may have more components assigned.
     ///
-    /// Families are just views on data, creating them is cheap.
+    /// A family is just a view on (component) data, creating them is cheap.
     /// Use them to iterate efficiently over entities with the same components assigned.
-    /// Families of the same requirements provide a view on the same collection of entities.
-    /// Each family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence.
+    /// Families with the same requirements provide a view on the same collection of entities (aka members).
+    /// A family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence.
     ///
-    /// **Usage example:**
+    /// **General usage:**
     /// ```swift
     /// let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self)
     /// // iterate each entity's components
@@ -352,16 +352,16 @@ extension Requires4: FamilyDecoding where Comp1: Decodable, Comp2: Decodable, Co
 extension Nexus {
     /// Create a family of entities (aka members) having 4 required components.
     ///
-    /// A family is a collection of entities with uniform components per entity.
-    /// Entities that will be part of this family will have at least the 4 required components,
+    /// A family is a collection of entities with uniform component types per entity.
+    /// Entities that are be part of this family will have at least the 4 required components,
     /// but may have more components assigned.
     ///
-    /// Families are just views on data, creating them is cheap.
+    /// A family is just a view on (component) data, creating them is cheap.
     /// Use them to iterate efficiently over entities with the same components assigned.
-    /// Families of the same requirements provide a view on the same collection of entities.
-    /// Each family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence.
+    /// Families with the same requirements provide a view on the same collection of entities (aka members).
+    /// A family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence.
     ///
-    /// **Usage example:**
+    /// **General usage:**
     /// ```swift
     /// let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self)
     /// // iterate each entity's components
@@ -465,16 +465,16 @@ extension Requires5: FamilyDecoding where Comp1: Decodable, Comp2: Decodable, Co
 extension Nexus {
     /// Create a family of entities (aka members) having 5 required components.
     ///
-    /// A family is a collection of entities with uniform components per entity.
-    /// Entities that will be part of this family will have at least the 5 required components,
+    /// A family is a collection of entities with uniform component types per entity.
+    /// Entities that are be part of this family will have at least the 5 required components,
     /// but may have more components assigned.
     ///
-    /// Families are just views on data, creating them is cheap.
+    /// A family is just a view on (component) data, creating them is cheap.
     /// Use them to iterate efficiently over entities with the same components assigned.
-    /// Families of the same requirements provide a view on the same collection of entities.
-    /// Each family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence.
+    /// Families with the same requirements provide a view on the same collection of entities (aka members).
+    /// A family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence.
     ///
-    /// **Usage example:**
+    /// **General usage:**
     /// ```swift
     /// let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self)
     /// // iterate each entity's components

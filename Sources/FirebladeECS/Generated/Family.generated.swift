@@ -1,8 +1,10 @@
 // Generated using Sourcery 0.18.0 — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
 
+// swiftlint:disable file_length
 // swiftlint:disable function_parameter_count
 // swiftlint:disable large_tuple
+// swiftlint:disable multiline_parameters
 
 // MARK: - Family 1
 

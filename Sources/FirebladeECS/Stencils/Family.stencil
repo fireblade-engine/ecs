@@ -62,7 +62,6 @@ public struct Requires{{ idx }}<{{ CompParams }}>: FamilyRequirementsManaging wh
         {% set CompsParentChild %}parent: ({{compsParent|join: ", "}}), child: ({{compsChild|join: ", "}}){% endset %} 
         return ({{ CompsParentChild }})
     }
-
 }
 
 extension Requires{{ idx }}: FamilyEncoding where {{ CompsWhereEncodable }} {

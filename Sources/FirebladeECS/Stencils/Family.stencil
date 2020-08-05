@@ -1,6 +1,7 @@
 // swiftlint:disable file_length
 // swiftlint:disable function_parameter_count
 // swiftlint:disable large_tuple
+// swiftlint:disable line_length
 // swiftlint:disable multiline_parameters
 {% for idx in 1...8 %}
 {% map 1...idx into components using index %}Comp{{ index }}{% endmap %}

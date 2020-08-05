@@ -4,6 +4,7 @@
 // swiftlint:disable file_length
 // swiftlint:disable function_parameter_count
 // swiftlint:disable large_tuple
+// swiftlint:disable line_length
 // swiftlint:disable multiline_parameters
 
 // MARK: - Family 1

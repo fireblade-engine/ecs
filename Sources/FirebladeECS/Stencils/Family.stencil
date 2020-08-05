@@ -20,8 +20,10 @@
 {% set CompsLowercased %}{{compsLowercased|join: ", "}}{% endset %} 
 {% map components into compsTuple using comp %}components.{{ maploop.counter }}{% endmap %}
 {% set CompsTuple %}{{compsTuple|join: ", "}}{% endset %} 
-{% map components into compsParams using comp %}{% if not maploop.first %}_ {% endif %}{{ comp|lowercase }}: {{ comp }}.Type{% endmap %}
-{% set CompsParams %}{{compsParams|join: ", "}}{% endset %} 
+{% map components into compsTypeParams using comp %}{% if not maploop.first %}_ {% endif %}{{ comp|lowercase }}: {{ comp }}.Type{% endmap %}
+{% set CompsTypeParams %}{{compsTypeParams|join: ", "}}{% endset %} 
+{% map components into compsNamedParams using comp %}{% if not maploop.first %}_ {% endif %}{{ comp|lowercase }}: {{ comp }}{% endmap %}
+{% set CompsNamedParams %}{{compsNamedParams|join: ", "}}{% endset %} 
 
 // MARK: - Family {{ idx }}
 
@@ -123,7 +125,7 @@ extension Nexus {
     ///   - excludedComponents: All component types that must not be assigned to an entity in this family.
     /// - Returns: The family of entities having {{ components.count }} required components each.
     public func family<{{ CompParams }}>(
-        {% if components.count == 1 %}requires{% else %}requiresAll{%endif%} {{ CompsParams }},
+        {% if components.count == 1 %}requires{% else %}requiresAll{%endif%} {{ CompsTypeParams }},
         excludesAll excludedComponents: Component.Type...
     ) -> Family{{ idx }}<{{ CompParams }}> where {{ CompsWhere }} {
         Family{{ idx }}<{{ CompParams }}>(

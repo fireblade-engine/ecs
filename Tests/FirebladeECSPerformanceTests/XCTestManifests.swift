@@ -60,7 +60,7 @@ extension TypedFamilyPerformanceTests {
 }
 
 public func __allTests() -> [XCTestCaseEntry] {
-    [
+    return [
         testCase(ComponentIdentifierTests.__allTests__ComponentIdentifierTests),
         testCase(HashingPerformanceTests.__allTests__HashingPerformanceTests),
         testCase(TypeIdentifierPerformanceTests.__allTests__TypeIdentifierPerformanceTests),

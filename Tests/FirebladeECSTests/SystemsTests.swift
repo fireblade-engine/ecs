@@ -121,6 +121,6 @@ class SystemsTests: XCTestCase {
             .prefix(count)
             .forEach { (entity: Entity) in
                 entity.destroy()
-            }
+        }
     }
 }

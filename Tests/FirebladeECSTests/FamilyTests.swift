@@ -119,7 +119,7 @@ class FamilyTests: XCTestCase {
             .forEach { (entity: Entity, _: Position) in
                 entity.assign(Velocity(a: 3.14))
                 entity.remove(Position.self)
-            }
+        }
 
         XCTAssertEqual(familyA.count, 0)
         XCTAssertEqual(familyB.count, 10)
@@ -129,7 +129,7 @@ class FamilyTests: XCTestCase {
             .forEach { (entity: Entity, velocity: Velocity) in
                 entity.assign(Position(x: 1, y: 2))
                 entity.remove(velocity)
-            }
+        }
 
         XCTAssertEqual(familyA.count, 10)
         XCTAssertEqual(familyB.count, 0)
@@ -174,7 +174,7 @@ class FamilyTests: XCTestCase {
             .prefix(currentCount)
             .forEach { (entity: Entity) in
                 entity.destroy()
-            }
+        }
 
         XCTAssertEqual(family.memberIds.count, (count / 2))
 

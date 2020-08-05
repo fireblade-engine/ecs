@@ -172,7 +172,7 @@ extension SystemsTests {
 }
 
 public func __allTests() -> [XCTestCaseEntry] {
-    [
+    return [
         testCase(ComponentIdentifierTests.__allTests__ComponentIdentifierTests),
         testCase(ComponentTests.__allTests__ComponentTests),
         testCase(EntityCreationTests.__allTests__EntityCreationTests),

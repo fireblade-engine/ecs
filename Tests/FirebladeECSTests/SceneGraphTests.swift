@@ -82,7 +82,7 @@ class SceneGraphTests: XCTestCase {
 
                 child.x += parent.x
                 child.y += parent.y
-            }
+        }
 
         XCTAssertEqual(counter, 1)
         XCTAssertEqual(child1Pos.x, 3)
@@ -124,7 +124,7 @@ class SceneGraphTests: XCTestCase {
                 lastIndex = parent.index
                 parentSum += parent.index
                 childSum += child.index
-            }
+        }
 
         XCTAssertEqual(parentSum, 36)
         XCTAssertEqual(childSum, 45)

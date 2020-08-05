@@ -9,7 +9,6 @@ import FirebladeECS
 import XCTest
 
 final class FamilyCodingTests: XCTestCase {
-
     func testEncodingFamily1() throws {
         let nexus = Nexus()
 
@@ -49,7 +48,6 @@ final class FamilyCodingTests: XCTestCase {
         let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
         XCTAssertEqual(newEntities.count, 2)
         XCTAssertEqual(family.count, 2)
-
     }
 
     func testEncodeFamily2() throws {
@@ -301,7 +299,6 @@ final class FamilyCodingTests: XCTestCase {
     }
 
     func testFailDecodingFamily() {
-
         let jsonString = """
         [
           {

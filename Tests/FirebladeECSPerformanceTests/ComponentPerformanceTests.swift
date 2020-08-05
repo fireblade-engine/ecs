@@ -9,7 +9,6 @@ import FirebladeECS
 import XCTest
 
 class ComponentIdentifierTests: XCTestCase {
-
     /// release: 0.034 sec
     /// debug:   0.456 sec
     func testMeasureStaticComponentIdentifier() {

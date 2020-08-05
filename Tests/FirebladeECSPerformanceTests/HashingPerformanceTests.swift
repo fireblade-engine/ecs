@@ -9,7 +9,6 @@ import FirebladeECS
 import XCTest
 
 class HashingPerformanceTests: XCTestCase {
-
     /// release:  0.726 sec
     /// debug:    3.179 sec
     func testMeasureCombineHash() {
@@ -97,5 +96,4 @@ class HashingPerformanceTests: XCTestCase {
         }
         #endif
     }
-
 }

@@ -5,12 +5,11 @@
 //  Created by Christian Treffs on 30.09.19.
 //
 
-import XCTest
 import FirebladeECS
+import XCTest
 
 @available(*, deprecated, message: "This will be removed in the next minor update.")
 class SceneGraphTests: XCTestCase {
-
     var nexus: Nexus!
 
     override func setUp() {
@@ -83,7 +82,7 @@ class SceneGraphTests: XCTestCase {
 
                 child.x += parent.x
                 child.y += parent.y
-        }
+            }
 
         XCTAssertEqual(counter, 1)
         XCTAssertEqual(child1Pos.x, 3)
@@ -125,10 +124,9 @@ class SceneGraphTests: XCTestCase {
                 lastIndex = parent.index
                 parentSum += parent.index
                 childSum += child.index
-        }
+            }
 
         XCTAssertEqual(parentSum, 36)
         XCTAssertEqual(childSum, 45)
     }
-
 }

@@ -8,11 +8,9 @@
 import FirebladeECS
 
 class EmptyComponent: Component {
-
 }
 
 class Name: Component {
-
     var name: String
     init(name: String) {
         self.name = name
@@ -20,7 +18,6 @@ class Name: Component {
 }
 
 class Position: Component {
-
     var x: Int
     var y: Int
     init(x: Int, y: Int) {
@@ -30,7 +27,6 @@ class Position: Component {
 }
 
 class Velocity: Component {
-
     var a: Float
     init(a: Float) {
         self.a = a
@@ -38,7 +34,6 @@ class Velocity: Component {
 }
 
 class Party: Component {
-
     var partying: Bool
     init(partying: Bool) {
         self.partying = partying
@@ -46,7 +41,6 @@ class Party: Component {
 }
 
 class Color: Component {
-
     var r: UInt8 = 0
     var g: UInt8 = 0
     var b: UInt8 = 0

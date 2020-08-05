@@ -1,0 +1,156 @@
+import FirebladeECS
+import XCTest
+
+{% for idx in 1...8 %}
+{% map 1...idx into components using index %}Comp{{ index }}{% endmap %}
+{% set CompParams %}{{components|join: ", "}}{% endset %}
+{% map components into compWhere using comp %}{{ comp }}: Component{% endmap %}
+{% set CompsWhere %}{{compWhere|join: ", "}}{% endset %}
+{% map components into compEncodable using comp %}{{ comp }}: Encodable{% endmap %}
+{% set CompsWhereEncodable %}{{compEncodable|join: ", "}}{% endset %}
+{% map components into compsDecodable using comp %}{{ comp }}: Decodable{% endmap %}
+{% set CompsWhereDecodable %}{{compsDecodable|join: ", "}}{% endset %}
+{% map components into compTypes using comp %}{{ comp }}.Type{% endmap %}
+{% set CompsTypes %}{{compTypes|join: ", "}}{% endset %}
+{% map components into compSelf using comp %}{{ comp }}.self{% endmap %}
+{% set CompsSelf %}{{compSelf|join: ", "}}{% endset %}
+{% map components into compsLowercased using comp %}{{ comp|lowercase }}{% endmap %}
+{% set CompsLowercased %}{{compsLowercased|join: ", "}}{% endset %}
+{% map components into compsTuple using comp %}components.{{ maploop.counter }}{% endmap %}
+{% set CompsTuple %}{{compsTuple|join: ", "}}{% endset %}
+{% map components into compsParams using comp %}{% if not maploop.first %}_ {% endif %}{{ comp|lowercase }}: {{ comp }}.Type{% endmap %}
+{% set CompsParams %}{{compsParams|join: ", "}}{% endset %}
+{% map components into compsInstances using comp %}{{ comp }}({{ maploop.counter }}){% endmap %}
+{% set CompsInstances %}{{compsInstances|join: ", "}}{% endset %}
+{% map components into compsIndexedInstances using comp %}{{ comp }}({{ maploop.counter }}_000_000 + i){% endmap %}
+{% set CompsIndexesInstances %}{{compsIndexedInstances|join: ", "}}{% endset %}
+// MARK: - Family {{ idx }} test case
+final class Family{{ idx }}Tests: XCTestCase {
+    var nexus: Nexus!
+
+    override func setUp() {
+        super.setUp()
+        nexus = Nexus()
+    }
+
+    func testMemberCreation() {
+        let family = nexus.family({% if components.count == 1 %}requires{% else %}requiresAll{%endif%}: {{ CompsSelf }})
+        XCTAssertTrue(family.isEmpty)
+        let entity = family.createMember(with: ({{ CompsInstances }}))
+        XCTAssertEqual(family.count, 1)
+        XCTAssertEqual(entity.numComponents, {{ idx }})
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numEntities, 1)
+        XCTAssertEqual(nexus.numComponents, {{ idx }})
+        {% for comp in components %}
+        XCTAssertEqual(entity[\{{ comp }}.value], {{ forloop.counter0 }})
+        {% endfor %} 
+    }
+
+    func testComponentIteration() {
+        let family = nexus.family({% if components.count == 1 %}requires{% else %}requiresAll{%endif%}: {{ CompsSelf }})
+        XCTAssertTrue(family.isEmpty)
+        for i in 0..<10_000 {
+            family.createMember(with: ({{ CompsIndexesInstances }}))
+        }
+        XCTAssertEqual(family.count, 10_000)
+        var idx: Int = 0
+        family.forEach { ({{ CompsLowercased }}) in
+            {% for comp in compsLowercased %}
+            XCTAssertEqual({{ comp }}.value, {{ forloop.counter0 }}_000_000 + idx)
+            {% endfor %}
+            idx += 1
+        }
+    }
+
+    func testEntityIteration() {
+        let family = nexus.family({% if components.count == 1 %}requires{% else %}requiresAll{%endif%}: {{ CompsSelf }})
+        XCTAssertTrue(family.isEmpty)
+        for i in 0..<10_000 {
+            family.createMember(with: ({{ CompsIndexesInstances }}))
+        }
+        XCTAssertEqual(family.count, 10_000)
+        var idx: Int = 0
+        family.entities.forEach { (entity) in
+            XCTAssertEqual(entity.numComponents, {{ idx }})
+            {% for comp in components %}
+            XCTAssertNotNil(entity[\{{ comp }}.self])
+            XCTAssertEqual(entity[\{{ comp }}.value], {{ forloop.counter0 }}_000_000 + idx)
+            {% endfor %}
+            idx += 1
+        }
+    }
+
+    func testEntityComponentIteration() {
+        let family = nexus.family({% if components.count == 1 %}requires{% else %}requiresAll{%endif%}: {{ CompsSelf }})
+        XCTAssertTrue(family.isEmpty)
+        for i in 0..<10_000 {
+            family.createMember(with: ({{ CompsIndexesInstances }}))
+        }
+        XCTAssertEqual(family.count, 10_000)
+        var idx: Int = 0
+        family.entityAndComponents.forEach { (entity, {{ CompsLowercased }}) in
+            XCTAssertEqual(entity.numComponents, {{ idx }})    
+            {% for comp in components %}
+            XCTAssertEqual({{ comp|lowercase }}.value, {{ forloop.counter0 }}_000_000 + idx)
+            XCTAssertEqual(entity[\{{ comp }}.self], {{ comp|lowercase }})
+            {% endfor %}
+            idx += 1
+        }
+    }
+
+    func testFamilyEncoding() throws {
+        let family = nexus.family({% if components.count == 1 %}requires{% else %}requiresAll{%endif%}: {{ CompsSelf }})
+        XCTAssertTrue(family.isEmpty)
+        for i in 0..<100 {
+            family.createMember(with: ({{ CompsIndexesInstances }}))
+        }
+        XCTAssertEqual(family.count, 100)
+
+        var jsonEncoder = JSONEncoder()
+        let encodedData = try family.encodeMembers(using: &jsonEncoder)
+        XCTAssertGreaterThan(encodedData.count, 10)
+        guard let jsonString = String(data: encodedData, encoding: .utf8) else {
+            XCTFail("Failed to read string from encoded data \(encodedData.count)")
+            return
+        }
+        
+        let expectedStart = "[{"
+        XCTAssertEqual(String(jsonString.prefix(expectedStart.count)), String(expectedStart))
+        let expectedEnd = "}]"
+        XCTAssertEqual(String(jsonString.suffix(expectedEnd.count)), String(expectedEnd))
+    }
+
+    func testFamilyDecoding() throws {
+        let jsonString: String = """
+                                 []
+                                 """
+        guard let jsonData = jsonString.data(using: .utf8) else {
+            XCTFail("Failed to read data from json string \(jsonString.count)")
+            return
+        }
+        let family = nexus.family({% if components.count == 1 %}requires{% else %}requiresAll{%endif%}: {{ CompsSelf }})
+        XCTAssertTrue(family.isEmpty)
+        var jsonDecoder = JSONDecoder()
+        let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
+        XCTAssertEqual(newEntities.count, 2)
+        XCTAssertEqual(family.count, 2)
+    }
+}
+
+{% endfor %}
+
+// MARK: - Components
+{% for idx in 1...8 %}
+final class Comp{{ idx }}: Component {
+    var value: Int
+    init(_ value: Int) { self.value = value }
+}
+extension Comp{{ idx }}: Equatable {
+    static func == (lhs: Comp{{ idx }}, rhs: Comp{{ idx }}) -> Bool {
+        lhs === rhs && lhs.value == rhs.value
+    }
+ }
+extension Comp{{ idx }}: Codable { }
+
+{% endfor %}

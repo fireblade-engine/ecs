@@ -11,7 +11,7 @@ lintErrorOnly:
 	@swiftlint lint --quiet | grep error
 
 # Git
-precommit: generateCode lint genLinuxTests
+precommit: generateCode generateTestsCode lint genLinuxTests
 
 submodule:
 	git submodule init
@@ -63,3 +63,5 @@ setupEnvironment:
 
 generateCode:
 	sourcery --config ./.sourcery.yml --verbose
+generateTestsCode:
+	sourcery --config ./.sourceryTests.yml --verbose

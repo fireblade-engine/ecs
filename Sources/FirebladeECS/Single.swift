@@ -9,20 +9,6 @@ public protocol SingleComponent: Component {
     init()
 }
 
-extension Nexus {
-    public func single<S>(_ component: S.Type) -> Single<S> where S: SingleComponent {
-        let family = self.family(requires: S.self)
-        precondition(family.count <= 1, "Singleton count of \(S.self) must be 0 or 1: \(family.count)")
-        let entityId: EntityIdentifier
-        if family.isEmpty {
-            entityId = createEntity(with: S()).identifier
-        } else {
-            entityId = family.memberIds.first.unsafelyUnwrapped
-        }
-        return Single<S>(nexus: self, traits: family.traits, entityId: entityId)
-    }
-}
-
 public struct Single<A> where A: SingleComponent {
     public let nexus: Nexus
     public let traits: FamilyTraitSet
@@ -47,5 +33,19 @@ extension Single where A: SingleComponent {
 
     public var entity: Entity {
         nexus.get(entity: entityId).unsafelyUnwrapped
+    }
+}
+
+extension Nexus {
+    public func single<S>(_ component: S.Type) -> Single<S> where S: SingleComponent {
+        let family = self.family(requires: S.self)
+        precondition(family.count <= 1, "Singleton count of \(S.self) must be 0 or 1: \(family.count)")
+        let entityId: EntityIdentifier
+        if family.isEmpty {
+            entityId = createEntity(with: S()).identifier
+        } else {
+            entityId = family.memberIds.first.unsafelyUnwrapped
+        }
+        return Single<S>(nexus: self, traits: family.traits, entityId: entityId)
     }
 }

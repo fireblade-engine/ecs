@@ -8,7 +8,6 @@
 import FirebladeECS
 
 class EmptyComponent: Component {
-
 }
 
 class Name: Component {
@@ -136,7 +135,7 @@ class PositionSystem {
     }
 
     func randNorm() -> Double {
-        return 4.0
+        4.0
     }
 
     func update() {

@@ -107,7 +107,6 @@ class EntityTests: XCTestCase {
         XCTAssertEqual(entity[Position.self]?.x, 1234)
         XCTAssertNil(entity[Velocity.self]?.a)
     }
-
 }
 
 extension Sequence {

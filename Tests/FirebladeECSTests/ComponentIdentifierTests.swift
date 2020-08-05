@@ -7,7 +7,6 @@
 import XCTest
 
 final class ComponentIdentifierTests: XCTestCase {
-
     func testMirrorAsStableIdentifier() {
         let m = String(reflecting: Position.self)
         let identifier: String = m

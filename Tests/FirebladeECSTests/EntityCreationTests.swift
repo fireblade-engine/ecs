@@ -9,7 +9,6 @@ import FirebladeECS
 import XCTest
 
 final class EntityCreationTests: XCTestCase {
-
     func testCreateEntityOneComponent() throws {
         let nexus = Nexus()
         let entity = nexus.createEntity {
@@ -76,5 +75,4 @@ final class EntityCreationTests: XCTestCase {
         XCTAssertEqual(nexus.numComponents, 200)
         XCTAssertEqual(nexus.numFamilies, 0)
     }
-
 }

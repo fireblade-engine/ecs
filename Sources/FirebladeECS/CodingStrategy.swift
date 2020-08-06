@@ -1,6 +1,6 @@
 //
 //  CodingStrategy.swift
-//
+//  FirebladeECS
 //
 //  Created by Christian Treffs on 05.08.20.
 //

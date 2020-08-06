@@ -167,7 +167,6 @@ final class Family{{ idx }}Tests: XCTestCase {
 }
 
 {% endfor %}
-
 // MARK: - Components
 {% for idx in 1...8 %}
 final class Comp{{ idx }}: Component {
@@ -178,7 +177,7 @@ extension Comp{{ idx }}: Equatable {
     static func == (lhs: Comp{{ idx }}, rhs: Comp{{ idx }}) -> Bool {
         lhs === rhs && lhs.value == rhs.value
     }
- }
+}
 extension Comp{{ idx }}: Codable { }
 
 {% endfor %}

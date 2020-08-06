@@ -54,19 +54,6 @@ public struct Requires{{ idx }}<{{ CompParams }}>: FamilyRequirementsManaging wh
     public static func createMember(nexus: Nexus, components: ({{ CompParams }})) -> Entity {
         {% if compEncodable.count == 1 %}nexus.createEntity(with: components){% else %}nexus.createEntity(with: {{ CompsTuple }}){% endif %}
     }
-
-    public static func relativesDescending(nexus: Nexus, parentId: EntityIdentifier, childId: EntityIdentifier) -> (parent: ({{ CompParams }}), child: ({{ CompParams }})) {
-        {% for comp in components %}
-        let parent{{ comp|lowercase }}: {{ comp }} = nexus.get(unsafeComponentFor: parentId)
-        {% endfor %}
-        {% for comp in components %}
-        let child{{ comp|lowercase }}: {{ comp }} = nexus.get(unsafeComponentFor: childId)
-        {% endfor %}
-        {% map compsLowercased into compsParent using comp %}parent{{ comp }}{% endmap %}
-        {% map compsLowercased into compsChild using comp %}child{{ comp }}{% endmap %}
-        {% set CompsParentChild %}parent: ({{compsParent|join: ", "}}), child: ({{compsChild|join: ", "}}){% endset %} 
-        return ({{ CompsParentChild }})
-    }
 }
 
 extension Requires{{ idx }}: FamilyEncoding where {{ CompsWhereEncodable }} {

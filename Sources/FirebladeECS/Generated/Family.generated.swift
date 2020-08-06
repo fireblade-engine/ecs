@@ -32,12 +32,6 @@ public struct Requires1<Comp1>: FamilyRequirementsManaging where Comp1: Componen
     public static func createMember(nexus: Nexus, components: (Comp1)) -> Entity {
         nexus.createEntity(with: components)
     }
-
-    public static func relativesDescending(nexus: Nexus, parentId: EntityIdentifier, childId: EntityIdentifier) -> (parent: (Comp1), child: (Comp1)) {
-        let parentcomp1: Comp1 = nexus.get(unsafeComponentFor: parentId)
-        let childcomp1: Comp1 = nexus.get(unsafeComponentFor: childId)
-        return (parent: (parentcomp1), child: (childcomp1))
-    }
 }
 
 extension Requires1: FamilyEncoding where Comp1: Encodable {
@@ -119,14 +113,6 @@ public struct Requires2<Comp1, Comp2>: FamilyRequirementsManaging where Comp1: C
 
     public static func createMember(nexus: Nexus, components: (Comp1, Comp2)) -> Entity {
         nexus.createEntity(with: components.0, components.1)
-    }
-
-    public static func relativesDescending(nexus: Nexus, parentId: EntityIdentifier, childId: EntityIdentifier) -> (parent: (Comp1, Comp2), child: (Comp1, Comp2)) {
-        let parentcomp1: Comp1 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp2: Comp2 = nexus.get(unsafeComponentFor: parentId)
-        let childcomp1: Comp1 = nexus.get(unsafeComponentFor: childId)
-        let childcomp2: Comp2 = nexus.get(unsafeComponentFor: childId)
-        return (parent: (parentcomp1, parentcomp2), child: (childcomp1, childcomp2))
     }
 }
 
@@ -214,16 +200,6 @@ public struct Requires3<Comp1, Comp2, Comp3>: FamilyRequirementsManaging where C
 
     public static func createMember(nexus: Nexus, components: (Comp1, Comp2, Comp3)) -> Entity {
         nexus.createEntity(with: components.0, components.1, components.2)
-    }
-
-    public static func relativesDescending(nexus: Nexus, parentId: EntityIdentifier, childId: EntityIdentifier) -> (parent: (Comp1, Comp2, Comp3), child: (Comp1, Comp2, Comp3)) {
-        let parentcomp1: Comp1 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp2: Comp2 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp3: Comp3 = nexus.get(unsafeComponentFor: parentId)
-        let childcomp1: Comp1 = nexus.get(unsafeComponentFor: childId)
-        let childcomp2: Comp2 = nexus.get(unsafeComponentFor: childId)
-        let childcomp3: Comp3 = nexus.get(unsafeComponentFor: childId)
-        return (parent: (parentcomp1, parentcomp2, parentcomp3), child: (childcomp1, childcomp2, childcomp3))
     }
 }
 
@@ -316,18 +292,6 @@ public struct Requires4<Comp1, Comp2, Comp3, Comp4>: FamilyRequirementsManaging 
 
     public static func createMember(nexus: Nexus, components: (Comp1, Comp2, Comp3, Comp4)) -> Entity {
         nexus.createEntity(with: components.0, components.1, components.2, components.3)
-    }
-
-    public static func relativesDescending(nexus: Nexus, parentId: EntityIdentifier, childId: EntityIdentifier) -> (parent: (Comp1, Comp2, Comp3, Comp4), child: (Comp1, Comp2, Comp3, Comp4)) {
-        let parentcomp1: Comp1 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp2: Comp2 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp3: Comp3 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp4: Comp4 = nexus.get(unsafeComponentFor: parentId)
-        let childcomp1: Comp1 = nexus.get(unsafeComponentFor: childId)
-        let childcomp2: Comp2 = nexus.get(unsafeComponentFor: childId)
-        let childcomp3: Comp3 = nexus.get(unsafeComponentFor: childId)
-        let childcomp4: Comp4 = nexus.get(unsafeComponentFor: childId)
-        return (parent: (parentcomp1, parentcomp2, parentcomp3, parentcomp4), child: (childcomp1, childcomp2, childcomp3, childcomp4))
     }
 }
 
@@ -425,20 +389,6 @@ public struct Requires5<Comp1, Comp2, Comp3, Comp4, Comp5>: FamilyRequirementsMa
 
     public static func createMember(nexus: Nexus, components: (Comp1, Comp2, Comp3, Comp4, Comp5)) -> Entity {
         nexus.createEntity(with: components.0, components.1, components.2, components.3, components.4)
-    }
-
-    public static func relativesDescending(nexus: Nexus, parentId: EntityIdentifier, childId: EntityIdentifier) -> (parent: (Comp1, Comp2, Comp3, Comp4, Comp5), child: (Comp1, Comp2, Comp3, Comp4, Comp5)) {
-        let parentcomp1: Comp1 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp2: Comp2 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp3: Comp3 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp4: Comp4 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp5: Comp5 = nexus.get(unsafeComponentFor: parentId)
-        let childcomp1: Comp1 = nexus.get(unsafeComponentFor: childId)
-        let childcomp2: Comp2 = nexus.get(unsafeComponentFor: childId)
-        let childcomp3: Comp3 = nexus.get(unsafeComponentFor: childId)
-        let childcomp4: Comp4 = nexus.get(unsafeComponentFor: childId)
-        let childcomp5: Comp5 = nexus.get(unsafeComponentFor: childId)
-        return (parent: (parentcomp1, parentcomp2, parentcomp3, parentcomp4, parentcomp5), child: (childcomp1, childcomp2, childcomp3, childcomp4, childcomp5))
     }
 }
 
@@ -541,22 +491,6 @@ public struct Requires6<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6>: FamilyRequire
 
     public static func createMember(nexus: Nexus, components: (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6)) -> Entity {
         nexus.createEntity(with: components.0, components.1, components.2, components.3, components.4, components.5)
-    }
-
-    public static func relativesDescending(nexus: Nexus, parentId: EntityIdentifier, childId: EntityIdentifier) -> (parent: (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6), child: (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6)) {
-        let parentcomp1: Comp1 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp2: Comp2 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp3: Comp3 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp4: Comp4 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp5: Comp5 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp6: Comp6 = nexus.get(unsafeComponentFor: parentId)
-        let childcomp1: Comp1 = nexus.get(unsafeComponentFor: childId)
-        let childcomp2: Comp2 = nexus.get(unsafeComponentFor: childId)
-        let childcomp3: Comp3 = nexus.get(unsafeComponentFor: childId)
-        let childcomp4: Comp4 = nexus.get(unsafeComponentFor: childId)
-        let childcomp5: Comp5 = nexus.get(unsafeComponentFor: childId)
-        let childcomp6: Comp6 = nexus.get(unsafeComponentFor: childId)
-        return (parent: (parentcomp1, parentcomp2, parentcomp3, parentcomp4, parentcomp5, parentcomp6), child: (childcomp1, childcomp2, childcomp3, childcomp4, childcomp5, childcomp6))
     }
 }
 
@@ -664,24 +598,6 @@ public struct Requires7<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7>: Family
 
     public static func createMember(nexus: Nexus, components: (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7)) -> Entity {
         nexus.createEntity(with: components.0, components.1, components.2, components.3, components.4, components.5, components.6)
-    }
-
-    public static func relativesDescending(nexus: Nexus, parentId: EntityIdentifier, childId: EntityIdentifier) -> (parent: (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7), child: (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7)) {
-        let parentcomp1: Comp1 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp2: Comp2 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp3: Comp3 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp4: Comp4 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp5: Comp5 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp6: Comp6 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp7: Comp7 = nexus.get(unsafeComponentFor: parentId)
-        let childcomp1: Comp1 = nexus.get(unsafeComponentFor: childId)
-        let childcomp2: Comp2 = nexus.get(unsafeComponentFor: childId)
-        let childcomp3: Comp3 = nexus.get(unsafeComponentFor: childId)
-        let childcomp4: Comp4 = nexus.get(unsafeComponentFor: childId)
-        let childcomp5: Comp5 = nexus.get(unsafeComponentFor: childId)
-        let childcomp6: Comp6 = nexus.get(unsafeComponentFor: childId)
-        let childcomp7: Comp7 = nexus.get(unsafeComponentFor: childId)
-        return (parent: (parentcomp1, parentcomp2, parentcomp3, parentcomp4, parentcomp5, parentcomp6, parentcomp7), child: (childcomp1, childcomp2, childcomp3, childcomp4, childcomp5, childcomp6, childcomp7))
     }
 }
 
@@ -794,26 +710,6 @@ public struct Requires8<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8>:
 
     public static func createMember(nexus: Nexus, components: (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8)) -> Entity {
         nexus.createEntity(with: components.0, components.1, components.2, components.3, components.4, components.5, components.6, components.7)
-    }
-
-    public static func relativesDescending(nexus: Nexus, parentId: EntityIdentifier, childId: EntityIdentifier) -> (parent: (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8), child: (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8)) {
-        let parentcomp1: Comp1 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp2: Comp2 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp3: Comp3 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp4: Comp4 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp5: Comp5 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp6: Comp6 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp7: Comp7 = nexus.get(unsafeComponentFor: parentId)
-        let parentcomp8: Comp8 = nexus.get(unsafeComponentFor: parentId)
-        let childcomp1: Comp1 = nexus.get(unsafeComponentFor: childId)
-        let childcomp2: Comp2 = nexus.get(unsafeComponentFor: childId)
-        let childcomp3: Comp3 = nexus.get(unsafeComponentFor: childId)
-        let childcomp4: Comp4 = nexus.get(unsafeComponentFor: childId)
-        let childcomp5: Comp5 = nexus.get(unsafeComponentFor: childId)
-        let childcomp6: Comp6 = nexus.get(unsafeComponentFor: childId)
-        let childcomp7: Comp7 = nexus.get(unsafeComponentFor: childId)
-        let childcomp8: Comp8 = nexus.get(unsafeComponentFor: childId)
-        return (parent: (parentcomp1, parentcomp2, parentcomp3, parentcomp4, parentcomp5, parentcomp6, parentcomp7, parentcomp8), child: (childcomp1, childcomp2, childcomp3, childcomp4, childcomp5, childcomp6, childcomp7, childcomp8))
     }
 }
 

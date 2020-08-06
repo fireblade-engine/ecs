@@ -36,7 +36,7 @@ import PackageDescription
 let package = Package(
     name: "YourPackageName",
     dependencies: [
-        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.15.0")
+        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.15.1")
     ],
     targets: [
         .target(

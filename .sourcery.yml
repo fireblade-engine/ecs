@@ -1,0 +1,6 @@
+sources: # you can provide either single path or several paths using `-`
+  - Sources
+templates: # as well as for templates
+  - Sources/FirebladeECS/Stencils
+output: # note that there is no `-` here as only single output path is supported
+  Sources/FirebladeECS/Generated

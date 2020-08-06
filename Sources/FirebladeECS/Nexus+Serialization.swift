@@ -40,7 +40,7 @@ extension Nexus {
                   componentsByEntity: [:],
                   entityIdGenerator: EntityIdentifierGenerator(entityIds),
                   familyMembersByTraits: [:],
-                  childrenByParentEntity: [:])
+                  codingStrategy: DefaultCodingStrategy())
 
         for componentSet in sNexus.entities.values {
             let entity = self.createEntity()

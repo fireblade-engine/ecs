@@ -1,6 +1,6 @@
 //
 //  Family.swift
-//
+//  FirebladeECS
 //
 //  Created by Christian Treffs on 21.08.19.
 //
@@ -17,7 +17,7 @@ public struct Family<R> where R: FamilyRequirementsManaging {
         nexus.onFamilyInit(traits: traits)
     }
 
-    @inlinable public var memberIds: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Id> {
+    @inlinable public var memberIds: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx> {
         nexus.members(withFamilyTraits: traits)
     }
 
@@ -58,7 +58,7 @@ extension Family: LazySequenceProtocol { }
 // MARK: - components iterator
 extension Family {
     public struct ComponentsIterator: IteratorProtocol {
-        @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Id>.ElementIterator
+        @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx>.ElementIterator
         @usableFromInline unowned let nexus: Nexus
 
         public init(family: Family<R>) {
@@ -85,7 +85,7 @@ extension Family {
     }
 
     public struct EntityIterator: IteratorProtocol {
-        @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Id>.ElementIterator
+        @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx>.ElementIterator
         @usableFromInline unowned let nexus: Nexus
 
         public init(family: Family<R>) {
@@ -111,7 +111,7 @@ extension Family {
     }
 
     public struct EntityComponentIterator: IteratorProtocol {
-        @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Id>.ElementIterator
+        @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx>.ElementIterator
         @usableFromInline unowned let nexus: Nexus
 
         public init(family: Family<R>) {
@@ -130,57 +130,16 @@ extension Family {
 
 extension Family.EntityComponentIterator: LazySequenceProtocol { }
 
-// MARK: - relatives iterator
-
+// MARK: - member creation
 extension Family {
-    @inlinable
-    public func descendRelatives(from root: Entity) -> RelativesIterator {
-        RelativesIterator(family: self, root: root)
-    }
-
-    public struct RelativesIterator: IteratorProtocol {
-        @usableFromInline unowned let nexus: Nexus
-        @usableFromInline let familyTraits: FamilyTraitSet
-
-        @usableFromInline var relatives: ContiguousArray<(EntityIdentifier, EntityIdentifier)>
-
-        public init(family: Family<R>, root: Entity) {
-            self.nexus = family.nexus
-            self.familyTraits = family.traits
-
-            // FIXME: this is not the most efficient way to aggregate all parent child tuples
-            // Problems:
-            // - allocates new memory
-            // - needs to be build on every iteration
-            // - relies on isMember check
-            self.relatives = []
-            self.relatives.reserveCapacity(family.memberIds.count)
-            aggregateRelativesBreathFirst(root.identifier)
-            relatives.reverse()
-        }
-
-        mutating func aggregateRelativesBreathFirst(_ parent: EntityIdentifier) {
-            guard let children = nexus.childrenByParentEntity[parent] else {
-                return
-            }
-            children
-                .compactMap { child in
-                    guard nexus.isMember(child, in: familyTraits) else {
-                        return nil
-                    }
-                    relatives.append((parent, child))
-                    return child
-                }
-            .forEach { aggregateRelativesBreathFirst($0) }
-        }
-
-        public mutating func next() -> R.RelativesDescending? {
-            guard let (parentId, childId) = relatives.popLast() else {
-                return nil
-            }
-            return R.relativesDescending(nexus: nexus, parentId: parentId, childId: childId)
-        }
+    /// Create a new entity with components required by this family.
+    ///
+    /// Since the created entity will meet the requirements of this family it
+    /// will automatically become member of this family.
+    /// - Parameter components: The components required by this family.
+    /// - Returns: The newly created entity.
+    @discardableResult
+    public func createMember(with components: R.Components) -> Entity {
+        R.createMember(nexus: nexus, components: components)
     }
 }
-
-extension Family.RelativesIterator: LazySequenceProtocol { }

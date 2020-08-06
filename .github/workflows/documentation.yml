@@ -1,0 +1,32 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - .github/workflows/documentation.yml
+      - Sources/FirebladeECS/**.swift
+  workflow_dispatch:
+    branches: [ master ]
+    paths:
+      - .github/workflows/documentation.yml
+      - Sources/FirebladeECS/**.swift
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Generate documentation
+        uses: SwiftDocOrg/swift-doc@master
+        with:
+          inputs: "Sources/FirebladeECS"
+          output: "Documentation"
+      - name: Publish to wiki
+        uses: SwiftDocOrg/github-wiki-publish-action@master
+        with:
+          path: "Documentation"
+        env:
+          GITHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}

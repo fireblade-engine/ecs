@@ -1,14 +1,16 @@
 # Fireblade ECS (Entity-Component System)
-[![Build Status](https://travis-ci.com/fireblade-engine/ecs.svg?branch=master)](https://travis-ci.com/fireblade-engine/ecs)
+[![github CI](https://github.com/fireblade-engine/ecs/workflows/CI/badge.svg)](https://github.com/fireblade-engine/ecs/actions?query=workflow%3ACI)
+[![travis CI](https://travis-ci.com/fireblade-engine/ecs.svg?branch=master)](https://travis-ci.com/fireblade-engine/ecs)
 [![license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
-[![swift version](https://img.shields.io/badge/swift-5.1+-brightgreen.svg)](https://swift.org/download)
+[![swift version](https://img.shields.io/badge/swift-5.1+-brightgreen.svg)](https://swift.org)
 [![platforms](https://img.shields.io/badge/platforms-%20macOS%20|%20iOS%20|%20tvOS%20|%20watchOS-brightgreen.svg)](#)
 [![platforms](https://img.shields.io/badge/platforms-linux-brightgreen.svg)](#)
 [![codecov](https://codecov.io/gh/fireblade-engine/ecs/branch/master/graph/badge.svg)](https://codecov.io/gh/fireblade-engine/ecs)
+[![documentation](https://github.com/fireblade-engine/ecs/workflows/Documentation/badge.svg)](https://github.com/fireblade-engine/ecs/wiki)
 
 This is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component System](https://en.wikipedia.org/wiki/Entity_component_system) implementation in Swift. It is developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
 
-See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) to get started.
+See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) or have a look at [documentation in the wiki](https://github.com/fireblade-engine/ecs/wiki) to get started.
 
 ## 🚀 Getting Started
 
@@ -34,7 +36,7 @@ import PackageDescription
 let package = Package(
     name: "YourPackageName",
     dependencies: [
-        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.12.2")
+        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.15.0")
     ],
     targets: [
         .target(
@@ -65,24 +67,41 @@ let nexus = Nexus()
 then create entities by letting the `Nexus` generate them.
 
 ```swift
-let myEntity = nexus.createEntity()
+// an entity without components
+let newEntity = nexus.createEntity()
 ```
 
-You can define `Components` like this
+To define components conform your class to the `Component` protocol
 
 ```swift
-class Movement: Component {
-	var position: (x: Double, y: Double) = (0.0, 1.0)
-	var velocity: Double = 0.1
+final class Position: Component {
+	var x: Int = 0
+	var y: Int = 0
 }
 ```
-and assign instances of them to an `Entity` with
+and assign instances of it to an `Entity` with
 
 ```swift
-let movement = Movement()
-myEntity.assign(movement)
+let position = Position(x: 1, y: 2)
+entity.assign(position)
 ```
 
+You can be more efficient by assigning components while creating an entity.
+
+```swift
+// an entity with two components assigned.
+nexus.createEntity {
+	Position(x: 1, y: 2)
+	Color(.red)
+}
+
+// bulk create entities with multiple components assigned.
+nexus.createEntities(count: 100) { _ in
+	Position()
+	Color()
+}
+
+```
 ### 👪 Families
 
 This ECS uses a grouping approach for entities with the same component types to optimize cache locality and ease up access to them.   
@@ -90,7 +109,7 @@ Entities with the __same component types__ may belong to one `Family`.
 A `Family` has entities as members and component types as family traits.
 
 Create a family by calling `.family` with a set of traits on the nexus.
-A family that containts only entities with a `Movement` and `PlayerInput` component, but no `Texture` component is created by
+A family that contains only entities with a `Movement` and `PlayerInput` component, but no `Texture` component is created by
 
 ```swift
 let family = nexus.family(requiresAll: Movement.self, PlayerInput.self,
@@ -100,7 +119,7 @@ let family = nexus.family(requiresAll: Movement.self, PlayerInput.self,
 These entities are cached in the nexus for efficient access and iteration.
 Families conform to the [Sequence](https://developer.apple.com/documentation/swift/sequence) protocol so that members (components) 
 may be iterated and accessed like any other sequence in Swift.   
-Access a familiy's components directly on the family instance. To get family entities and access components at the same time call `family.entityAndComponents`.
+Access a family's components directly on the family instance. To get family entities and access components at the same time call `family.entityAndComponents`.
 If you are only interested in a family's entities call `family.entities`.
 
 ```swift
@@ -134,7 +153,7 @@ class PlayerMovementSystem {
 			.entityAndComponents
 			.forEach { (entity: Entity, mov: Movement, input: PlayerInput) in
 			
-			// the currenty entity instance
+			// the current entity instance
 			_ = entity
 
 			// position & velocity component for the current entity
@@ -152,7 +171,7 @@ class PlayerMovementSystem {
 			.entities
 			.forEach { (entity: Entity) in
 			
-			// the currenty entity instance
+			// the current entity instance
 			_ = entity
 		}
 	}
@@ -185,40 +204,35 @@ class GameLogicSystem {
 
 ```
 
-### 👫 Relatives
+### 🔗 Serialization
 
-This ECS implementation provides an integrated way of creating a [directed acyclic graph (DAG)](https://en.wikipedia.org/wiki/Directed_acyclic_graph) hierarchy of entities by forming parent-child relationships. Entities can become children of a parent entity. In family terms they become **relatives**. Families provide iteration over these relationships.   
-The entity hierachy implementation does not use an additional component therefore keeping the hierarchy intact over different component-families.
-This feature is especially useful for implenting a [scene graph](https://en.wikipedia.org/wiki/Scene_graph). 
+
+To serialize/deserialize entities you must conform their assigned components to the `Codable` protocol.  
+Conforming components can then be serialized per family like this:
 
 ```swift
-// create entities with 0 to n components
-let parent: Entity = nexus.createEntity(with: Position(x: 1, y: 1), SomeOtherComponent(...))
-let child: Entity  = nexus.createEntity(with: Position(x: 2, y: 2))
-let child2: Entity = nexus.createEntity(with: Position(x: 3, y: 3), MySpecialComponent(...))
+// MyComponent and YourComponent both conform to Component and Codable protocols.
+let nexus = Nexus()
+let family = nexus.family(requiresAll: MyComponent.self, YourComponent.self)
 
-// create relationships between entities
-parent.addChild(child)
-child.addChild(child2)
-// or remove them
-// parent.removeChild(child)
+// JSON encode entities from given family.
+var jsonEncoder = JSONEncoder()
+let encodedData = try family.encodeMembers(using: &jsonEncoder)
 
-// iterate over component families descending the graph
-nexus.family(requires: Position.self)
-     .descendRelatives(from: parent) // provide the start entity (aka root "node")
-     .forEach { (parent: Position, child: Position) in
-        // parent: the current parent component
-        // child: the current child component
-        
-        // update your components hierarchically
-        child.x += parent.x
-        child.y += parent.y
-     }
+// Decode entities into given family from JSON. 
+// The decoded entities will be added to the nexus.
+var jsonDecoder = JSONDecoder()
+let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
+
 ```
 
 ## 🧪 Demo
 
 See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) to get started.
+
+## 📖 Documentation
+
+Consult the [wiki](https://github.com/fireblade-engine/ecs/wiki) for in-depth [documentation](https://github.com/fireblade-engine/ecs/wiki).
 
 ## 🏷️ Versioning
 

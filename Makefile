@@ -11,7 +11,7 @@ lintErrorOnly:
 	@swiftlint lint --quiet | grep error
 
 # Git
-precommit: lint genLinuxTests
+precommit: generateCode generateTestsCode lint genLinuxTests
 
 submodule:
 	git submodule init
@@ -54,3 +54,14 @@ cleanArtifacts:
 # requires <https://github.com/tcort/markdown-link-check>
 testReadme:
 	markdown-link-check -p -v ./README.md
+
+setupEnvironment:
+	brew update
+	brew install swiftenv
+	brew install swiftlint
+	brew install sourcery
+
+generateCode:
+	sourcery --config ./.sourcery.yml --verbose
+generateTestsCode:
+	sourcery --config ./.sourceryTests.yml --verbose

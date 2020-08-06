@@ -17,8 +17,15 @@ extension Nexus {
     @discardableResult
     public func createEntity(with components: Component...) -> Entity {
         let newEntity = createEntity()
-        components.forEach { newEntity.assign($0) }
+        assign(components: components, to: newEntity.identifier)
         return newEntity
+    }
+
+    @discardableResult
+    public func createEntity<C>(with components: C) -> Entity where C: Collection, C.Element == Component {
+        let entity = self.createEntity()
+        assign(components: components, to: entity.identifier)
+        return entity
     }
 
     /// Number of entities in nexus.
@@ -52,8 +59,6 @@ extension Nexus {
             delegate?.nexusNonFatalError("EntityRemove failure: no entity \(entityId) to remove")
             return false
         }
-
-        removeAllChildren(from: entityId)
 
         if removeAll(components: entityId) {
             update(familyMembership: entityId)

@@ -203,37 +203,6 @@ class GameLogicSystem {
 
 ```
 
-### 👫 Relatives (deprecated)
-
-This ECS implementation provides an integrated way of creating a [directed acyclic graph (DAG)](https://en.wikipedia.org/wiki/Directed_acyclic_graph) hierarchy of entities by forming parent-child relationships. Entities can become children of a parent entity. In family terms they become **relatives**. Families provide iteration over these relationships.   
-The entity hierarchy implementation does not use an additional component therefore keeping the hierarchy intact over different component-families.
-This feature is especially useful for implementing a [scene graph](https://en.wikipedia.org/wiki/Scene_graph). 
-
-```swift
-// create entities with 0 to n components
-let parent: Entity = nexus.createEntity(with: Position(x: 1, y: 1), SomeOtherComponent(...))
-let child: Entity  = nexus.createEntity(with: Position(x: 2, y: 2))
-let child2: Entity = nexus.createEntity(with: Position(x: 3, y: 3), MySpecialComponent(...))
-
-// create relationships between entities
-parent.addChild(child)
-child.addChild(child2)
-// or remove them
-// parent.removeChild(child)
-
-// iterate over component families descending the graph
-nexus.family(requires: Position.self)
-     .descendRelatives(from: parent) // provide the start entity (aka root "node")
-     .forEach { (parent: Position, child: Position) in
-        // parent: the current parent component
-        // child: the current child component
-        
-        // update your components hierarchically
-        child.x += parent.x
-        child.y += parent.y
-     }
-```
-
 ### 🔗 Serialization
 
 

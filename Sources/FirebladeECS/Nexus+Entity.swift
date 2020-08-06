@@ -64,7 +64,7 @@ extension Nexus {
             update(familyMembership: entityId)
         }
 
-        entityIdGenerator.freeId(entityId)
+        entityIdGenerator.markUnused(entityId: entityId)
 
         delegate?.nexusEvent(EntityDestroyed(entityId: entityId))
         return true

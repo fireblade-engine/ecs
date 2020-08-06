@@ -38,7 +38,6 @@ class SystemsTests: XCTestCase {
         XCTAssertEqual(nexus.numEntities, 0)
         XCTAssertEqual(colorSystem.colors.memberIds.count, 0)
         XCTAssertEqual(positionSystem.positions.memberIds.count, 0)
-        XCTAssertEqual(nexus.entityIdGenerator.count, 1)
         XCTAssertEqual(nexus.familyMembersByTraits[posTraits]?.count, 0)
 
         batchCreateEntities(count: num)
@@ -47,7 +46,6 @@ class SystemsTests: XCTestCase {
         XCTAssertEqual(nexus.familyMembersByTraits[posTraits]?.count, num)
         XCTAssertEqual(colorSystem.colors.memberIds.count, num)
         XCTAssertEqual(positionSystem.positions.memberIds.count, num)
-        XCTAssertEqual(nexus.entityIdGenerator.count, 1)
 
         colorSystem.update()
         positionSystem.update()
@@ -56,7 +54,6 @@ class SystemsTests: XCTestCase {
         XCTAssertEqual(nexus.familyMembersByTraits[posTraits]?.count, num)
         XCTAssertEqual(colorSystem.colors.memberIds.count, num)
         XCTAssertEqual(positionSystem.positions.memberIds.count, num)
-        XCTAssertEqual(nexus.entityIdGenerator.count, 1)
 
         batchCreateEntities(count: num)
 
@@ -64,7 +61,6 @@ class SystemsTests: XCTestCase {
         XCTAssertEqual(nexus.familyMembersByTraits[posTraits]?.count, num * 2)
         XCTAssertEqual(colorSystem.colors.memberIds.count, num * 2)
         XCTAssertEqual(positionSystem.positions.memberIds.count, num * 2)
-        XCTAssertEqual(nexus.entityIdGenerator.count, 1)
 
         colorSystem.update()
         positionSystem.update()
@@ -73,12 +69,10 @@ class SystemsTests: XCTestCase {
         XCTAssertEqual(nexus.familyMembersByTraits[posTraits]?.count, num * 2)
         XCTAssertEqual(colorSystem.colors.memberIds.count, num * 2)
         XCTAssertEqual(positionSystem.positions.memberIds.count, num * 2)
-        XCTAssertEqual(nexus.entityIdGenerator.count, 1)
 
         batchDestroyEntities(count: num)
 
         XCTAssertEqual(nexus.familyMembersByTraits[posTraits]?.count, num)
-        XCTAssertEqual(nexus.entityIdGenerator.count, 1 + num)
         XCTAssertEqual(nexus.numEntities, num)
         XCTAssertEqual(colorSystem.colors.memberIds.count, num)
         XCTAssertEqual(positionSystem.positions.memberIds.count, num)
@@ -90,7 +84,6 @@ class SystemsTests: XCTestCase {
         XCTAssertEqual(nexus.numEntities, num)
         XCTAssertEqual(colorSystem.colors.memberIds.count, num)
         XCTAssertEqual(positionSystem.positions.memberIds.count, num)
-        XCTAssertEqual(nexus.entityIdGenerator.count, 1 + num)
 
         batchCreateEntities(count: num)
 
@@ -98,7 +91,6 @@ class SystemsTests: XCTestCase {
         XCTAssertEqual(nexus.numEntities, num * 2)
         XCTAssertEqual(colorSystem.colors.memberIds.count, num * 2)
         XCTAssertEqual(positionSystem.positions.memberIds.count, num * 2)
-        XCTAssertEqual(nexus.entityIdGenerator.count, 1)
     }
 
     func createDefaultEntity() {

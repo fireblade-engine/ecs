@@ -11,14 +11,16 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Test & Build Release
+    - name: Build Release
       run: swift build -c release
+    - name: Test Release
       run: swift test -c release --skip-build --skip-update --parallel
 
   build-test-ubuntu-latest:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Test & Build Release
+    - name: Build Release
       run: swift build -c release
+    - name: Test Release
       run: swift test -c release --skip-build --skip-update --parallel

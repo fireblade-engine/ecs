@@ -16,7 +16,6 @@ jobs:
       run: swift test -c release --skip-build --skip-update --parallel
 
   build-test-ubuntu-latest:
-    build-test-macOS-latest:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2

@@ -18,7 +18,7 @@ extension FamilyMemberContainer: Encodable where R: FamilyEncoding {
     func encode(to encoder: Encoder) throws {
         let strategy = encoder.userInfo[.nexusCodingStrategy] as? CodingStrategy ?? DefaultCodingStrategy()
         var familyContainer = encoder.unkeyedContainer()
-        try R.encode(components: components, into: &familyContainer, using: strategy)
+        try R.encode(componentsArray: components, into: &familyContainer, using: strategy)
     }
 }
 

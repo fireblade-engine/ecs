@@ -10,9 +10,6 @@ public final class Nexus {
     /// Entities are tightly packed by EntityIdentifier.
     @usableFromInline final var entityStorage: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx>
 
-    /// Entity ids that are currently not used.
-    let entityIdGenerator: EntityIdentifierGenerator
-
     /// - Key: ComponentIdentifier aka component type.
     /// - Value: Array of component instances of same type (uniform).
     ///          New component instances are appended.
@@ -27,6 +24,16 @@ public final class Nexus {
     /// - Value: Tightly packed EntityIdentifiers that represent the association of an entity to the family.
     @usableFromInline final var familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx>]
 
+    /// The entity identifier generator responsible for providing unique ids for entities during runtime.
+    ///
+    /// Provide a custom implementation prior to entity creation.
+    /// Defaults to `DefaultEntityIdGenerator`.
+    public final var entityIdGenerator: EntityIdentifierGenerator
+
+    /// The coding strategy used to encode/decode entities from/into families.
+    ///
+    /// Provide a custom implementation prior to encoding/decoding.
+    /// Defaults to `DefaultCodingStrategy`.
     public final var codingStrategy: CodingStrategy
 
     public final weak var delegate: NexusEventDelegate?
@@ -35,7 +42,7 @@ public final class Nexus {
         self.init(entityStorage: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx>(),
                   componentsByType: [:],
                   componentsByEntity: [:],
-                  entityIdGenerator: EntityIdentifierGenerator(),
+                  entityIdGenerator: DefaultEntityIdGenerator(),
                   familyMembersByTraits: [:],
                   codingStrategy: DefaultCodingStrategy())
     }

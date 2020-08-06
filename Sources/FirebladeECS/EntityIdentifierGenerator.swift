@@ -1,6 +1,6 @@
 //
 //  EntityIdentifierGenerator.swift
-//
+//  FirebladeECS
 //
 //  Created by Christian Treffs on 26.06.20.
 //

@@ -540,7 +540,6 @@ class SparseSetTests: XCTestCase {
     }
 
     func testAlternativeKey() {
-
         let set = UnorderedSparseSet<Character, String>()
 
         set.insert("A", at: "a")
@@ -554,11 +553,9 @@ class SparseSetTests: XCTestCase {
             XCTAssertEqual(a.0, b.0)
             XCTAssertEqual(a.1, b.1)
         }
-
     }
 
     func testEquality() {
-
         let setA = UnorderedSparseSet<Int, String>()
         let setB = UnorderedSparseSet<Int, String>()
 

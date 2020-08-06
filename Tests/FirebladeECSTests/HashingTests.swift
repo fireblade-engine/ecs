@@ -54,13 +54,12 @@ class HashingTests: XCTestCase {
     func testStringHashes() throws {
         let string = "EiMersaufEn1"
 
-        XCTAssertEqual(StringHashing.bernstein_djb2(string), 13447802024599246090)
-        XCTAssertEqual(StringHashing.singer_djb2(string), 5428736256651916664)
-        XCTAssertEqual(StringHashing.sdbm(string), 15559770072020577201)
+        XCTAssertEqual(StringHashing.bernstein_djb2(string), 13_447_802_024_599_246_090)
+        XCTAssertEqual(StringHashing.singer_djb2(string), 5_428_736_256_651_916_664)
+        XCTAssertEqual(StringHashing.sdbm(string), 15_559_770_072_020_577_201)
 
-        XCTAssertEqual(StringHashing.bernstein_djb2("gamedev"), 229466792000542)
-        XCTAssertEqual(StringHashing.singer_djb2("gamedev"), 2867840411746895486)
-        XCTAssertEqual(StringHashing.sdbm("gamedev"), 2761443862055442870)
-
+        XCTAssertEqual(StringHashing.bernstein_djb2("gamedev"), 229_466_792_000_542)
+        XCTAssertEqual(StringHashing.singer_djb2("gamedev"), 2_867_840_411_746_895_486)
+        XCTAssertEqual(StringHashing.sdbm("gamedev"), 2_761_443_862_055_442_870)
     }
 }

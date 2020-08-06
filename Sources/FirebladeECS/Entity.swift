@@ -102,34 +102,6 @@ public struct Entity {
         nexus.destroy(entity: self)
     }
 
-    /// Add an entity as child.
-    /// - Parameter entity: The child entity.
-    @discardableResult
-    @available(*, deprecated, message: "This will be removed in the next minor update.")
-    public func addChild(_ entity: Entity) -> Bool {
-        nexus.addChild(entity, to: self)
-    }
-
-    /// Remove entity as child.
-    /// - Parameter entity: The child entity.
-    @discardableResult
-    @available(*, deprecated, message: "This will be removed in the next minor update.")
-    public func removeChild(_ entity: Entity) -> Bool {
-        nexus.removeChild(entity, from: self)
-    }
-
-    /// Removes all children from this entity.
-    @available(*, deprecated, message: "This will be removed in the next minor update.")
-    public func removeAllChildren() {
-        nexus.removeAllChildren(from: self)
-    }
-
-    /// Returns the number of children for this entity.
-    @available(*, deprecated, message: "This will be removed in the next minor update.")
-    public var numChildren: Int {
-        nexus.numChildren(for: self)
-    }
-
     /// Returns an iterator over all components of this entity.
     @inlinable
     public func makeComponentsIterator() -> ComponentsIterator {

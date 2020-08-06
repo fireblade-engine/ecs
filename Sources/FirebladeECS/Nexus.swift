@@ -23,10 +23,6 @@ public final class Nexus {
     ///          Each element is a component identifier associated with this entity.
     @usableFromInline final var componentIdsByEntity: [EntityIdentifier: Set<ComponentIdentifier>]
 
-    /// - Key: A parent entity id.
-    /// - Value: Adjacency Set of all associated children.
-    @usableFromInline final var childrenByParentEntity: [EntityIdentifier: Set<EntityIdentifier>]
-
     /// - Key: FamilyTraitSet aka component types that make up one distinct family.
     /// - Value: Tightly packed EntityIdentifiers that represent the association of an entity to the family.
     @usableFromInline final var familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx>]
@@ -41,7 +37,6 @@ public final class Nexus {
                   componentsByEntity: [:],
                   entityIdGenerator: EntityIdentifierGenerator(),
                   familyMembersByTraits: [:],
-                  childrenByParentEntity: [:],
                   codingStrategy: DefaultCodingStrategy())
     }
 
@@ -50,13 +45,11 @@ public final class Nexus {
                   componentsByEntity: [EntityIdentifier: Set<ComponentIdentifier>],
                   entityIdGenerator: EntityIdentifierGenerator,
                   familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx>],
-                  childrenByParentEntity: [EntityIdentifier: Set<EntityIdentifier>],
                   codingStrategy: CodingStrategy) {
         self.entityStorage = entityStorage
         self.componentsByType = componentsByType
         self.componentIdsByEntity = componentsByEntity
         self.familyMembersByTraits = familyMembersByTraits
-        self.childrenByParentEntity = childrenByParentEntity
         self.entityIdGenerator = entityIdGenerator
         self.codingStrategy = codingStrategy
     }
@@ -71,7 +64,6 @@ public final class Nexus {
         componentsByType.removeAll()
         componentIdsByEntity.removeAll()
         familyMembersByTraits.removeAll()
-        childrenByParentEntity.removeAll()
     }
 }
 

@@ -90,5 +90,4 @@ final class TypeIdentifierPerformanceTests: XCTestCase {
             }
         }
     }
-
 }

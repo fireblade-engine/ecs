@@ -107,6 +107,32 @@ final class Family1Tests: XCTestCase {
         XCTAssertEqual(newEntities.count, 3)
         XCTAssertEqual(family.count, 3)
     }
+
+    func testFamilyFailDecoding() {
+        let jsonString = """
+                         [{ "SomeOtherComp": { "someValue": "fail" } }]
+                         """
+        guard let jsonData = jsonString.data(using: .utf8) else {
+            XCTFail("Failed to read data from json string \(jsonString.count)")
+            return
+        }
+        let family = nexus.family(requires: Comp1.self)
+        XCTAssertTrue(family.isEmpty)
+        var jsonDecoder = JSONDecoder()
+        XCTAssertThrowsError(try family.decodeMembers(from: jsonData, using: &jsonDecoder)) { error in
+            switch error {
+            case let decodingError as DecodingError:
+                switch decodingError {
+                case .keyNotFound:
+                    break
+                default:
+                    XCTFail("Wrong error provided \(error)")
+                }
+            default:
+                XCTFail("Wrong error provided \(error)")
+            }
+        }
+    }
 }
 
 // MARK: - Family 2 test case
@@ -217,6 +243,32 @@ final class Family2Tests: XCTestCase {
         let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
         XCTAssertEqual(newEntities.count, 3)
         XCTAssertEqual(family.count, 3)
+    }
+
+    func testFamilyFailDecoding() {
+        let jsonString = """
+                         [{ "SomeOtherComp": { "someValue": "fail" } }]
+                         """
+        guard let jsonData = jsonString.data(using: .utf8) else {
+            XCTFail("Failed to read data from json string \(jsonString.count)")
+            return
+        }
+        let family = nexus.family(requiresAll: Comp1.self, Comp2.self)
+        XCTAssertTrue(family.isEmpty)
+        var jsonDecoder = JSONDecoder()
+        XCTAssertThrowsError(try family.decodeMembers(from: jsonData, using: &jsonDecoder)) { error in
+            switch error {
+            case let decodingError as DecodingError:
+                switch decodingError {
+                case .keyNotFound:
+                    break
+                default:
+                    XCTFail("Wrong error provided \(error)")
+                }
+            default:
+                XCTFail("Wrong error provided \(error)")
+            }
+        }
     }
 }
 
@@ -334,6 +386,32 @@ final class Family3Tests: XCTestCase {
         let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
         XCTAssertEqual(newEntities.count, 3)
         XCTAssertEqual(family.count, 3)
+    }
+
+    func testFamilyFailDecoding() {
+        let jsonString = """
+                         [{ "SomeOtherComp": { "someValue": "fail" } }]
+                         """
+        guard let jsonData = jsonString.data(using: .utf8) else {
+            XCTFail("Failed to read data from json string \(jsonString.count)")
+            return
+        }
+        let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self)
+        XCTAssertTrue(family.isEmpty)
+        var jsonDecoder = JSONDecoder()
+        XCTAssertThrowsError(try family.decodeMembers(from: jsonData, using: &jsonDecoder)) { error in
+            switch error {
+            case let decodingError as DecodingError:
+                switch decodingError {
+                case .keyNotFound:
+                    break
+                default:
+                    XCTFail("Wrong error provided \(error)")
+                }
+            default:
+                XCTFail("Wrong error provided \(error)")
+            }
+        }
     }
 }
 
@@ -457,6 +535,32 @@ final class Family4Tests: XCTestCase {
         let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
         XCTAssertEqual(newEntities.count, 3)
         XCTAssertEqual(family.count, 3)
+    }
+
+    func testFamilyFailDecoding() {
+        let jsonString = """
+                         [{ "SomeOtherComp": { "someValue": "fail" } }]
+                         """
+        guard let jsonData = jsonString.data(using: .utf8) else {
+            XCTFail("Failed to read data from json string \(jsonString.count)")
+            return
+        }
+        let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self)
+        XCTAssertTrue(family.isEmpty)
+        var jsonDecoder = JSONDecoder()
+        XCTAssertThrowsError(try family.decodeMembers(from: jsonData, using: &jsonDecoder)) { error in
+            switch error {
+            case let decodingError as DecodingError:
+                switch decodingError {
+                case .keyNotFound:
+                    break
+                default:
+                    XCTFail("Wrong error provided \(error)")
+                }
+            default:
+                XCTFail("Wrong error provided \(error)")
+            }
+        }
     }
 }
 
@@ -586,6 +690,32 @@ final class Family5Tests: XCTestCase {
         let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
         XCTAssertEqual(newEntities.count, 3)
         XCTAssertEqual(family.count, 3)
+    }
+
+    func testFamilyFailDecoding() {
+        let jsonString = """
+                         [{ "SomeOtherComp": { "someValue": "fail" } }]
+                         """
+        guard let jsonData = jsonString.data(using: .utf8) else {
+            XCTFail("Failed to read data from json string \(jsonString.count)")
+            return
+        }
+        let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self)
+        XCTAssertTrue(family.isEmpty)
+        var jsonDecoder = JSONDecoder()
+        XCTAssertThrowsError(try family.decodeMembers(from: jsonData, using: &jsonDecoder)) { error in
+            switch error {
+            case let decodingError as DecodingError:
+                switch decodingError {
+                case .keyNotFound:
+                    break
+                default:
+                    XCTFail("Wrong error provided \(error)")
+                }
+            default:
+                XCTFail("Wrong error provided \(error)")
+            }
+        }
     }
 }
 
@@ -721,6 +851,32 @@ final class Family6Tests: XCTestCase {
         let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
         XCTAssertEqual(newEntities.count, 3)
         XCTAssertEqual(family.count, 3)
+    }
+
+    func testFamilyFailDecoding() {
+        let jsonString = """
+                         [{ "SomeOtherComp": { "someValue": "fail" } }]
+                         """
+        guard let jsonData = jsonString.data(using: .utf8) else {
+            XCTFail("Failed to read data from json string \(jsonString.count)")
+            return
+        }
+        let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self, Comp6.self)
+        XCTAssertTrue(family.isEmpty)
+        var jsonDecoder = JSONDecoder()
+        XCTAssertThrowsError(try family.decodeMembers(from: jsonData, using: &jsonDecoder)) { error in
+            switch error {
+            case let decodingError as DecodingError:
+                switch decodingError {
+                case .keyNotFound:
+                    break
+                default:
+                    XCTFail("Wrong error provided \(error)")
+                }
+            default:
+                XCTFail("Wrong error provided \(error)")
+            }
+        }
     }
 }
 
@@ -862,6 +1018,32 @@ final class Family7Tests: XCTestCase {
         let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
         XCTAssertEqual(newEntities.count, 3)
         XCTAssertEqual(family.count, 3)
+    }
+
+    func testFamilyFailDecoding() {
+        let jsonString = """
+                         [{ "SomeOtherComp": { "someValue": "fail" } }]
+                         """
+        guard let jsonData = jsonString.data(using: .utf8) else {
+            XCTFail("Failed to read data from json string \(jsonString.count)")
+            return
+        }
+        let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self, Comp6.self, Comp7.self)
+        XCTAssertTrue(family.isEmpty)
+        var jsonDecoder = JSONDecoder()
+        XCTAssertThrowsError(try family.decodeMembers(from: jsonData, using: &jsonDecoder)) { error in
+            switch error {
+            case let decodingError as DecodingError:
+                switch decodingError {
+                case .keyNotFound:
+                    break
+                default:
+                    XCTFail("Wrong error provided \(error)")
+                }
+            default:
+                XCTFail("Wrong error provided \(error)")
+            }
+        }
     }
 }
 
@@ -1009,6 +1191,32 @@ final class Family8Tests: XCTestCase {
         let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
         XCTAssertEqual(newEntities.count, 3)
         XCTAssertEqual(family.count, 3)
+    }
+
+    func testFamilyFailDecoding() {
+        let jsonString = """
+                         [{ "SomeOtherComp": { "someValue": "fail" } }]
+                         """
+        guard let jsonData = jsonString.data(using: .utf8) else {
+            XCTFail("Failed to read data from json string \(jsonString.count)")
+            return
+        }
+        let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self, Comp6.self, Comp7.self, Comp8.self)
+        XCTAssertTrue(family.isEmpty)
+        var jsonDecoder = JSONDecoder()
+        XCTAssertThrowsError(try family.decodeMembers(from: jsonData, using: &jsonDecoder)) { error in
+            switch error {
+            case let decodingError as DecodingError:
+                switch decodingError {
+                case .keyNotFound:
+                    break
+                default:
+                    XCTFail("Wrong error provided \(error)")
+                }
+            default:
+                XCTFail("Wrong error provided \(error)")
+            }
+        }
     }
 }
 

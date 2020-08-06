@@ -56,6 +56,7 @@ extension Family1Tests {
         ("testEntityIteration", testEntityIteration),
         ("testFamilyDecoding", testFamilyDecoding),
         ("testFamilyEncoding", testFamilyEncoding),
+        ("testFamilyFailDecoding", testFamilyFailDecoding),
         ("testMemberCreation", testMemberCreation)
     ]
 }
@@ -70,6 +71,7 @@ extension Family2Tests {
         ("testEntityIteration", testEntityIteration),
         ("testFamilyDecoding", testFamilyDecoding),
         ("testFamilyEncoding", testFamilyEncoding),
+        ("testFamilyFailDecoding", testFamilyFailDecoding),
         ("testMemberCreation", testMemberCreation)
     ]
 }
@@ -84,6 +86,7 @@ extension Family3Tests {
         ("testEntityIteration", testEntityIteration),
         ("testFamilyDecoding", testFamilyDecoding),
         ("testFamilyEncoding", testFamilyEncoding),
+        ("testFamilyFailDecoding", testFamilyFailDecoding),
         ("testMemberCreation", testMemberCreation)
     ]
 }
@@ -98,6 +101,7 @@ extension Family4Tests {
         ("testEntityIteration", testEntityIteration),
         ("testFamilyDecoding", testFamilyDecoding),
         ("testFamilyEncoding", testFamilyEncoding),
+        ("testFamilyFailDecoding", testFamilyFailDecoding),
         ("testMemberCreation", testMemberCreation)
     ]
 }
@@ -112,6 +116,7 @@ extension Family5Tests {
         ("testEntityIteration", testEntityIteration),
         ("testFamilyDecoding", testFamilyDecoding),
         ("testFamilyEncoding", testFamilyEncoding),
+        ("testFamilyFailDecoding", testFamilyFailDecoding),
         ("testMemberCreation", testMemberCreation)
     ]
 }
@@ -126,6 +131,7 @@ extension Family6Tests {
         ("testEntityIteration", testEntityIteration),
         ("testFamilyDecoding", testFamilyDecoding),
         ("testFamilyEncoding", testFamilyEncoding),
+        ("testFamilyFailDecoding", testFamilyFailDecoding),
         ("testMemberCreation", testMemberCreation)
     ]
 }
@@ -140,6 +146,7 @@ extension Family7Tests {
         ("testEntityIteration", testEntityIteration),
         ("testFamilyDecoding", testFamilyDecoding),
         ("testFamilyEncoding", testFamilyEncoding),
+        ("testFamilyFailDecoding", testFamilyFailDecoding),
         ("testMemberCreation", testMemberCreation)
     ]
 }
@@ -154,6 +161,7 @@ extension Family8Tests {
         ("testEntityIteration", testEntityIteration),
         ("testFamilyDecoding", testFamilyDecoding),
         ("testFamilyEncoding", testFamilyEncoding),
+        ("testFamilyFailDecoding", testFamilyFailDecoding),
         ("testMemberCreation", testMemberCreation)
     ]
 }

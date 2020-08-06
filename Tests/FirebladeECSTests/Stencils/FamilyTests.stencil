@@ -92,7 +92,7 @@ final class Family{{ idx }}Tests: XCTestCase {
         XCTAssertEqual(family.count, 10_000)
         var idx: Int = 0
         family.entityAndComponents.forEach { (entity, {{ CompsLowercased }}) in
-            XCTAssertEqual(entity.numComponents, {{ idx }})    
+            XCTAssertEqual(entity.numComponents, {{ idx }})
             {% for comp in components %}
             XCTAssertEqual({{ comp|lowercase }}.value, {{ forloop.counter0 }}_000_000 + idx)
             XCTAssertEqual(entity[\{{ comp }}.self], {{ comp|lowercase }})
@@ -137,6 +137,32 @@ final class Family{{ idx }}Tests: XCTestCase {
         let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
         XCTAssertEqual(newEntities.count, 3)
         XCTAssertEqual(family.count, 3)
+    }
+
+    func testFamilyFailDecoding() {
+        let jsonString = """
+                         [{ "SomeOtherComp": { "someValue": "fail" } }]
+                         """
+        guard let jsonData = jsonString.data(using: .utf8) else {
+            XCTFail("Failed to read data from json string \(jsonString.count)")
+            return
+        }
+        let family = nexus.family({% if components.count == 1 %}requires{% else %}requiresAll{%endif%}: {{ CompsSelf }})
+        XCTAssertTrue(family.isEmpty)
+        var jsonDecoder = JSONDecoder()
+        XCTAssertThrowsError(try family.decodeMembers(from: jsonData, using: &jsonDecoder)) { error in
+            switch error {
+            case let decodingError as DecodingError:
+                switch decodingError {
+                case .keyNotFound:
+                    break
+                default:
+                    XCTFail("Wrong error provided \(error)")
+                }
+            default:
+                XCTFail("Wrong error provided \(error)")
+            }
+        }
     }
 }
 

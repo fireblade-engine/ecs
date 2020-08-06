@@ -6,7 +6,7 @@ on:
     paths:
       - .github/workflows/documentation.yml
       - Sources/FirebladeECS/**.swift
-  pull_request:
+  workflow_dispatch:
     branches: [ master ]
     paths:
       - .github/workflows/documentation.yml

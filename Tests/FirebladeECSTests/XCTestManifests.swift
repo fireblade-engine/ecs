@@ -194,6 +194,7 @@ extension FamilyTests {
         ("testFamilyBulkDestroy", testFamilyBulkDestroy),
         ("testFamilyCreateMembers", testFamilyCreateMembers),
         ("testFamilyCreation", testFamilyCreation),
+        ("testFamilyDestroyMembers", testFamilyDestroyMembers),
         ("testFamilyExchange", testFamilyExchange),
         ("testFamilyLateMember", testFamilyLateMember),
         ("testFamilyMemberBasicIteration", testFamilyMemberBasicIteration),

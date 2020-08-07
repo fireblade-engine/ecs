@@ -185,6 +185,33 @@ class FamilyTests: XCTestCase {
         XCTAssertEqual(family.memberIds.count, count + (count / 2))
     }
 
+    func testFamilyDestroyMembers() {
+        let family = nexus.family(requiresAll: Position.self, Color.self)
+
+        family.createMember(with: (Position(x: 1, y: 2), Color(r: 1, g: 2, b: 3)))
+        family.createMember(with: (Position(x: 3, y: 4), Color(r: 4, g: 5, b: 6)))
+        nexus.createEntity(with: Name(name: "anotherEntity"))
+
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numComponents, 5)
+        XCTAssertEqual(nexus.numEntities, 3)
+        XCTAssertEqual(family.count, 2)
+
+        XCTAssertTrue(family.destroyMembers())
+
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numComponents, 1)
+        XCTAssertEqual(nexus.numEntities, 1)
+        XCTAssertEqual(family.count, 0)
+
+        XCTAssertFalse(family.destroyMembers())
+
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numComponents, 1)
+        XCTAssertEqual(nexus.numEntities, 1)
+        XCTAssertEqual(family.count, 0)
+    }
+
     func testFamilyCreateMembers() {
         let position = Position(x: 0, y: 1)
         let name = Name(name: "SomeName")

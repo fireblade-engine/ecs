@@ -38,6 +38,13 @@ public struct Family<R> where R: FamilyRequirementsManaging {
     public func isMember(_ entity: Entity) -> Bool {
         nexus.isMember(entity, in: traits)
     }
+
+    /// Destroy all member entities of this family.
+    /// - Returns: True if entities where destroyed successfully, false otherwise.
+    @discardableResult
+    public func destroyMembers() -> Bool {
+        entities.reduce(!isEmpty) { $0 && nexus.destroy(entity: $1) }
+    }
 }
 
 extension Family: Equatable {

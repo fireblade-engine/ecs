@@ -42,7 +42,7 @@ public struct Family<R> where R: FamilyRequirementsManaging {
     }
 
     /// Destroy all member entities of this family.
-    /// - Returns: True if entities where destroyed successfully, false otherwise.
+    /// - Returns: True if entities where destroyed, false otherwise.
     @discardableResult
     public func destroyMembers() -> Bool {
         entities.reduce(!isEmpty) { $0 && nexus.destroy(entity: $1) }

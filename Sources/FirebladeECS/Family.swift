@@ -38,6 +38,11 @@ public struct Family<R> where R: FamilyRequirementsManaging {
     public func isMember(_ entity: Entity) -> Bool {
         nexus.isMember(entity, in: traits)
     }
+
+    @discardableResult
+    public func createMember(@FamilyMemberBuilder<R> using builder: () -> R.Components) -> Entity {
+        self.createMember(with: builder())
+    }
 }
 
 extension Family: Equatable {

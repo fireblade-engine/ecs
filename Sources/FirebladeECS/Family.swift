@@ -17,14 +17,16 @@ public struct Family<R> where R: FamilyRequirementsManaging {
         nexus.onFamilyInit(traits: traits)
     }
 
-    @inlinable public var memberIds: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx> {
+    @inlinable var memberIds: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx> {
         nexus.members(withFamilyTraits: traits)
     }
 
+    /// Returns the number of family member entities.
     @inlinable public var count: Int {
         memberIds.count
     }
 
+    /// True if this family has no members; false otherwise.
     @inlinable public var isEmpty: Bool {
         memberIds.isEmpty
     }
@@ -55,7 +57,7 @@ extension Family: Equatable {
 }
 
 extension Family: Sequence {
-    __consuming public func makeIterator() -> ComponentsIterator {
+    public func makeIterator() -> ComponentsIterator {
         ComponentsIterator(family: self)
     }
 }

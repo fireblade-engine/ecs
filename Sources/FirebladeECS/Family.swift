@@ -47,6 +47,14 @@ public struct Family<R> where R: FamilyRequirementsManaging {
     public func destroyMembers() -> Bool {
         entities.reduce(!isEmpty) { $0 && nexus.destroy(entity: $1) }
     }
+
+    /// Create a member entity with the given components assigned.
+    /// - Parameter builder: The family member builder.
+    /// - Returns: The newly created member entity.
+    @discardableResult
+    public func createMember(@FamilyMemberBuilder<R> using builder: () -> R.Components) -> Entity {
+        self.createMember(with: builder())
+    }
 }
 
 extension Family: Equatable {

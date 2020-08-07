@@ -25,6 +25,20 @@ final class Family1Tests: XCTestCase {
         XCTAssertEqual(entity[\Comp1.value], 0)
     }
 
+    func testMemberCreationBuilder() {
+        let family = nexus.family(requires: Comp1.self)
+        XCTAssertTrue(family.isEmpty)
+        let entity = family.createMember {
+            Comp1(0)
+        }
+        XCTAssertEqual(family.count, 1)
+        XCTAssertEqual(entity.numComponents, 1)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numEntities, 1)
+        XCTAssertEqual(nexus.numComponents, 1)
+        XCTAssertEqual(entity[\Comp1.value], 0)
+    }
+
     func testComponentIteration() {
         let family = nexus.family(requires: Comp1.self)
         XCTAssertTrue(family.isEmpty)
@@ -148,6 +162,22 @@ final class Family2Tests: XCTestCase {
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self)
         XCTAssertTrue(family.isEmpty)
         let entity = family.createMember(with: (Comp1(0), Comp2(1)))
+        XCTAssertEqual(family.count, 1)
+        XCTAssertEqual(entity.numComponents, 2)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numEntities, 1)
+        XCTAssertEqual(nexus.numComponents, 2)
+        XCTAssertEqual(entity[\Comp1.value], 0)
+        XCTAssertEqual(entity[\Comp2.value], 1)
+    }
+
+    func testMemberCreationBuilder() {
+        let family = nexus.family(requiresAll: Comp1.self, Comp2.self)
+        XCTAssertTrue(family.isEmpty)
+        let entity = family.createMember {
+            Comp1(0)
+            Comp2(1)
+        }
         XCTAssertEqual(family.count, 1)
         XCTAssertEqual(entity.numComponents, 2)
         XCTAssertEqual(nexus.numFamilies, 1)
@@ -295,6 +325,24 @@ final class Family3Tests: XCTestCase {
         XCTAssertEqual(entity[\Comp3.value], 2)
     }
 
+    func testMemberCreationBuilder() {
+        let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self)
+        XCTAssertTrue(family.isEmpty)
+        let entity = family.createMember {
+            Comp1(0)
+            Comp2(1)
+            Comp3(2)
+        }
+        XCTAssertEqual(family.count, 1)
+        XCTAssertEqual(entity.numComponents, 3)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numEntities, 1)
+        XCTAssertEqual(nexus.numComponents, 3)
+        XCTAssertEqual(entity[\Comp1.value], 0)
+        XCTAssertEqual(entity[\Comp2.value], 1)
+        XCTAssertEqual(entity[\Comp3.value], 2)
+    }
+
     func testComponentIteration() {
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self)
         XCTAssertTrue(family.isEmpty)
@@ -428,6 +476,26 @@ final class Family4Tests: XCTestCase {
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self)
         XCTAssertTrue(family.isEmpty)
         let entity = family.createMember(with: (Comp1(0), Comp2(1), Comp3(2), Comp4(3)))
+        XCTAssertEqual(family.count, 1)
+        XCTAssertEqual(entity.numComponents, 4)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numEntities, 1)
+        XCTAssertEqual(nexus.numComponents, 4)
+        XCTAssertEqual(entity[\Comp1.value], 0)
+        XCTAssertEqual(entity[\Comp2.value], 1)
+        XCTAssertEqual(entity[\Comp3.value], 2)
+        XCTAssertEqual(entity[\Comp4.value], 3)
+    }
+
+    func testMemberCreationBuilder() {
+        let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self)
+        XCTAssertTrue(family.isEmpty)
+        let entity = family.createMember {
+            Comp1(0)
+            Comp2(1)
+            Comp3(2)
+            Comp4(3)
+        }
         XCTAssertEqual(family.count, 1)
         XCTAssertEqual(entity.numComponents, 4)
         XCTAssertEqual(nexus.numFamilies, 1)
@@ -589,6 +657,28 @@ final class Family5Tests: XCTestCase {
         XCTAssertEqual(entity[\Comp5.value], 4)
     }
 
+    func testMemberCreationBuilder() {
+        let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self)
+        XCTAssertTrue(family.isEmpty)
+        let entity = family.createMember {
+            Comp1(0)
+            Comp2(1)
+            Comp3(2)
+            Comp4(3)
+            Comp5(4)
+        }
+        XCTAssertEqual(family.count, 1)
+        XCTAssertEqual(entity.numComponents, 5)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numEntities, 1)
+        XCTAssertEqual(nexus.numComponents, 5)
+        XCTAssertEqual(entity[\Comp1.value], 0)
+        XCTAssertEqual(entity[\Comp2.value], 1)
+        XCTAssertEqual(entity[\Comp3.value], 2)
+        XCTAssertEqual(entity[\Comp4.value], 3)
+        XCTAssertEqual(entity[\Comp5.value], 4)
+    }
+
     func testComponentIteration() {
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self)
         XCTAssertTrue(family.isEmpty)
@@ -732,6 +822,30 @@ final class Family6Tests: XCTestCase {
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self, Comp6.self)
         XCTAssertTrue(family.isEmpty)
         let entity = family.createMember(with: (Comp1(0), Comp2(1), Comp3(2), Comp4(3), Comp5(4), Comp6(5)))
+        XCTAssertEqual(family.count, 1)
+        XCTAssertEqual(entity.numComponents, 6)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numEntities, 1)
+        XCTAssertEqual(nexus.numComponents, 6)
+        XCTAssertEqual(entity[\Comp1.value], 0)
+        XCTAssertEqual(entity[\Comp2.value], 1)
+        XCTAssertEqual(entity[\Comp3.value], 2)
+        XCTAssertEqual(entity[\Comp4.value], 3)
+        XCTAssertEqual(entity[\Comp5.value], 4)
+        XCTAssertEqual(entity[\Comp6.value], 5)
+    }
+
+    func testMemberCreationBuilder() {
+        let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self, Comp6.self)
+        XCTAssertTrue(family.isEmpty)
+        let entity = family.createMember {
+            Comp1(0)
+            Comp2(1)
+            Comp3(2)
+            Comp4(3)
+            Comp5(4)
+            Comp6(5)
+        }
         XCTAssertEqual(family.count, 1)
         XCTAssertEqual(entity.numComponents, 6)
         XCTAssertEqual(nexus.numFamilies, 1)
@@ -907,6 +1021,32 @@ final class Family7Tests: XCTestCase {
         XCTAssertEqual(entity[\Comp7.value], 6)
     }
 
+    func testMemberCreationBuilder() {
+        let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self, Comp6.self, Comp7.self)
+        XCTAssertTrue(family.isEmpty)
+        let entity = family.createMember {
+            Comp1(0)
+            Comp2(1)
+            Comp3(2)
+            Comp4(3)
+            Comp5(4)
+            Comp6(5)
+            Comp7(6)
+        }
+        XCTAssertEqual(family.count, 1)
+        XCTAssertEqual(entity.numComponents, 7)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numEntities, 1)
+        XCTAssertEqual(nexus.numComponents, 7)
+        XCTAssertEqual(entity[\Comp1.value], 0)
+        XCTAssertEqual(entity[\Comp2.value], 1)
+        XCTAssertEqual(entity[\Comp3.value], 2)
+        XCTAssertEqual(entity[\Comp4.value], 3)
+        XCTAssertEqual(entity[\Comp5.value], 4)
+        XCTAssertEqual(entity[\Comp6.value], 5)
+        XCTAssertEqual(entity[\Comp7.value], 6)
+    }
+
     func testComponentIteration() {
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self, Comp6.self, Comp7.self)
         XCTAssertTrue(family.isEmpty)
@@ -1060,6 +1200,34 @@ final class Family8Tests: XCTestCase {
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self, Comp6.self, Comp7.self, Comp8.self)
         XCTAssertTrue(family.isEmpty)
         let entity = family.createMember(with: (Comp1(0), Comp2(1), Comp3(2), Comp4(3), Comp5(4), Comp6(5), Comp7(6), Comp8(7)))
+        XCTAssertEqual(family.count, 1)
+        XCTAssertEqual(entity.numComponents, 8)
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numEntities, 1)
+        XCTAssertEqual(nexus.numComponents, 8)
+        XCTAssertEqual(entity[\Comp1.value], 0)
+        XCTAssertEqual(entity[\Comp2.value], 1)
+        XCTAssertEqual(entity[\Comp3.value], 2)
+        XCTAssertEqual(entity[\Comp4.value], 3)
+        XCTAssertEqual(entity[\Comp5.value], 4)
+        XCTAssertEqual(entity[\Comp6.value], 5)
+        XCTAssertEqual(entity[\Comp7.value], 6)
+        XCTAssertEqual(entity[\Comp8.value], 7)
+    }
+
+    func testMemberCreationBuilder() {
+        let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self, Comp6.self, Comp7.self, Comp8.self)
+        XCTAssertTrue(family.isEmpty)
+        let entity = family.createMember {
+            Comp1(0)
+            Comp2(1)
+            Comp3(2)
+            Comp4(3)
+            Comp5(4)
+            Comp6(5)
+            Comp7(6)
+            Comp8(7)
+        }
         XCTAssertEqual(family.count, 1)
         XCTAssertEqual(entity.numComponents, 8)
         XCTAssertEqual(nexus.numFamilies, 1)

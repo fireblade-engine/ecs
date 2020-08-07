@@ -17,14 +17,16 @@ public struct Family<R> where R: FamilyRequirementsManaging {
         nexus.onFamilyInit(traits: traits)
     }
 
-    @inlinable public var memberIds: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx> {
+    @inlinable var memberIds: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx> {
         nexus.members(withFamilyTraits: traits)
     }
 
+    /// Returns the number of family member entities.
     @inlinable public var count: Int {
         memberIds.count
     }
 
+    /// True if this family has no members; false otherwise.
     @inlinable public var isEmpty: Bool {
         memberIds.isEmpty
     }
@@ -38,6 +40,21 @@ public struct Family<R> where R: FamilyRequirementsManaging {
     public func isMember(_ entity: Entity) -> Bool {
         nexus.isMember(entity, in: traits)
     }
+
+    /// Destroy all member entities of this family.
+    /// - Returns: True if entities where destroyed, false otherwise.
+    @discardableResult
+    public func destroyMembers() -> Bool {
+        entities.reduce(!isEmpty) { $0 && nexus.destroy(entity: $1) }
+    }
+
+    /// Create a member entity with the given components assigned.
+    /// - Parameter builder: The family member builder.
+    /// - Returns: The newly created member entity.
+    @discardableResult
+    public func createMember(@FamilyMemberBuilder<R> using builder: () -> R.Components) -> Entity {
+        self.createMember(with: builder())
+    }
 }
 
 extension Family: Equatable {
@@ -48,7 +65,7 @@ extension Family: Equatable {
 }
 
 extension Family: Sequence {
-    __consuming public func makeIterator() -> ComponentsIterator {
+    public func makeIterator() -> ComponentsIterator {
         ComponentsIterator(family: self)
     }
 }

@@ -39,6 +39,9 @@ public struct Family<R> where R: FamilyRequirementsManaging {
         nexus.isMember(entity, in: traits)
     }
 
+    /// Create a member entity with the given components assigned.
+    /// - Parameter builder: The family member builder.
+    /// - Returns: The newly created member entity.
     @discardableResult
     public func createMember(@FamilyMemberBuilder<R> using builder: () -> R.Components) -> Entity {
         self.createMember(with: builder())

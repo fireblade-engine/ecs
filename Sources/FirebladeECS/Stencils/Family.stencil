@@ -23,11 +23,19 @@
 {% map components into compsTypeParams using comp %}{% if not maploop.first %}_ {% endif %}{{ comp|lowercase }}: {{ comp }}.Type{% endmap %}
 {% set CompsTypeParams %}{{compsTypeParams|join: ", "}}{% endset %} 
 {% map components into compsNamedParams using comp %}{% if not maploop.first %}_ {% endif %}{{ comp|lowercase }}: {{ comp }}{% endmap %}
-{% set CompsNamedParams %}{{compsNamedParams|join: ", "}}{% endset %} 
+{% set CompsNamedParams %}{{compsNamedParams|join: ", "}}{% endset %}
+{% map components into compsNamedRParams using comp %}_ {{ comp|lowercase }}: R.{{ comp }}{% endmap %}
+{% set CompsNamedRParams %}{{compsNamedRParams|join: ", "}}{% endset %}
 
 // MARK: - Family {{ idx }}
 
 public typealias Family{{ idx }}<{{ CompParams }}> = Family<Requires{{ idx }}<{{ CompParams }}>> where {{ CompsWhere }}
+
+public protocol RequiringComponents{{ idx }}: FamilyRequirementsManaging where Components == ({{ CompParams }}) {
+    {% for comp in components %}
+    associatedtype {{ comp }}: Component
+    {% endfor %} 
+}
 
 public struct Requires{{ idx }}<{{ CompParams }}>: FamilyRequirementsManaging where {{ CompsWhere }} {
     public let componentTypes: [Component.Type]
@@ -53,6 +61,14 @@ public struct Requires{{ idx }}<{{ CompParams }}>: FamilyRequirementsManaging wh
 
     public static func createMember(nexus: Nexus, components: ({{ CompParams }})) -> Entity {
         {% if compEncodable.count == 1 %}nexus.createEntity(with: components){% else %}nexus.createEntity(with: {{ CompsTuple }}){% endif %}
+    }
+}
+
+extension Requires{{ idx }}: RequiringComponents{{ idx }} { }
+
+extension FamilyMemberBuilder where R: RequiringComponents{{ idx }}  {
+    public static func buildBlock({{ CompsNamedRParams }}) -> (R.Components) {
+        return ({{ CompsLowercased }})
     }
 }
 

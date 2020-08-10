@@ -11,29 +11,33 @@ jobs:
     runs-on: macOS-latest
     strategy:
       matrix:
-        xcode:
-          - 11.6
-          - 12_beta
+        xcode: ["11.6", "12_beta"]
     steps:
       - name: Checkout
-      - uses: actions/checkout@v2
+        uses: actions/checkout@v2
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
+      - name: Swift version
+        run: swift --version
       - name: Test
         run: swift test --skip-update --parallel --enable-test-discovery
+        env:
+          DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer
       - name: Build Release
         run: swift build -c release
+        env:
+          DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer
 
   linux:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        swift: ["5.1", "5.2", "5.3", "latest"]
+        swift: ["5.1", "latest"]
     container:
       image: swift:${{ matrix.swift }}
     steps:
       - name: Checkout
-      - uses: actions/checkout@v2
+        uses: actions/checkout@v2
       - name: Swift version
         run: swift --version
       - name: Test

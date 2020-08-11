@@ -50,6 +50,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Swift version
+        run: swift --version
       - name: Build
         uses: swiftwasm/swiftwasm-action@master
         with:

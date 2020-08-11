@@ -6,15 +6,8 @@
 //
 
 #if canImport(Foundation)
-import class Foundation.JSONEncoder
-import class Foundation.JSONDecoder
-
-import class Foundation.PropertyListEncoder
-import class Foundation.PropertyListDecoder
+import Foundation
 
 extension JSONEncoder: TopLevelEncoder { }
 extension JSONDecoder: TopLevelDecoder { }
-
-extension PropertyListEncoder: TopLevelEncoder { }
-extension PropertyListDecoder: TopLevelDecoder { }
 #endif

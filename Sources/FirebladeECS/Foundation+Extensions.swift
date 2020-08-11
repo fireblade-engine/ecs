@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 22.07.20.
 //
 
-#if canImport(Foundation)
+#if canImport(Foundation) && canImport(CoreFoundation)
 import class Foundation.JSONEncoder
 import class Foundation.JSONDecoder
 

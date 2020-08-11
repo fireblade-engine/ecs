@@ -5,13 +5,17 @@
 //  Created by Christian Treffs on 22.07.20.
 //
 
-#if canImport(Foundation) && canImport(CoreFoundation)
-import class Foundation.JSONEncoder
-import class Foundation.JSONDecoder
+#if canImport(Foundation)
+import Foundation
+#endif
+#if canImport(CoreFoundation)
+import CoreFoundation
+#endif
+#if canImport(SwiftFoundation)
+import SwiftFoundation
+#endif
 
-import class Foundation.PropertyListEncoder
-import class Foundation.PropertyListDecoder
-
+#if canImport(Foundation) || canImport(CoreFoundation) || canImport(SwiftFoundation)
 extension JSONEncoder: TopLevelEncoder { }
 extension JSONDecoder: TopLevelDecoder { }
 

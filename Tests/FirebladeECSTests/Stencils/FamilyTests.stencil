@@ -49,6 +49,24 @@ final class Family{{ idx }}Tests: XCTestCase {
         {% endfor %} 
     }
 
+    func testMemberCreationBuilder() {
+        let family = nexus.family({% if components.count == 1 %}requires{% else %}requiresAll{%endif%}: {{ CompsSelf }})
+        XCTAssertTrue(family.isEmpty)
+        let entity = family.createMember {
+            {% for inst in compsInstances %}
+            {{ inst }}
+            {% endfor %}
+        }
+        XCTAssertEqual(family.count, 1)
+        XCTAssertEqual(entity.numComponents, {{ idx }})
+        XCTAssertEqual(nexus.numFamilies, 1)
+        XCTAssertEqual(nexus.numEntities, 1)
+        XCTAssertEqual(nexus.numComponents, {{ idx }})
+        {% for comp in components %}
+        XCTAssertEqual(entity[\{{ comp }}.value], {{ forloop.counter0 }})
+        {% endfor %} 
+    }
+
     func testComponentIteration() {
         let family = nexus.family({% if components.count == 1 %}requires{% else %}requiresAll{%endif%}: {{ CompsSelf }})
         XCTAssertTrue(family.isEmpty)

@@ -59,7 +59,7 @@ class EntityTests: XCTestCase {
     }
 
     func testEntityIdGenerator() {
-        let generator = EntityIdentifierGenerator()
+        let generator = DefaultEntityIdGenerator()
 
         XCTAssertEqual(generator.count, 1)
 
@@ -70,7 +70,7 @@ class EntityTests: XCTestCase {
         XCTAssertEqual(generator.count, 1)
 
         for i in 10..<60 {
-            generator.freeId(EntityIdentifier(UInt32(i)))
+            generator.markUnused(entityId: EntityIdentifier(UInt32(i)))
         }
 
         XCTAssertEqual(generator.count, 51)

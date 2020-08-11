@@ -57,7 +57,8 @@ extension Family1Tests {
         ("testFamilyDecoding", testFamilyDecoding),
         ("testFamilyEncoding", testFamilyEncoding),
         ("testFamilyFailDecoding", testFamilyFailDecoding),
-        ("testMemberCreation", testMemberCreation)
+        ("testMemberCreation", testMemberCreation),
+        ("testMemberCreationBuilder", testMemberCreationBuilder)
     ]
 }
 
@@ -72,7 +73,8 @@ extension Family2Tests {
         ("testFamilyDecoding", testFamilyDecoding),
         ("testFamilyEncoding", testFamilyEncoding),
         ("testFamilyFailDecoding", testFamilyFailDecoding),
-        ("testMemberCreation", testMemberCreation)
+        ("testMemberCreation", testMemberCreation),
+        ("testMemberCreationBuilder", testMemberCreationBuilder)
     ]
 }
 
@@ -87,7 +89,8 @@ extension Family3Tests {
         ("testFamilyDecoding", testFamilyDecoding),
         ("testFamilyEncoding", testFamilyEncoding),
         ("testFamilyFailDecoding", testFamilyFailDecoding),
-        ("testMemberCreation", testMemberCreation)
+        ("testMemberCreation", testMemberCreation),
+        ("testMemberCreationBuilder", testMemberCreationBuilder)
     ]
 }
 
@@ -102,7 +105,8 @@ extension Family4Tests {
         ("testFamilyDecoding", testFamilyDecoding),
         ("testFamilyEncoding", testFamilyEncoding),
         ("testFamilyFailDecoding", testFamilyFailDecoding),
-        ("testMemberCreation", testMemberCreation)
+        ("testMemberCreation", testMemberCreation),
+        ("testMemberCreationBuilder", testMemberCreationBuilder)
     ]
 }
 
@@ -117,7 +121,8 @@ extension Family5Tests {
         ("testFamilyDecoding", testFamilyDecoding),
         ("testFamilyEncoding", testFamilyEncoding),
         ("testFamilyFailDecoding", testFamilyFailDecoding),
-        ("testMemberCreation", testMemberCreation)
+        ("testMemberCreation", testMemberCreation),
+        ("testMemberCreationBuilder", testMemberCreationBuilder)
     ]
 }
 
@@ -132,7 +137,8 @@ extension Family6Tests {
         ("testFamilyDecoding", testFamilyDecoding),
         ("testFamilyEncoding", testFamilyEncoding),
         ("testFamilyFailDecoding", testFamilyFailDecoding),
-        ("testMemberCreation", testMemberCreation)
+        ("testMemberCreation", testMemberCreation),
+        ("testMemberCreationBuilder", testMemberCreationBuilder)
     ]
 }
 
@@ -147,7 +153,8 @@ extension Family7Tests {
         ("testFamilyDecoding", testFamilyDecoding),
         ("testFamilyEncoding", testFamilyEncoding),
         ("testFamilyFailDecoding", testFamilyFailDecoding),
-        ("testMemberCreation", testMemberCreation)
+        ("testMemberCreation", testMemberCreation),
+        ("testMemberCreationBuilder", testMemberCreationBuilder)
     ]
 }
 
@@ -162,7 +169,8 @@ extension Family8Tests {
         ("testFamilyDecoding", testFamilyDecoding),
         ("testFamilyEncoding", testFamilyEncoding),
         ("testFamilyFailDecoding", testFamilyFailDecoding),
-        ("testMemberCreation", testMemberCreation)
+        ("testMemberCreation", testMemberCreation),
+        ("testMemberCreationBuilder", testMemberCreationBuilder)
     ]
 }
 
@@ -194,6 +202,7 @@ extension FamilyTests {
         ("testFamilyBulkDestroy", testFamilyBulkDestroy),
         ("testFamilyCreateMembers", testFamilyCreateMembers),
         ("testFamilyCreation", testFamilyCreation),
+        ("testFamilyDestroyMembers", testFamilyDestroyMembers),
         ("testFamilyExchange", testFamilyExchange),
         ("testFamilyLateMember", testFamilyLateMember),
         ("testFamilyMemberBasicIteration", testFamilyMemberBasicIteration),

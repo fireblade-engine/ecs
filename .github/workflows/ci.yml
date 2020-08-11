@@ -7,20 +7,52 @@ on:
     branches: [ master ]
 
 jobs:
-  build-test-macOS-latest:
-    runs-on: macos-latest
+  macOS:
+    runs-on: macOS-latest
+    strategy:
+      matrix:
+        xcode: ["11.6", "12_beta"]
     steps:
-    - uses: actions/checkout@v2
-    - name: Test
-      run: swift test --skip-update --parallel
-    - name: Build Release
-      run: swift build -c release
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Select Xcode ${{ matrix.xcode }}
+        run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
+      - name: Swift version
+        run: swift --version
+      - name: Test
+        run: swift test --skip-update --parallel --enable-test-discovery
+        env:
+          DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer
+      - name: Build Release
+        run: swift build -c release
+        env:
+          DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer
 
-  build-test-ubuntu-latest:
-    runs-on: macos-latest
+  linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        swift: ["5.1", "latest"]
+    container:
+      image: swift:${{ matrix.swift }}
     steps:
-    - uses: actions/checkout@v2
-    - name: Test
-      run: swift test --skip-update --parallel
-    - name: Build Release
-      run: swift build -c release
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Swift version
+        run: swift --version
+      - name: Test
+        run: swift test --skip-update --parallel --enable-test-discovery
+      - name: Build Release
+        run: swift build -c release
+
+  webAssembly:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Swift version
+        run: swift --version
+      - name: Build
+        uses: swiftwasm/swiftwasm-action@master
+        with:
+          shell-action: swift build --triple wasm32-unknown-wasi

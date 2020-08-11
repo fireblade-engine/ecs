@@ -5,6 +5,7 @@
 [![swift version](https://img.shields.io/badge/swift-5.1+-brightgreen.svg)](https://swift.org)
 [![platforms](https://img.shields.io/badge/platforms-%20macOS%20|%20iOS%20|%20tvOS%20|%20watchOS-brightgreen.svg)](#)
 [![platforms](https://img.shields.io/badge/platforms-linux-brightgreen.svg)](#)
+[![platforms](https://img.shields.io/badge/platforms-WebAssembly-brightgreen.svg)](https://github.com/swiftwasm/swift#swiftwasm)
 [![codecov](https://codecov.io/gh/fireblade-engine/ecs/branch/master/graph/badge.svg)](https://codecov.io/gh/fireblade-engine/ecs)
 [![documentation](https://github.com/fireblade-engine/ecs/workflows/Documentation/badge.svg)](https://github.com/fireblade-engine/ecs/wiki)
 

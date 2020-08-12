@@ -1,6 +1,5 @@
 # Fireblade ECS (Entity-Component System)
 [![github CI](https://github.com/fireblade-engine/ecs/workflows/CI/badge.svg)](https://github.com/fireblade-engine/ecs/actions?query=workflow%3ACI)
-[![travis CI](https://travis-ci.com/fireblade-engine/ecs.svg?branch=master)](https://travis-ci.com/fireblade-engine/ecs)
 [![license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 [![swift version](https://img.shields.io/badge/swift-5.1+-brightgreen.svg)](https://swift.org)
 [![platforms](https://img.shields.io/badge/platforms-%20macOS%20|%20iOS%20|%20tvOS%20|%20watchOS-brightgreen.svg)](#)

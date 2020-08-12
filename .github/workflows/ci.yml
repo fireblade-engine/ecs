@@ -14,15 +14,23 @@ jobs:
         xcode: ["11.6", "12_beta"]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@master
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
       - name: Swift version
         run: swift --version
       - name: Test
-        run: swift test --skip-update --parallel --enable-test-discovery
+        run: swift test -v --skip-update --parallel --enable-test-discovery --enable-code-coverage
         env:
           DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer
+      - name: Generate coverage report
+        run: xcrun llvm-cov export -format="lcov" .build/debug/*PackageTests.xctest/Contents/MacOS/*PackageTests -instr-profile .build/debug/codecov/default.profdata > coverage.lcov
+      - name: Upload code coverage report
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
+          file: coverage.lcov
+          fail_ci_if_error: true
       - name: Build Release
         run: swift build -c release
         env:
@@ -37,19 +45,28 @@ jobs:
       image: swift:${{ matrix.swift }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@master
       - name: Swift version
         run: swift --version
       - name: Test
-        run: swift test --skip-update --parallel --enable-test-discovery
+        run: swift test -v --skip-update --parallel --enable-test-discovery --enable-code-coverage
+      - name: Generate coverage report
+        run: llvm-cov export -format="lcov" .build/debug/*PackageTests.xctest -instr-profile .build/debug/codecov/default.profdata > coverage.lcov
+      - name: Upload code coverage report
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
+          file: coverage.lcov
+          fail_ci_if_error: true
       - name: Build Release
         run: swift build -c release
+        
 
   webAssembly:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@master
       - name: Swift version
         run: swift --version
       - name: Build

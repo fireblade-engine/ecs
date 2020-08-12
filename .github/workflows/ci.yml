@@ -44,10 +44,11 @@ jobs:
     container:
       image: swift:${{ matrix.swift }}
     steps:
-      - name: Install curl
-        uses: wei/curl@v1.1.1
       - name: Checkout
         uses: actions/checkout@master
+      - name: "Install curl"
+        shell: bash
+        run: "apt-get install -y curl"
       - name: Swift version
         run: swift --version
       - name: Test

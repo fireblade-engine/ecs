@@ -44,6 +44,8 @@ jobs:
     container:
       image: swift:${{ matrix.swift }}
     steps:
+      - name: Install curl
+        uses: wei/curl@v1.1.1
       - name: Checkout
         uses: actions/checkout@master
       - name: Swift version

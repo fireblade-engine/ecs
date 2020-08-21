@@ -17,7 +17,7 @@ public protocol EntityIdentifierGenerator {
     /// Entity ids provided should be passed to `nextId()` in last out order up until the collection is empty.
     /// The default is an empty collection.
     /// - Parameter initialEntityIds: The entity ids to start providing up until the collection is empty (in last out order).
-    init<EntityIds>(startProviding initialEntityIds: EntityIds) where EntityIds: BidirectionalCollection & MutableCollection, EntityIds.Element == EntityIdentifier
+    init<EntityIds>(startProviding initialEntityIds: EntityIds) where EntityIds: BidirectionalCollection, EntityIds.Element == EntityIdentifier
 
     /// Provides the next unused entity identifier.
     ///
@@ -41,7 +41,7 @@ public struct DefaultEntityIdGenerator: EntityIdentifierGenerator {
         @usableFromInline var count: Int { stack.count }
 
         @usableFromInline
-        init<EntityIds>(startProviding initialEntityIds: EntityIds) where EntityIds: BidirectionalCollection & MutableCollection, EntityIds.Element == EntityIdentifier {
+        init<EntityIds>(startProviding initialEntityIds: EntityIds) where EntityIds: BidirectionalCollection, EntityIds.Element == EntityIdentifier {
             let initialInUse: [EntityIdentifier.Identifier] = initialEntityIds.map { $0.id }
             let maxInUseValue = initialInUse.max() ?? 0
             let inUseSet = Set(initialInUse) // a set of all eIds in use
@@ -76,7 +76,7 @@ public struct DefaultEntityIdGenerator: EntityIdentifierGenerator {
     @usableFromInline var count: Int { storage.count }
 
     @inlinable
-    public init<EntityIds>(startProviding initialEntityIds: EntityIds) where EntityIds: BidirectionalCollection & MutableCollection, EntityIds.Element == EntityIdentifier {
+    public init<EntityIds>(startProviding initialEntityIds: EntityIds) where EntityIds: BidirectionalCollection, EntityIds.Element == EntityIdentifier {
         self.storage = Storage(startProviding: initialEntityIds)
     }
 

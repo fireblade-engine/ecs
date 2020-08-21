@@ -40,6 +40,7 @@ extension EntityIdGenTests {
         ("testGenerateWithInitialIds", testGenerateWithInitialIds),
         ("testGeneratorDefaultInit", testGeneratorDefaultInit),
         ("testGeneratorMarkUnused", testGeneratorMarkUnused),
+        ("testGeneratorWithDefaultEmptyCollection", testGeneratorWithDefaultEmptyCollection),
         ("testLinearIncrement", testLinearIncrement)
     ]
 }

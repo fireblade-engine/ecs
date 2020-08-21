@@ -20,6 +20,12 @@ final class EntityIdGenTests: XCTestCase {
         XCTAssertEqual(gen.nextId(), 0)
     }
 
+    func testGeneratorWithDefaultEmptyCollection() {
+        gen = DefaultEntityIdGenerator(startProviding: [])
+        XCTAssertEqual(gen.nextId(), 0)
+        XCTAssertEqual(gen.nextId(), 1)
+    }
+
     func testLinearIncrement() {
         for i in 0..<1_000_000 {
             XCTAssertEqual(gen.nextId(), EntityIdentifier(EntityIdentifier.Identifier(i)))

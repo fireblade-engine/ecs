@@ -22,6 +22,7 @@ extension ComponentIdentifier {
         ObjectIdentifier(componentType).hashValue
     }
 
+    typealias StableId = UInt64
     internal static func makeStableTypeHash(component: Component) -> StableId {
         let componentTypeString = String(describing: type(of: component))
         return StringHashing.singer_djb2(componentTypeString)

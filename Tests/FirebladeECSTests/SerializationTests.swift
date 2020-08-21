@@ -54,7 +54,7 @@ public final class SerializationTests: XCTestCase {
         let decoder = JSONDecoder()
         let nexus2: Nexus = try decoder.decode(Nexus.self, from: data)
 
-        let firstEntity2 = nexus2.get(entity: firstEntity.identifier)!
+        let firstEntity2 = nexus2.entity(from: firstEntity.identifier)
         XCTAssertEqual(firstEntity2.identifier, firstEntity.identifier)
         XCTAssertTrue(firstEntity2.has(Name.self))
         XCTAssertTrue(firstEntity2.has(Position.self))
@@ -62,7 +62,7 @@ public final class SerializationTests: XCTestCase {
         XCTAssertEqual(firstEntity2.get(component: Position.self)?.x, 1)
         XCTAssertEqual(firstEntity2.get(component: Position.self)?.y, 2)
 
-        let secondEntity2 = nexus2.get(entity: secondEntity.identifier)!
+        let secondEntity2 = nexus2.entity(from: secondEntity.identifier)
         XCTAssertEqual(secondEntity2.identifier, secondEntity.identifier)
         XCTAssertTrue(secondEntity2.has(Velocity.self))
         XCTAssertTrue(secondEntity2.has(Party.self))

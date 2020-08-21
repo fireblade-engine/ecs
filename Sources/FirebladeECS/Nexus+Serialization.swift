@@ -15,7 +15,7 @@ extension Nexus {
         var componentInstances: [ComponentIdentifier.StableId: SComponent<SNexus>] = [:]
         var entityComponentsMap: [EntityIdentifier: Set<ComponentIdentifier.StableId>] = [:]
 
-        for entitId in self.entityStorage {
+        for entitId in self.componentIdsByEntity.keys {
             entityComponentsMap[entitId] = []
             let componentIds = self.get(components: entitId) ?? []
 
@@ -36,8 +36,7 @@ extension Nexus {
         let entityIds = sNexus.entities.map { $0.key }.reversed()
 
         // FIXME: this does not respect the generator of the target nexus!
-        self.init(entityStorage: UnorderedSparseSet(),
-                  componentsByType: [:],
+        self.init(componentsByType: [:],
                   componentsByEntity: [:],
                   entityIdGenerator: DefaultEntityIdGenerator(startProviding: entityIds),
                   familyMembersByTraits: [:],

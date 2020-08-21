@@ -17,12 +17,11 @@ public final class SerializationTests: XCTestCase {
         let e3 = nexus.createEntity()
         nexus.createEntity(with: Position(x: 5, y: 18), Name(name: "yourName"))
 
-        
         // Fragment entities
         nexus.destroy(entity: e2)
         nexus.destroy(entity: e3)
         nexus.destroy(entity: e1)
-        
+
         let encoder = JSONEncoder()
         let data = try encoder.encode(nexus)
 
@@ -43,7 +42,7 @@ public final class SerializationTests: XCTestCase {
         let firstEntity = nexus.createEntity(with: Name(name: "myName"), Position(x: 1, y: 2))
         let e3 = nexus.createEntity()
         let secondEntity = nexus.createEntity(with: Velocity(a: 3.14), Party(partying: true))
-        
+
         // Fragment entities
         nexus.destroy(entity: e2)
         nexus.destroy(entity: e3)

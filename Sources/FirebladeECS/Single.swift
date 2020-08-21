@@ -32,7 +32,7 @@ extension Single where A: SingleComponent {
     }
 
     public var entity: Entity {
-        nexus.get(entity: entityId).unsafelyUnwrapped
+        Entity(nexus: self.nexus, id: entityId)
     }
 }
 

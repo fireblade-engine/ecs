@@ -114,7 +114,7 @@ extension Family {
             guard let entityId = memberIdsIterator.next() else {
                 return nil
             }
-            return nexus.get(unsafeEntity: entityId)
+            return Entity(nexus: nexus, id: entityId)
         }
     }
 }

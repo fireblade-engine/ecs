@@ -32,9 +32,16 @@ public protocol EntityIdentifierGenerator {
 }
 
 /// A default entity identifier generator implementation.
+public typealias DefaultEntityIdGenerator = LinearIncrementingEntityIdGenerator
+
+/// **Linear incrementing entity id generator**
 ///
-/// Provides entity ids starting at `0` incrementing until `UInt32.max`.
-public struct DefaultEntityIdGenerator: EntityIdentifierGenerator {
+/// This entity id generator creates linearly incrementing entity ids
+/// unless an entity is marked as unused then the marked id is returned next in a FIFO order.
+///
+/// Furthermore it respects order of entity ids on initialization, meaning the provided ids on initialization will be provided in order
+/// until all are in use. After that the free entities start at the lowest available id increasing linearly skipping already in-use entity ids.
+public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
     @usableFromInline
     final class Storage {
         @usableFromInline var stack: [EntityIdentifier.Identifier]
@@ -85,7 +92,7 @@ public struct DefaultEntityIdGenerator: EntityIdentifierGenerator {
         self.storage = Storage()
     }
 
-    //@inline(__always)
+    @inline(__always)
     public func nextId() -> EntityIdentifier {
         storage.nextId()
     }

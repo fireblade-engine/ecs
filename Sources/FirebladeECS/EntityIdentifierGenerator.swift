@@ -32,12 +32,12 @@ public protocol EntityIdentifierGenerator {
 public struct DefaultEntityIdGenerator: EntityIdentifierGenerator {
     @usableFromInline
     final class Storage {
-        @usableFromInline var stack: [UInt32]
+        @usableFromInline var stack: [EntityIdentifier.Identifier]
         @usableFromInline var count: Int { stack.count }
 
         @usableFromInline
         init(inUse entityIds: [EntityIdentifier]) {
-            stack = entityIds.reversed().map { UInt32($0.id) }
+            stack = entityIds.reversed().map(\.id)
         }
 
         @usableFromInline
@@ -52,7 +52,7 @@ public struct DefaultEntityIdGenerator: EntityIdentifierGenerator {
 
         @usableFromInline
         func markUnused(entityId: EntityIdentifier) {
-            stack.append(UInt32(entityId.id))
+            stack.append(entityId.id)
         }
     }
 

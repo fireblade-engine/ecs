@@ -8,7 +8,7 @@
 public final class Nexus {
     /// Main entity storage.
     /// Entities are tightly packed by EntityIdentifier.
-    @usableFromInline final var entityStorage: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx>
+    @usableFromInline final var entityStorage: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>
 
     /// - Key: ComponentIdentifier aka component type.
     /// - Value: Array of component instances of same type (uniform).
@@ -22,7 +22,7 @@ public final class Nexus {
 
     /// - Key: FamilyTraitSet aka component types that make up one distinct family.
     /// - Value: Tightly packed EntityIdentifiers that represent the association of an entity to the family.
-    @usableFromInline final var familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx>]
+    @usableFromInline final var familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>]
 
     /// The entity identifier generator responsible for providing unique ids for entities during runtime.
     ///
@@ -39,7 +39,7 @@ public final class Nexus {
     public final weak var delegate: NexusEventDelegate?
 
     public convenience init() {
-        self.init(entityStorage: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx>(),
+        self.init(entityStorage: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>(),
                   componentsByType: [:],
                   componentsByEntity: [:],
                   entityIdGenerator: DefaultEntityIdGenerator(),
@@ -47,11 +47,11 @@ public final class Nexus {
                   codingStrategy: DefaultCodingStrategy())
     }
 
-    internal init(entityStorage: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx>,
+    internal init(entityStorage: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>,
                   componentsByType: [ComponentIdentifier: ManagedContiguousArray<Component>],
                   componentsByEntity: [EntityIdentifier: Set<ComponentIdentifier>],
                   entityIdGenerator: EntityIdentifierGenerator,
-                  familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx>],
+                  familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>],
                   codingStrategy: CodingStrategy) {
         self.entityStorage = entityStorage
         self.componentsByType = componentsByType

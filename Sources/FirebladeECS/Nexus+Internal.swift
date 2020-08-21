@@ -52,7 +52,7 @@ extension Nexus {
         if componentsByType[componentId] == nil {
             componentsByType[componentId] = ManagedContiguousArray<Component>()
         }
-        componentsByType[componentId]?.insert(component, at: entityId.id)
+        componentsByType[componentId]?.insert(component, at: entityId.index)
     }
 
     func assign(_ componentId: ComponentIdentifier, _ entityId: EntityIdentifier) {
@@ -86,7 +86,7 @@ extension Nexus {
             return
         }
 
-        familyMembersByTraits[traits] = UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Idx>()
+        familyMembersByTraits[traits] = UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>()
         update(familyMembership: traits)
     }
 

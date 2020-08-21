@@ -56,19 +56,11 @@ extension Nexus {
     }
 
     func assign(_ componentId: ComponentIdentifier, _ entityId: EntityIdentifier) {
-        if componentIdsByEntity[entityId] == nil {
-            componentIdsByEntity[entityId] = Set<ComponentIdentifier>(arrayLiteral: componentId)
-        } else {
-            componentIdsByEntity[entityId]?.insert(componentId)
-        }
+        componentIdsByEntity[entityId]!.insert(componentId)
     }
 
     func assign(_ componentIds: Set<ComponentIdentifier>, _ entityId: EntityIdentifier) {
-        if componentIdsByEntity[entityId] == nil {
-            componentIdsByEntity[entityId] = componentIds
-        } else {
-            componentIdsByEntity[entityId]?.formUnion(componentIds)
-        }
+        componentIdsByEntity[entityId]!.formUnion(componentIds)
     }
 
     func update(familyMembership entityId: EntityIdentifier) {
@@ -92,7 +84,7 @@ extension Nexus {
 
     func update(familyMembership traits: FamilyTraitSet) {
         // FIXME: iterating all entities is costly for many entities
-        var iter = entityStorage.makeIterator()
+        var iter = componentIdsByEntity.keys.makeIterator()
         while let entityId = iter.next() {
             update(membership: traits, for: entityId)
         }

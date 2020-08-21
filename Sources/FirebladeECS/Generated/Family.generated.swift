@@ -28,7 +28,7 @@ public struct Requires1<Comp1>: FamilyRequirementsManaging where Comp1: Componen
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1) {
-        let entity: Entity = nexus.get(unsafeEntity: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafeComponentFor: entityId)
         return (entity, comp1)
     }
@@ -122,7 +122,7 @@ public struct Requires2<Comp1, Comp2>: FamilyRequirementsManaging where Comp1: C
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2) {
-        let entity: Entity = nexus.get(unsafeEntity: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafeComponentFor: entityId)
         let comp2: Comp2 = nexus.get(unsafeComponentFor: entityId)
         return (entity, comp1, comp2)
@@ -222,7 +222,7 @@ public struct Requires3<Comp1, Comp2, Comp3>: FamilyRequirementsManaging where C
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3) {
-        let entity: Entity = nexus.get(unsafeEntity: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafeComponentFor: entityId)
         let comp2: Comp2 = nexus.get(unsafeComponentFor: entityId)
         let comp3: Comp3 = nexus.get(unsafeComponentFor: entityId)
@@ -328,7 +328,7 @@ public struct Requires4<Comp1, Comp2, Comp3, Comp4>: FamilyRequirementsManaging 
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4) {
-        let entity: Entity = nexus.get(unsafeEntity: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafeComponentFor: entityId)
         let comp2: Comp2 = nexus.get(unsafeComponentFor: entityId)
         let comp3: Comp3 = nexus.get(unsafeComponentFor: entityId)
@@ -440,7 +440,7 @@ public struct Requires5<Comp1, Comp2, Comp3, Comp4, Comp5>: FamilyRequirementsMa
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5) {
-        let entity: Entity = nexus.get(unsafeEntity: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafeComponentFor: entityId)
         let comp2: Comp2 = nexus.get(unsafeComponentFor: entityId)
         let comp3: Comp3 = nexus.get(unsafeComponentFor: entityId)
@@ -558,7 +558,7 @@ public struct Requires6<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6>: FamilyRequire
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5, Comp6) {
-        let entity: Entity = nexus.get(unsafeEntity: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafeComponentFor: entityId)
         let comp2: Comp2 = nexus.get(unsafeComponentFor: entityId)
         let comp3: Comp3 = nexus.get(unsafeComponentFor: entityId)
@@ -682,7 +682,7 @@ public struct Requires7<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7>: Family
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7) {
-        let entity: Entity = nexus.get(unsafeEntity: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafeComponentFor: entityId)
         let comp2: Comp2 = nexus.get(unsafeComponentFor: entityId)
         let comp3: Comp3 = nexus.get(unsafeComponentFor: entityId)
@@ -812,7 +812,7 @@ public struct Requires8<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8>:
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8) {
-        let entity: Entity = nexus.get(unsafeEntity: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafeComponentFor: entityId)
         let comp2: Comp2 = nexus.get(unsafeComponentFor: entityId)
         let comp3: Comp3 = nexus.get(unsafeComponentFor: entityId)

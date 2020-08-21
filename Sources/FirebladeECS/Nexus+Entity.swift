@@ -9,7 +9,7 @@ extension Nexus {
     @discardableResult
     public func createEntity() -> Entity {
         let entityId: EntityIdentifier = entityIdGenerator.nextId()
-        entityStorage.insert(entityId, at: entityId.id)
+        componentIdsByEntity[entityId] = []
         delegate?.nexusEvent(EntityCreated(entityId: entityId))
         return Entity(nexus: self, id: entityId)
     }
@@ -30,22 +30,15 @@ extension Nexus {
 
     /// Number of entities in nexus.
     public var numEntities: Int {
-        entityStorage.count
+        componentIdsByEntity.keys.count
     }
 
     public func exists(entity entityId: EntityIdentifier) -> Bool {
-        entityStorage.contains(entityId.id)
+        componentIdsByEntity.keys.contains(entityId)
     }
 
-    public func get(entity entityId: EntityIdentifier) -> Entity? {
-        guard let id = entityStorage.get(at: entityId.id) else {
-            return nil
-        }
-        return Entity(nexus: self, id: id)
-    }
-
-    public func get(unsafeEntity entityId: EntityIdentifier) -> Entity {
-        Entity(nexus: self, id: entityStorage.get(unsafeAt: entityId.id))
+    public func entity(from entityId: EntityIdentifier) -> Entity {
+        Entity(nexus: self, id: entityId)
     }
 
     @discardableResult
@@ -55,13 +48,17 @@ extension Nexus {
 
     @discardableResult
     public func destroy(entityId: EntityIdentifier) -> Bool {
-        guard entityStorage.remove(at: entityId.id) != nil else {
+        guard componentIdsByEntity.keys.contains(entityId) else {
             delegate?.nexusNonFatalError("EntityRemove failure: no entity \(entityId) to remove")
             return false
         }
 
         if removeAll(components: entityId) {
             update(familyMembership: entityId)
+        }
+
+        if let index = componentIdsByEntity.index(forKey: entityId) {
+            componentIdsByEntity.remove(at: index)
         }
 
         entityIdGenerator.markUnused(entityId: entityId)

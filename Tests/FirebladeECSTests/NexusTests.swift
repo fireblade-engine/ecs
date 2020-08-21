@@ -39,16 +39,16 @@ class NexusTests: XCTestCase {
         testEntityCreate()
         XCTAssertEqual(nexus.numEntities, 2)
 
-        let e1: Entity = nexus.get(entity: EntityIdentifier(1))!
+        let e1 = nexus.entity(from: EntityIdentifier(1))
+        XCTAssertTrue(nexus.exists(entity: EntityIdentifier(1)))
         XCTAssertEqual(e1.identifier.id, 1)
 
         XCTAssertTrue(nexus.destroy(entity: e1))
         XCTAssertFalse(nexus.destroy(entity: e1))
 
-        XCTAssertEqual(nexus.numEntities, 1)
+        XCTAssertFalse(nexus.exists(entity: EntityIdentifier(1)))
 
-        let e1Again: Entity? = nexus.get(entity: EntityIdentifier(1))
-        XCTAssertNil(e1Again)
+        XCTAssertEqual(nexus.numEntities, 1)
 
         XCTAssertEqual(nexus.numEntities, 1)
 
@@ -78,7 +78,7 @@ class NexusTests: XCTestCase {
     func testComponentDeletion() {
         let identifier: EntityIdentifier = nexus.createEntity().identifier
 
-        let e0 = nexus.get(entity: identifier)!
+        let e0 = nexus.entity(from: identifier)
 
         XCTAssert(e0.numComponents == 0)
         e0.remove(Position.self)

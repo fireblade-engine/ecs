@@ -36,7 +36,7 @@ import PackageDescription
 let package = Package(
     name: "YourPackageName",
     dependencies: [
-        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.15.3")
+        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.15.4")
     ],
     targets: [
         .target(
@@ -71,7 +71,7 @@ then create entities by letting the `Nexus` generate them.
 let newEntity = nexus.createEntity()
 ```
 
-To define components conform your class to the `Component` protocol
+To define components, conform your class to the `Component` protocol
 
 ```swift
 final class Position: Component {

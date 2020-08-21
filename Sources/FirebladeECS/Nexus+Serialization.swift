@@ -33,12 +33,12 @@ extension Nexus {
     }
 
     convenience init(from sNexus: SNexus) throws {
-        let entityIds = sNexus.entities.map { $0.key }
+        let entityIds = sNexus.entities.map { $0.key }.reversed()
 
         self.init(entityStorage: UnorderedSparseSet(),
                   componentsByType: [:],
                   componentsByEntity: [:],
-                  entityIdGenerator: EntityIdentifierGenerator(entityIds),
+                  entityIdGenerator: DefaultEntityIdGenerator(startProviding: entityIds), // FIXME: this does not respect the generator of the target nexus!
                   familyMembersByTraits: [:],
                   codingStrategy: DefaultCodingStrategy())
 

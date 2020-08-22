@@ -65,12 +65,11 @@ public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
 
         @usableFromInline
         func nextId() -> EntityIdentifier {
-            if stack.count == 1 {
-                defer { stack[0] += 1 }
-                return EntityIdentifier(stack[0])
-            } else {
+            guard stack.count == 1 else {
                 return EntityIdentifier(stack.removeLast())
             }
+            defer { stack[0] += 1 }
+            return EntityIdentifier(stack[0])
         }
 
         @usableFromInline

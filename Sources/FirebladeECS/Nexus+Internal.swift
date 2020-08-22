@@ -59,10 +59,6 @@ extension Nexus {
         componentIdsByEntity[entityId]!.insert(componentId)
     }
 
-    func assign(_ componentIds: Set<ComponentIdentifier>, _ entityId: EntityIdentifier) {
-        componentIdsByEntity[entityId]!.formUnion(componentIds)
-    }
-
     func update(familyMembership entityId: EntityIdentifier) {
         // FIXME: iterating all families is costly for many families
         // FIXME: this could be parallelized

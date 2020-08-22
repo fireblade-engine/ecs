@@ -1,12 +1,11 @@
 # Fireblade ECS (Entity-Component System)
-[![github CI](https://github.com/fireblade-engine/ecs/workflows/CI/badge.svg)](https://github.com/fireblade-engine/ecs/actions?query=workflow%3ACI)
 [![license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
-[![swift version](https://img.shields.io/badge/swift-5.1+-brightgreen.svg)](https://swift.org)
-[![platforms](https://img.shields.io/badge/platforms-%20macOS%20|%20iOS%20|%20tvOS%20|%20watchOS-brightgreen.svg)](#)
-[![platforms](https://img.shields.io/badge/platforms-linux-brightgreen.svg)](#)
-[![platforms](https://img.shields.io/badge/platforms-WebAssembly-brightgreen.svg)](https://github.com/swiftwasm/swift#swiftwasm)
+[![github CI](https://github.com/fireblade-engine/ecs/workflows/CI/badge.svg)](https://github.com/fireblade-engine/ecs/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/fireblade-engine/ecs/branch/master/graph/badge.svg)](https://codecov.io/gh/fireblade-engine/ecs)
-[![documentation](https://github.com/fireblade-engine/ecs/workflows/Documentation/badge.svg)](https://github.com/fireblade-engine/ecs/wiki)
+[![documentation](https://github.com/fireblade-engine/ecs/workflows/Documentation/badge.svg)](https://github.com/fireblade-engine/ecs/wiki)  
+[![spi-swift-versions](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Ffireblade-engine%2Fecs%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/fireblade-engine/ecs)
+[![spi-swift-platforms](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Ffireblade-engine%2Fecs%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/fireblade-engine/ecs)
+[![platform-webassembly](https://img.shields.io/badge/Platform-WebAssembly-blue.svg)](https://github.com/swiftwasm/swift#swiftwasm)
 
 This is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component System](https://en.wikipedia.org/wiki/Entity_component_system) implementation in Swift. It is developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
 
@@ -36,7 +35,7 @@ import PackageDescription
 let package = Package(
     name: "YourPackageName",
     dependencies: [
-        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.15.4")
+        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.16.0")
     ],
     targets: [
         .target(

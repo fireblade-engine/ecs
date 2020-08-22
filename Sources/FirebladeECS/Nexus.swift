@@ -6,10 +6,6 @@
 //
 
 public final class Nexus {
-    /// Main entity storage.
-    /// Entities are tightly packed by EntityIdentifier.
-    @usableFromInline final var entityStorage: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>
-
     /// - Key: ComponentIdentifier aka component type.
     /// - Value: Array of component instances of same type (uniform).
     ///          New component instances are appended.
@@ -39,21 +35,18 @@ public final class Nexus {
     public final weak var delegate: NexusEventDelegate?
 
     public convenience init() {
-        self.init(entityStorage: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>(),
-                  componentsByType: [:],
+        self.init(componentsByType: [:],
                   componentsByEntity: [:],
                   entityIdGenerator: DefaultEntityIdGenerator(),
                   familyMembersByTraits: [:],
                   codingStrategy: DefaultCodingStrategy())
     }
 
-    internal init(entityStorage: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>,
-                  componentsByType: [ComponentIdentifier: ManagedContiguousArray<Component>],
+    internal init(componentsByType: [ComponentIdentifier: ManagedContiguousArray<Component>],
                   componentsByEntity: [EntityIdentifier: Set<ComponentIdentifier>],
                   entityIdGenerator: EntityIdentifierGenerator,
                   familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>],
                   codingStrategy: CodingStrategy) {
-        self.entityStorage = entityStorage
         self.componentsByType = componentsByType
         self.componentIdsByEntity = componentsByEntity
         self.familyMembersByTraits = familyMembersByTraits
@@ -66,8 +59,6 @@ public final class Nexus {
     }
 
     public final func clear() {
-        entityStorage.forEach { destroy(entityId: $0) }
-        entityStorage.removeAll()
         componentsByType.removeAll()
         componentIdsByEntity.removeAll()
         familyMembersByTraits.removeAll()

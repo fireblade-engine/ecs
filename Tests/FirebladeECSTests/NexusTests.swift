@@ -33,6 +33,7 @@ class NexusTests: XCTestCase {
 
         XCTAssert(e1.identifier.id == 1)
         XCTAssert(nexus.numEntities == 2)
+        XCTAssertFalse(nexus.debugDescription.isEmpty)
     }
 
     func testEntityDestroy() {

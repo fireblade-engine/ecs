@@ -75,10 +75,7 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
                 return nil
             }
             let entry = self.dense[denseIndex]
-            guard entry.key == key else {
-                return nil
-            }
-
+            assert(entry.key == key, "entry.key and findIndex(at: key) must be equal!")
             return entry.element
         }
 

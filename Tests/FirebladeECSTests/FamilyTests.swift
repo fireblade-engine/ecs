@@ -35,6 +35,8 @@ class FamilyTests: XCTestCase {
         XCTAssertEqual(nexus.numFamilies, 1)
         XCTAssertEqual(nexus.numComponents, 0)
         XCTAssertEqual(nexus.numEntities, 0)
+        XCTAssertFalse(family.traits.description.isEmpty)
+        XCTAssertFalse(family.traits.debugDescription.isEmpty)
 
         let traits = FamilyTraitSet(requiresAll: [Position.self], excludesAll: [Name.self])
         XCTAssertEqual(family.traits, traits)

@@ -8,6 +8,8 @@
 The following is a set of **guidelines for contributing** to this project. 
 Use your best judgment and feel free to propose changes to this document in a pull request.
 
+**Working on your first Pull Request?** You can learn how from this *free* series [How to Contribute to an Open Source Project on GitHub](https://egghead.io/series/how-to-contribute-to-an-open-source-project-on-github)
+
 ### 💡 Your contribution - the sky is the limit 🌈
 
 This is an open source project and we love to receive contributions from our community — [**you**][ref-contributors]!   
@@ -36,9 +38,33 @@ When contributing to this project, please feel free to discuss the change you wi
 4. Ensure that [**no tests are failing**][ref-gh-actions] and **coding conventions** are met
 5. Submit the patch and await review.
 
-### 🆕 You want to suggest a new feature?
+### 🎁 You want to suggest or contribute a new feature?
 
-#### ☑️ Your responsibilities
+That's great, thank you! You rock 🤘 
+
+If you want to deep dive and help out with development on this project, then first get the project installed locally. 
+After that is done we suggest you have a look at tickets in our [issue tracker][ref-issues]. 
+You can start by looking through the beginner or help-wanted issues: 
+- [__Good first issues__][ref-issue-first] are issues which should only require a few lines of code, and a test or two. 
+- [__Help wanted issues__][ref-issue-help] are issues which should be a bit more involved than beginner issues. 
+These are meant to be a great way to get a smooth start and won't put you in front of the most complex parts of the system.
+
+If you are up to more challenging tasks with a bigger scope, then there are a set of tickets with a __feature__, __enhancement__ or __improvement__ tag. 
+These tickets have a general overview and description of the work required to finish. 
+If you want to start somewhere, this would be a good place to start. 
+That said, these aren't necessarily the easiest tickets. 
+
+For any new contributions please consider these guidelines:
+1. Open a [new pull request (PR)][ref-pull-request-new] with a **clear and descriptive title**
+2. Write a **detailed comment** with as much relevant information as possible including:
+ - What your features is intended to do?
+ - How it can be used?
+ - What alternatives where considered?
+ - Has this feature impact on performance or stability of the project?
+
+#### ☑️ Your contribution responsibilities
+
+Don't be intimidated by these responsibilites, they are easy to meet if you take your time to develop your feature 😌
 
 - [x] Create issues for any major changes and enhancements that you wish to make. Discuss things transparently and get community feedback.
 - [x] Ensure (cross-)platform compatibility for every change that's accepted. An addition should not reduce the number of platforms that the project supports.
@@ -62,3 +88,5 @@ When contributing to this project, please feel free to discuss the change you wi
 [ref-pull-request-how-to]: https://docs.github.com/en/github/writing-on-github/autolinked-references-and-urls
 [ref-pull-request-new]: https://github.com/fireblade-engine/ecs/compare
 [ref-documentation]: https://github.com/fireblade-engine/ecs/wiki
+[ref-issue-first]: https://github.com/fireblade-engine/ecs/issues?q=is%3Aopen+is%3Aissue+label%3A"good+first+issue"
+[ref-issue-help]: https://github.com/fireblade-engine/ecs/issues?q=is%3Aopen+is%3Aissue+label%3A"help+wanted"

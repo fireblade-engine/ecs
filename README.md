@@ -233,15 +233,22 @@ See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) t
 
 Consult the [wiki](https://github.com/fireblade-engine/ecs/wiki) for in-depth [documentation](https://github.com/fireblade-engine/ecs/wiki).
 
-## 🏷️ Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/fireblade-engine/ecs/tags). 
+## 💁 How to contribute
 
-## ✍️ Authors
+If you want to contribute please see the [CONTRIBUTION GUIDE](CONTRIBUTING.md) first. 
 
-* [Christian Treffs](https://github.com/ctreffs) - *Initial work*
-* [Manuel Weidmann](https://github.com/vyo)
+To start your project contribution run these in your command line:
 
+1. `git clone git@github.com:fireblade-engine/ecs.git fireblade-ecs`
+2. `cd fireblade-ecs`
+3. `make setupEnvironment`
+
+Before commiting code please ensure to run:
+
+- `make precommit`
+
+This project is currently maintained by [Christian Treffs](https://github.com/ctreffs).   
 See also the list of [contributors](https://github.com/fireblade-engine/ecs/contributors) who participated in this project.
 
 ## 🔏 License

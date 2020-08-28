@@ -9,11 +9,18 @@ The following is a set of guidelines for contributing this project.
 These are mostly guidelines, not rules. 
 Use your best judgment, and feel free to propose changes to this document in a pull request.
 
-When contributing to this repository, please first discuss the change you wish to make via issue or any other method with the repository owner before making a change.
+### 💡 Your contribution
+
+This is an open source project and we love to receive contributions from our community — [**you**][ref-contributors]!   
+
+There are many ways to contribute, from writing tutorials or blog posts, improving the documentation, submitting bug reports and feature requests or 
+writing code which can be incorporated into the repository itself.
+
+When contributing to this project, please feel free to discuss the change you wish to make via issue with the repository owners before making a change.
 
 <!--Note that we have a [code of conduct][ref-code-of-conduct], please follow it in all your interactions with the project.-->
 
-### 🐞 You want to file a bug or found an issue?
+### 🐞 You want to report a bug or file an issue?
 
 1. Ensure that is was **not already reported** and is beeing worked on by checking [open issues][ref-issues].
 2. Create a [new issue][ref-issues-new] with a **clear and descriptive title**

@@ -5,16 +5,15 @@
 > It’s [people like you][ref-contributors] that keep this project alive and make it great!  
 > Thank you! 🙏💜🎉👍
 
-The following is a set of guidelines for contributing this project. 
-These are mostly guidelines, not rules. 
-Use your best judgment, and feel free to propose changes to this document in a pull request.
+The following is a set of **guidelines for contributing** to this project. 
+Use your best judgment and feel free to propose changes to this document in a pull request.
 
-### 💡 Your contribution
+### 💡 Your contribution - the sky is the limit 🌈
 
 This is an open source project and we love to receive contributions from our community — [**you**][ref-contributors]!   
 
-There are many ways to contribute, from writing tutorials or blog posts, improving the documentation, submitting bug reports and feature requests or 
-writing code which can be incorporated into the repository itself.
+There are many ways to contribute, from writing __tutorials__ or __blog posts__, improving the [__documentation__][ref-documentation], submitting __bug reports__ and __feature requests__ or 
+__writing code__ which can be incorporated into the repository itself.
 
 When contributing to this project, please feel free to discuss the change you wish to make via issue with the repository owners before making a change.
 
@@ -54,3 +53,4 @@ When contributing to this project, please feel free to discuss the change you wi
 [ref-issues]: https://github.com/fireblade-engine/ecs/issues
 [ref-pull-request-how-to]: https://docs.github.com/en/github/writing-on-github/autolinked-references-and-urls
 [ref-pull-request-new]: https://github.com/fireblade-engine/ecs/compare
+[ref-documentation]: https://github.com/fireblade-engine/ecs/wiki

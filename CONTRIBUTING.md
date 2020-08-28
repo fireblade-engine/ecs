@@ -1,4 +1,4 @@
-# How to contribute
+# 💁 Contributing to this project
 
 
 > First off, thank you for considering contributing to this project.   
@@ -13,7 +13,7 @@ When contributing to this repository, please first discuss the change you wish t
 
 <!--Note that we have a [code of conduct][ref-code-of-conduct], please follow it in all your interactions with the project.-->
 
-### 🐞 You found a bug or have an issue?
+### 🐞 You want to file a bug or found an issue?
 
 1. Ensure that is was **not already reported** and is beeing worked on by checking [open issues][ref-issues].
 2. Create a [new issue][ref-issues-new] with a **clear and descriptive title**
@@ -30,7 +30,12 @@ When contributing to this repository, please first discuss the change you wish t
 4. Ensure that [**no tests are failing**][ref-gh-actions] and **coding conventions** are held
 5. Submit the patch and await review.
 
-### 🆕 You want to add a new feature?
+### 🆕 You want to suggest a new feature?
+
+
+
+### ⚙️ How to set up the environment and run tests
+
 
 
 <!-- REFERENCES -->

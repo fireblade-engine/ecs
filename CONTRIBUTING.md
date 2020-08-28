@@ -26,9 +26,9 @@ When contributing to this project, please feel free to discuss the change you wi
 1. Ensure that is was **not already reported** and is beeing worked on by checking [open issues][ref-issues].
 2. Create a [new issue][ref-issues-new] with a **clear and descriptive title**
 3. Write a **detailed comment** with as much relevant information as possible including
-  - *how to reproduce* the bug 
-  - a *code sample* or an *executable test case* demonstrating the expected behavior that is not occurring
-  - any *files that could help* trace it down (i.e. logs)
+ - *how to reproduce* the bug 
+ - a *code sample* or an *executable test case* demonstrating the expected behavior that is not occurring
+ - any *files that could help* trace it down (i.e. logs)
   
 ### 🩹 You wrote a patch that fixes an issue?
 
@@ -42,11 +42,11 @@ When contributing to this project, please feel free to discuss the change you wi
 
 That's great, thank you! You rock 🤘 
 
-If you want to deep dive and help out with development on this project, then first get the project installed locally. 
+If you want to dive deep and help out with development on this project, then first get the project [installed locally][ref-readme]. 
 After that is done we suggest you have a look at tickets in our [issue tracker][ref-issues]. 
 You can start by looking through the beginner or help-wanted issues: 
-- [__Good first issues__][ref-issue-first] are issues which should only require a few lines of code, and a test or two. 
-- [__Help wanted issues__][ref-issue-help] are issues which should be a bit more involved than beginner issues. 
+ - [__Good first issues__][ref-issues-first] are issues which should only require a few lines of code, and a test or two. 
+ - [__Help wanted issues__][ref-issues-help] are issues which should be a bit more involved than beginner issues. 
 These are meant to be a great way to get a smooth start and won't put you in front of the most complex parts of the system.
 
 If you are up to more challenging tasks with a bigger scope, then there are a set of tickets with a __feature__, __enhancement__ or __improvement__ tag. 
@@ -57,14 +57,14 @@ That said, these aren't necessarily the easiest tickets.
 For any new contributions please consider these guidelines:
 1. Open a [new pull request (PR)][ref-pull-request-new] with a **clear and descriptive title**
 2. Write a **detailed comment** with as much relevant information as possible including:
- - What your features is intended to do?
+ - What your feature is intended to do?
  - How it can be used?
  - What alternatives where considered?
  - Has this feature impact on performance or stability of the project?
 
-#### ☑️ Your contribution responsibilities
+#### Your contribution responsibilities
 
-Don't be intimidated by these responsibilites, they are easy to meet if you take your time to develop your feature 😌
+Don't be intimidated by these responsibilities, they are easy to meet if you take your time to develop your feature 😌
 
 - [x] Create issues for any major changes and enhancements that you wish to make. Discuss things transparently and get community feedback.
 - [x] Ensure (cross-)platform compatibility for every change that's accepted. An addition should not reduce the number of platforms that the project supports.
@@ -74,19 +74,20 @@ Don't be intimidated by these responsibilites, they are easy to meet if you take
 - [x] Document your public API code and ensure to add code comments where necessary.
 
 
-### ⚙️ How to set up the environment and run tests
+### ⚙️ How to set up the environment
 
-
+Please consult the [README][ref-readme] for installation instructions.
 
 <!-- REFERENCES -->
 
 [ref-code-of-conduct]: t.b.d.
 [ref-contributors]: https://github.com/fireblade-engine/ecs/graphs/contributors
+[ref-documentation]: https://github.com/fireblade-engine/ecs/wiki
 [ref-gh-actions]: https://github.com/fireblade-engine/ecs/actions
+[ref-issues-first]: https://github.com/fireblade-engine/ecs/issues?q=is%3Aopen+is%3Aissue+label%3A"good+first+issue"
+[ref-issues-help]: https://github.com/fireblade-engine/ecs/issues?q=is%3Aopen+is%3Aissue+label%3A"help+wanted"
 [ref-issues-new]: https://github.com/fireblade-engine/ecs/issues/new/choose
 [ref-issues]: https://github.com/fireblade-engine/ecs/issues
 [ref-pull-request-how-to]: https://docs.github.com/en/github/writing-on-github/autolinked-references-and-urls
 [ref-pull-request-new]: https://github.com/fireblade-engine/ecs/compare
-[ref-documentation]: https://github.com/fireblade-engine/ecs/wiki
-[ref-issue-first]: https://github.com/fireblade-engine/ecs/issues?q=is%3Aopen+is%3Aissue+label%3A"good+first+issue"
-[ref-issue-help]: https://github.com/fireblade-engine/ecs/issues?q=is%3Aopen+is%3Aissue+label%3A"help+wanted"
+[ref-readme]: https://github.com/fireblade-engine/ecs/blob/master/README.md

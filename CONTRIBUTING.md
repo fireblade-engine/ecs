@@ -33,11 +33,19 @@ When contributing to this project, please feel free to discuss the change you wi
 1. Open a [new pull request (PR)][ref-pull-request-new] with the patch.
 2. Ensure the PR description clearly describes the problem and solution. 
 3. Link the relevant **issue** if applicable ([how to link issues in PRs][ref-pull-request-how-to]).
-4. Ensure that [**no tests are failing**][ref-gh-actions] and **coding conventions** are held
+4. Ensure that [**no tests are failing**][ref-gh-actions] and **coding conventions** are met
 5. Submit the patch and await review.
 
 ### 🆕 You want to suggest a new feature?
 
+#### ☑️ Your responsibilities
+
+- [x] Create issues for any major changes and enhancements that you wish to make. Discuss things transparently and get community feedback.
+- [x] Ensure (cross-)platform compatibility for every change that's accepted. An addition should not reduce the number of platforms that the project supports.
+- [x] Ensure **coding conventions** are met. Lint your code with the project's default tools.
+- [x] Add tests for your feature that proove it's working as expected. Code coverage should not drop below it's previous value.
+- [x] Ensure none of the existing tests are failing after adding your changes.
+- [x] Document your public API code and ensure to add code comments where necessary.
 
 
 ### ⚙️ How to set up the environment and run tests

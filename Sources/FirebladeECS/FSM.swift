@@ -1,0 +1,167 @@
+public protocol EmptyInitializable {
+    init()
+}
+
+public typealias ComponentInitializable = Component & EmptyInitializable
+
+public protocol ComponentProvider {
+    var identifier: AnyHashable { get }
+    func getComponent<C>() -> C? where C: Component
+}
+
+// MARK: -
+
+public struct ComponentInstanceProvider {
+    private var instance: Component
+    
+    public init(instance: Component) {
+        self.instance = instance
+    }
+}
+
+extension ComponentInstanceProvider: ComponentProvider {
+    public var identifier: AnyHashable {
+        ObjectIdentifier(instance)
+    }
+    
+    public func getComponent<C>() -> C? where C : Component {
+        instance as? C
+    }
+}
+
+// MARK: -
+
+public struct ComponentTypeProvider {
+    private var componentType: ComponentInitializable.Type
+    public let identifier: AnyHashable
+    
+    public init<T: ComponentInitializable>(type: T.Type) {
+        componentType = type
+        identifier = ObjectIdentifier(componentType.self)
+    }
+}
+
+extension ComponentTypeProvider: ComponentProvider {
+    public func getComponent<C>() -> C? where C: Component {
+        componentType.init() as? C
+    }
+}
+
+
+// MARK: -
+
+public class ComponentSingletonProvider {
+    lazy private var instance: Component = {
+        componentType.init()
+    }()
+    private var componentType: ComponentInitializable.Type
+    
+    public var identifier: AnyHashable {
+        ObjectIdentifier(instance)
+    }
+    
+    public init<T: ComponentInitializable>(type: T.Type) {
+        componentType = type
+    }
+    
+    internal init(type: ComponentInitializable.Type) {
+        componentType = type
+    }
+}
+
+extension ComponentSingletonProvider: ComponentProvider {
+    public func getComponent<C>() -> C? where C: Component {
+        instance as? C
+    }
+}
+
+// MARK: -
+
+public struct DynamicComponentProvider {
+    public class Closure {
+        let closure: () -> Component
+        public init(closure: @escaping () -> Component) {
+            self.closure = closure
+        }
+    }
+    private let closure: Closure
+
+    public init(closure: Closure) {
+        self.closure = closure
+    }
+}
+
+extension DynamicComponentProvider: ComponentProvider {
+    public var identifier: AnyHashable {
+        ObjectIdentifier(closure)
+    }
+    
+    public func getComponent<C>() -> C? where C: Component {
+        closure.closure() as? C
+    }
+}
+
+// MARK: -
+
+public class EntityState {
+    internal var providers = [ComponentIdentifier: ComponentProvider]()
+    
+    public init() { }
+    
+    public func add<C: ComponentInitializable>(_ type: C.Type) -> StateComponentMapping {
+        StateComponentMapping(creatingState: self,
+                              type: type)
+    }
+}
+// MARK: -
+
+public class StateComponentMapping {
+    private var componentType: ComponentInitializable.Type
+    private let creatingState: EntityState
+    private var provider: ComponentProvider
+    
+    public init<T: ComponentInitializable>(creatingState: EntityState, type: T.Type) {
+        self.creatingState = creatingState
+        componentType = type
+        provider = ComponentTypeProvider(type: type)
+    }
+    
+    public func withInstance(_ component: Component) -> StateComponentMapping {
+        setProvider(ComponentInstanceProvider(instance: component))
+        return self
+    }
+    
+    public func withType<T: ComponentInitializable>(_ type: T.Type) -> Self {
+        setProvider(ComponentTypeProvider(type: type))
+        return self
+    }
+    
+    public func withSingleton<T: ComponentInitializable>(_ type: T.Type?) -> Self {
+        if let type = type {
+            setProvider(ComponentSingletonProvider(type: type))
+        } else {
+            setProvider(ComponentSingletonProvider(type: componentType))
+        }
+        
+        return self
+    }
+    
+    public func withMethod(_ closure: DynamicComponentProvider.Closure) -> Self {
+        setProvider(DynamicComponentProvider(closure: closure))
+        return self
+    }
+    
+    public func withProvider(_ provider: ComponentProvider) -> Self {
+        setProvider(provider)
+        return self
+    }
+    
+    public func add<T: ComponentInitializable>(_ type: T.Type) -> StateComponentMapping {
+        creatingState.add(type)
+    }
+    
+    private func setProvider(_ provider: ComponentProvider) {
+        self.provider = provider
+        creatingState.providers[componentType.identifier] = provider
+    }
+}

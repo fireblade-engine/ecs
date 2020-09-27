@@ -6,7 +6,7 @@ public typealias ComponentInitializable = Component & EmptyInitializable
 
 public protocol ComponentProvider {
     var identifier: AnyHashable { get }
-    func getComponent<C>() -> C? where C: Component
+    func getComponent() -> Component
 }
 
 // MARK: -
@@ -24,8 +24,8 @@ extension ComponentInstanceProvider: ComponentProvider {
         ObjectIdentifier(instance)
     }
     
-    public func getComponent<C>() -> C? where C : Component {
-        instance as? C
+    public func getComponent() -> Component {
+        instance
     }
 }
 
@@ -42,8 +42,8 @@ public struct ComponentTypeProvider {
 }
 
 extension ComponentTypeProvider: ComponentProvider {
-    public func getComponent<C>() -> C? where C: Component {
-        componentType.init() as? C
+    public func getComponent() -> Component {
+        componentType.init()
     }
 }
 
@@ -70,8 +70,8 @@ public class ComponentSingletonProvider {
 }
 
 extension ComponentSingletonProvider: ComponentProvider {
-    public func getComponent<C>() -> C? where C: Component {
-        instance as? C
+    public func getComponent() -> Component {
+        instance
     }
 }
 
@@ -96,8 +96,8 @@ extension DynamicComponentProvider: ComponentProvider {
         ObjectIdentifier(closure)
     }
     
-    public func getComponent<C>() -> C? where C: Component {
-        closure.closure() as? C
+    public func getComponent() -> Component {
+        closure.closure()
     }
 }
 
@@ -109,8 +109,15 @@ public class EntityState {
     public init() { }
     
     public func add<C: ComponentInitializable>(_ type: C.Type) -> StateComponentMapping {
-        StateComponentMapping(creatingState: self,
-                              type: type)
+        StateComponentMapping(creatingState: self, type: type)
+    }
+    
+    public func get<C: ComponentInitializable>(_ type: C.Type) -> ComponentProvider? {
+        providers[type.identifier]
+    }
+    
+    public func has<C: ComponentInitializable>(_ type: C.Type) -> Bool {
+        providers[type.identifier] != nil
     }
 }
 // MARK: -
@@ -163,5 +170,68 @@ public class StateComponentMapping {
     private func setProvider(_ provider: ComponentProvider) {
         self.provider = provider
         creatingState.providers[componentType.identifier] = provider
+    }
+}
+
+// MARK: -
+
+public class EntityStateMachine {
+    private var states: [String: EntityState]
+    
+    private var currentState: EntityState?
+    
+    public var entity: Entity
+    
+    public init(entity: Entity) {
+        self.entity = entity
+        states = [:]
+    }
+    
+    public func addState(name: String, state: EntityState) -> Self {
+        states[name] = state
+        return self
+    }
+    
+    public func createState(name: String) -> EntityState {
+        let state = EntityState()
+        states[name] = state
+        return state
+    }
+    
+    public func changeState(name: String) {
+        guard let newState = states[name] else {
+            fatalError("Entity state '\(name)' doesn't exist")
+        }
+        
+        if newState === currentState {
+            return
+        }
+        var toAdd: [ComponentIdentifier: ComponentProvider]
+        if let currentState = currentState {
+            toAdd = .init()
+            for t in newState.providers {
+                toAdd[t.key] = t.value
+            }
+            
+            for t in currentState.providers {
+                if let other = toAdd[t.key], let current = currentState.providers[t.key],
+                   current.identifier == other.identifier {
+                    toAdd[t.key] = nil
+                } else {
+                    entity.remove(t.key)
+                }
+                
+            }
+        } else {
+            toAdd = newState.providers
+        }
+        
+        for t in toAdd {
+            guard let component = toAdd[t.key]?.getComponent() else {
+                continue
+            }
+            entity.assign(component)
+        }
+        currentState = newState
     }
 }

@@ -5,7 +5,7 @@ class ComponentInstanceProviderTests: XCTestCase {
     func testProviderReturnsTheInstance() {
         let instance = MockComponent(value: .max)
         let provider1 = ComponentInstanceProvider(instance: instance)
-        let providedComponent: MockComponent? = provider1.getComponent()
+        let providedComponent = provider1.getComponent() as? MockComponent
         XCTAssertTrue(providedComponent === instance)
     }
     
@@ -34,14 +34,14 @@ class ComponentInstanceProviderTests: XCTestCase {
 class ComponentTypeProviderTests: XCTestCase {
     func testProviderReturnsAnInstanceOfType() {
         let provider = ComponentTypeProvider(type: MockComponent.self)
-        let component: MockComponent? = provider.getComponent()
+        let component = provider.getComponent() as? MockComponent
         XCTAssertNotNil(component)
     }
     
     func testProviderReturnsNewInstanceEachTime() {
         let provider = ComponentTypeProvider(type: MockComponent.self)
-        let component1: MockComponent? = provider.getComponent()
-        let component2: MockComponent? = provider.getComponent()
+        let component1 = provider.getComponent() as? MockComponent
+        let component2 = provider.getComponent() as? MockComponent
         XCTAssertFalse(component1 === component2)
     }
     
@@ -78,14 +78,14 @@ class ComponentTypeProviderTests: XCTestCase {
 class ComponentSingletonProviderTests: XCTestCase {
     func testProviderReturnsAnInstanceOfType() {
         let provider = ComponentSingletonProvider(type: MockComponent.self)
-        let component: MockComponent? = provider.getComponent()
+        let component = provider.getComponent() as? MockComponent
         XCTAssertNotNil(component)
     }
 
     func testProviderReturnsSameInstanceEachTime() {
         let provider = ComponentSingletonProvider(type: MockComponent.self)
-        let component1: MockComponent? = provider.getComponent()
-        let component2: MockComponent? = provider.getComponent()
+        let component1 = provider.getComponent() as? MockComponent
+        let component2 = provider.getComponent() as? MockComponent
         XCTAssertTrue(component1 === component2)
         
     }
@@ -124,7 +124,7 @@ class DynamicComponentProviderTests: XCTestCase {
         let instance = MockComponent(value: 0)
         let providerMethod = DynamicComponentProvider.Closure { instance }
         let provider = DynamicComponentProvider(closure: providerMethod)
-        let component: MockComponent? = provider.getComponent()
+        let component = provider.getComponent() as? MockComponent
         XCTAssertTrue(component === instance)
     }
     
@@ -152,4 +152,8 @@ class DynamicComponentProviderTests: XCTestCase {
             self.value = value
         }
     }
+}
+
+class EntityStateMachineTests: XCTestCase {
+    // TODO:
 }

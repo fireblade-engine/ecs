@@ -60,11 +60,7 @@ public class ComponentSingletonProvider {
         ObjectIdentifier(instance)
     }
     
-    public init<T: ComponentInitializable>(type: T.Type) {
-        componentType = type
-    }
-    
-    internal init(type: ComponentInitializable.Type) {
+    public init(type: ComponentInitializable.Type) {
         componentType = type
     }
 }
@@ -108,7 +104,7 @@ public class EntityState {
     
     public init() { }
     
-    public func add<C: ComponentInitializable>(_ type: C.Type) -> StateComponentMapping {
+    @discardableResult public func add<C: ComponentInitializable>(_ type: C.Type) -> StateComponentMapping {
         StateComponentMapping(creatingState: self, type: type)
     }
     
@@ -133,32 +129,27 @@ public class StateComponentMapping {
         provider = ComponentTypeProvider(type: type)
     }
     
-    public func withInstance(_ component: Component) -> StateComponentMapping {
+    @discardableResult public func withInstance(_ component: Component) -> StateComponentMapping {
         setProvider(ComponentInstanceProvider(instance: component))
         return self
     }
     
-    public func withType<T: ComponentInitializable>(_ type: T.Type) -> Self {
+    @discardableResult public func withType<T: ComponentInitializable>(_ type: T.Type) -> Self {
         setProvider(ComponentTypeProvider(type: type))
         return self
     }
     
-    public func withSingleton<T: ComponentInitializable>(_ type: T.Type?) -> Self {
-        if let type = type {
-            setProvider(ComponentSingletonProvider(type: type))
-        } else {
-            setProvider(ComponentSingletonProvider(type: componentType))
-        }
-        
+    @discardableResult public func withSingleton<T: ComponentInitializable>(_ type: T.Type?) -> Self {
+        setProvider(ComponentSingletonProvider(type: type ?? componentType))
         return self
     }
     
-    public func withMethod(_ closure: DynamicComponentProvider.Closure) -> Self {
+    @discardableResult public func withMethod(_ closure: DynamicComponentProvider.Closure) -> Self {
         setProvider(DynamicComponentProvider(closure: closure))
         return self
     }
     
-    public func withProvider(_ provider: ComponentProvider) -> Self {
+    @discardableResult public func withProvider(_ provider: ComponentProvider) -> Self {
         setProvider(provider)
         return self
     }
@@ -220,7 +211,6 @@ public class EntityStateMachine {
                 } else {
                     entity.remove(t.key)
                 }
-                
             }
         } else {
             toAdd = newState.providers

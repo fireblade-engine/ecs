@@ -154,6 +154,74 @@ class DynamicComponentProviderTests: XCTestCase {
     }
 }
 
+@testable import class FirebladeECS.EntityState
+
+class EntityStateTests: XCTestCase {
+    private var state = EntityState()
+    
+    override func setUp() {
+        state = EntityState()
+    }
+    
+    override func tearDown() {
+        state = EntityState()
+    }
+    
+    func testAddWithNoQualifierCreatesTypeProvider() {
+        state.add(MockComponent.self)
+        let provider = state.providers[MockComponent.identifier]
+        XCTAssertTrue(provider is ComponentTypeProvider?)
+        XCTAssertTrue(provider?.getComponent() is MockComponent?)
+    }
+    
+    func testAddWithTypeQualifierCreatesTypeProvider() {
+        state.add(MockComponent.self).withType(MockComponent2.self)
+        let provider = state.providers[MockComponent.identifier]
+        XCTAssertTrue(provider is ComponentTypeProvider?)
+        XCTAssertTrue(provider?.getComponent() is MockComponent2?)
+    }
+    
+    func testAddWithInstanceQualifierCreatesInstanceProvider() {
+        let component = MockComponent()
+        state.add(MockComponent.self).withInstance(component)
+        let provider = state.providers[MockComponent.identifier]
+        XCTAssertTrue(provider is ComponentInstanceProvider?)
+        XCTAssertTrue(provider?.getComponent() === component)
+    }
+    
+    func testAddWithSingletonQualifierCreatesSingletonProvider() {
+        state.add(MockComponent.self).withSingleton(MockComponent.self)
+        let  provider = state.providers[MockComponent.identifier]
+        XCTAssertTrue(provider is ComponentSingletonProvider?)
+        XCTAssertTrue(provider?.getComponent() is MockComponent?)
+    }
+    
+    func testAddWithMethodQualifierCreatesDynamicProvider() {
+        let dynamickProvider = DynamicComponentProvider.Closure {
+            MockComponent()
+        }
+        
+        state.add(MockComponent.self).withMethod(dynamickProvider)
+        let provider = state.providers[MockComponent.identifier]
+        XCTAssertTrue(provider is DynamicComponentProvider?)
+        XCTAssertTrue(provider?.getComponent() is MockComponent)
+    }
+    
+    class MockComponent: ComponentInitializable {
+        let value: Int
+        
+        init(value: Int) {
+            self.value = value
+        }
+        
+        required init() {
+            self.value = 0
+        }
+    }
+    
+    class MockComponent2: MockComponent {}
+}
+
 class EntityStateMachineTests: XCTestCase {
     // TODO:
 }

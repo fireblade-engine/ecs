@@ -274,6 +274,17 @@ class EntityStateMachineTests: XCTestCase {
     }
     
     func testEnterSecondStateDoesNotRemoveOverlappingComponents() {
+        class EventDelegate: NexusEventDelegate {
+            init() {}
+            
+            func nexusEvent(_ event: NexusEvent) {
+                XCTAssertFalse(event is ComponentRemoved, "Component was removed when it shouldn't have been.") 
+            }
+            
+            func nexusNonFatalError(_ message: String) {}
+        }
+        let delgate = EventDelegate()
+        nexus.delegate = delgate
         let state1 = EntityState()
         let component1 = MockComponent()
         state1.add(MockComponent.self).withInstance(component1)

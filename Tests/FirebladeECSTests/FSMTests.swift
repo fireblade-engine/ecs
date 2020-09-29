@@ -223,9 +223,8 @@ class EntityStateTests: XCTestCase {
 }
 
 class EntityStateMachineTests: XCTestCase {
-    
     var nexus = Nexus()
-    var fsm = EntityStateMachine(entity: .init(nexus: .init(), id: .invalid))
+    var fsm = EntityStateMachine<String>(entity: .init(nexus: .init(), id: .invalid))
     var entity = Entity(nexus: .init(), id: .init(rawValue: 1))
     
     override func setUp() {

@@ -166,8 +166,8 @@ public class StateComponentMapping {
 
 // MARK: -
 
-public class EntityStateMachine {
-    private var states: [String: EntityState]
+public class EntityStateMachine<StateName: Hashable> {
+    private var states: [StateName: EntityState]
     
     private var currentState: EntityState?
     
@@ -178,18 +178,18 @@ public class EntityStateMachine {
         states = [:]
     }
     
-    @discardableResult public func addState(name: String, state: EntityState) -> Self {
+    @discardableResult public func addState(name: StateName, state: EntityState) -> Self {
         states[name] = state
         return self
     }
     
-    public func createState(name: String) -> EntityState {
+    public func createState(name: StateName) -> EntityState {
         let state = EntityState()
         states[name] = state
         return state
     }
     
-    public func changeState(name: String) {
+    public func changeState(name: StateName) {
         guard let newState = states[name] else {
             fatalError("Entity state '\(name)' doesn't exist")
         }

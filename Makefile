@@ -55,13 +55,21 @@ cleanArtifacts:
 testReadme:
 	markdown-link-check -p -v ./README.md
 
-setupEnvironment:
-	brew update
-	brew install swiftenv
-	brew install swiftlint
-	brew install sourcery
-
 generateCode:
 	sourcery --config ./.sourcery.yml --verbose
 generateTestsCode:
 	sourcery --config ./.sourceryTests.yml --verbose
+
+brewInstallDeps: brewUpdate
+	brew install swiftenv
+	brew install swiftlint
+	brew install sourcery
+
+brewSetup:
+	which -s brew || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+
+brewUpdate: brewSetup
+	brew update
+
+setupEnvironment: brewInstallDeps
+	open Package.swift

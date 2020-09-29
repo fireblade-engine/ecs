@@ -1,29 +1,57 @@
+/// Requires initializer with no arguments.
+/// In case of component - makes sure it can be instantiated by  component provider
 public protocol EmptyInitializable {
     init()
 }
 
 public typealias ComponentInitializable = Component & EmptyInitializable
 
+/// This is the Interface for component providers. Component providers are used to supply components
+/// for states within an EntityStateMachine. FirebladeECS includes three standard component providers,
+/// ComponentTypeProvider, ComponentInstanceProvider and ComponentSingletonProvider. Developers
+/// may wish to create more.
 public protocol ComponentProvider {
+    /// Returns an identifier that is used to determine whether two component providers will
+    /// return the equivalent components.
+
+    /// If an entity is changing state and the state it is leaving and the state is
+    /// entering have components of the same type, then the identifiers of the component
+    /// provders are compared. If the two identifiers are the same then the component
+    /// is not removed. If they are different, the component from the old state is removed
+    /// and a component for the new state is added.
+
+    /// - Returns: struct/class instance that confirms to Hashable protocol
     var identifier: AnyHashable { get }
+    
+    /// Used to request a component from the provider.
+    /// - Returns: A component for use in the state that the entity is entering
     func getComponent() -> Component
 }
 
 // MARK: -
 
-public struct ComponentInstanceProvider {
+/// This component provider always returns the same instance of the component. The instance
+/// is passed to the provider at initialisation.
+public class ComponentInstanceProvider {
     private var instance: Component
     
+    /// Initializer
+    /// - Parameter instance: The instance to return whenever a component is requested.
     public init(instance: Component) {
         self.instance = instance
     }
 }
 
 extension ComponentInstanceProvider: ComponentProvider {
+    /// Used to compare this provider with others. Any provider that returns the same component
+    /// instance will be regarded as equivalent.
+    /// - Returns:ObjectIdentifier of instance
     public var identifier: AnyHashable {
         ObjectIdentifier(instance)
     }
     
+    /// Used to request a component from this provider
+    /// - Returns: The instance
     public func getComponent() -> Component {
         instance
     }
@@ -31,41 +59,60 @@ extension ComponentInstanceProvider: ComponentProvider {
 
 // MARK: -
 
-public struct ComponentTypeProvider {
+/// This component provider always returns a new instance of a component. An instance
+/// is created when requested and is of the type passed in to the initializer.
+public class ComponentTypeProvider {
     private var componentType: ComponentInitializable.Type
+    
+    /// Used to compare this provider with others. Any ComponentTypeProvider that returns
+    /// the same type will be regarded as equivalent.
+    /// - Returns:ObjectIdentifier of the type of the instances created
     public let identifier: AnyHashable
     
-    public init<T: ComponentInitializable>(type: T.Type) {
+    /// Initializer
+    /// - Parameter type: The type of the instances to be created
+    public init(type: ComponentInitializable.Type) {
         componentType = type
         identifier = ObjectIdentifier(componentType.self)
     }
 }
 
 extension ComponentTypeProvider: ComponentProvider {
+    /// Used to request a component from this provider
+    /// - Returns: A new instance of the type provided in the initializer
     public func getComponent() -> Component {
         componentType.init()
     }
 }
 
-
 // MARK: -
 
+/// This component provider always returns the same instance of the component. The instance
+/// is created when first required and is of the type passed in to the initializer.
 public class ComponentSingletonProvider {
     lazy private var instance: Component = {
         componentType.init()
     }()
+    
     private var componentType: ComponentInitializable.Type
     
-    public var identifier: AnyHashable {
-        ObjectIdentifier(instance)
-    }
-    
+    /// Initializer
+    /// - Parameter type: The type of the single instance
     public init(type: ComponentInitializable.Type) {
         componentType = type
     }
 }
 
 extension ComponentSingletonProvider: ComponentProvider {
+    /// Used to compare this provider with others. Any provider that returns the same single
+    /// instance will be regarded as equivalent.
+    /// - Returns: ObjectIdentifier of the single instance
+    public var identifier: AnyHashable {
+        ObjectIdentifier(instance)
+    }
+    
+    /// Used to request a component from this provider
+    /// - Returns: The single instance
     public func getComponent() -> Component {
         instance
     }
@@ -73,25 +120,39 @@ extension ComponentSingletonProvider: ComponentProvider {
 
 // MARK: -
 
-public struct DynamicComponentProvider {
+/// This component provider calls a function to get the component instance. The function must
+/// return a single component of the appropriate type.
+public class DynamicComponentProvider {
+    /// Wrapper for closure to make it hashable
     public class Closure {
         let closure: () -> Component
+        
+        /// Initializer
+        /// - Parameter closure: Swift closure returning component of the appropriate type
         public init(closure: @escaping () -> Component) {
             self.closure = closure
         }
     }
     private let closure: Closure
 
+    
+    /// Initializer
+    /// - Parameter closure: Instance of Closure class. A wrapper around closure that will return the component instance when called.
     public init(closure: Closure) {
         self.closure = closure
     }
 }
 
 extension DynamicComponentProvider: ComponentProvider {
+    /// Used to compare this provider with others. Any provider that uses the function or method
+    /// closure to provide the instance is regarded as equivalent.
+    /// - Returns: ObjectIdentifier of closure
     public var identifier: AnyHashable {
         ObjectIdentifier(closure)
     }
     
+    /// Used to request a component from this provider
+    /// - Returns: The instance returned by calling the closure
     public func getComponent() -> Component {
         closure.closure()
     }

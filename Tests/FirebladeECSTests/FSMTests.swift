@@ -223,5 +223,113 @@ class EntityStateTests: XCTestCase {
 }
 
 class EntityStateMachineTests: XCTestCase {
-    // TODO:
+    
+    var nexus = Nexus()
+    var fsm = EntityStateMachine(entity: .init(nexus: .init(), id: .invalid))
+    var entity = Entity(nexus: .init(), id: .init(rawValue: 1))
+    
+    override func setUp() {
+        nexus = Nexus()
+        entity = nexus.createEntity()
+        fsm = EntityStateMachine(entity: entity)
+    }
+    
+    func testEnterStateAddsStatesComponents() {
+        let state = EntityState()
+        let component = MockComponent()
+        state.add(MockComponent.self).withInstance(component)
+        fsm.addState(name: "test", state: state)
+        fsm.changeState(name: "test")
+        XCTAssertTrue(entity.get(component: MockComponent.self) === component)
+    }
+    
+    func testEnterSecondStateAddsSecondStatesComponents() {
+        let state1 = EntityState()
+        let component1 = MockComponent()
+        state1.add(MockComponent.self).withInstance(component1)
+        fsm.addState(name: "test1", state: state1)
+        
+        let state2 = EntityState()
+        let component2 = MockComponent2()
+        state2.add(MockComponent2.self).withInstance(component2)
+        fsm.addState(name: "test2", state: state2)
+        fsm.changeState(name: "test2")
+        
+        XCTAssertTrue(entity.get(component: MockComponent2.self) === component2)
+    }
+    
+    func testEnterSecondStateRemovesFirstStatesComponents() {
+        let state1 = EntityState()
+        let component1 = MockComponent()
+        state1.add(MockComponent.self).withInstance(component1)
+        fsm.addState(name: "test1", state: state1)
+        fsm.changeState(name: "test1")
+        
+        let state2 = EntityState()
+        let component2 = MockComponent2()
+        state2.add(MockComponent2.self).withInstance(component2)
+        fsm.addState(name: "test2", state: state2)
+        fsm.changeState(name: "test2")
+        
+        XCTAssertFalse(entity.has(MockComponent.self))
+    }
+    
+    func testEnterSecondStateDoesNotRemoveOverlappingComponents() {
+        let state1 = EntityState()
+        let component1 = MockComponent()
+        state1.add(MockComponent.self).withInstance(component1)
+        fsm.addState(name: "test1", state: state1)
+        fsm.changeState(name: "test1")
+        
+        let state2 = EntityState()
+        let component2 = MockComponent2()
+        state2.add(MockComponent.self).withInstance(component1)
+        state2.add(MockComponent2.self).withInstance(component2)
+        fsm.addState(name: "test2", state: state2)
+        fsm.changeState(name: "test2")
+    
+        XCTAssertTrue(entity.get(component: MockComponent.self) === component1)
+    }
+    
+    func testEnterSecondStateRemovesDifferentComponentsOfSameType() {
+        let state1 = EntityState()
+        let component1 = MockComponent()
+        state1.add(MockComponent.self).withInstance(component1)
+        fsm.addState(name: "test1", state: state1)
+        fsm.changeState(name: "test1")
+        
+        let state2 = EntityState()
+        let component3 = MockComponent()
+        let component2 = MockComponent2()
+        state2.add(MockComponent.self).withInstance(component3)
+        state2.add(MockComponent2.self).withInstance(component2)
+        fsm.addState(name: "test2", state: state2)
+        fsm.changeState(name: "test2")
+        
+        XCTAssertTrue(entity.get(component: MockComponent.self) === component3)
+    }
+    
+    class MockComponent: ComponentInitializable {
+        let value: Int
+        
+        init(value: Int) {
+            self.value = value
+        }
+        
+        required init() {
+            self.value = 0
+        }
+    }
+    
+    class MockComponent2: ComponentInitializable {
+        let value: String
+        
+        init(value: String) {
+            self.value = value
+        }
+        
+        required init() {
+            self.value = ""
+        }
+    }
 }

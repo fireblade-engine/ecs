@@ -178,7 +178,7 @@ public class EntityStateMachine {
         states = [:]
     }
     
-    public func addState(name: String, state: EntityState) -> Self {
+    @discardableResult public func addState(name: String, state: EntityState) -> Self {
         states[name] = state
         return self
     }

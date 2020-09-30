@@ -190,8 +190,8 @@ public class EntityState {
         providers[type.identifier] != nil
     }
 }
-// MARK: -
 
+// MARK: -
 
 /// Used by the EntityState class to create the mappings of components to providers via a fluent interface.
 public class StateComponentMapping {
@@ -275,29 +275,49 @@ public class StateComponentMapping {
 
 // MARK: -
 
+/// This is a state machine for an entity. The state machine manages a set of states,
+/// each of which has a set of component providers. When the state machine changes the state, it removes
+/// components associated with the previous state and adds components associated with the new state.
+
+/// - Parameter StateName: Generic hashable state name type
 public class EntityStateMachine<StateName: Hashable> {
     private var states: [StateName: EntityState]
     
+    /// The current state of the state machine.
     private var currentState: EntityState?
     
+    /// The entity whose state machine this is
     public var entity: Entity
     
+    /// Initializer. Creates an EntityStateMachine.
     public init(entity: Entity) {
         self.entity = entity
         states = [:]
     }
     
+    /// Add a state to this state machine.
+    /// - Parameter name: The name of this state - used to identify it later in the changeState method call.
+    /// - Parameter state: The state.
+    /// - Returns: This state machine, so methods can be chained.
     @discardableResult public func addState(name: StateName, state: EntityState) -> Self {
         states[name] = state
         return self
     }
     
+    /// Create a new state in this state machine.
+    /// - Parameter name: The name of the new state - used to identify it later in the changeState method call.
+    /// - Returns: The new EntityState object that is the state. This will need to be configured with
+    /// the appropriate component providers.
     public func createState(name: StateName) -> EntityState {
         let state = EntityState()
         states[name] = state
         return state
     }
     
+    
+    /// Change to a new state. The components from the old state will be removed and the components
+    /// for the new state will be added.
+    /// - Parameter name: The name of the state to change to.
     public func changeState(name: StateName) {
         guard let newState = states[name] else {
             fatalError("Entity state '\(name)' doesn't exist")
@@ -306,7 +326,9 @@ public class EntityStateMachine<StateName: Hashable> {
         if newState === currentState {
             return
         }
+        
         var toAdd: [ComponentIdentifier: ComponentProvider]
+        
         if let currentState = currentState {
             toAdd = .init()
             for t in newState.providers {

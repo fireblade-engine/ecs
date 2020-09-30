@@ -137,7 +137,8 @@ public class DynamicComponentProvider {
 
     
     /// Initializer
-    /// - Parameter closure: Instance of Closure class. A wrapper around closure that will return the component instance when called.
+    /// - Parameter closure: Instance of Closure class. A wrapper around closure that will
+    /// return the component instance when called.
     public init(closure: Closure) {
         self.closure = closure
     }
@@ -160,62 +161,109 @@ extension DynamicComponentProvider: ComponentProvider {
 
 // MARK: -
 
+/// Represents a state for an EntityStateMachine. The state contains any number of ComponentProviders which
+/// are used to add components to the entity when this state is entered.
 public class EntityState {
     internal var providers = [ComponentIdentifier: ComponentProvider]()
     
-    public init() { }
+    public init() {}
     
-    @discardableResult public func add<C: ComponentInitializable>(_ type: C.Type) -> StateComponentMapping {
+    /// Add a new ComponentMapping to this state. The mapping is a utility class that is used to
+    /// map a component type to the provider that provides the component.
+    /// - Parameter type: The type of component to be mapped
+    /// - Returns: The component mapping to use when setting the provider for the component
+    @discardableResult public func add(_ type: ComponentInitializable.Type) -> StateComponentMapping {
         StateComponentMapping(creatingState: self, type: type)
     }
     
-    public func get<C: ComponentInitializable>(_ type: C.Type) -> ComponentProvider? {
+    /// Get the ComponentProvider for a particular component type.
+    /// - Parameter type: The type of component to get the provider for
+    /// - Returns: The ComponentProvider
+    public func get(_ type: ComponentInitializable.Type) -> ComponentProvider? {
         providers[type.identifier]
     }
     
-    public func has<C: ComponentInitializable>(_ type: C.Type) -> Bool {
+    /// To determine whether this state has a provider for a specific component type.
+    /// - Parameter type: The type of component to look for a provider for
+    /// - Returns: true if there is a provider for the given type, false otherwise
+    public func has(_ type: ComponentInitializable.Type) -> Bool {
         providers[type.identifier] != nil
     }
 }
 // MARK: -
 
+
+/// Used by the EntityState class to create the mappings of components to providers via a fluent interface.
 public class StateComponentMapping {
     private var componentType: ComponentInitializable.Type
     private let creatingState: EntityState
     private var provider: ComponentProvider
     
-    public init<T: ComponentInitializable>(creatingState: EntityState, type: T.Type) {
+    /// Used internally, the initializer creates a component mapping. The constructor
+    /// creates a ComponentTypeProvider as the default mapping, which will be replaced
+    /// by more specific mappings if other methods are called.
+
+    /// - Parameter creatingState: The EntityState that the mapping will belong to
+    /// - Parameter type: The component type for the mapping
+    internal init(creatingState: EntityState, type: ComponentInitializable.Type) {
         self.creatingState = creatingState
         componentType = type
         provider = ComponentTypeProvider(type: type)
     }
     
+    /// Creates a mapping for the component type to a specific component instance. A
+    /// ComponentInstanceProvider is used for the mapping.
+    /// - Parameter component: The component instance to use for the mapping
+    /// - Returns: This ComponentMapping, so more modifications can be applied
     @discardableResult public func withInstance(_ component: Component) -> StateComponentMapping {
         setProvider(ComponentInstanceProvider(instance: component))
         return self
     }
     
-    @discardableResult public func withType<T: ComponentInitializable>(_ type: T.Type) -> Self {
+    /// Creates a mapping for the component type to new instances of the provided type.
+    /// The type should be the same as or extend the type for this mapping. A ComponentTypeProvider
+    /// is used for the mapping.
+    /// - Parameter type: The type of components to be created by this mapping
+    /// - Returns: This ComponentMapping, so more modifications can be applied
+    @discardableResult public func withType(_ type: ComponentInitializable.Type) -> Self {
         setProvider(ComponentTypeProvider(type: type))
         return self
     }
     
-    @discardableResult public func withSingleton<T: ComponentInitializable>(_ type: T.Type?) -> Self {
+    /// Creates a mapping for the component type to a single instance of the provided type.
+    /// The instance is not created until it is first requested. The type should be the same
+    /// as or extend the type for this mapping. A ComponentSingletonProvider is used for
+    /// the mapping.
+    /// - Parameter type: The type of the single instance to be created. If omitted, the type of the
+    /// mapping is used.
+    /// - Returns: This ComponentMapping, so more modifications can be applied
+    @discardableResult public func withSingleton(_ type: ComponentInitializable.Type?) -> Self {
         setProvider(ComponentSingletonProvider(type: type ?? componentType))
         return self
     }
     
+    /// Creates a mapping for the component type to a method call. A
+    /// DynamicComponentProvider is used for the mapping.
+    /// - Parameter method: The method to return the component instance
+    /// - Returns: This ComponentMapping, so more modifications can be applied
     @discardableResult public func withMethod(_ closure: DynamicComponentProvider.Closure) -> Self {
         setProvider(DynamicComponentProvider(closure: closure))
         return self
     }
     
+    /// Creates a mapping for the component type to any ComponentProvider.
+    /// - Parameter provider: The component provider to use.
+    /// - Returns: This ComponentMapping, so more modifications can be applied.
     @discardableResult public func withProvider(_ provider: ComponentProvider) -> Self {
         setProvider(provider)
         return self
     }
     
-    public func add<T: ComponentInitializable>(_ type: T.Type) -> StateComponentMapping {
+    /// Maps through to the add method of the EntityState that this mapping belongs to
+    /// so that a fluent interface can be used when configuring entity states.
+    /// - Parameter type: The type of component to add a mapping to the state for
+    /// - Returns: The new ComponentMapping for that type
+    public func add(_ type: ComponentInitializable.Type) -> StateComponentMapping {
         creatingState.add(type)
     }
     

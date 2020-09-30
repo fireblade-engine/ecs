@@ -210,6 +210,7 @@ public class StateComponentMapping {
         self.creatingState = creatingState
         componentType = type
         provider = ComponentTypeProvider(type: type)
+        creatingState.providers[componentType.identifier] = provider
     }
 
     /// Creates a mapping for the component type to a specific component instance. A

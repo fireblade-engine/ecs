@@ -72,7 +72,6 @@ class ComponentTypeProviderTests: XCTestCase {
             self.value = false
         }
     }
-    
 }
 
 class ComponentSingletonProviderTests: XCTestCase {

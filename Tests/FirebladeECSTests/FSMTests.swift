@@ -169,6 +169,7 @@ class EntityStateTests: XCTestCase {
     func testAddWithNoQualifierCreatesTypeProvider() {
         state.add(MockComponent.self)
         let provider = state.providers[MockComponent.identifier]
+        XCTAssertNotNil(provider)
         XCTAssertTrue(provider is ComponentTypeProvider?)
         XCTAssertTrue(provider?.getComponent() is MockComponent?)
     }
@@ -176,6 +177,7 @@ class EntityStateTests: XCTestCase {
     func testAddWithTypeQualifierCreatesTypeProvider() {
         state.add(MockComponent.self).withType(MockComponent2.self)
         let provider = state.providers[MockComponent.identifier]
+        XCTAssertNotNil(provider)
         XCTAssertTrue(provider is ComponentTypeProvider?)
         XCTAssertTrue(provider?.getComponent() is MockComponent2?)
     }
@@ -202,6 +204,7 @@ class EntityStateTests: XCTestCase {
         
         state.add(MockComponent.self).withMethod(dynamickProvider)
         let provider = state.providers[MockComponent.identifier]
+        XCTAssertNotNil(provider)
         XCTAssertTrue(provider is DynamicComponentProvider?)
         XCTAssertTrue(provider?.getComponent() is MockComponent)
     }

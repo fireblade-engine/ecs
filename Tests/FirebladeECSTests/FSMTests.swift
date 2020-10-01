@@ -260,16 +260,16 @@ class EntityStateTests: XCTestCase {
         XCTAssertNotNil(provider)
         XCTAssertTrue(provider === singletonProvider)
     }
-    
+
     func testHasReturnsFalseForNotCreatedProvider() {
         XCTAssertFalse(state.has(MockComponent.self))
     }
-    
+
     func testHasReturnsTrueForCreatedProvider() {
         state.add(MockComponent.self)
         XCTAssertTrue(state.has(MockComponent.self))
     }
-    
+
     // TODO: continue here
 
     class MockComponent: ComponentInitializable {
@@ -417,20 +417,20 @@ class StateComponentMappingTests: XCTestCase {
         let mapping = state.add(MockComponent.self)
         XCTAssertFalse(mapping === mapping.add(MockComponent.self))
     }
-    
+
     func testAddReturnsSameMappingForDifferentComponentTypes() {
         let state = EntityState()
         let mapping = state.add(MockComponent.self)
         XCTAssertFalse(mapping === mapping.add(MockComponent2.self))
     }
-    
+
     func testAddAddsProviderToState() {
         let state = EntityState()
         let mapping = state.add(MockComponent.self)
         mapping.add(MockComponent2.self)
         XCTAssertTrue(state.has(MockComponent.self))
     }
-    
+
     class MockComponent: ComponentInitializable {
         let value: Int
 
@@ -442,7 +442,7 @@ class StateComponentMappingTests: XCTestCase {
             self.value = 0
         }
     }
-    
+
     class MockComponent2: ComponentInitializable {
         let value: String
 

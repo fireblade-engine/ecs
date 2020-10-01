@@ -203,14 +203,13 @@ public class StateComponentMapping {
     /// Used internally, the initializer creates a component mapping. The constructor
     /// creates a ComponentTypeProvider as the default mapping, which will be replaced
     /// by more specific mappings if other methods are called.
-
     /// - Parameter creatingState: The EntityState that the mapping will belong to
     /// - Parameter type: The component type for the mapping
     internal init(creatingState: EntityState, type: ComponentInitializable.Type) {
         self.creatingState = creatingState
         componentType = type
         provider = ComponentTypeProvider(type: type)
-        creatingState.providers[componentType.identifier] = provider
+        setProvider(provider)
     }
 
     /// Creates a mapping for the component type to a specific component instance. A
@@ -286,7 +285,6 @@ public class StateComponentMapping {
 /// This is a state machine for an entity. The state machine manages a set of states,
 /// each of which has a set of component providers. When the state machine changes the state, it removes
 /// components associated with the previous state and adds components associated with the new state.
-
 /// - Parameter StateName: Generic hashable state name type
 public class EntityStateMachine<StateName: Hashable> {
     private var states: [StateName: EntityState]
@@ -356,11 +354,8 @@ public class EntityStateMachine<StateName: Hashable> {
             toAdd = newState.providers
         }
 
-        for (identifier, _) in toAdd {
-            guard let component = toAdd[identifier]?.getComponent() else {
-                continue
-            }
-            entity.assign(component)
+        for (_, provider) in toAdd  {
+            entity.assign(provider.getComponent())
         }
         currentState = newState
     }

@@ -386,6 +386,21 @@ class EntityStateMachineTests: XCTestCase {
         XCTAssertTrue(entity.get(component: MockComponent.self) === component3)
     }
 
+    func testCreateStateAddsState() {
+        let state = fsm.createState(name: "test")
+        let component = MockComponent()
+        state.add(MockComponent.self).withInstance(component)
+        fsm.changeState(name: "test")
+        XCTAssertTrue(entity.get(component: MockComponent.self) === component)
+    }
+
+    func testCreateStateDoesNotChangeState() {
+        let state = fsm.createState(name: "test")
+        let component = MockComponent()
+        state.add(MockComponent.self).withInstance(component)
+        XCTAssertNil(entity.get(component: MockComponent.self))
+    }
+
     class MockComponent: ComponentInitializable {
         let value: Int
 
@@ -410,6 +425,8 @@ class EntityStateMachineTests: XCTestCase {
         }
     }
 }
+
+// MARK: -
 
 class StateComponentMappingTests: XCTestCase {
     func testAddReturnsSameMappingForSameComponentType() {

@@ -31,6 +31,8 @@ class ComponentInstanceProviderTests: XCTestCase {
     }
 }
 
+// MARK: -
+
 class ComponentTypeProviderTests: XCTestCase {
     func testProviderReturnsAnInstanceOfType() {
         let provider = ComponentTypeProvider(type: MockComponent.self)
@@ -73,6 +75,8 @@ class ComponentTypeProviderTests: XCTestCase {
         }
     }
 }
+
+// MARK: -
 
 class ComponentSingletonProviderTests: XCTestCase {
     func testProviderReturnsAnInstanceOfType() {
@@ -118,6 +122,8 @@ class ComponentSingletonProviderTests: XCTestCase {
     }
 }
 
+// MARK: -
+
 class DynamicComponentProviderTests: XCTestCase {
     func testProviderReturnsTheInstance() {
         let instance = MockComponent(value: 0)
@@ -152,6 +158,8 @@ class DynamicComponentProviderTests: XCTestCase {
         }
     }
 }
+
+// MARK: -
 
 @testable import class FirebladeECS.EntityState
 
@@ -252,6 +260,17 @@ class EntityStateTests: XCTestCase {
         XCTAssertNotNil(provider)
         XCTAssertTrue(provider === singletonProvider)
     }
+    
+    func testHasReturnsFalseForNotCreatedProvider() {
+        XCTAssertFalse(state.has(MockComponent.self))
+    }
+    
+    func testHasReturnsTrueForCreatedProvider() {
+        state.add(MockComponent.self)
+        XCTAssertTrue(state.has(MockComponent.self))
+    }
+    
+    // TODO: continue here
 
     class MockComponent: ComponentInitializable {
         let value: Int
@@ -267,6 +286,8 @@ class EntityStateTests: XCTestCase {
 
     class MockComponent2: MockComponent {}
 }
+
+// MARK: -
 
 class EntityStateMachineTests: XCTestCase {
     var nexus = Nexus()
@@ -377,6 +398,51 @@ class EntityStateMachineTests: XCTestCase {
         }
     }
 
+    class MockComponent2: ComponentInitializable {
+        let value: String
+
+        init(value: String) {
+            self.value = value
+        }
+
+        required init() {
+            self.value = ""
+        }
+    }
+}
+
+class StateComponentMappingTests: XCTestCase {
+    func testAddReturnsSameMappingForSameComponentType() {
+        let state = EntityState()
+        let mapping = state.add(MockComponent.self)
+        XCTAssertFalse(mapping === mapping.add(MockComponent.self))
+    }
+    
+    func testAddReturnsSameMappingForDifferentComponentTypes() {
+        let state = EntityState()
+        let mapping = state.add(MockComponent.self)
+        XCTAssertFalse(mapping === mapping.add(MockComponent2.self))
+    }
+    
+    func testAddAddsProviderToState() {
+        let state = EntityState()
+        let mapping = state.add(MockComponent.self)
+        mapping.add(MockComponent2.self)
+        XCTAssertTrue(state.has(MockComponent.self))
+    }
+    
+    class MockComponent: ComponentInitializable {
+        let value: Int
+
+        init(value: Int) {
+            self.value = value
+        }
+
+        required init() {
+            self.value = 0
+        }
+    }
+    
     class MockComponent2: ComponentInitializable {
         let value: String
 

@@ -123,7 +123,7 @@ extension ComponentSingletonProvider: ComponentProvider {
 /// This component provider calls a function to get the component instance. The function must
 /// return a single component of the appropriate type.
 public class DynamicComponentProvider {
-    /// Wrapper for closure to make it hashable
+    /// Wrapper for closure to make it hashable via ObjectIdentifier
     public class Closure {
         let provideComponent: () -> Component
 

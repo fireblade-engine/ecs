@@ -113,7 +113,13 @@ extension EntityStateTests {
         ("testAddWithMethodQualifierCreatesDynamicProvider", testAddWithMethodQualifierCreatesDynamicProvider),
         ("testAddWithNoQualifierCreatesTypeProvider", testAddWithNoQualifierCreatesTypeProvider),
         ("testAddWithSingletonQualifierCreatesSingletonProvider", testAddWithSingletonQualifierCreatesSingletonProvider),
-        ("testAddWithTypeQualifierCreatesTypeProvider", testAddWithTypeQualifierCreatesTypeProvider)
+        ("testAddWithTypeQualifierCreatesTypeProvider", testAddWithTypeQualifierCreatesTypeProvider),
+        ("testGetReturnsDynamicProvider", testGetReturnsDynamicProvider),
+        ("testGetReturnsInstanceProvider", testGetReturnsInstanceProvider),
+        ("testGetReturnsPassedProvider", testGetReturnsPassedProvider),
+        ("testGetReturnsSingletonProvider", testGetReturnsSingletonProvider),
+        ("testGetReturnsTypeProvider", testGetReturnsTypeProvider),
+        ("testGetReturnsTypeProviderByDefault", testGetReturnsTypeProviderByDefault)
     ]
 }
 

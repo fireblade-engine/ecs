@@ -270,6 +270,7 @@ public class StateComponentMapping {
     /// so that a fluent interface can be used when configuring entity states.
     /// - Parameter type: The type of component to add a mapping to the state for
     /// - Returns: The new ComponentMapping for that type
+    @discardableResult
     public func add(_ type: ComponentInitializable.Type) -> StateComponentMapping {
         creatingState.add(type)
     }
@@ -327,7 +328,8 @@ public class EntityStateMachine<StateName: Hashable> {
     /// - Parameter name: The name of the state to change to.
     public func changeState(name: StateName) {
         guard let newState = states[name] else {
-            fatalError("Entity state '\(name)' doesn't exist")
+            assertionFailure("Entity state '\(name)' doesn't exist")
+            return
         }
 
         if newState === currentState {

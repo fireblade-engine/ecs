@@ -96,6 +96,7 @@ extension EntityStateMachineTests {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__EntityStateMachineTests = [
+        ("testCallChangeStateWithSameNameLeavesEntityComponentsIntact", testCallChangeStateWithSameNameLeavesEntityComponentsIntact),
         ("testCreateStateAddsState", testCreateStateAddsState),
         ("testCreateStateDoesNotChangeState", testCreateStateDoesNotChangeState),
         ("testEnterSecondStateAddsSecondStatesComponents", testEnterSecondStateAddsSecondStatesComponents),

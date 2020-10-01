@@ -270,8 +270,6 @@ class EntityStateTests: XCTestCase {
         XCTAssertTrue(state.has(MockComponent.self))
     }
 
-    // TODO: continue here
-
     class MockComponent: ComponentInitializable {
         let value: Int
 
@@ -399,6 +397,21 @@ class EntityStateMachineTests: XCTestCase {
         let component = MockComponent()
         state.add(MockComponent.self).withInstance(component)
         XCTAssertNil(entity.get(component: MockComponent.self))
+    }
+
+    func testCallChangeStateWithSameNameLeavesEntityComponentsIntact() {
+        let state = fsm.createState(name: "test")
+        let component1 = MockComponent()
+        let component2 = MockComponent2()
+        state.add(MockComponent.self).withInstance(component1)
+        state.add(MockComponent2.self).withInstance(component2)
+        let name = "test"
+        fsm.changeState(name: name)
+        XCTAssertTrue(entity.get(component: MockComponent.self) === component1)
+        XCTAssertTrue(entity.get(component: MockComponent2.self) === component2)
+        fsm.changeState(name: name)
+        XCTAssertTrue(entity.get(component: MockComponent.self) === component1)
+        XCTAssertTrue(entity.get(component: MockComponent2.self) === component2)
     }
 
     class MockComponent: ComponentInitializable {

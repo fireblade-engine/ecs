@@ -354,7 +354,7 @@ public class EntityStateMachine<StateName: Hashable> {
             toAdd = newState.providers
         }
 
-        for (_, provider) in toAdd  {
+        for (_, provider) in toAdd {
             entity.assign(provider.getComponent())
         }
         currentState = newState

@@ -413,7 +413,7 @@ class EntityStateMachineTests: XCTestCase {
         XCTAssertTrue(entity.get(component: MockComponent.self) === component1)
         XCTAssertTrue(entity.get(component: MockComponent2.self) === component2)
     }
-    
+
     func testGetsDeinitedWhileBeingStronglyReferencedByComponentAssignedToEntity() {
         class Marker: Component {
             let fsm: EntityStateMachine<String>
@@ -421,7 +421,7 @@ class EntityStateMachineTests: XCTestCase {
                 self.fsm = fsm
             }
         }
-        
+
         let nexus = Nexus()
         var entity = nexus.createEntity()
         var markerComponent = Marker(fsm: EntityStateMachine<String>(entity: entity))

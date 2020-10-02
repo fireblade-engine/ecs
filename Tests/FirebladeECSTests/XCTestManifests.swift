@@ -103,7 +103,8 @@ extension EntityStateMachineTests {
         ("testEnterSecondStateDoesNotRemoveOverlappingComponents", testEnterSecondStateDoesNotRemoveOverlappingComponents),
         ("testEnterSecondStateRemovesDifferentComponentsOfSameType", testEnterSecondStateRemovesDifferentComponentsOfSameType),
         ("testEnterSecondStateRemovesFirstStatesComponents", testEnterSecondStateRemovesFirstStatesComponents),
-        ("testEnterStateAddsStatesComponents", testEnterStateAddsStatesComponents)
+        ("testEnterStateAddsStatesComponents", testEnterStateAddsStatesComponents),
+        ("testGetsDeinitedWhileBeingStronglyReferencedByComponentAssignedToEntity", testGetsDeinitedWhileBeingStronglyReferencedByComponentAssignedToEntity)
     ]
 }
 

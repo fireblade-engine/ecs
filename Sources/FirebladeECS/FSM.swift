@@ -192,6 +192,66 @@ public class EntityState {
     }
 }
 
+/// This extension provides ergonomic way to add component mapping and component
+/// provider at once
+extension EntityState {
+    /// Creates a mapping for the component type to a specific component instance.
+    /// ComponentInstanceProvider is used for the mapping.
+    /// - Parameter component: The component instance to use for the mapping
+    /// - Returns: This EntityState, so more modifications can be applied
+    @discardableResult
+    @inline(__always)
+    public func addInstance<C: ComponentInitializable>(_ component: C) -> Self {
+        add(C.self).withInstance(component)
+        return self
+    }
+
+    /// Creates a mapping for the component type to new instances of the provided type.
+    /// A ComponentTypeProvider is used for the mapping.
+    /// - Parameter type: The type of components to be created by this mapping
+    /// - Returns: This EntityState, so more modifications can be applied
+    @inline(__always)
+    @discardableResult
+    public func addType(_ type: ComponentInitializable.Type) -> Self {
+        add(type).withType(type)
+        return self
+    }
+
+    /// Creates a mapping for the component type to a single instance of the provided type.
+    /// The instance is not created until it is first requested.
+    /// A ComponentSingletonProvider is used for the mapping.
+    /// - Parameter type: The type of the single instance to be created.
+    /// - Returns: This EntityState, so more modifications can be applied
+    @inline(__always)
+    @discardableResult
+    public func addSingleton(_ type: ComponentInitializable.Type) -> Self {
+        add(type).withSingleton(type)
+        return self
+    }
+
+    /// Creates a mapping for the component type to a method call.
+    /// A DynamicComponentProvider is used for the mapping.
+    /// - Parameter method: The method to return the component instance
+    /// - Returns: This EntityState, so more modifications can be applied
+    @inline(__always)
+    @discardableResult
+    public func addMethod<C: ComponentInitializable>(type: C.Type, closure: DynamicComponentProvider.Closure) -> Self {
+        add(type).withMethod(closure)
+        return self
+    }
+
+    /// Creates a mapping for the component type to any ComponentProvider.
+    /// - Parameter type: The type of component to be mapped
+    /// - Parameter provider: The component provider to use.
+    /// - Returns: This EntityState, so more modifications can be applied.
+    @inline(__always)
+    @discardableResult
+    public func addProvider<C: ComponentInitializable>(type: C.Type, provider: ComponentProvider) -> Self {
+        add(type).withProvider(provider)
+        return self
+    }
+}
+
 // MARK: -
 
 /// Used by the EntityState class to create the mappings of components to providers via a fluent interface.

@@ -113,6 +113,11 @@ extension EntityStateTests {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__EntityStateTests = [
+        ("testAddInstanceCreatesMappingAndSetsInstanceProviderForInstanceType", testAddInstanceCreatesMappingAndSetsInstanceProviderForInstanceType),
+        ("testAddMethodCreatesMappingAndSetsDynamicProviderForType", testAddMethodCreatesMappingAndSetsDynamicProviderForType),
+        ("testAddProviderCreatesMappingAndSetsProvider", testAddProviderCreatesMappingAndSetsProvider),
+        ("testAddSingletonCreatesMappingAndSetsSingletonProviderForType", testAddSingletonCreatesMappingAndSetsSingletonProviderForType),
+        ("testAddTypeCreatesMappingAndSetsTypeProviderForType", testAddTypeCreatesMappingAndSetsTypeProviderForType),
         ("testAddWithInstanceQualifierCreatesInstanceProvider", testAddWithInstanceQualifierCreatesInstanceProvider),
         ("testAddWithMethodQualifierCreatesDynamicProvider", testAddWithMethodQualifierCreatesDynamicProvider),
         ("testAddWithNoQualifierCreatesTypeProvider", testAddWithNoQualifierCreatesTypeProvider),

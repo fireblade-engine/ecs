@@ -213,7 +213,7 @@ class EntityStateTests: XCTestCase {
         state.add(MockComponent.self).withMethod(dynamickProvider)
         let provider = state.providers[MockComponent.identifier]
         XCTAssertNotNil(provider)
-        XCTAssertTrue(provider is DynamicComponentProvider?)
+        XCTAssertTrue(provider is DynamicComponentProvider<MockComponent>?)
         XCTAssertTrue(provider?.getComponent() is MockComponent)
     }
 
@@ -243,7 +243,7 @@ class EntityStateTests: XCTestCase {
         state.add(MockComponent.self).withMethod(.init { MockComponent() })
         let provider = state.get(MockComponent.self)
         XCTAssertNotNil(provider)
-        XCTAssertTrue(provider is DynamicComponentProvider?)
+        XCTAssertTrue(provider is DynamicComponentProvider<MockComponent>?)
     }
 
     func testGetReturnsTypeProvider() {
@@ -293,8 +293,8 @@ class EntityStateTests: XCTestCase {
 
     func testAddMethodCreatesMappingAndSetsDynamicProviderForType() {
         let component = MockComponent()
-        state.addMethod(type: MockComponent.self, closure: .init { component })
-        XCTAssertTrue(state.get(MockComponent.self) is DynamicComponentProvider?)
+        state.addMethod(closure: .init { component })
+        XCTAssertTrue(state.get(MockComponent.self) is DynamicComponentProvider<MockComponent>?)
         XCTAssertTrue(state.get(MockComponent.self)?.getComponent() === component)
     }
 

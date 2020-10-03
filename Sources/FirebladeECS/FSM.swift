@@ -122,14 +122,14 @@ extension ComponentSingletonProvider: ComponentProvider {
 
 /// This component provider calls a function to get the component instance. The function must
 /// return a single component of the appropriate type.
-public class DynamicComponentProvider {
+public class DynamicComponentProvider<C: Component> {
     /// Wrapper for closure to make it hashable via ObjectIdentifier
     public class Closure {
-        let provideComponent: () -> Component
+        let provideComponent: () -> C
 
         /// Initializer
         /// - Parameter provideComponent: Swift closure returning component of the appropriate type
-        public init(provideComponent: @escaping () -> Component) {
+        public init(provideComponent: @escaping () -> C) {
             self.provideComponent = provideComponent
         }
     }
@@ -231,12 +231,12 @@ extension EntityState {
 
     /// Creates a mapping for the component type to a method call.
     /// A DynamicComponentProvider is used for the mapping.
-    /// - Parameter method: The method to return the component instance
+    /// - Parameter closure: The Closure instance to return the component instance
     /// - Returns: This EntityState, so more modifications can be applied
     @inline(__always)
     @discardableResult
-    public func addMethod<C: ComponentInitializable>(type: C.Type, closure: DynamicComponentProvider.Closure) -> Self {
-        add(type).withMethod(closure)
+    public func addMethod<C: ComponentInitializable>(closure: DynamicComponentProvider<C>.Closure) -> Self {
+        add(C.self).withMethod(closure)
         return self
     }
 
@@ -308,10 +308,10 @@ public class StateComponentMapping {
 
     /// Creates a mapping for the component type to a method call. A
     /// DynamicComponentProvider is used for the mapping.
-    /// - Parameter method: The method to return the component instance
+    /// - Parameter closure: The Closure instance to return the component instance
     /// - Returns: This ComponentMapping, so more modifications can be applied
     @discardableResult
-    public func withMethod(_ closure: DynamicComponentProvider.Closure) -> Self {
+    public func withMethod<C: Component>(_ closure: DynamicComponentProvider<C>.Closure) -> Self {
         setProvider(DynamicComponentProvider(closure: closure))
         return self
     }

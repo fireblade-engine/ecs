@@ -1,10 +1,17 @@
-/// Requires initializer with no arguments.
-/// In case of component - makes sure it can be instantiated by  component provider
-public protocol EmptyInitializable {
+//
+//  FSM.swift
+//  FirebladeECS
+//
+//  Created by Igor Kravchenko on 29.09.2020.
+//
+
+/// Requires initializer with default values.
+/// In case of component - makes sure it can be instantiated by component provider
+public protocol DefaultInitializable {
     init()
 }
 
-public typealias ComponentInitializable = Component & EmptyInitializable
+public typealias ComponentInitializable = Component & DefaultInitializable
 
 /// This is the Interface for component providers. Component providers are used to supply components
 /// for states within an EntityStateMachine. FirebladeECS includes three standard component providers,
@@ -20,7 +27,7 @@ public protocol ComponentProvider {
     /// is not removed. If they are different, the component from the old state is removed
     /// and a component for the new state is added.
 
-    /// - Returns: struct/class instance that confirms to Hashable protocol
+    /// - Returns: struct/class instance that conforms to Hashable protocol
     var identifier: AnyHashable { get }
 
     /// Used to request a component from the provider.
@@ -32,7 +39,7 @@ public protocol ComponentProvider {
 
 /// This component provider always returns the same instance of the component. The instance
 /// is passed to the provider at initialisation.
-public class ComponentInstanceProvider {
+public final class ComponentInstanceProvider {
     private var instance: Component
 
     /// Initializer
@@ -61,7 +68,7 @@ extension ComponentInstanceProvider: ComponentProvider {
 
 /// This component provider always returns a new instance of a component. An instance
 /// is created when requested and is of the type passed in to the initializer.
-public class ComponentTypeProvider {
+public final class ComponentTypeProvider {
     private var componentType: ComponentInitializable.Type
 
     /// Used to compare this provider with others. Any ComponentTypeProvider that returns
@@ -89,7 +96,7 @@ extension ComponentTypeProvider: ComponentProvider {
 
 /// This component provider always returns the same instance of the component. The instance
 /// is created when first required and is of the type passed in to the initializer.
-public class ComponentSingletonProvider {
+public final class ComponentSingletonProvider {
     private lazy var instance: Component = {
         componentType.init()
     }()
@@ -122,9 +129,9 @@ extension ComponentSingletonProvider: ComponentProvider {
 
 /// This component provider calls a function to get the component instance. The function must
 /// return a single component of the appropriate type.
-public class DynamicComponentProvider<C: Component> {
+public final class DynamicComponentProvider<C: Component> {
     /// Wrapper for closure to make it hashable via ObjectIdentifier
-    public class Closure {
+    public final class Closure {
         let provideComponent: () -> C
 
         /// Initializer
@@ -168,26 +175,26 @@ public class EntityState {
 
     public init() {}
 
-    /// Add a new ComponentMapping to this state. The mapping is a utility class that is used to
+    /// Add a new StateComponentMapping to this state. The mapping is a utility class that is used to
     /// map a component type to the provider that provides the component.
     /// - Parameter type: The type of component to be mapped
     /// - Returns: The component mapping to use when setting the provider for the component
     @discardableResult
-    public func add(_ type: ComponentInitializable.Type) -> StateComponentMapping {
+    public func addMapping(for type: ComponentInitializable.Type) -> StateComponentMapping {
         StateComponentMapping(creatingState: self, type: type)
     }
 
     /// Get the ComponentProvider for a particular component type.
     /// - Parameter type: The type of component to get the provider for
     /// - Returns: The ComponentProvider
-    public func get(_ type: ComponentInitializable.Type) -> ComponentProvider? {
+    public func provider(for type: ComponentInitializable.Type) -> ComponentProvider? {
         providers[type.identifier]
     }
 
     /// To determine whether this state has a provider for a specific component type.
     /// - Parameter type: The type of component to look for a provider for
     /// - Returns: true if there is a provider for the given type, false otherwise
-    public func has(_ type: ComponentInitializable.Type) -> Bool {
+    public func hasProvider(for type: ComponentInitializable.Type) -> Bool {
         providers[type.identifier] != nil
     }
 }
@@ -202,7 +209,7 @@ extension EntityState {
     @discardableResult
     @inline(__always)
     public func addInstance<C: ComponentInitializable>(_ component: C) -> Self {
-        add(C.self).withInstance(component)
+        addMapping(for: C.self).withInstance(component)
         return self
     }
 
@@ -213,7 +220,7 @@ extension EntityState {
     @inline(__always)
     @discardableResult
     public func addType(_ type: ComponentInitializable.Type) -> Self {
-        add(type).withType(type)
+        addMapping(for: type).withType(type)
         return self
     }
 
@@ -225,7 +232,7 @@ extension EntityState {
     @inline(__always)
     @discardableResult
     public func addSingleton(_ type: ComponentInitializable.Type) -> Self {
-        add(type).withSingleton(type)
+        addMapping(for: type).withSingleton(type)
         return self
     }
 
@@ -236,7 +243,7 @@ extension EntityState {
     @inline(__always)
     @discardableResult
     public func addMethod<C: ComponentInitializable>(closure: DynamicComponentProvider<C>.Closure) -> Self {
-        add(C.self).withMethod(closure)
+        addMapping(for: C.self).withMethod(closure)
         return self
     }
 
@@ -247,7 +254,7 @@ extension EntityState {
     @inline(__always)
     @discardableResult
     public func addProvider<C: ComponentInitializable>(type: C.Type, provider: ComponentProvider) -> Self {
-        add(type).withProvider(provider)
+        addMapping(for: type).withProvider(provider)
         return self
     }
 }
@@ -325,13 +332,13 @@ public class StateComponentMapping {
         return self
     }
 
-    /// Maps through to the add method of the EntityState that this mapping belongs to
+    /// Maps through to the addMapping method of the EntityState that this mapping belongs to
     /// so that a fluent interface can be used when configuring entity states.
     /// - Parameter type: The type of component to add a mapping to the state for
     /// - Returns: The new ComponentMapping for that type
     @discardableResult
     public func add(_ type: ComponentInitializable.Type) -> StateComponentMapping {
-        creatingState.add(type)
+        creatingState.addMapping(for: type)
     }
 
     private func setProvider(_ provider: ComponentProvider) {
@@ -345,9 +352,9 @@ public class StateComponentMapping {
 /// This is a state machine for an entity. The state machine manages a set of states,
 /// each of which has a set of component providers. When the state machine changes the state, it removes
 /// components associated with the previous state and adds components associated with the new state.
-/// - Parameter StateName: Generic hashable state name type
-public class EntityStateMachine<StateName: Hashable> {
-    private var states: [StateName: EntityState]
+/// - Parameter StateIdentifier: Generic hashable state name type
+public class EntityStateMachine<StateIdentifier: Hashable> {
+    private var states: [StateIdentifier: EntityState]
 
     /// The current state of the state machine.
     private var currentState: EntityState?
@@ -366,7 +373,7 @@ public class EntityStateMachine<StateName: Hashable> {
     /// - Parameter state: The state.
     /// - Returns: This state machine, so methods can be chained.
     @discardableResult
-    public func addState(name: StateName, state: EntityState) -> Self {
+    public func addState(name: StateIdentifier, state: EntityState) -> Self {
         states[name] = state
         return self
     }
@@ -375,7 +382,7 @@ public class EntityStateMachine<StateName: Hashable> {
     /// - Parameter name: The name of the new state - used to identify it later in the changeState method call.
     /// - Returns: The new EntityState object that is the state. This will need to be configured with
     /// the appropriate component providers.
-    public func createState(name: StateName) -> EntityState {
+    public func createState(name: StateIdentifier) -> EntityState {
         let state = EntityState()
         states[name] = state
         return state
@@ -384,7 +391,7 @@ public class EntityStateMachine<StateName: Hashable> {
     /// Change to a new state. The components from the old state will be removed and the components
     /// for the new state will be added.
     /// - Parameter name: The name of the state to change to.
-    public func changeState(name: StateName) {
+    public func changeState(name: StateIdentifier) {
         guard let newState = states[name] else {
             assertionFailure("Entity state '\(name)' doesn't exist")
             return

@@ -1,3 +1,10 @@
+//
+//  FSMTests.swift
+//  FirebladeECSTests
+//
+//  Created by Igor Kravchenko on 29.09.2020.
+//
+
 import FirebladeECS
 import XCTest
 
@@ -59,19 +66,19 @@ class ComponentTypeProviderTests: XCTestCase {
         XCTAssertNotEqual(provider1.identifier, provider2.identifier)
     }
 
-    class MockComponent: Component, EmptyInitializable {
+    class MockComponent: Component, DefaultInitializable {
         var value: String
 
         required init() {
-            self.value = ""
+            value = ""
         }
     }
 
-    class MockComponent2: Component, EmptyInitializable {
+    class MockComponent2: Component, DefaultInitializable {
         var value: Bool
 
         required init() {
-            self.value = false
+            value = false
         }
     }
 }
@@ -105,19 +112,19 @@ class ComponentSingletonProviderTests: XCTestCase {
         XCTAssertNotEqual(provider1.identifier, provider2.identifier)
     }
 
-    class MockComponent: Component, EmptyInitializable {
+    class MockComponent: Component, DefaultInitializable {
         var value: Int
 
         required init() {
-            self.value = 0
+            value = 0
         }
     }
 
-    class MockComponent2: Component, EmptyInitializable {
+    class MockComponent2: Component, DefaultInitializable {
         var value: String
 
         required init() {
-            self.value = ""
+            value = ""
         }
     }
 }
@@ -174,135 +181,135 @@ class EntityStateTests: XCTestCase {
         state = EntityState()
     }
 
-    func testAddWithNoQualifierCreatesTypeProvider() {
-        state.add(MockComponent.self)
+    func testAddMappingWithNoQualifierCreatesTypeProvider() {
+        state.addMapping(for: MockComponent.self)
         let provider = state.providers[MockComponent.identifier]
         XCTAssertNotNil(provider)
         XCTAssertTrue(provider is ComponentTypeProvider?)
         XCTAssertTrue(provider?.getComponent() is MockComponent?)
     }
 
-    func testAddWithTypeQualifierCreatesTypeProvider() {
-        state.add(MockComponent.self).withType(MockComponent2.self)
+    func testAddMappingWithTypeQualifierCreatesTypeProvider() {
+        state.addMapping(for: MockComponent.self).withType(MockComponent2.self)
         let provider = state.providers[MockComponent.identifier]
         XCTAssertNotNil(provider)
         XCTAssertTrue(provider is ComponentTypeProvider?)
         XCTAssertTrue(provider?.getComponent() is MockComponent2?)
     }
 
-    func testAddWithInstanceQualifierCreatesInstanceProvider() {
+    func testAddMappingWithInstanceQualifierCreatesInstanceProvider() {
         let component = MockComponent()
-        state.add(MockComponent.self).withInstance(component)
+        state.addMapping(for: MockComponent.self).withInstance(component)
         let provider = state.providers[MockComponent.identifier]
         XCTAssertTrue(provider is ComponentInstanceProvider?)
         XCTAssertTrue(provider?.getComponent() === component)
     }
 
-    func testAddWithSingletonQualifierCreatesSingletonProvider() {
-        state.add(MockComponent.self).withSingleton(MockComponent.self)
+    func testAddMappingWithSingletonQualifierCreatesSingletonProvider() {
+        state.addMapping(for: MockComponent.self).withSingleton(MockComponent.self)
         let  provider = state.providers[MockComponent.identifier]
         XCTAssertTrue(provider is ComponentSingletonProvider?)
         XCTAssertTrue(provider?.getComponent() is MockComponent?)
     }
 
-    func testAddWithMethodQualifierCreatesDynamicProvider() {
+    func testAddMappingWithMethodQualifierCreatesDynamicProvider() {
         let dynamickProvider = DynamicComponentProvider.Closure {
             MockComponent()
         }
 
-        state.add(MockComponent.self).withMethod(dynamickProvider)
+        state.addMapping(for: MockComponent.self).withMethod(dynamickProvider)
         let provider = state.providers[MockComponent.identifier]
         XCTAssertNotNil(provider)
         XCTAssertTrue(provider is DynamicComponentProvider<MockComponent>?)
         XCTAssertTrue(provider?.getComponent() is MockComponent)
     }
 
-    func testGetReturnsTypeProviderByDefault() {
-        state.add(MockComponent.self)
-        let provider = state.get(MockComponent.self)
+    func testProviderForTypeReturnsTypeProviderByDefault() {
+        state.addMapping(for: MockComponent.self)
+        let provider = state.provider(for: MockComponent.self)
         XCTAssertNotNil(provider)
         XCTAssertTrue(provider is ComponentTypeProvider?)
     }
 
-    func testGetReturnsInstanceProvider() {
+    func testProviderForTypeReturnsInstanceProvider() {
         let component = MockComponent()
-        state.add(MockComponent.self).withInstance(component)
-        let provider = state.get(MockComponent.self)
+        state.addMapping(for: MockComponent.self).withInstance(component)
+        let provider = state.provider(for: MockComponent.self)
         XCTAssertNotNil(provider)
         XCTAssertTrue(provider is ComponentInstanceProvider?)
     }
 
-    func testGetReturnsSingletonProvider() {
-        state.add(MockComponent.self).withSingleton(MockComponent.self)
-        let provider = state.get(MockComponent.self)
+    func testProviderForTypeReturnsSingletonProvider() {
+        state.addMapping(for: MockComponent.self).withSingleton(MockComponent.self)
+        let provider = state.provider(for: MockComponent.self)
         XCTAssertNotNil(provider)
         XCTAssertTrue(provider is ComponentSingletonProvider?)
     }
 
-    func testGetReturnsDynamicProvider() {
-        state.add(MockComponent.self).withMethod(.init { MockComponent() })
-        let provider = state.get(MockComponent.self)
+    func testProviderForTypeReturnsDynamicProvider() {
+        state.addMapping(for: MockComponent.self).withMethod(.init { MockComponent() })
+        let provider = state.provider(for: MockComponent.self)
         XCTAssertNotNil(provider)
         XCTAssertTrue(provider is DynamicComponentProvider<MockComponent>?)
     }
 
-    func testGetReturnsTypeProvider() {
-        state.add(MockComponent.self).withType(MockComponent.self)
-        let provider = state.get(MockComponent.self)
+    func testProviderForTypeReturnsTypeProvider() {
+        state.addMapping(for: MockComponent.self).withType(MockComponent.self)
+        let provider = state.provider(for: MockComponent.self)
         XCTAssertNotNil(provider)
         XCTAssertTrue(provider is ComponentTypeProvider?)
     }
 
-    func testGetReturnsPassedProvider() {
+    func testProviderForTypeReturnsPassedProvider() {
         let singletonProvider = ComponentSingletonProvider(type: MockComponent.self)
-        state.add(MockComponent.self).withProvider(singletonProvider)
-        let provider = state.get(MockComponent.self) as? ComponentSingletonProvider
+        state.addMapping(for: MockComponent.self).withProvider(singletonProvider)
+        let provider = state.provider(for: MockComponent.self) as? ComponentSingletonProvider
         XCTAssertNotNil(provider)
         XCTAssertTrue(provider === singletonProvider)
     }
 
-    func testHasReturnsFalseForNotCreatedProvider() {
-        XCTAssertFalse(state.has(MockComponent.self))
+    func testHasProviderReturnsFalseForNotCreatedProvider() {
+        XCTAssertFalse(state.hasProvider(for: MockComponent.self))
     }
 
-    func testHasReturnsTrueForCreatedProvider() {
-        state.add(MockComponent.self)
-        XCTAssertTrue(state.has(MockComponent.self))
+    func testHasProviderReturnsTrueForCreatedProvider() {
+        state.addMapping(for: MockComponent.self)
+        XCTAssertTrue(state.hasProvider(for: MockComponent.self))
     }
 
     func testAddInstanceCreatesMappingAndSetsInstanceProviderForInstanceType() {
         let component = MockComponent()
         state.addInstance(component)
-        XCTAssertTrue(state.get(MockComponent.self) is ComponentInstanceProvider?)
-        XCTAssert(state.get(MockComponent.self)?.getComponent() === component)
+        XCTAssertTrue(state.provider(for: MockComponent.self) is ComponentInstanceProvider?)
+        XCTAssert(state.provider(for: MockComponent.self)?.getComponent() === component)
     }
 
     func testAddTypeCreatesMappingAndSetsTypeProviderForType() {
         state.addType(MockComponent.self)
-        XCTAssertTrue(state.get(MockComponent.self) is ComponentTypeProvider?)
-        XCTAssertNotNil(state.get(MockComponent.self)?.getComponent())
-        XCTAssertTrue(state.get(MockComponent.self)?.getComponent() is MockComponent?)
+        XCTAssertTrue(state.provider(for: MockComponent.self) is ComponentTypeProvider?)
+        XCTAssertNotNil(state.provider(for: MockComponent.self)?.getComponent())
+        XCTAssertTrue(state.provider(for: MockComponent.self)?.getComponent() is MockComponent?)
     }
 
     func testAddSingletonCreatesMappingAndSetsSingletonProviderForType() {
         state.addSingleton(MockComponent.self)
-        XCTAssertTrue(state.get(MockComponent.self) is ComponentSingletonProvider?)
-        XCTAssertNotNil(state.get(MockComponent.self)?.getComponent())
-        XCTAssertTrue(state.get(MockComponent.self)?.getComponent() is MockComponent?)
+        XCTAssertTrue(state.provider(for: MockComponent.self) is ComponentSingletonProvider?)
+        XCTAssertNotNil(state.provider(for: MockComponent.self)?.getComponent())
+        XCTAssertTrue(state.provider(for: MockComponent.self)?.getComponent() is MockComponent?)
     }
 
     func testAddMethodCreatesMappingAndSetsDynamicProviderForType() {
         let component = MockComponent()
         state.addMethod(closure: .init { component })
-        XCTAssertTrue(state.get(MockComponent.self) is DynamicComponentProvider<MockComponent>?)
-        XCTAssertTrue(state.get(MockComponent.self)?.getComponent() === component)
+        XCTAssertTrue(state.provider(for: MockComponent.self) is DynamicComponentProvider<MockComponent>?)
+        XCTAssertTrue(state.provider(for: MockComponent.self)?.getComponent() === component)
     }
 
     func testAddProviderCreatesMappingAndSetsProvider() {
         let provider = ComponentSingletonProvider(type: MockComponent.self)
         state.addProvider(type: MockComponent.self, provider: provider)
-        XCTAssert(state.get(MockComponent.self) is ComponentSingletonProvider?)
-        XCTAssertNotNil(state.get(MockComponent.self))
+        XCTAssert(state.provider(for: MockComponent.self) is ComponentSingletonProvider?)
+        XCTAssertNotNil(state.provider(for: MockComponent.self))
     }
 
     class MockComponent: ComponentInitializable {
@@ -313,7 +320,7 @@ class EntityStateTests: XCTestCase {
         }
 
         required init() {
-            self.value = 0
+            value = 0
         }
     }
 
@@ -336,7 +343,7 @@ class EntityStateMachineTests: XCTestCase {
     func testEnterStateAddsStatesComponents() {
         let state = EntityState()
         let component = MockComponent()
-        state.add(MockComponent.self).withInstance(component)
+        state.addMapping(for: MockComponent.self).withInstance(component)
         fsm.addState(name: "test", state: state)
         fsm.changeState(name: "test")
         XCTAssertTrue(entity.get(component: MockComponent.self) === component)
@@ -345,12 +352,12 @@ class EntityStateMachineTests: XCTestCase {
     func testEnterSecondStateAddsSecondStatesComponents() {
         let state1 = EntityState()
         let component1 = MockComponent()
-        state1.add(MockComponent.self).withInstance(component1)
+        state1.addMapping(for: MockComponent.self).withInstance(component1)
         fsm.addState(name: "test1", state: state1)
 
         let state2 = EntityState()
         let component2 = MockComponent2()
-        state2.add(MockComponent2.self).withInstance(component2)
+        state2.addMapping(for: MockComponent2.self).withInstance(component2)
         fsm.addState(name: "test2", state: state2)
         fsm.changeState(name: "test2")
 
@@ -360,13 +367,13 @@ class EntityStateMachineTests: XCTestCase {
     func testEnterSecondStateRemovesFirstStatesComponents() {
         let state1 = EntityState()
         let component1 = MockComponent()
-        state1.add(MockComponent.self).withInstance(component1)
+        state1.addMapping(for: MockComponent.self).withInstance(component1)
         fsm.addState(name: "test1", state: state1)
         fsm.changeState(name: "test1")
 
         let state2 = EntityState()
         let component2 = MockComponent2()
-        state2.add(MockComponent2.self).withInstance(component2)
+        state2.addMapping(for: MockComponent2.self).withInstance(component2)
         fsm.addState(name: "test2", state: state2)
         fsm.changeState(name: "test2")
 
@@ -387,14 +394,14 @@ class EntityStateMachineTests: XCTestCase {
         nexus.delegate = delgate
         let state1 = EntityState()
         let component1 = MockComponent()
-        state1.add(MockComponent.self).withInstance(component1)
+        state1.addMapping(for: MockComponent.self).withInstance(component1)
         fsm.addState(name: "test1", state: state1)
         fsm.changeState(name: "test1")
 
         let state2 = EntityState()
         let component2 = MockComponent2()
-        state2.add(MockComponent.self).withInstance(component1)
-        state2.add(MockComponent2.self).withInstance(component2)
+        state2.addMapping(for: MockComponent.self).withInstance(component1)
+        state2.addMapping(for: MockComponent2.self).withInstance(component2)
         fsm.addState(name: "test2", state: state2)
         fsm.changeState(name: "test2")
 
@@ -404,15 +411,15 @@ class EntityStateMachineTests: XCTestCase {
     func testEnterSecondStateRemovesDifferentComponentsOfSameType() {
         let state1 = EntityState()
         let component1 = MockComponent()
-        state1.add(MockComponent.self).withInstance(component1)
+        state1.addMapping(for: MockComponent.self).withInstance(component1)
         fsm.addState(name: "test1", state: state1)
         fsm.changeState(name: "test1")
 
         let state2 = EntityState()
         let component3 = MockComponent()
         let component2 = MockComponent2()
-        state2.add(MockComponent.self).withInstance(component3)
-        state2.add(MockComponent2.self).withInstance(component2)
+        state2.addMapping(for: MockComponent.self).withInstance(component3)
+        state2.addMapping(for: MockComponent2.self).withInstance(component2)
         fsm.addState(name: "test2", state: state2)
         fsm.changeState(name: "test2")
 
@@ -422,7 +429,7 @@ class EntityStateMachineTests: XCTestCase {
     func testCreateStateAddsState() {
         let state = fsm.createState(name: "test")
         let component = MockComponent()
-        state.add(MockComponent.self).withInstance(component)
+        state.addMapping(for: MockComponent.self).withInstance(component)
         fsm.changeState(name: "test")
         XCTAssertTrue(entity.get(component: MockComponent.self) === component)
     }
@@ -430,7 +437,7 @@ class EntityStateMachineTests: XCTestCase {
     func testCreateStateDoesNotChangeState() {
         let state = fsm.createState(name: "test")
         let component = MockComponent()
-        state.add(MockComponent.self).withInstance(component)
+        state.addMapping(for: MockComponent.self).withInstance(component)
         XCTAssertNil(entity.get(component: MockComponent.self))
     }
 
@@ -438,8 +445,8 @@ class EntityStateMachineTests: XCTestCase {
         let state = fsm.createState(name: "test")
         let component1 = MockComponent()
         let component2 = MockComponent2()
-        state.add(MockComponent.self).withInstance(component1)
-        state.add(MockComponent2.self).withInstance(component2)
+        state.addMapping(for: MockComponent.self).withInstance(component1)
+        state.addMapping(for: MockComponent2.self).withInstance(component2)
         let name = "test"
         fsm.changeState(name: name)
         XCTAssertTrue(entity.get(component: MockComponent.self) === component1)
@@ -478,7 +485,7 @@ class EntityStateMachineTests: XCTestCase {
         }
 
         required init() {
-            self.value = 0
+            value = 0
         }
     }
 
@@ -500,21 +507,21 @@ class EntityStateMachineTests: XCTestCase {
 class StateComponentMappingTests: XCTestCase {
     func testAddReturnsSameMappingForSameComponentType() {
         let state = EntityState()
-        let mapping = state.add(MockComponent.self)
+        let mapping = state.addMapping(for: MockComponent.self)
         XCTAssertFalse(mapping === mapping.add(MockComponent.self))
     }
 
     func testAddReturnsSameMappingForDifferentComponentTypes() {
         let state = EntityState()
-        let mapping = state.add(MockComponent.self)
+        let mapping = state.addMapping(for: MockComponent.self)
         XCTAssertFalse(mapping === mapping.add(MockComponent2.self))
     }
 
     func testAddAddsProviderToState() {
         let state = EntityState()
-        let mapping = state.add(MockComponent.self)
+        let mapping = state.addMapping(for: MockComponent.self)
         mapping.add(MockComponent2.self)
-        XCTAssertTrue(state.has(MockComponent.self))
+        XCTAssertTrue(state.hasProvider(for: MockComponent.self))
     }
 
     class MockComponent: ComponentInitializable {

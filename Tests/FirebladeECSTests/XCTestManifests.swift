@@ -114,23 +114,23 @@ extension EntityStateTests {
     // to regenerate.
     static let __allTests__EntityStateTests = [
         ("testAddInstanceCreatesMappingAndSetsInstanceProviderForInstanceType", testAddInstanceCreatesMappingAndSetsInstanceProviderForInstanceType),
+        ("testAddMappingWithInstanceQualifierCreatesInstanceProvider", testAddMappingWithInstanceQualifierCreatesInstanceProvider),
+        ("testAddMappingWithMethodQualifierCreatesDynamicProvider", testAddMappingWithMethodQualifierCreatesDynamicProvider),
+        ("testAddMappingWithNoQualifierCreatesTypeProvider", testAddMappingWithNoQualifierCreatesTypeProvider),
+        ("testAddMappingWithSingletonQualifierCreatesSingletonProvider", testAddMappingWithSingletonQualifierCreatesSingletonProvider),
+        ("testAddMappingWithTypeQualifierCreatesTypeProvider", testAddMappingWithTypeQualifierCreatesTypeProvider),
         ("testAddMethodCreatesMappingAndSetsDynamicProviderForType", testAddMethodCreatesMappingAndSetsDynamicProviderForType),
         ("testAddProviderCreatesMappingAndSetsProvider", testAddProviderCreatesMappingAndSetsProvider),
         ("testAddSingletonCreatesMappingAndSetsSingletonProviderForType", testAddSingletonCreatesMappingAndSetsSingletonProviderForType),
         ("testAddTypeCreatesMappingAndSetsTypeProviderForType", testAddTypeCreatesMappingAndSetsTypeProviderForType),
-        ("testAddWithInstanceQualifierCreatesInstanceProvider", testAddWithInstanceQualifierCreatesInstanceProvider),
-        ("testAddWithMethodQualifierCreatesDynamicProvider", testAddWithMethodQualifierCreatesDynamicProvider),
-        ("testAddWithNoQualifierCreatesTypeProvider", testAddWithNoQualifierCreatesTypeProvider),
-        ("testAddWithSingletonQualifierCreatesSingletonProvider", testAddWithSingletonQualifierCreatesSingletonProvider),
-        ("testAddWithTypeQualifierCreatesTypeProvider", testAddWithTypeQualifierCreatesTypeProvider),
-        ("testGetReturnsDynamicProvider", testGetReturnsDynamicProvider),
-        ("testGetReturnsInstanceProvider", testGetReturnsInstanceProvider),
-        ("testGetReturnsPassedProvider", testGetReturnsPassedProvider),
-        ("testGetReturnsSingletonProvider", testGetReturnsSingletonProvider),
-        ("testGetReturnsTypeProvider", testGetReturnsTypeProvider),
-        ("testGetReturnsTypeProviderByDefault", testGetReturnsTypeProviderByDefault),
-        ("testHasReturnsFalseForNotCreatedProvider", testHasReturnsFalseForNotCreatedProvider),
-        ("testHasReturnsTrueForCreatedProvider", testHasReturnsTrueForCreatedProvider)
+        ("testHasProviderReturnsFalseForNotCreatedProvider", testHasProviderReturnsFalseForNotCreatedProvider),
+        ("testHasProviderReturnsTrueForCreatedProvider", testHasProviderReturnsTrueForCreatedProvider),
+        ("testProviderForTypeReturnsDynamicProvider", testProviderForTypeReturnsDynamicProvider),
+        ("testProviderForTypeReturnsInstanceProvider", testProviderForTypeReturnsInstanceProvider),
+        ("testProviderForTypeReturnsPassedProvider", testProviderForTypeReturnsPassedProvider),
+        ("testProviderForTypeReturnsSingletonProvider", testProviderForTypeReturnsSingletonProvider),
+        ("testProviderForTypeReturnsTypeProvider", testProviderForTypeReturnsTypeProvider),
+        ("testProviderForTypeReturnsTypeProviderByDefault", testProviderForTypeReturnsTypeProviderByDefault)
     ]
 }
 

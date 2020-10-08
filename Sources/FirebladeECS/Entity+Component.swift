@@ -36,8 +36,8 @@ extension Entity {
     public subscript<C: Component, Value>(_ componentKeyPath: WritableKeyPath<C, Value>) -> Value? {
         nonmutating set {
             guard var comp = self.get(component: C.self),
-                let value = newValue else {
-                    return
+                  let value = newValue else {
+                return
             }
             comp[keyPath: componentKeyPath] = value
         }

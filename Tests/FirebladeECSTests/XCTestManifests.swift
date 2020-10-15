@@ -342,7 +342,8 @@ extension NexusTests {
         ("testComponentRetrieval", testComponentRetrieval),
         ("testComponentUniqueness", testComponentUniqueness),
         ("testEntityCreate", testEntityCreate),
-        ("testEntityDestroy", testEntityDestroy)
+        ("testEntityDestroy", testEntityDestroy),
+        ("testEntityIteration", testEntityIteration)
     ]
 }
 

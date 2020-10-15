@@ -133,6 +133,7 @@ extension Entity {
         }
     }
 }
+extension Entity.ComponentsIterator: Sequence { }
 
 extension Entity: Equatable {
     public static func == (lhs: Entity, rhs: Entity) -> Bool {

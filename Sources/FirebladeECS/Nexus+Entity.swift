@@ -33,6 +33,13 @@ extension Nexus {
         componentIdsByEntity.keys.count
     }
 
+    /// Creates an iterator over all entities in the nexus.
+    ///
+    /// Entity order is not guaranteed to stay the same over iterations.
+    public func makeEntitiesIterator() -> EntitiesIterator {
+        EntitiesIterator(nexus: self)
+    }
+
     public func exists(entity entityId: EntityIdentifier) -> Bool {
         componentIdsByEntity.keys.contains(entityId)
     }
@@ -67,3 +74,26 @@ extension Nexus {
         return true
     }
 }
+
+// MARK: - entities iterator
+extension Nexus {
+    public struct EntitiesIterator: IteratorProtocol {
+        private var iterator: AnyIterator<Entity>
+
+        @usableFromInline
+        init(nexus: Nexus) {
+            var iter = nexus.componentIdsByEntity.keys.makeIterator()
+            iterator = AnyIterator {
+                guard let entityId = iter.next() else {
+                    return nil
+                }
+                return Entity(nexus: nexus, id: entityId)
+            }
+        }
+
+        public func next() -> Entity? {
+            iterator.next()
+        }
+    }
+}
+extension Nexus.EntitiesIterator: Sequence { }

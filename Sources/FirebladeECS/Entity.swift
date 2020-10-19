@@ -133,6 +133,7 @@ extension Entity {
         }
     }
 }
+extension Entity.ComponentsIterator: LazySequenceProtocol { }
 extension Entity.ComponentsIterator: Sequence { }
 
 extension Entity: Equatable {

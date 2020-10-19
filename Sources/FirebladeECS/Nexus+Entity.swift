@@ -96,4 +96,5 @@ extension Nexus {
         }
     }
 }
+extension Nexus.EntitiesIterator: LazySequenceProtocol { }
 extension Nexus.EntitiesIterator: Sequence { }

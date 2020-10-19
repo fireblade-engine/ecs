@@ -122,7 +122,7 @@ extension Entity {
         @usableFromInline
         init(nexus: Nexus, entityIdentifier: EntityIdentifier) {
             if let comps = nexus.get(components: entityIdentifier) {
-                iterator = AnyIterator<Component>(comps.compactMap { nexus.get(component: $0, for: entityIdentifier) }.makeIterator())
+                iterator = AnyIterator<Component>(comps.compactMap { nexus.get(unsafe: $0, for: entityIdentifier) }.makeIterator())
             } else {
                 iterator = AnyIterator { nil }
             }

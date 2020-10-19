@@ -107,7 +107,6 @@ class EntityTests: XCTestCase {
         XCTAssertEqual(entity[Position.self]?.x, 1234)
         XCTAssertEqual(entity[Velocity.self]?.a, 123.0)
 
-        
         // remove position component
         entity[Position.self] = nil
         XCTAssertNil(entity[Position.self])
@@ -117,7 +116,7 @@ class EntityTests: XCTestCase {
         XCTAssertTrue(entity[Position.self] === pos)
         entity[Position.self] = nil // remove position component
         XCTAssertNil(entity[Position.self])
-        
+
     }
 }
 

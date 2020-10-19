@@ -34,33 +34,32 @@ extension Nexus {
     }
 
     @inlinable
-    public final func get(component componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
+    public final func get(safe componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
         guard let uniformComponents = componentsByType[componentId], uniformComponents.contains(entityId.index) else {
             return nil
         }
         return uniformComponents.get(at: entityId.index)
     }
-    
-    @inlinable
-    public final func get<C>(componentId: ComponentIdentifier, entityId: EntityIdentifier) -> C? where C: Component {
-        get(component: componentId, for: entityId) as? C
-    }
 
     @inlinable
-    public final func get(unsafeComponent componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component {
+    public final func get(unsafe componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component {
         let uniformComponents = componentsByType[componentId].unsafelyUnwrapped
         return uniformComponents.get(unsafeAt: entityId.index)
     }
 
     @inlinable
-    public final func get<C>(for entityId: EntityIdentifier) -> C? where C: Component {
-        let componentId: ComponentIdentifier = C.identifier
-        return get(componentId: componentId, entityId: entityId)
+    public final func get<C>(safe componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> C? where C: Component {
+        get(safe: componentId, for: entityId) as? C
     }
 
     @inlinable
-    public final func get<C>(unsafeComponentFor entityId: EntityIdentifier) -> C where C: Component {
-        let component: Component = get(unsafeComponent: C.identifier, for: entityId)
+    public final func get<C>(safe entityId: EntityIdentifier) -> C? where C: Component {
+        get(safe: C.identifier, for: entityId)
+    }
+
+    @inlinable
+    public final func get<C>(unsafe entityId: EntityIdentifier) -> C where C: Component {
+        let component: Component = get(unsafe: C.identifier, for: entityId)
         // components are guaranteed to be reference types so unsafeDowncast is applicable here
         return unsafeDowncast(component, to: C.self)
     }
@@ -96,6 +95,4 @@ extension Nexus {
         }
         return removedAll
     }
-
-  
 }

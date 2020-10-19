@@ -8,12 +8,12 @@
 extension Entity {
     @inlinable
     public func get<C>() -> C? where C: Component {
-        nexus.get(for: identifier)
+        nexus.get(safe: identifier)
     }
 
     @inlinable
     public func get<A>(component compType: A.Type = A.self) -> A? where A: Component {
-        nexus.get(for: identifier)
+        nexus.get(safe: identifier)
     }
 
     @inlinable
@@ -33,7 +33,7 @@ extension Entity {
     }
 
     /// Get or set component instance by type via subscript.
-    /// 
+    ///
     /// **Behavior:**
     /// - If `Comp` is a component type that is currently *not* assigned to this entity,
     ///   the new instance will be assigned to this entity.
@@ -57,7 +57,6 @@ extension Entity {
 
     /// Get the value of a component using the key Path to the property in the component.
     /// - Parameter componentKeyPath: The `KeyPath` to the property of the given component.
-    /// - Returns: If `Comp` is assigned to this entity the value at the given `KeyPath` is returned, nil otherwise.
     @inlinable
     public func get<Comp, Value>(valueAt componentKeyPath: KeyPath<Comp, Value>) -> Value where Comp: Component {
         self.get(component: Comp.self)![keyPath: componentKeyPath]
@@ -88,7 +87,7 @@ extension Entity {
             return nexus.assign(component: newInstance, entityId: identifier)
         }
 
-        get(component: Comp.self).unsafelyUnwrapped[keyPath: componentKeyPath] = newValue
+        get(component: Comp.self)![keyPath: componentKeyPath] = newValue
         return true
     }
 

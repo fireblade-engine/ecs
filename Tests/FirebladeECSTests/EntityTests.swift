@@ -101,11 +101,23 @@ class EntityTests: XCTestCase {
         XCTAssertEqual(entity[\Name.name], "AnotherName")
 
         entity[\Velocity.a] = 123
-        XCTAssertNil(entity[\Velocity.a])
+        XCTAssertEqual(entity[\Velocity.a], 123.0)
 
         entity[Position.self]?.x = 1234
         XCTAssertEqual(entity[Position.self]?.x, 1234)
-        XCTAssertNil(entity[Velocity.self]?.a)
+        XCTAssertEqual(entity[Velocity.self]?.a, 123.0)
+
+        
+        // remove position component
+        entity[Position.self] = nil
+        XCTAssertNil(entity[Position.self])
+        entity[Position.self] = pos // assign position comp instance
+        XCTAssertTrue(entity[Position.self] === pos)
+        entity[Position.self] = pos // re-assign
+        XCTAssertTrue(entity[Position.self] === pos)
+        entity[Position.self] = nil // remove position component
+        XCTAssertNil(entity[Position.self])
+        
     }
 }
 

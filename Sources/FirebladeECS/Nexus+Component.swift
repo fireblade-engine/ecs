@@ -21,22 +21,29 @@ extension Nexus {
         componentIdsByEntity[entityId]?.count ?? 0
     }
 
-    public final func assign(component: Component, to entity: Entity) {
+    @discardableResult
+    public final func assign(component: Component, to entity: Entity) -> Bool {
         let entityId: EntityIdentifier = entity.identifier
-        assign(component: component, entityId: entityId)
-        delegate?.nexusEvent(ComponentAdded(component: component.identifier, toEntity: entity.identifier))
+        defer { delegate?.nexusEvent(ComponentAdded(component: component.identifier, toEntity: entity.identifier)) }
+        return assign(component: component, entityId: entityId)
     }
 
-    public final func assign<C>(component: C, to entity: Entity) where C: Component {
+    @discardableResult
+    public final func assign<C>(component: C, to entity: Entity) -> Bool where C: Component {
         assign(component: component, to: entity)
     }
 
     @inlinable
     public final func get(component componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
-        guard let uniformComponents = componentsByType[componentId] else {
+        guard let uniformComponents = componentsByType[componentId], uniformComponents.contains(entityId.index) else {
             return nil
         }
         return uniformComponents.get(at: entityId.index)
+    }
+    
+    @inlinable
+    public final func get<C>(componentId: ComponentIdentifier, entityId: EntityIdentifier) -> C? where C: Component {
+        get(component: componentId, for: entityId) as? C
     }
 
     @inlinable
@@ -90,11 +97,5 @@ extension Nexus {
         return removedAll
     }
 
-    @inlinable
-    public final func get<C>(componentId: ComponentIdentifier, entityId: EntityIdentifier) -> C? where C: Component {
-        guard let uniformComponents = componentsByType[componentId] else {
-            return nil
-        }
-        return uniformComponents.get(at: entityId.index) as? C
-    }
+  
 }

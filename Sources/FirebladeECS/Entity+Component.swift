@@ -32,22 +32,74 @@ extension Entity {
         return (compA, compB, compC)
     }
 
+    /// Get or set component instance by type via subscript.
+    /// 
+    /// **Behavior:**
+    /// - If `Comp` is a component type that is currently *not* assigned to this entity,
+    ///   the new instance will be assigned to this entity.
+    /// - If `Comp` is already assinged to this entity nothing happens.
+    /// - If `Comp` is set to `nil` and an instance of `Comp` is assigned to this entity,
+    ///   `Comp` will be removed from this entity.
     @inlinable
-    public subscript<C: Component, Value>(_ componentKeyPath: WritableKeyPath<C, Value>) -> Value? {
+    public subscript<Comp>(_ componentType: Comp.Type) -> Comp? where Comp: Component {
+        get { self.get(component: componentType) }
         nonmutating set {
-            guard var comp = self.get(component: C.self),
-                  let value = newValue else {
+            guard let newComponent = newValue else {
+                self.remove(Comp.self)
                 return
             }
-            comp[keyPath: componentKeyPath] = value
-        }
-        get {
-            self.get(component: C.self)?[keyPath: componentKeyPath]
+            if self.get(component: componentType) === newComponent {
+                return
+            }
+            self.assign(newComponent)
         }
     }
 
+    /// Get the value of a component using the key Path to the property in the component.
+    /// - Parameter componentKeyPath: The `KeyPath` to the property of the given component.
+    /// - Returns: If `Comp` is assigned to this entity the value at the given `KeyPath` is returned, nil otherwise.
     @inlinable
-    public subscript<C: Component>(_ componentType: C.Type) -> C? {
-        self.get(component: componentType)
+    public func get<Comp, Value>(valueAt componentKeyPath: KeyPath<Comp, Value>) -> Value where Comp: Component {
+        self.get(component: Comp.self)![keyPath: componentKeyPath]
+    }
+
+    /// Get the value of a component using the key Path to the property in the component.
+    @inlinable
+    public subscript<Comp, Value>(_ componentKeyPath: KeyPath<Comp, Value>) -> Value where Comp: Component {
+        self.get(valueAt: componentKeyPath)
+    }
+
+    /// Set the value of a component using the key path to the property in the component.
+    ///
+    /// **Behavior:**
+    /// - If `Comp` is a component type that is currently *not* assigned to this entity,
+    ///   a new instance of `Comp` will be default initialized and `newValue` will be set at the given keyPath.
+    ///
+    /// - Parameters:
+    ///   - newValue: The value to set.
+    ///   - componentKeyPath: The `ReferenceWritableKeyPath` to the property of the given component.
+    /// - Returns: Returns true if an action was performed, false otherwise.
+    @inlinable
+    @discardableResult
+    public func set<Comp, Value>(value newValue: Value, for componentKeyPath: ReferenceWritableKeyPath<Comp, Value>) -> Bool where Comp: Component & DefaultInitializable {
+        guard has(Comp.self) else {
+            let newInstance = Comp()
+            newInstance[keyPath: componentKeyPath] = newValue
+            return nexus.assign(component: newInstance, entityId: identifier)
+        }
+
+        get(component: Comp.self).unsafelyUnwrapped[keyPath: componentKeyPath] = newValue
+        return true
+    }
+
+    /// Set the value of a component using the key path to the property in the component.
+    ///
+    /// **Behavior:**
+    /// - If `Comp` is a component type that is currently *not* assigned to this entity,
+    ///   a new instance of `Comp` will be default initialized and `newValue` will be set at the given keyPath.
+    @inlinable
+    public subscript<Comp, Value>(_ componentKeyPath: ReferenceWritableKeyPath<Comp, Value>) -> Value where Comp: Component & DefaultInitializable {
+        get { self.get(valueAt: componentKeyPath) }
+        nonmutating set { self.set(value: newValue, for: componentKeyPath) }
     }
 }

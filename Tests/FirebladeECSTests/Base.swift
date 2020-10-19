@@ -10,16 +10,24 @@ import FirebladeECS
 class EmptyComponent: Component {
 }
 
-class Name: Component {
+final class Name: Component, DefaultInitializable {
     var name: String
     init(name: String) {
         self.name = name
     }
+
+    convenience init() {
+        self.init(name: "")
+    }
 }
 
-final class Position: Component {
+final class Position: Component, DefaultInitializable {
     var x: Int
     var y: Int
+
+    convenience init() {
+        self.init(x: 0, y: 0)
+    }
 
     init(x: Int, y: Int) {
         self.x = x
@@ -28,10 +36,15 @@ final class Position: Component {
 }
 extension Position: Codable { }
 
-class Velocity: Component {
+final class Velocity: Component, DefaultInitializable {
     var a: Float
+
     init(a: Float) {
         self.a = a
+    }
+
+    convenience init() {
+        self.init(a: 0)
     }
 }
 

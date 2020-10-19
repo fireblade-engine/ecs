@@ -226,6 +226,8 @@ extension UnorderedSparseSet: Sequence {
         }
     }
 }
+extension UnorderedSparseSet.ElementIterator: LazySequenceProtocol { }
+extension UnorderedSparseSet.ElementIterator: Sequence { }
 
 // MARK: - Equatable
 extension UnorderedSparseSet.Storage.Entry: Equatable where Element: Equatable { }

@@ -6,6 +6,7 @@
 //
 
 extension Nexus {
+    @usableFromInline
     func assign<C>(components: C, to entityId: EntityIdentifier) where C: Collection, C.Element == Component {
         var iter = components.makeIterator()
         while let component = iter.next() {
@@ -28,14 +29,15 @@ extension Nexus {
         update(familyMembership: entityId)
     }
 
-    func assign(component: Component, entityId: EntityIdentifier) {
+    @usableFromInline
+    func assign(component: Component, entityId: EntityIdentifier) -> Bool {
         let componentId = component.identifier
 
         // test if component is already assigned
         guard !has(componentId: componentId, entityId: entityId) else {
             delegate?.nexusNonFatalError("ComponentAdd collision: \(entityId) already has a component \(component)")
             assertionFailure("ComponentAdd collision: \(entityId) already has a component \(component)")
-            return
+            return false
         }
 
         // add component instances to uniform component stores
@@ -46,8 +48,10 @@ extension Nexus {
 
         // Update entity membership
         update(familyMembership: entityId)
+        return true
     }
 
+    @usableFromInline
     func insertComponentInstance(_ component: Component, _ componentId: ComponentIdentifier, _ entityId: EntityIdentifier) {
         if componentsByType[componentId] == nil {
             componentsByType[componentId] = ManagedContiguousArray<Component>()
@@ -55,10 +59,12 @@ extension Nexus {
         componentsByType[componentId]?.insert(component, at: entityId.index)
     }
 
+    @usableFromInline
     func assign(_ componentId: ComponentIdentifier, _ entityId: EntityIdentifier) {
         componentIdsByEntity[entityId]!.insert(componentId)
     }
 
+    @usableFromInline
     func update(familyMembership entityId: EntityIdentifier) {
         // FIXME: iterating all families is costly for many families
         // FIXME: this could be parallelized

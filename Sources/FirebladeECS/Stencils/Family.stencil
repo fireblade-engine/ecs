@@ -46,7 +46,7 @@ public struct Requires{{ idx }}<{{ CompParams }}>: FamilyRequirementsManaging wh
 
     public static func components(nexus: Nexus, entityId: EntityIdentifier) -> ({{ CompParams }}) {
         {% for comp in components %}
-        let {{ comp|lowercase }}: {{ comp }} = nexus.get(unsafeComponentFor: entityId)
+        let {{ comp|lowercase }}: {{ comp }} = nexus.get(unsafe: entityId)
         {% endfor %} 
         return ({{ CompsLowercased }})
     }
@@ -54,7 +54,7 @@ public struct Requires{{ idx }}<{{ CompParams }}>: FamilyRequirementsManaging wh
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, {{ CompParams }}) {
         let entity: Entity = Entity(nexus: nexus, id: entityId)
         {% for comp in components %}
-        let {{ comp|lowercase }}: {{ comp }} = nexus.get(unsafeComponentFor: entityId)
+        let {{ comp|lowercase }}: {{ comp }} = nexus.get(unsafe: entityId)
         {% endfor %} 
         return (entity, {{ CompsLowercased }})
     }

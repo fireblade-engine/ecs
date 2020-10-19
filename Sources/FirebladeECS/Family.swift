@@ -94,6 +94,7 @@ extension Family {
 }
 
 extension Family.ComponentsIterator: LazySequenceProtocol { }
+extension Family.ComponentsIterator: Sequence { }
 
 // MARK: - entity iterator
 extension Family {
@@ -120,6 +121,7 @@ extension Family {
 }
 
 extension Family.EntityIterator: LazySequenceProtocol { }
+extension Family.EntityIterator: Sequence { }
 
 // MARK: - entity component iterator
 extension Family {
@@ -146,6 +148,7 @@ extension Family {
 }
 
 extension Family.EntityComponentIterator: LazySequenceProtocol { }
+extension Family.EntityComponentIterator: Sequence { }
 
 // MARK: - member creation
 extension Family {

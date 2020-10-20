@@ -107,29 +107,21 @@ public struct Entity {
     public func makeComponentsIterator() -> ComponentsIterator {
         ComponentsIterator(nexus: nexus, entityIdentifier: identifier)
     }
-
-    /// Returns a sequence of all componenents of this entity.
-    @inlinable
-    public func allComponents() -> AnySequence<Component> {
-        AnySequence { self.makeComponentsIterator() }
-    }
 }
 
 extension Entity {
     public struct ComponentsIterator: IteratorProtocol {
-        private var iterator: AnyIterator<Component>
+        private var iterator: IndexingIterator<([Component])>?
 
         @usableFromInline
         init(nexus: Nexus, entityIdentifier: EntityIdentifier) {
-            if let comps = nexus.get(components: entityIdentifier) {
-                iterator = AnyIterator<Component>(comps.compactMap { nexus.get(unsafe: $0, for: entityIdentifier) }.makeIterator())
-            } else {
-                iterator = AnyIterator { nil }
-            }
+            iterator = nexus.get(components: entityIdentifier)?
+                .map { nexus.get(unsafe: $0, for: entityIdentifier) }
+                .makeIterator()
         }
 
         public mutating func next() -> Component? {
-            iterator.next()
+            iterator?.next()
         }
     }
 }

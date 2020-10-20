@@ -27,6 +27,21 @@ public struct Entity {
         nexus.count(components: identifier)
     }
 
+    @discardableResult
+    public func createEntity() -> Entity {
+        nexus.createEntity()
+    }
+
+    @discardableResult
+    public func createEntity(with components: Component...) -> Entity {
+        createEntity(with: components)
+    }
+
+    @discardableResult
+    public func createEntity<C>(with components: C) -> Entity where C: Collection, C.Element == Component {
+        nexus.createEntity(with: components)
+    }
+
     /// Checks if a component with given type is assigned to this entity.
     /// - Parameter type: the component type.
     public func has<C>(_ type: C.Type) -> Bool where C: Component {

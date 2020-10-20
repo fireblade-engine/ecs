@@ -10,6 +10,29 @@ import FirebladeECS
 class EmptyComponent: Component {
 }
 
+final class Optionals: Component, DefaultInitializable {
+    var int: Int?
+    var float: Float?
+    var string: String?
+
+    convenience init() {
+        self.init(nil, nil, nil)
+    }
+
+    init(_ int: Int?, _ float: Float?, _ string: String?) {
+        self.int = int
+        self.float = float
+        self.string = string
+    }
+}
+extension Optionals: Equatable {
+    static func == (lhs: Optionals, rhs: Optionals) -> Bool {
+        lhs.int == rhs.int &&
+            lhs.float == rhs.float &&
+            lhs.string == rhs.string
+    }
+}
+
 final class Name: Component, DefaultInitializable {
     var name: String
     init(name: String) {

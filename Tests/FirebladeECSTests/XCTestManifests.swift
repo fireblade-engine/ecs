@@ -140,6 +140,9 @@ extension EntityTests {
     // to regenerate.
     static let __allTests__EntityTests = [
         ("testAllComponentsOfEntity", testAllComponentsOfEntity),
+        ("testComponentsIteration", testComponentsIteration),
+        ("testEntityCreationIntrinsic", testEntityCreationIntrinsic),
+        ("testEntityDescriptions", testEntityDescriptions),
         ("testEntityEquality", testEntityEquality),
         ("testEntityIdentifierAndIndex", testEntityIdentifierAndIndex),
         ("testEntityIdGenerator", testEntityIdGenerator),

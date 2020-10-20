@@ -33,6 +33,11 @@ extension Nexus {
         assign(component: component, to: entity)
     }
 
+    @discardableResult
+    public final func assign<C>(components: C, to entity: Entity) -> Bool where C: Collection, C.Element == Component {
+        assign(components: components, to: entity.identifier)
+    }
+
     @inlinable
     public final func get(safe componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
         guard let uniformComponents = componentsByType[componentId], uniformComponents.contains(entityId.index) else {

@@ -7,7 +7,8 @@
 
 extension Nexus {
     @usableFromInline
-    func assign<C>(components: C, to entityId: EntityIdentifier) where C: Collection, C.Element == Component {
+    @discardableResult
+    func assign<C>(components: C, to entityId: EntityIdentifier) -> Bool where C: Collection, C.Element == Component {
         var iter = components.makeIterator()
         while let component = iter.next() {
             let componentId = component.identifier
@@ -15,7 +16,7 @@ extension Nexus {
             guard !has(componentId: componentId, entityId: entityId) else {
                 delegate?.nexusNonFatalError("ComponentAdd collision: \(entityId) already has a component \(component)")
                 assertionFailure("ComponentAdd collision: \(entityId) already has a component \(component)")
-                return
+                return false
             }
 
             // add component instances to uniform component stores
@@ -27,6 +28,7 @@ extension Nexus {
 
         // Update entity membership
         update(familyMembership: entityId)
+        return true
     }
 
     @usableFromInline

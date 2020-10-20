@@ -63,9 +63,7 @@ public struct Entity {
     /// - Parameter components: one or more components.
     @discardableResult
     public func assign(_ components: Component...) -> Entity {
-        for component: Component in components {
-            assign(component)
-        }
+        assign(components)
         return self
     }
 
@@ -81,7 +79,13 @@ public struct Entity {
     /// - Parameter component: the typed component.
     @discardableResult
     public func assign<C>(_ component: C) -> Entity where C: Component {
-        nexus.assign(component: component, to: self)
+        assign(component)
+        return self
+    }
+
+    @discardableResult
+    public func assign<C>(_ components: C) -> Entity where C: Collection, C.Element == Component {
+        nexus.assign(components: components, to: self)
         return self
     }
 

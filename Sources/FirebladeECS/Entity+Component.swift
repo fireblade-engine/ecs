@@ -56,6 +56,8 @@ extension Entity {
     }
 
     /// Get the value of a component using the key Path to the property in the component.
+    ///
+    /// A `Comp` instance must be assigned to this entity!
     /// - Parameter componentKeyPath: The `KeyPath` to the property of the given component.
     @inlinable
     public func get<Comp, Value>(valueAt componentKeyPath: KeyPath<Comp, Value>) -> Value where Comp: Component {
@@ -63,8 +65,23 @@ extension Entity {
     }
 
     /// Get the value of a component using the key Path to the property in the component.
+    ///
+    /// A `Comp` instance must be assigned to this entity!
+    /// - Parameter componentKeyPath: The `KeyPath` to the property of the given component.
+    @inlinable
+    public func get<Comp, Value>(valueAt componentKeyPath: KeyPath<Comp, Value?>) -> Value? where Comp: Component {
+        self.get(component: Comp.self)![keyPath: componentKeyPath]
+    }
+
+    /// Get the value of a component using the key Path to the property in the component.
     @inlinable
     public subscript<Comp, Value>(_ componentKeyPath: KeyPath<Comp, Value>) -> Value where Comp: Component {
+        self.get(valueAt: componentKeyPath)
+    }
+
+    /// Get the value of a component using the key Path to the property in the component.
+    @inlinable
+    public subscript<Comp, Value>(_ componentKeyPath: KeyPath<Comp, Value?>) -> Value? where Comp: Component {
         self.get(valueAt: componentKeyPath)
     }
 
@@ -96,8 +113,42 @@ extension Entity {
     /// **Behavior:**
     /// - If `Comp` is a component type that is currently *not* assigned to this entity,
     ///   a new instance of `Comp` will be default initialized and `newValue` will be set at the given keyPath.
+    ///
+    /// - Parameters:
+    ///   - newValue: The value to set.
+    ///   - componentKeyPath: The `ReferenceWritableKeyPath` to the property of the given component.
+    /// - Returns: Returns true if an action was performed, false otherwise.
+    @inlinable
+    @discardableResult
+    public func set<Comp, Value>(value newValue: Value?, for componentKeyPath: ReferenceWritableKeyPath<Comp, Value?>) -> Bool where Comp: Component & DefaultInitializable {
+        guard has(Comp.self) else {
+            let newInstance = Comp()
+            newInstance[keyPath: componentKeyPath] = newValue
+            return nexus.assign(component: newInstance, entityId: identifier)
+        }
+
+        get(component: Comp.self)![keyPath: componentKeyPath] = newValue
+        return true
+    }
+
+    /// Set the value of a component using the key path to the property in the component.
+    ///
+    /// **Behavior:**
+    /// - If `Comp` is a component type that is currently *not* assigned to this entity,
+    ///   a new instance of `Comp` will be default initialized and `newValue` will be set at the given keyPath.
     @inlinable
     public subscript<Comp, Value>(_ componentKeyPath: ReferenceWritableKeyPath<Comp, Value>) -> Value where Comp: Component & DefaultInitializable {
+        get { self.get(valueAt: componentKeyPath) }
+        nonmutating set { self.set(value: newValue, for: componentKeyPath) }
+    }
+
+    /// Set the value of a component using the key path to the property in the component.
+    ///
+    /// **Behavior:**
+    /// - If `Comp` is a component type that is currently *not* assigned to this entity,
+    ///   a new instance of `Comp` will be default initialized and `newValue` will be set at the given keyPath.
+    @inlinable
+    public subscript<Comp, Value>(_ componentKeyPath: ReferenceWritableKeyPath<Comp, Value?>) -> Value? where Comp: Component & DefaultInitializable {
         get { self.get(valueAt: componentKeyPath) }
         nonmutating set { self.set(value: newValue, for: componentKeyPath) }
     }

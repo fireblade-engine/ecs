@@ -76,6 +76,6 @@ jobs:
       - name: Swift version
         run: swift --version
       - name: Build
-        uses: swiftwasm/swiftwasm-action@master
+        uses: swiftwasm/swiftwasm-action@main
         with:
           shell-action: swift build --triple wasm32-unknown-wasi

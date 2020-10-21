@@ -10,16 +10,47 @@ import FirebladeECS
 class EmptyComponent: Component {
 }
 
-class Name: Component {
+final class Optionals: Component, DefaultInitializable {
+    var int: Int?
+    var float: Float?
+    var string: String?
+
+    convenience init() {
+        self.init(nil, nil, nil)
+    }
+
+    init(_ int: Int?, _ float: Float?, _ string: String?) {
+        self.int = int
+        self.float = float
+        self.string = string
+    }
+}
+extension Optionals: Equatable {
+    static func == (lhs: Optionals, rhs: Optionals) -> Bool {
+        lhs.int == rhs.int &&
+            lhs.float == rhs.float &&
+            lhs.string == rhs.string
+    }
+}
+
+final class Name: Component, DefaultInitializable {
     var name: String
     init(name: String) {
         self.name = name
     }
+
+    convenience init() {
+        self.init(name: "")
+    }
 }
 
-final class Position: Component {
+final class Position: Component, DefaultInitializable {
     var x: Int
     var y: Int
+
+    convenience init() {
+        self.init(x: 0, y: 0)
+    }
 
     init(x: Int, y: Int) {
         self.x = x
@@ -28,10 +59,15 @@ final class Position: Component {
 }
 extension Position: Codable { }
 
-class Velocity: Component {
+final class Velocity: Component, DefaultInitializable {
     var a: Float
+
     init(a: Float) {
         self.a = a
+    }
+
+    convenience init() {
+        self.init(a: 0)
     }
 }
 

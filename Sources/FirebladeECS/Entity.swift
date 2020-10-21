@@ -27,6 +27,21 @@ public struct Entity {
         nexus.count(components: identifier)
     }
 
+    @discardableResult
+    public func createEntity() -> Entity {
+        nexus.createEntity()
+    }
+
+    @discardableResult
+    public func createEntity(with components: Component...) -> Entity {
+        createEntity(with: components)
+    }
+
+    @discardableResult
+    public func createEntity<C>(with components: C) -> Entity where C: Collection, C.Element == Component {
+        nexus.createEntity(with: components)
+    }
+
     /// Checks if a component with given type is assigned to this entity.
     /// - Parameter type: the component type.
     public func has<C>(_ type: C.Type) -> Bool where C: Component {
@@ -48,9 +63,7 @@ public struct Entity {
     /// - Parameter components: one or more components.
     @discardableResult
     public func assign(_ components: Component...) -> Entity {
-        for component: Component in components {
-            assign(component)
-        }
+        assign(components)
         return self
     }
 
@@ -66,7 +79,13 @@ public struct Entity {
     /// - Parameter component: the typed component.
     @discardableResult
     public func assign<C>(_ component: C) -> Entity where C: Component {
-        nexus.assign(component: component, to: self)
+        assign(component)
+        return self
+    }
+
+    @discardableResult
+    public func assign<C>(_ components: C) -> Entity where C: Collection, C.Element == Component {
+        nexus.assign(components: components, to: self)
         return self
     }
 
@@ -107,32 +126,26 @@ public struct Entity {
     public func makeComponentsIterator() -> ComponentsIterator {
         ComponentsIterator(nexus: nexus, entityIdentifier: identifier)
     }
-
-    /// Returns a sequence of all componenents of this entity.
-    @inlinable
-    public func allComponents() -> AnySequence<Component> {
-        AnySequence { self.makeComponentsIterator() }
-    }
 }
 
 extension Entity {
     public struct ComponentsIterator: IteratorProtocol {
-        private var iterator: AnyIterator<Component>
+        private var iterator: IndexingIterator<([Component])>?
 
         @usableFromInline
         init(nexus: Nexus, entityIdentifier: EntityIdentifier) {
-            if let comps = nexus.get(components: entityIdentifier) {
-                iterator = AnyIterator<Component>(comps.compactMap { nexus.get(component: $0, for: entityIdentifier) }.makeIterator())
-            } else {
-                iterator = AnyIterator { nil }
-            }
+            iterator = nexus.get(components: entityIdentifier)?
+                .map { nexus.get(unsafe: $0, for: entityIdentifier) }
+                .makeIterator()
         }
 
         public mutating func next() -> Component? {
-            iterator.next()
+            iterator?.next()
         }
     }
 }
+extension Entity.ComponentsIterator: LazySequenceProtocol { }
+extension Entity.ComponentsIterator: Sequence { }
 
 extension Entity: Equatable {
     public static func == (lhs: Entity, rhs: Entity) -> Bool {

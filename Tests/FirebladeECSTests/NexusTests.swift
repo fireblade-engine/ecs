@@ -155,4 +155,15 @@ class NexusTests: XCTestCase {
         XCTAssert(pB.x != pA.x)
         XCTAssert(pB.y != pA.y)
     }
+
+    func testEntityIteration() {
+        nexus.createEntities(count: 1000) { ctx in Position(x: ctx.index, y: ctx.index) }
+
+        let entityArray = [Entity](nexus.makeEntitiesIterator()).lazy
+
+        XCTAssertEqual(entityArray.count, 1000)
+
+        XCTAssertTrue(entityArray.contains(where: { $0.identifier.index == 0 }))
+        XCTAssertTrue(entityArray.contains(where: { $0.identifier.index == 999 }))
+    }
 }

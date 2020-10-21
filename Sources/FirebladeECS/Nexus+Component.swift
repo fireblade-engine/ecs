@@ -21,39 +21,50 @@ extension Nexus {
         componentIdsByEntity[entityId]?.count ?? 0
     }
 
-    public final func assign(component: Component, to entity: Entity) {
+    @discardableResult
+    public final func assign(component: Component, to entity: Entity) -> Bool {
         let entityId: EntityIdentifier = entity.identifier
-        assign(component: component, entityId: entityId)
-        delegate?.nexusEvent(ComponentAdded(component: component.identifier, toEntity: entity.identifier))
+        defer { delegate?.nexusEvent(ComponentAdded(component: component.identifier, toEntity: entity.identifier)) }
+        return assign(component: component, entityId: entityId)
     }
 
-    public final func assign<C>(component: C, to entity: Entity) where C: Component {
+    @discardableResult
+    public final func assign<C>(component: C, to entity: Entity) -> Bool where C: Component {
         assign(component: component, to: entity)
     }
 
+    @discardableResult
+    public final func assign<C>(components: C, to entity: Entity) -> Bool where C: Collection, C.Element == Component {
+        assign(components: components, to: entity.identifier)
+    }
+
     @inlinable
-    public final func get(component componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
-        guard let uniformComponents = componentsByType[componentId] else {
+    public final func get(safe componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
+        guard let uniformComponents = componentsByType[componentId], uniformComponents.contains(entityId.index) else {
             return nil
         }
         return uniformComponents.get(at: entityId.index)
     }
 
     @inlinable
-    public final func get(unsafeComponent componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component {
+    public final func get(unsafe componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component {
         let uniformComponents = componentsByType[componentId].unsafelyUnwrapped
         return uniformComponents.get(unsafeAt: entityId.index)
     }
 
     @inlinable
-    public final func get<C>(for entityId: EntityIdentifier) -> C? where C: Component {
-        let componentId: ComponentIdentifier = C.identifier
-        return get(componentId: componentId, entityId: entityId)
+    public final func get<C>(safe componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> C? where C: Component {
+        get(safe: componentId, for: entityId) as? C
     }
 
     @inlinable
-    public final func get<C>(unsafeComponentFor entityId: EntityIdentifier) -> C where C: Component {
-        let component: Component = get(unsafeComponent: C.identifier, for: entityId)
+    public final func get<C>(safe entityId: EntityIdentifier) -> C? where C: Component {
+        get(safe: C.identifier, for: entityId)
+    }
+
+    @inlinable
+    public final func get<C>(unsafe entityId: EntityIdentifier) -> C where C: Component {
+        let component: Component = get(unsafe: C.identifier, for: entityId)
         // components are guaranteed to be reference types so unsafeDowncast is applicable here
         return unsafeDowncast(component, to: C.self)
     }
@@ -88,13 +99,5 @@ extension Nexus {
             removedAll = removedAll && remove(component: component, from: entityId)
         }
         return removedAll
-    }
-
-    @inlinable
-    public final func get<C>(componentId: ComponentIdentifier, entityId: EntityIdentifier) -> C? where C: Component {
-        guard let uniformComponents = componentsByType[componentId] else {
-            return nil
-        }
-        return uniformComponents.get(at: entityId.index) as? C
     }
 }

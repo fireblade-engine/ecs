@@ -34,7 +34,7 @@ class EntityTests: XCTestCase {
         entity.assign(name, vel)
 
         let expectedComponents: [Component] = [pos, name, vel]
-        let allComponents = entity.allComponents()
+        let allComponents = Array(entity.makeComponentsIterator())
 
         XCTAssertTrue(allComponents.elementsEqualUnordered(expectedComponents) { $0 === $1 })
     }
@@ -101,11 +101,72 @@ class EntityTests: XCTestCase {
         XCTAssertEqual(entity[\Name.name], "AnotherName")
 
         entity[\Velocity.a] = 123
-        XCTAssertNil(entity[\Velocity.a])
+        XCTAssertEqual(entity[\Velocity.a], 123.0)
 
         entity[Position.self]?.x = 1234
         XCTAssertEqual(entity[Position.self]?.x, 1234)
-        XCTAssertNil(entity[Velocity.self]?.a)
+        XCTAssertEqual(entity[Velocity.self]?.a, 123.0)
+
+        // remove position component
+        entity[Position.self] = nil
+        XCTAssertNil(entity[Position.self])
+        entity[Position.self] = pos // assign position comp instance
+        XCTAssertTrue(entity[Position.self] === pos)
+        entity[Position.self] = pos // re-assign
+        XCTAssertTrue(entity[Position.self] === pos)
+        entity[Position.self] = nil // remove position component
+        XCTAssertNil(entity[Position.self])
+
+        let opts = Optionals(1, 2, "hello")
+        entity[Optionals.self] = opts
+        XCTAssertEqual(entity[Optionals.self], opts)
+
+        entity[\Optionals.float] = nil
+        XCTAssertEqual(entity[\Optionals.float], nil)
+        XCTAssertEqual(entity[\Optionals.int], 1)
+        XCTAssertEqual(entity[\Optionals.string], "hello")
+
+        entity[Optionals.self] = nil
+        XCTAssertNil(entity[Optionals.self])
+        entity[\Optionals.string] = "world"
+        XCTAssertEqual(entity[\Optionals.string], "world")
+
+        entity.assign(Comp1(12))
+        XCTAssertEqual(entity[\Comp1.value], 12)
+    }
+
+    func testComponentsIteration() {
+        let nexus = Nexus()
+        let entity = nexus.createEntity()
+        XCTAssertTrue(Array(entity.makeComponentsIterator()).isEmpty)
+        entity.assign(Position())
+        XCTAssertEqual(Array(entity.makeComponentsIterator()).count, 1)
+    }
+
+    func testEntityCreationIntrinsic() {
+        let nexus = Nexus()
+        let entity = nexus.createEntity()
+
+        let secondEntity = entity.createEntity()
+        XCTAssertNotEqual(secondEntity, entity)
+
+        let thirdEntity = secondEntity.createEntity()
+        XCTAssertNotEqual(secondEntity, thirdEntity)
+        XCTAssertNotEqual(entity, thirdEntity)
+
+        let entityWithComponents = entity.createEntity(with: Position(), Name())
+        XCTAssertTrue(entityWithComponents.has(Position.self))
+        XCTAssertTrue(entityWithComponents.has(Name.self))
+
+        XCTAssertEqual(nexus.numEntities, 4)
+        XCTAssertEqual(nexus.numComponents, 2)
+    }
+
+    func testEntityDescriptions() {
+        let nexus = Nexus()
+        let entt = nexus.createEntity()
+        XCTAssertFalse(entt.description.isEmpty)
+        XCTAssertFalse(entt.debugDescription.isEmpty)
     }
 }
 

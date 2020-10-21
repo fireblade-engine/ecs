@@ -15,8 +15,10 @@ extension Nexus: Encodable {
 
 extension Nexus: Decodable {
     public convenience init(from decoder: Decoder) throws {
+        self.init()
+
         let container = try decoder.singleValueContainer()
         let sNexus = try container.decode(SNexus.self)
-        try self.init(from: sNexus)
+        try deserialize(from: sNexus, into: self)
     }
 }

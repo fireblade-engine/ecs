@@ -10,8 +10,6 @@ import struct Foundation.Data
 
 extension Nexus {
     final func serialize() throws -> SNexus {
-        let version = Version(major: 1, minor: 0, patch: 0)
-
         var componentInstances: [ComponentIdentifier.StableId: SComponent<SNexus>] = [:]
         var entityComponentsMap: [EntityIdentifier: Set<ComponentIdentifier.StableId>] = [:]
 
@@ -32,21 +30,15 @@ extension Nexus {
                       components: componentInstances)
     }
 
-    convenience init(from sNexus: SNexus) throws {
-        let entityIds = sNexus.entities.map { $0.key }.reversed()
-
-        // FIXME: this does not respect the generator of the target nexus!
-        self.init(componentsByType: [:],
-                  componentsByEntity: [:],
-                  entityIdGenerator: DefaultEntityIdGenerator(startProviding: entityIds),
-                  familyMembersByTraits: [:],
-                  codingStrategy: DefaultCodingStrategy())
+    final func deserialize(from sNexus: SNexus, into nexus: Nexus) throws {
+        for freeId in sNexus.entities.map { $0.key }.reversed() {
+            nexus.entityIdGenerator.markUnused(entityId: freeId)
+        }
 
         for componentSet in sNexus.entities.values {
             let entity = self.createEntity()
             for sCompId in componentSet {
                 guard let sComp = sNexus.components[sCompId] else {
-                    // FIXME: we want a dedicated error
                     throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [], debugDescription: "Could not find component instance for \(sCompId)."))
                 }
 

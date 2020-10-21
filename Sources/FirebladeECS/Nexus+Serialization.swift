@@ -20,7 +20,7 @@ extension Nexus {
             let componentIds = self.get(components: entitId) ?? []
 
             for componentId in componentIds {
-                let component = self.get(unsafeComponent: componentId, for: entitId)
+                let component = self.get(unsafe: componentId, for: entitId)
                 let componentStableInstanceHash = ComponentIdentifier.makeStableInstanceHash(component: component, entityId: entitId)
                 componentInstances[componentStableInstanceHash] = SComponent.component(component)
                 entityComponentsMap[entitId]?.insert(componentStableInstanceHash)

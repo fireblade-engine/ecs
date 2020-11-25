@@ -63,7 +63,10 @@ extension Nexus {
 
     @usableFromInline
     func assign(_ componentId: ComponentIdentifier, _ entityId: EntityIdentifier) {
-        componentIdsByEntity[entityId]!.insert(componentId)
+        let (inserted, _) = componentIdsByEntity[entityId]!.insert(componentId)
+        if inserted {
+            delegate?.nexusEvent(ComponentAdded(component: componentId, toEntity: entityId))
+        }
     }
 
     @usableFromInline

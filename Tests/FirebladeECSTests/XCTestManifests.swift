@@ -7,7 +7,7 @@ extension ComponentIdentifierTests {
     // to regenerate.
     static let __allTests__ComponentIdentifierTests = [
         ("testMirrorAsStableIdentifier", testMirrorAsStableIdentifier),
-        ("testStringDescribingAsStableIdentifier", testStringDescribingAsStableIdentifier)
+        ("testStringDescribingAsStableIdentifier", testStringDescribingAsStableIdentifier),
     ]
 }
 
@@ -18,7 +18,7 @@ extension ComponentInstanceProviderTests {
     static let __allTests__ComponentInstanceProviderTests = [
         ("testProviderReturnsTheInstance", testProviderReturnsTheInstance),
         ("testProvidersWithDifferentInstanceHaveDifferentIdentifier", testProvidersWithDifferentInstanceHaveDifferentIdentifier),
-        ("testProvidersWithSameInstanceHaveSameIdentifier", testProvidersWithSameInstanceHaveSameIdentifier)
+        ("testProvidersWithSameInstanceHaveSameIdentifier", testProvidersWithSameInstanceHaveSameIdentifier),
     ]
 }
 
@@ -30,7 +30,7 @@ extension ComponentSingletonProviderTests {
         ("testProviderReturnsAnInstanceOfType", testProviderReturnsAnInstanceOfType),
         ("testProviderReturnsSameInstanceEachTime", testProviderReturnsSameInstanceEachTime),
         ("testProvidersWithDifferentTypeHaveDifferentIdentifier", testProvidersWithDifferentTypeHaveDifferentIdentifier),
-        ("testProvidersWithSameTypeHaveDifferentIdentifier", testProvidersWithSameTypeHaveDifferentIdentifier)
+        ("testProvidersWithSameTypeHaveDifferentIdentifier", testProvidersWithSameTypeHaveDifferentIdentifier),
     ]
 }
 
@@ -39,7 +39,7 @@ extension ComponentTests {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__ComponentTests = [
-        ("testComponentIdentifier", testComponentIdentifier)
+        ("testComponentIdentifier", testComponentIdentifier),
     ]
 }
 
@@ -51,7 +51,7 @@ extension ComponentTypeProviderTests {
         ("testProviderReturnsAnInstanceOfType", testProviderReturnsAnInstanceOfType),
         ("testProviderReturnsNewInstanceEachTime", testProviderReturnsNewInstanceEachTime),
         ("testProvidersWithDifferentTypeHaveDifferentIdentifier", testProvidersWithDifferentTypeHaveDifferentIdentifier),
-        ("testProvidersWithSameTypeHaveSameIdentifier", testProvidersWithSameTypeHaveSameIdentifier)
+        ("testProvidersWithSameTypeHaveSameIdentifier", testProvidersWithSameTypeHaveSameIdentifier),
     ]
 }
 
@@ -62,7 +62,7 @@ extension DynamicComponentProviderTests {
     static let __allTests__DynamicComponentProviderTests = [
         ("testProviderReturnsTheInstance", testProviderReturnsTheInstance),
         ("testProvidersWithDifferentMethodsHaveDifferentIdentifier", testProvidersWithDifferentMethodsHaveDifferentIdentifier),
-        ("testProvidersWithSameMethodHaveSameIdentifier", testProvidersWithSameMethodHaveSameIdentifier)
+        ("testProvidersWithSameMethodHaveSameIdentifier", testProvidersWithSameMethodHaveSameIdentifier),
     ]
 }
 
@@ -74,7 +74,7 @@ extension EntityCreationTests {
         ("testBulkCreateEntitiesMultipleComponents", testBulkCreateEntitiesMultipleComponents),
         ("testBulkCreateEntitiesOneComponent", testBulkCreateEntitiesOneComponent),
         ("testCreateEntityMultipleComponents", testCreateEntityMultipleComponents),
-        ("testCreateEntityOneComponent", testCreateEntityOneComponent)
+        ("testCreateEntityOneComponent", testCreateEntityOneComponent),
     ]
 }
 
@@ -87,7 +87,7 @@ extension EntityIdGenTests {
         ("testGeneratorDefaultInit", testGeneratorDefaultInit),
         ("testGeneratorMarkUnused", testGeneratorMarkUnused),
         ("testGeneratorWithDefaultEmptyCollection", testGeneratorWithDefaultEmptyCollection),
-        ("testLinearIncrement", testLinearIncrement)
+        ("testLinearIncrement", testLinearIncrement),
     ]
 }
 
@@ -104,7 +104,7 @@ extension EntityStateMachineTests {
         ("testEnterSecondStateRemovesDifferentComponentsOfSameType", testEnterSecondStateRemovesDifferentComponentsOfSameType),
         ("testEnterSecondStateRemovesFirstStatesComponents", testEnterSecondStateRemovesFirstStatesComponents),
         ("testEnterStateAddsStatesComponents", testEnterStateAddsStatesComponents),
-        ("testGetsDeinitedWhileBeingStronglyReferencedByComponentAssignedToEntity", testGetsDeinitedWhileBeingStronglyReferencedByComponentAssignedToEntity)
+        ("testGetsDeinitedWhileBeingStronglyReferencedByComponentAssignedToEntity", testGetsDeinitedWhileBeingStronglyReferencedByComponentAssignedToEntity),
     ]
 }
 
@@ -130,7 +130,7 @@ extension EntityStateTests {
         ("testProviderForTypeReturnsPassedProvider", testProviderForTypeReturnsPassedProvider),
         ("testProviderForTypeReturnsSingletonProvider", testProviderForTypeReturnsSingletonProvider),
         ("testProviderForTypeReturnsTypeProvider", testProviderForTypeReturnsTypeProvider),
-        ("testProviderForTypeReturnsTypeProviderByDefault", testProviderForTypeReturnsTypeProviderByDefault)
+        ("testProviderForTypeReturnsTypeProviderByDefault", testProviderForTypeReturnsTypeProviderByDefault),
     ]
 }
 
@@ -147,7 +147,7 @@ extension EntityTests {
         ("testEntityIdentifierAndIndex", testEntityIdentifierAndIndex),
         ("testEntityIdGenerator", testEntityIdGenerator),
         ("testEntitySubscripts", testEntitySubscripts),
-        ("testRemoveAllComponentsFromEntity", testRemoveAllComponentsFromEntity)
+        ("testRemoveAllComponentsFromEntity", testRemoveAllComponentsFromEntity),
     ]
 }
 
@@ -163,7 +163,7 @@ extension Family1Tests {
         ("testFamilyEncoding", testFamilyEncoding),
         ("testFamilyFailDecoding", testFamilyFailDecoding),
         ("testMemberCreation", testMemberCreation),
-        ("testMemberCreationBuilder", testMemberCreationBuilder)
+        ("testMemberCreationBuilder", testMemberCreationBuilder),
     ]
 }
 
@@ -179,7 +179,7 @@ extension Family2Tests {
         ("testFamilyEncoding", testFamilyEncoding),
         ("testFamilyFailDecoding", testFamilyFailDecoding),
         ("testMemberCreation", testMemberCreation),
-        ("testMemberCreationBuilder", testMemberCreationBuilder)
+        ("testMemberCreationBuilder", testMemberCreationBuilder),
     ]
 }
 
@@ -195,7 +195,7 @@ extension Family3Tests {
         ("testFamilyEncoding", testFamilyEncoding),
         ("testFamilyFailDecoding", testFamilyFailDecoding),
         ("testMemberCreation", testMemberCreation),
-        ("testMemberCreationBuilder", testMemberCreationBuilder)
+        ("testMemberCreationBuilder", testMemberCreationBuilder),
     ]
 }
 
@@ -211,7 +211,7 @@ extension Family4Tests {
         ("testFamilyEncoding", testFamilyEncoding),
         ("testFamilyFailDecoding", testFamilyFailDecoding),
         ("testMemberCreation", testMemberCreation),
-        ("testMemberCreationBuilder", testMemberCreationBuilder)
+        ("testMemberCreationBuilder", testMemberCreationBuilder),
     ]
 }
 
@@ -227,7 +227,7 @@ extension Family5Tests {
         ("testFamilyEncoding", testFamilyEncoding),
         ("testFamilyFailDecoding", testFamilyFailDecoding),
         ("testMemberCreation", testMemberCreation),
-        ("testMemberCreationBuilder", testMemberCreationBuilder)
+        ("testMemberCreationBuilder", testMemberCreationBuilder),
     ]
 }
 
@@ -243,7 +243,7 @@ extension Family6Tests {
         ("testFamilyEncoding", testFamilyEncoding),
         ("testFamilyFailDecoding", testFamilyFailDecoding),
         ("testMemberCreation", testMemberCreation),
-        ("testMemberCreationBuilder", testMemberCreationBuilder)
+        ("testMemberCreationBuilder", testMemberCreationBuilder),
     ]
 }
 
@@ -259,7 +259,7 @@ extension Family7Tests {
         ("testFamilyEncoding", testFamilyEncoding),
         ("testFamilyFailDecoding", testFamilyFailDecoding),
         ("testMemberCreation", testMemberCreation),
-        ("testMemberCreationBuilder", testMemberCreationBuilder)
+        ("testMemberCreationBuilder", testMemberCreationBuilder),
     ]
 }
 
@@ -275,7 +275,7 @@ extension Family8Tests {
         ("testFamilyEncoding", testFamilyEncoding),
         ("testFamilyFailDecoding", testFamilyFailDecoding),
         ("testMemberCreation", testMemberCreation),
-        ("testMemberCreationBuilder", testMemberCreationBuilder)
+        ("testMemberCreationBuilder", testMemberCreationBuilder),
     ]
 }
 
@@ -294,7 +294,7 @@ extension FamilyCodingTests {
         ("testEncodeFamily4", testEncodeFamily4),
         ("testEncodeFamily5", testEncodeFamily5),
         ("testEncodingFamily1", testEncodingFamily1),
-        ("testFailDecodingFamily", testFailDecodingFamily)
+        ("testFailDecodingFamily", testFailDecodingFamily),
     ]
 }
 
@@ -311,7 +311,7 @@ extension FamilyTests {
         ("testFamilyExchange", testFamilyExchange),
         ("testFamilyLateMember", testFamilyLateMember),
         ("testFamilyMemberBasicIteration", testFamilyMemberBasicIteration),
-        ("testFamilyReuse", testFamilyReuse)
+        ("testFamilyReuse", testFamilyReuse),
     ]
 }
 
@@ -321,7 +321,7 @@ extension FamilyTraitsTests {
     // to regenerate.
     static let __allTests__FamilyTraitsTests = [
         ("testTraitCommutativity", testTraitCommutativity),
-        ("testTraitMatching", testTraitMatching)
+        ("testTraitMatching", testTraitMatching),
     ]
 }
 
@@ -331,7 +331,21 @@ extension HashingTests {
     // to regenerate.
     static let __allTests__HashingTests = [
         ("testCollisionsInCritialRange", testCollisionsInCritialRange),
-        ("testStringHashes", testStringHashes)
+        ("testStringHashes", testStringHashes),
+    ]
+}
+
+extension NexusEventDelegateTests {
+    // DO NOT MODIFY: This is autogenerated, use:
+    //   `swift test --generate-linuxmain`
+    // to regenerate.
+    static let __allTests__NexusEventDelegateTests = [
+        ("testEventComponentAdded", testEventComponentAdded),
+        ("testEventComponentRemoved", testEventComponentRemoved),
+        ("testEventEntityCreated", testEventEntityCreated),
+        ("testEventEntityDestroyed", testEventEntityDestroyed),
+        ("testFamilyMemberRemoved", testFamilyMemberRemoved),
+        ("testFamilyMemeberAdded", testFamilyMemeberAdded),
     ]
 }
 
@@ -346,7 +360,7 @@ extension NexusTests {
         ("testComponentUniqueness", testComponentUniqueness),
         ("testEntityCreate", testEntityCreate),
         ("testEntityDestroy", testEntityDestroy),
-        ("testEntityIteration", testEntityIteration)
+        ("testEntityIteration", testEntityIteration),
     ]
 }
 
@@ -368,7 +382,7 @@ extension SingleTests {
         ("testSingleCreation", testSingleCreation),
         ("testSingleCreationOnExistingFamilyMember", testSingleCreationOnExistingFamilyMember),
         ("testSingleEntityAndComponentCreation", testSingleEntityAndComponentCreation),
-        ("testSingleReuse", testSingleReuse)
+        ("testSingleReuse", testSingleReuse),
     ]
 }
 
@@ -390,7 +404,7 @@ extension SparseSetTests {
         ("testSparseSetRemoveAndAdd", testSparseSetRemoveAndAdd),
         ("testSparseSetRemoveNonPresent", testSparseSetRemoveNonPresent),
         ("testStartEndIndex", testStartEndIndex),
-        ("testSubscript", testSubscript)
+        ("testSubscript", testSubscript),
     ]
 }
 
@@ -401,7 +415,7 @@ extension StateComponentMappingTests {
     static let __allTests__StateComponentMappingTests = [
         ("testAddAddsProviderToState", testAddAddsProviderToState),
         ("testAddReturnsSameMappingForDifferentComponentTypes", testAddReturnsSameMappingForDifferentComponentTypes),
-        ("testAddReturnsSameMappingForSameComponentType", testAddReturnsSameMappingForSameComponentType)
+        ("testAddReturnsSameMappingForSameComponentType", testAddReturnsSameMappingForSameComponentType),
     ]
 }
 
@@ -410,7 +424,7 @@ extension SystemsTests {
     //   `swift test --generate-linuxmain`
     // to regenerate.
     static let __allTests__SystemsTests = [
-        ("testSystemsUpdate", testSystemsUpdate)
+        ("testSystemsUpdate", testSystemsUpdate),
     ]
 }
 
@@ -439,12 +453,13 @@ public func __allTests() -> [XCTestCaseEntry] {
         testCase(FamilyTests.__allTests__FamilyTests),
         testCase(FamilyTraitsTests.__allTests__FamilyTraitsTests),
         testCase(HashingTests.__allTests__HashingTests),
+        testCase(NexusEventDelegateTests.__allTests__NexusEventDelegateTests),
         testCase(NexusTests.__allTests__NexusTests),
         testCase(SerializationTests.__allTests__SerializationTests),
         testCase(SingleTests.__allTests__SingleTests),
         testCase(SparseSetTests.__allTests__SparseSetTests),
         testCase(StateComponentMappingTests.__allTests__StateComponentMappingTests),
-        testCase(SystemsTests.__allTests__SystemsTests)
+        testCase(SystemsTests.__allTests__SystemsTests),
     ]
 }
 #endif

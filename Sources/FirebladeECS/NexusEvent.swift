@@ -34,13 +34,3 @@ public struct FamilyMemberRemoved: NexusEvent {
     public let member: EntityIdentifier
     public let from: FamilyTraitSet
 }
-
-public struct ChildAdded: NexusEvent {
-    public let parent: EntityIdentifier
-    public let child: EntityIdentifier
-}
-
-public struct ChildRemoved: NexusEvent {
-    public let parent: EntityIdentifier
-    public let child: EntityIdentifier
-}

@@ -7,7 +7,7 @@ extension ComponentIdentifierTests {
     // to regenerate.
     static let __allTests__ComponentIdentifierTests = [
         ("testMeasureComponentIdentifier", testMeasureComponentIdentifier),
-        ("testMeasureStaticComponentIdentifier", testMeasureStaticComponentIdentifier)
+        ("testMeasureStaticComponentIdentifier", testMeasureStaticComponentIdentifier),
     ]
 }
 
@@ -21,7 +21,7 @@ extension HashingPerformanceTests {
         ("testMeasureSDBM", testMeasureSDBM),
         ("testMeasureSetOfSetHash", testMeasureSetOfSetHash),
         ("testMeasureSingerDjb2", testMeasureSingerDjb2),
-        ("testMeasureSwiftHasher", testMeasureSwiftHasher)
+        ("testMeasureSwiftHasher", testMeasureSwiftHasher),
     ]
 }
 
@@ -34,7 +34,7 @@ extension TypeIdentifierPerformanceTests {
         ("testPerformanceMirrorReflectingDescription", testPerformanceMirrorReflectingDescription),
         ("testPerformanceObjectIdentifier", testPerformanceObjectIdentifier),
         ("testPerformanceStringDescribing", testPerformanceStringDescribing),
-        ("testPerformanceStringReflecting", testPerformanceStringReflecting)
+        ("testPerformanceStringReflecting", testPerformanceStringReflecting),
     ]
 }
 
@@ -55,7 +55,7 @@ extension TypedFamilyPerformanceTests {
         ("testPerformanceTypedFamilyFourComponents", testPerformanceTypedFamilyFourComponents),
         ("testPerformanceTypedFamilyOneComponent", testPerformanceTypedFamilyOneComponent),
         ("testPerformanceTypedFamilyThreeComponents", testPerformanceTypedFamilyThreeComponents),
-        ("testPerformanceTypedFamilyTwoComponents", testPerformanceTypedFamilyTwoComponents)
+        ("testPerformanceTypedFamilyTwoComponents", testPerformanceTypedFamilyTwoComponents),
     ]
 }
 
@@ -64,7 +64,7 @@ public func __allTests() -> [XCTestCaseEntry] {
         testCase(ComponentIdentifierTests.__allTests__ComponentIdentifierTests),
         testCase(HashingPerformanceTests.__allTests__HashingPerformanceTests),
         testCase(TypeIdentifierPerformanceTests.__allTests__TypeIdentifierPerformanceTests),
-        testCase(TypedFamilyPerformanceTests.__allTests__TypedFamilyPerformanceTests)
+        testCase(TypedFamilyPerformanceTests.__allTests__TypedFamilyPerformanceTests),
     ]
 }
 #endif

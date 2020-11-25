@@ -42,10 +42,10 @@ genXcodeOpen: genXcode
 # Clean
 clean:
 	swift package reset
-	rm -rdf .swiftpm/xcode
-	rm -rdf .build/
-	rm Package.resolved
-	rm .DS_Store
+	-rm -rdf .swiftpm/xcode
+	-rm -rdf .build/
+	-rm Package.resolved
+	-rm .DS_Store
 
 cleanArtifacts:
 	swift package clean
@@ -73,3 +73,7 @@ brewUpdate: brewSetup
 
 setupEnvironment: brewInstallDeps
 	open Package.swift
+
+# lines of code
+loc: clean
+	find . -name "*.swift" -print0 | xargs -0 wc -l

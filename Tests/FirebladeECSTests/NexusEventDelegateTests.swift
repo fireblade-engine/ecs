@@ -34,7 +34,7 @@ final class NexusEventDelegateTests: XCTestCase {
         XCTAssertEqual(entityCreatedEvents.count, 0)
         nexus.createEntity()
         XCTAssertEqual(entityCreatedEvents.count, 1)
-        nexus.createEntities(count: 100, using: { _ in  })
+        nexus.createEntities(count: 100)
         XCTAssertEqual(entityCreatedEvents.count, 101)
     }
     
@@ -54,7 +54,7 @@ final class NexusEventDelegateTests: XCTestCase {
         nexus.delegate = delegateTester
         
         XCTAssertEqual(events.count, 0)
-        nexus.createEntities(count: 100, using: { _ in  })
+        nexus.createEntities(count: 100)
         XCTAssertEqual(events.count, 0)
         for entitiy in nexus.makeEntitiesIterator() {
             entitiy.destroy()

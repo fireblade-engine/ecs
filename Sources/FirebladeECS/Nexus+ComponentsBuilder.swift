@@ -85,7 +85,7 @@ extension Nexus {
     ///   - builder: The component builder providing context.
     /// - Returns: The newly created entities with the provided components assigned.
     @discardableResult
-    public func createEntities(count: Int, @ComponentsBuilder using builder: (ComponentsBuilder.Context) -> [Component]) -> [Entity] {
+    public func createEntities(count: Int, @ComponentsBuilder using builder: (ComponentsBuilder.Context) -> [Component] = { _ in [] }) -> [Entity] {
         (0..<count).map { self.createEntity(with: builder(ComponentsBuilder.Context(index: $0))) }
     }
 }

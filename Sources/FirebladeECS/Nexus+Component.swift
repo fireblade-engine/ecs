@@ -24,7 +24,6 @@ extension Nexus {
     @discardableResult
     public final func assign(component: Component, to entity: Entity) -> Bool {
         let entityId: EntityIdentifier = entity.identifier
-        defer { delegate?.nexusEvent(ComponentAdded(component: component.identifier, toEntity: entity.identifier)) }
         return assign(component: component, entityId: entityId)
     }
 

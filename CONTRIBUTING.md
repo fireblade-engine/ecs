@@ -8,18 +8,18 @@
 The following is a set of **guidelines for contributing** to this project. 
 Use your best judgment and feel free to propose changes to this document in a pull request.
 
-**Working on your first Pull Request?** You can learn how from this *free* series [How to Contribute to an Open Source Project on GitHub](https://egghead.io/series/how-to-contribute-to-an-open-source-project-on-github)
+**Working on your first Pull Request?** You can learn how from this *free* series [How to Contribute to an Open Source Project on GitHub](https://egghead.io/courses/how-to-contribute-to-an-open-source-project-on-github)
 
 ### 💡 Your contribution - the sky is the limit 🌈
 
 This is an open source project and we love to receive contributions from our community — [**you**][ref-contributors]!   
 
-There are many ways to contribute, from writing __tutorials__ or __blog posts__, improving the [__documentation__][ref-documentation], submitting __bug reports__ and __feature requests__ or 
-__writing code__ which can be incorporated into the repository itself.
+There are many ways to contribute, from writing __tutorials__ or __blog posts__, improving the [__documentation__][ref-documentation], submitting [__bug reports__][ref-issues-new] and [__enhancement__][ref-pull-request-new] or 
+[__writing code__][ref-pull-request-new] which can be incorporated into the repository itself.
 
-When contributing to this project, please feel free to discuss the change you wish to make via issue with the repository owners before making a change.
+When contributing to this project, please feel free to discuss the changes and ideas you wish to contribute with the repository owners before making a change by opening a [new issue][ref-issues-new] and add the **feature request** tag to that issue.
 
-<!--Note that we have a [code of conduct][ref-code-of-conduct], please follow it in all your interactions with the project.-->
+Note that we have a [code of conduct][ref-code-of-conduct], please follow it in all your interactions with the project.
 
 ### 🐞 You want to report a bug or file an issue?
 
@@ -55,11 +55,12 @@ If you want to start somewhere, this would be a good place to start.
 That said, these aren't necessarily the easiest tickets. 
 
 For any new contributions please consider these guidelines:
+
 1. Open a [new pull request (PR)][ref-pull-request-new] with a **clear and descriptive title**
 2. Write a **detailed comment** with as much relevant information as possible including:
  - What your feature is intended to do?
  - How it can be used?
- - What alternatives where considered?
+ - What alternatives where considered, if any?
  - Has this feature impact on performance or stability of the project?
 
 #### Your contribution responsibilities
@@ -68,7 +69,7 @@ Don't be intimidated by these responsibilities, they are easy to meet if you tak
 
 - [x] Create issues for any major changes and enhancements that you wish to make. Discuss things transparently and get community feedback.
 - [x] Ensure (cross-)platform compatibility for every change that's accepted. An addition should not reduce the number of platforms that the project supports.
-- [x] Ensure **coding conventions** are met. Lint your code with the project's default tools.
+- [x] Ensure **coding conventions** are met. Lint your code with the project's default tools. Project wide commands are available through the [Makefile][ref-makefile] in the repository root.
 - [x] Add tests for your feature that prove it's working as expected. Code coverage should not drop below its previous value.
 - [x] Ensure none of the existing tests are failing after adding your changes.
 - [x] Document your public API code and ensure to add code comments where necessary.
@@ -80,7 +81,7 @@ Please consult the [README][ref-readme] for installation instructions.
 
 <!-- REFERENCES -->
 
-[ref-code-of-conduct]: t.b.d.
+[ref-code-of-conduct]: https://github.com/fireblade-engine/ecs/CODE_OF_CONDUCT.md
 [ref-contributors]: https://github.com/fireblade-engine/ecs/graphs/contributors
 [ref-documentation]: https://github.com/fireblade-engine/ecs/wiki
 [ref-gh-actions]: https://github.com/fireblade-engine/ecs/actions
@@ -91,3 +92,4 @@ Please consult the [README][ref-readme] for installation instructions.
 [ref-pull-request-how-to]: https://docs.github.com/en/github/writing-on-github/autolinked-references-and-urls
 [ref-pull-request-new]: https://github.com/fireblade-engine/ecs/compare
 [ref-readme]: https://github.com/fireblade-engine/ecs/blob/master/README.md
+[ref-makefile]: https://github.com/fireblade-engine/ecs/blob/master/Makefile

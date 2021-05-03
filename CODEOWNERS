@@ -1,0 +1,12 @@
+# This file is a list of the people responsible for ensuring that contributions
+# to this projected are reviewed, either by themselves or by someone else.
+# They are also the gatekeepers for their part of this project, with the final 
+# word on what goes in or not. 
+# The code owners file uses a .gitignore-like syntax to specify which parts of 
+# the codebase is associated with an owner. See 
+# <https://docs.github.com/github/creating-cloning-and-archiving-repositories/about-code-owners>
+# for details.
+# The following lines are used by GitHub to automatically recommend reviewers.
+# Each line is a file pattern followed by one or more owners.
+
+* @ctreffs

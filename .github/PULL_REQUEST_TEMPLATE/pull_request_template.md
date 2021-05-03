@@ -44,7 +44,7 @@ Please ensure CI is not broken*
 
 ### Checklist
 
-- [ ] I've read the [Contribution Guidelines]( https://github.com/fireblade-engine/ecs/CONTRIBUTING.md)
+- [ ] I've read the [Contribution Guidelines]( https://github.com/fireblade-engine/ecs/master/CONTRIBUTING.md)
 - [ ] I've followed the coding style of the rest of the project.
 - [ ] I've added tests covering all new code paths my change adds to the project (to the extent possible).
 - [ ] I've added benchmarks covering new functionality (if appropriate).

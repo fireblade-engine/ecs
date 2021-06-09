@@ -8,19 +8,10 @@ on:
 
 jobs:
   wasm:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
       - name: Build
         uses: swiftwasm/swiftwasm-action@main
         with:
           shell-action: swift build --triple wasm32-unknown-wasi
-
-  wasm2:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/swiftwasm/carton
-    steps:
-    - uses: actions/checkout@master
-    - name: Test
-      run: carton test

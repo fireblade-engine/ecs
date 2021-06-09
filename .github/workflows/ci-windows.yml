@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  windows:
+  windows-test-build-release:
     runs-on: windows-latest
     env:
         SNAPSHOT: "https://swift.org/builds/swift-5.4.1-release/windows10/swift-5.4.1-RELEASE/swift-5.4.1-RELEASE-windows10.exe"
@@ -32,7 +32,7 @@ jobs:
           Copy-Item "$env:SDKROOT\usr\share\visualc.modulemap" -destination "$env:VCToolsInstallDir\include\module.modulemap"
           Copy-Item "$env:SDKROOT\usr\share\visualc.apinotes" -destination "$env:VCToolsInstallDir\include\visualc.apinotes"
           Copy-Item "$env:SDKROOT\usr\share\winsdk.modulemap" -destination "$env:UniversalCRTSdkDir\Include\$env:UCRTVersion\um\module.modulemap"
-    - name: Build
-      run: swift build
     - name: Test
-      run: swift test
+      run: swift test -v --skip-update --parallel --enable-test-discovery
+    - name: Build Release
+      run: swift build -c release

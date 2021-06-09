@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  macOS:
+  macos-test-build-release-xcode:
     runs-on: macOS-latest
     strategy:
       matrix:
@@ -17,8 +17,6 @@ jobs:
         uses: actions/checkout@master
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
-      - name: Swift version
-        run: swift --version
       - name: Test
         run: swift test -v --skip-update --parallel --enable-test-discovery --enable-code-coverage
         env:

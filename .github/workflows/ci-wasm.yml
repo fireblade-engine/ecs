@@ -1,0 +1,17 @@
+name: WASM
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  wasm-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Build
+        uses: swiftwasm/swiftwasm-action@main
+        with:
+          shell-action: swift build --triple wasm32-unknown-wasi

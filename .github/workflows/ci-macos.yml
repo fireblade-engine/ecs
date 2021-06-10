@@ -1,0 +1,35 @@
+name: macOS
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  macos-test-build-release-xcode:
+    runs-on: macOS-latest
+    strategy:
+      matrix:
+        xcode: ["11.7", "12.4"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Select Xcode ${{ matrix.xcode }}
+        run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
+      - name: Test
+        run: swift test -v --skip-update --parallel --enable-test-discovery --enable-code-coverage
+        env:
+          DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer
+      - name: Generate coverage report
+        run: xcrun llvm-cov export -format="lcov" .build/debug/*PackageTests.xctest/Contents/MacOS/*PackageTests -instr-profile .build/debug/codecov/default.profdata > coverage.lcov
+      - name: Upload code coverage report
+        uses: codecov/codecov-action@master
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
+          file: coverage.lcov
+          fail_ci_if_error: true
+      - name: Build Release
+        run: swift build -c release
+        env:
+          DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer

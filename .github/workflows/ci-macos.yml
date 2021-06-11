@@ -42,6 +42,7 @@ jobs:
         env:
           DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer
       - name: Upload build artifacts
+        if: failure()
         uses: actions/upload-artifact@v2.2.3
         with:
           name: build-artifacts-${{ matrix.xcode }}-${{ github.run_id }}

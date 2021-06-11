@@ -21,6 +21,14 @@ jobs:
         run: swift test -v --skip-update --parallel --enable-test-discovery --enable-code-coverage
         env:
           DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer
+      - name: Upload test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v2.2.3
+        with:
+          name: test-artifacts-${{ matrix.xcode }}-${{ github.run_id }}
+          path: |
+            .build/**/*.json
+            .build/**/*.xctest
       - name: Generate coverage report
         run: xcrun llvm-cov export -format="lcov" .build/debug/*PackageTests.xctest/Contents/MacOS/*PackageTests -instr-profile .build/debug/codecov/default.profdata > coverage.lcov
       - name: Upload code coverage report
@@ -33,3 +41,15 @@ jobs:
         run: swift build -c release
         env:
           DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v2.2.3
+        with:
+          name: build-artifacts-${{ matrix.xcode }}-${{ github.run_id }}
+          path: |
+            *.lcov
+            .build/*.yaml
+            .build/**/*.a
+            .build/**/*.so
+            .build/**/*.dylib
+            .build/**/*.dSYM 
+            .build/**/*.json

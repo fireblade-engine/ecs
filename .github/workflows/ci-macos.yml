@@ -36,12 +36,18 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v2.2.3
         with:
-          name: ${{ github.run_id }}-artifacts
+          name: artifacts-${{ github.run_id }}
           path: |
             *.lcov
-            .build/(debug|release).yaml
-            .build/(debug|release)/*.a
-            .build/(debug|release)/*.so
-            .build/(debug|release)/*.dSYM 
-            .build/(debug|release)/*.json
-            .build/(debug|release)/*.xctest  
+            .build/debug.yaml
+            .build/debug/*.a
+            .build/debug/*.so
+            .build/debug/*.dylib
+            .build/debug/*.dSYM 
+            .build/debug/*.json
+            .build/debug/*.xctest  
+            .build/release.yaml
+            .build/release/*.a
+            .build/release/*.so
+            .build/release/*.dylib
+            .build/release/*.xctest

@@ -33,3 +33,15 @@ jobs:
         run: swift build -c release
         env:
           DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2.2.3
+        with:
+          name: ${{ github.run_id }}-artifacts
+          path: |
+            *.lcov
+            .build/(debug|release).yaml
+            .build/(debug|release)/*.a
+            .build/(debug|release)/*.so
+            .build/(debug|release)/*.dSYM 
+            .build/(debug|release)/*.json
+            .build/(debug|release)/*.xctest  

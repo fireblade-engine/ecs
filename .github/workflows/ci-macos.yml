@@ -36,7 +36,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v2.2.3
         with:
-          name: artifacts-${{ github.run_id }}
+          name: artifacts-${{ matrix.xcode }}-${{ github.run_id }}
           path: |
             *.lcov
             .build/debug.yaml

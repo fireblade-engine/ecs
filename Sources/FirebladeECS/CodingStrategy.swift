@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 05.08.20.
 //
 
-public protocol CodingStrategy {
+public protocol CodingStrategy: Codable {
     func codingKey<C>(for componentType: C.Type) -> DynamicCodingKey where C: Component
 }
 

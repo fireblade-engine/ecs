@@ -8,10 +8,10 @@ on:
 
 jobs:
   macos-test-build-release-xcode:
-    runs-on: macOS-latest
+    runs-on: macOS-11
     strategy:
       matrix:
-        xcode: ["11.7", "12.4"]
+        xcode: ["11.7", "12.5.1", "13.0"]
     steps:
       - name: Checkout
         uses: actions/checkout@master

@@ -8,7 +8,7 @@
 /// **Component**
 ///
 /// A component represents the raw data for one aspect of an entity.
-public protocol Component: AnyObject, Sendable {
+public protocol Component: Sendable {
     // Unique, immutable identifier of this component type.    static var identifier: ComponentIdentifier { get }
 
     /// Unique, immutable identifier of this component type.

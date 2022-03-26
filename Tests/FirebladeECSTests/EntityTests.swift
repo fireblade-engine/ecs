@@ -22,22 +22,22 @@ import Testing
         #expect(max.id == UInt32.max)
     }
 
-    @Test func allComponentsOfEntity() {
-        let nexus = Nexus()
+//    @Test func allComponentsOfEntity() {
+//        let nexus = Nexus()
 
-        let pos = Position(x: 1, y: 2)
-        let name = Name(name: "Hello")
-        let vel = Velocity(a: 1.234)
+//        let pos = Position(x: 1, y: 2)
+//        let name = Name(name: "Hello")
+//        let vel = Velocity(a: 1.234)
 
-        let entity = nexus.createEntity()
-        entity.assign(pos)
-        entity.assign(name, vel)
+//        let entity = nexus.createEntity()
+//        entity.assign(pos)
+//        entity.assign(name, vel)
 
-        let expectedComponents: [Component] = [pos, name, vel]
-        let allComponents = Array(entity.makeComponentsIterator())
+//        let expectedComponents: [Component] = [pos, name, vel]
+//        let allComponents = Array(entity.makeComponentsIterator())
 
-        #expect(allComponents.elementsEqualUnordered(expectedComponents) { $0 === $1 })
-    }
+//        #expect(allComponents.elementsEqualUnordered(expectedComponents) { $0 === $1 })
+//    }
 
     @Test func entityEquality() {
         let nexus = Nexus()

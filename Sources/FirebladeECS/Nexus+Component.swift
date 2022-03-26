@@ -126,7 +126,7 @@ extension Nexus {
     public final func get<C: Component>(unsafe entityId: EntityIdentifier) -> C {
         let component: Component = get(unsafe: C.identifier, for: entityId)
         // components are guaranteed to be reference types so unsafeDowncast is applicable here
-        return unsafeDowncast(component, to: C.self)
+        return component as! C
     }
 
     /// Retrieves all component identifiers assigned to a specific entity.

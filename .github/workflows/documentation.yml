@@ -18,8 +18,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@master
-      - name: Generate documentation
-        uses: SwiftDocOrg/swift-doc@master
+      - name: Generate Swift Doc Documentation
+        uses: SwiftDocOrg/swift-doc@1.0.0-rc.1
         with:
           inputs: "Sources/FirebladeECS"
           output: "Documentation"

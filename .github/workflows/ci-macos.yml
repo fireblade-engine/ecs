@@ -8,13 +8,13 @@ on:
 
 jobs:
   macos-test-build-release-xcode:
-    runs-on: macOS-11
+    runs-on: macOS-latest
     strategy:
       matrix:
-        xcode: ["11.7", "12.5.1", "13.0"]
+        xcode: ["13.4.1", "14.2"]
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
       - name: Test
@@ -32,7 +32,7 @@ jobs:
       - name: Generate coverage report
         run: xcrun llvm-cov export -format="lcov" .build/debug/*PackageTests.xctest/Contents/MacOS/*PackageTests -instr-profile .build/debug/codecov/default.profdata > coverage.lcov
       - name: Upload code coverage report
-        uses: codecov/codecov-action@v1.5.2
+        uses: codecov/codecov-action@v3.1.2
         with:
           token: ${{secrets.CODECOV_TOKEN}}
           file: coverage.lcov

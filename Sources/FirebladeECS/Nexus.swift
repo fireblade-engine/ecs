@@ -6,6 +6,11 @@
 //
 
 public final class Nexus {
+    /// The version of this Nexus implementation.
+    ///
+    /// Used for serialization.
+    final let version = Version(0, 18, 0)
+
     /// - Key: ComponentIdentifier aka component type.
     /// - Value: Array of component instances of same type (uniform).
     ///          New component instances are appended.

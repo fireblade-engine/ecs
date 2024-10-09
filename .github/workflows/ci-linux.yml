@@ -15,32 +15,30 @@ jobs:
     container:
       image: swift:${{ matrix.swift }}
     steps:
-      - name: Swift Test Help
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test
+        run: swift test -c release --enable-xctest --skip-update --parallel --enable-test-discovery --xunit-output .build/test-output.xml
+
+      - name: Debug Linux folders
+        if: always()
         run: |
-          swift test --help
-      # - name: Checkout
-      #   uses: actions/checkout@v4
+          ls -la
+          ls -la .build/debug/**/*
 
-      # - name: Test
-      #   run: swift test -v --skip-update --parallel --enable-test-discovery
-
-      # - name: Debug Linux folders
-      #   if: always()
-      #   run: |
-      #     ls -la
-      #     ls -la .build/debug/**/*
-
-      # - name: Upload test artifacts
-      #   if: failure()
-      #   uses: actions/upload-artifact@v4.4.2
-      #   with:
-      #     name: test-artifacts-${{ matrix.swift }}-${{ github.run_id }}
-      #     path: |
-      #       .build/*.yaml
-      #       .build/*.json
-      #       .build/**/*.json
-      #       .build/**/*.xctest
-      #       .build/**/*.txt
+      - name: Upload test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4.4.2
+        with:
+          name: test-artifacts-${{ matrix.swift }}-${{ github.run_id }}
+          path: |
+            .build/*.xml
+            .build/*.yaml
+            .build/*.json
+            .build/**/*.json
+            .build/**/*.xctest
+            .build/**/*.txt
       
-      # - name: Build Release
-      #   run: swift build -c release
+      - name: Build Release
+        run: swift build -c release

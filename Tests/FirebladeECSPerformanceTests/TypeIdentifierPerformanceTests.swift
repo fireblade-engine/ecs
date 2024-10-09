@@ -30,6 +30,7 @@ final class TypeIdentifierPerformanceTests: XCTestCase {
     /// release: 1.034 sec
     /// debug:
     func testPerformanceHash() {
+        #if !os(Linux)
         measure {
             for _ in 0..<maxIterations {
                 _ = StringHashing.singer_djb2(String(describing: Color.self))
@@ -41,11 +42,15 @@ final class TypeIdentifierPerformanceTests: XCTestCase {
                 _ = StringHashing.singer_djb2(String(describing: Velocity.self))
             }
         }
+        #else
+        #warning("Skipping testPerformanceHash")
+        #endif
     }
 
     /// release: 1.034 sec
     /// debug:   1.287 sec
     func testPerformanceStringDescribing() {
+        #if !os(Linux)
         measure {
             for _ in 0..<maxIterations {
                 _ = String(describing: Color.self)
@@ -57,11 +62,15 @@ final class TypeIdentifierPerformanceTests: XCTestCase {
                 _ = String(describing: Velocity.self)
             }
         }
+        #else
+        #warning("Skipping testPerformanceHash")
+        #endif
     }
 
     /// release: 1.187 sec
     /// debug:   1.498 sec
     func testPerformanceStringReflecting() {
+        #if !os(Linux)
         measure {
             for _ in 0..<maxIterations {
                 _ = String(reflecting: Color.self)
@@ -73,6 +82,9 @@ final class TypeIdentifierPerformanceTests: XCTestCase {
                 _ = String(reflecting: Velocity.self)
             }
         }
+        #else
+        #warning("Skipping testPerformanceHash")
+        #endif
     }
 
     /// release: 2.102 sec

@@ -22,6 +22,7 @@ jobs:
         run: swift test -v --skip-update --parallel --enable-test-discovery
 
       - name: Debug Linux folders
+        if: always()
         run: |
           ls -la
           ls -la .build/debug/**/*

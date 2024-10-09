@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Test
-        run: swift test -v --skip-update --parallel --enable-test-discovery
+        run: swift test -c release --parallel --enable-test-discovery
 
       - name: Upload test artifacts
         if: failure()

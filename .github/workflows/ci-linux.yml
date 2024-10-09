@@ -24,10 +24,8 @@ jobs:
       - name: Debug Linux folders
         if: always()
         run: |
-          ls -la
           ls -la .build/*
-          ls -la .build/**/*
-          ls -la .build/**/**/*
+          ls -la .build/release/*
 
       - name: Upload test artifacts
         if: failure()
@@ -45,6 +43,5 @@ jobs:
             .build/**/*.xctest
             .build/**/*.txt
           if-no-files-found: warn
-      
-      - name: Build Release
-        run: swift build -c release
+          include-hidden-files: true
+

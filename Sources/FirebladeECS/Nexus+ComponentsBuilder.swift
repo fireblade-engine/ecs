@@ -6,11 +6,11 @@
 //
 
 #if swift(<5.4)
-@_functionBuilder
-public enum ComponentsBuilder { }
+    @_functionBuilder
+    public enum ComponentsBuilder {}
 #else
-@resultBuilder
-public enum ComponentsBuilder { }
+    @resultBuilder
+    public enum ComponentsBuilder {}
 #endif
 
 extension ComponentsBuilder {
@@ -39,7 +39,7 @@ extension Nexus {
     /// - Returns: The newly created entity with the provided component assigned.
     @discardableResult
     public func createEntity(@ComponentsBuilder using builder: () -> Component) -> Entity {
-        self.createEntity(with: builder())
+        createEntity(with: builder())
     }
 
     /// Create an entity assigning multiple components.
@@ -55,7 +55,7 @@ extension Nexus {
     /// - Returns: The newly created entity with the provided components assigned.
     @discardableResult
     public func createEntity(@ComponentsBuilder using builder: () -> [Component]) -> Entity {
-        self.createEntity(with: builder())
+        createEntity(with: builder())
     }
 
     /// Create multiple entities assigning one component each.
@@ -72,7 +72,7 @@ extension Nexus {
     /// - Returns: The newly created entities with the provided component assigned.
     @discardableResult
     public func createEntities(count: Int, @ComponentsBuilder using builder: (ComponentsBuilder.Context) -> Component) -> [Entity] {
-        (0..<count).map { self.createEntity(with: builder(ComponentsBuilder.Context(index: $0))) }
+        (0 ..< count).map { self.createEntity(with: builder(ComponentsBuilder.Context(index: $0))) }
     }
 
     /// Create multiple entities assigning multiple components each.
@@ -90,6 +90,6 @@ extension Nexus {
     /// - Returns: The newly created entities with the provided components assigned.
     @discardableResult
     public func createEntities(count: Int, @ComponentsBuilder using builder: (ComponentsBuilder.Context) -> [Component] = { _ in [] }) -> [Entity] {
-        (0..<count).map { self.createEntity(with: builder(ComponentsBuilder.Context(index: $0))) }
+        (0 ..< count).map { self.createEntity(with: builder(ComponentsBuilder.Context(index: $0))) }
     }
 }

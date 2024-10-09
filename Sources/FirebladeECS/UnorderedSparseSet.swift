@@ -74,7 +74,7 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
             guard let denseIndex = findIndex(at: key) else {
                 return nil
             }
-            let entry = self.dense[denseIndex]
+            let entry = dense[denseIndex]
             assert(entry.key == key, "entry.key and findIndex(at: key) must be equal!")
             return entry.element
         }
@@ -99,7 +99,7 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
             }
 
             let removed = swapRemove(at: denseIndex)
-            if !dense.isEmpty && denseIndex < dense.count {
+            if !dense.isEmpty, denseIndex < dense.count {
                 let swappedElement = dense[denseIndex]
                 sparse[swappedElement.key] = denseIndex
             }
@@ -208,12 +208,14 @@ extension UnorderedSparseSet where Key == Int {
 }
 
 // MARK: - Sequence
+
 extension UnorderedSparseSet: Sequence {
     public func makeIterator() -> ElementIterator {
         ElementIterator(self)
     }
 
     // MARK: - UnorderedSparseSetIterator
+
     public struct ElementIterator: IteratorProtocol {
         var iterator: IndexingIterator<ContiguousArray<Storage.Entry>>
 
@@ -226,17 +228,20 @@ extension UnorderedSparseSet: Sequence {
         }
     }
 }
-extension UnorderedSparseSet.ElementIterator: LazySequenceProtocol { }
-extension UnorderedSparseSet.ElementIterator: Sequence { }
+
+extension UnorderedSparseSet.ElementIterator: LazySequenceProtocol {}
+extension UnorderedSparseSet.ElementIterator: Sequence {}
 
 // MARK: - Equatable
-extension UnorderedSparseSet.Storage.Entry: Equatable where Element: Equatable { }
+
+extension UnorderedSparseSet.Storage.Entry: Equatable where Element: Equatable {}
 extension UnorderedSparseSet.Storage: Equatable where Element: Equatable {
     @usableFromInline
     static func == (lhs: UnorderedSparseSet<Element, Key>.Storage, rhs: UnorderedSparseSet<Element, Key>.Storage) -> Bool {
         lhs.dense == rhs.dense && lhs.sparse == rhs.sparse
     }
 }
+
 extension UnorderedSparseSet: Equatable where Element: Equatable {
     public static func == (lhs: UnorderedSparseSet<Element, Key>, rhs: UnorderedSparseSet<Element, Key>) -> Bool {
         lhs.storage == rhs.storage
@@ -244,6 +249,7 @@ extension UnorderedSparseSet: Equatable where Element: Equatable {
 }
 
 // MARK: - Codable
-extension UnorderedSparseSet.Storage.Entry: Codable where Element: Codable { }
-extension UnorderedSparseSet.Storage: Codable where Element: Codable { }
-extension UnorderedSparseSet: Codable where Element: Codable { }
+
+extension UnorderedSparseSet.Storage.Entry: Codable where Element: Codable {}
+extension UnorderedSparseSet.Storage: Codable where Element: Codable {}
+extension UnorderedSparseSet: Codable where Element: Codable {}

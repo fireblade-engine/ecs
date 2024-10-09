@@ -10,21 +10,6 @@ line_length: 220
 number_separator:
   minimum_length: 5
 opt_in_rules:
-  #- explicit_acl
-  #- explicit_enum_raw_value
-  #- explicit_type_interface
-  #- extension_access_modifier
-  #- file_name
-  #- file_types_order
-  #- indentation_width
-  #- missing_docs
-  #- multiline_arguments_brackets
-  #- multiline_literal_brackets
-  #- multiline_parameters_brackets
-  #- no_grouping_extension
-  #- required_deinit
-  #- type_contents_order
-  #- unowned_variable_capture
   - anyobject_protocol
   - array_init
   - attributes

@@ -14,6 +14,7 @@ extension CodingUserInfoKey {
 }
 
 // MARK: - encoding
+
 extension FamilyMemberContainer: Encodable where R: FamilyEncoding {
     func encode(to encoder: Encoder) throws {
         let strategy = encoder.userInfo[.nexusCodingStrategy] as? CodingStrategy ?? DefaultCodingStrategy()
@@ -50,11 +51,12 @@ extension Family where R: FamilyEncoding {
 }
 
 // MARK: - decoding
+
 extension FamilyMemberContainer: Decodable where R: FamilyDecoding {
     init(from decoder: Decoder) throws {
         var familyContainer = try decoder.unkeyedContainer()
         let strategy = decoder.userInfo[.nexusCodingStrategy] as? CodingStrategy ?? DefaultCodingStrategy()
-        self.components = try R.decode(componentsIn: &familyContainer, using: strategy)
+        components = try R.decode(componentsIn: &familyContainer, using: strategy)
     }
 }
 

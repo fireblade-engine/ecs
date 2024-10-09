@@ -6,9 +6,9 @@
 //
 
 #if swift(<5.4)
-@_functionBuilder
-public enum FamilyMemberBuilder<R> where R: FamilyRequirementsManaging { }
+    @_functionBuilder
+    public enum FamilyMemberBuilder<R> where R: FamilyRequirementsManaging {}
 #else
-@resultBuilder
-public enum FamilyMemberBuilder<R> where R: FamilyRequirementsManaging { }
+    @resultBuilder
+    public enum FamilyMemberBuilder<R> where R: FamilyRequirementsManaging {}
 #endif

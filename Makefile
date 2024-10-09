@@ -2,9 +2,11 @@ SWIFT_PACKAGE_VERSION := $(shell swift package tools-version)
 
 # Lint fix and format code.
 .PHONY: lint-fix
-lint-fix:
-	mint run swiftlint autocorrect --format --quiet
-	mint run swiftformat Sources --exclude **/*.generated.swift --swiftversion ${SWIFT_PACKAGE_VERSION}
+swiftlint:
+	mint run swiftlint autocorrect --config .swiftlint.yml --format --quiet
+swiftformat:
+	mint run swiftformat . --swiftversion ${SWIFT_PACKAGE_VERSION}
+lint-fix: swiftlint swiftformat
 
 # Generate code
 .PHONY: generate-code

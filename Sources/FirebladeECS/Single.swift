@@ -32,7 +32,7 @@ extension Single where A: SingleComponent {
     }
 
     public var entity: Entity {
-        Entity(nexus: self.nexus, id: entityId)
+        Entity(nexus: nexus, id: entityId)
     }
 }
 

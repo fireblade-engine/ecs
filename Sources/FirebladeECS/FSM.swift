@@ -411,7 +411,8 @@ public class EntityStateMachine<StateIdentifier: Hashable> {
 
             for (identifier, _) in currentState.providers {
                 if let other = toAdd[identifier], let current = currentState.providers[identifier],
-                   current.identifier == other.identifier {
+                   current.identifier == other.identifier
+                {
                     toAdd[identifier] = nil
                 } else {
                     entity.remove(identifier)

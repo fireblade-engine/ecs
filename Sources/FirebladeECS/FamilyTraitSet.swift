@@ -19,7 +19,7 @@ public struct FamilyTraitSet {
 
         self.requiresAll = requiresAll
         self.excludesAll = excludesAll
-        self.setHash = FirebladeECS.hash(combine: [requiresAll, excludesAll])
+        setHash = FirebladeECS.hash(combine: [requiresAll, excludesAll])
     }
 
     @inlinable

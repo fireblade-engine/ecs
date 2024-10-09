@@ -19,7 +19,7 @@ public struct Entity {
 
     internal init(nexus: Nexus, id: EntityIdentifier) {
         self.nexus = nexus
-        self.identifier = id
+        identifier = id
     }
 
     /// Returns the number of components for this entity.
@@ -130,7 +130,7 @@ public struct Entity {
 
 extension Entity {
     public struct ComponentsIterator: IteratorProtocol {
-        private var iterator: IndexingIterator<([Component])>?
+        private var iterator: IndexingIterator<[Component]>?
 
         @usableFromInline
         init(nexus: Nexus, entityIdentifier: EntityIdentifier) {
@@ -144,8 +144,9 @@ extension Entity {
         }
     }
 }
-extension Entity.ComponentsIterator: LazySequenceProtocol { }
-extension Entity.ComponentsIterator: Sequence { }
+
+extension Entity.ComponentsIterator: LazySequenceProtocol {}
+extension Entity.ComponentsIterator: Sequence {}
 
 extension Entity: Equatable {
     public static func == (lhs: Entity, rhs: Entity) -> Bool {

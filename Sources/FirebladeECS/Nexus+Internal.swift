@@ -104,7 +104,7 @@ extension Nexus {
         }
 
         let isMember: Bool = self.isMember(entity: entityId, inFamilyWithTraits: traits)
-        if !exists(entity: entityId) && isMember {
+        if !exists(entity: entityId), isMember {
             remove(entityWithId: entityId, fromFamilyWithTraits: traits)
             return
         }

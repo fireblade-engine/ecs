@@ -23,7 +23,7 @@ extension Nexus {
 
     @discardableResult
     public func createEntity<C>(with components: C) -> Entity where C: Collection, C.Element == Component {
-        let entity = self.createEntity()
+        let entity = createEntity()
         assign(components: components, to: entity.identifier)
         return entity
     }
@@ -50,7 +50,7 @@ extension Nexus {
 
     @discardableResult
     public func destroy(entity: Entity) -> Bool {
-        self.destroy(entityId: entity.identifier)
+        destroy(entityId: entity.identifier)
     }
 
     @discardableResult
@@ -76,6 +76,7 @@ extension Nexus {
 }
 
 // MARK: - entities iterator
+
 extension Nexus {
     public struct EntitiesIterator: IteratorProtocol {
         private var iterator: AnyIterator<Entity>
@@ -96,5 +97,6 @@ extension Nexus {
         }
     }
 }
-extension Nexus.EntitiesIterator: LazySequenceProtocol { }
-extension Nexus.EntitiesIterator: Sequence { }
+
+extension Nexus.EntitiesIterator: LazySequenceProtocol {}
+extension Nexus.EntitiesIterator: Sequence {}

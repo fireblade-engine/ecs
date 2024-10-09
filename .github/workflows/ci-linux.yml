@@ -21,6 +21,11 @@ jobs:
       - name: Test
         run: swift test -v --skip-update --parallel --enable-test-discovery
 
+      - name: Debug Linux folders
+        run: |
+          ls -la
+          ls -la .build/debug/**/*
+
       - name: Upload test artifacts
         if: failure()
         uses: actions/upload-artifact@v4.4.2

@@ -19,13 +19,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Test
-        run: swift test -c release --enable-xctest --skip-update --parallel --enable-test-discovery --xunit-output .build/test-output.xml
+        run: swift test -c release --enable-xctest --parallel --enable-test-discovery --xunit-output .build/test-output.xml
 
       - name: Debug Linux folders
         if: always()
         run: |
           ls -la
-          ls -la .build/debug/**/*
+          ls -la .build/*
+          ls -la .build/**/*
+          ls -la .build/**/**/*
 
       - name: Upload test artifacts
         if: failure()

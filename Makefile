@@ -18,6 +18,9 @@ generate-code:
 .PHONY: pre-push
 pre-push: generate-code lint-fix
 
+.PHONY: precommit
+precommit: pre-push
+
 .PHONY: setup-brew
 setup-brew:
 	@which -s brew || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
@@ -27,6 +30,9 @@ setup-brew:
 install-dependencies-macOS: setup-brew
 	brew install mint
 	mint bootstrap
+
+.PHONY: setupEnvironment
+setupEnvironment: install-dependencies-macOS
 
 # Build debug version
 .PHONY: build-debug

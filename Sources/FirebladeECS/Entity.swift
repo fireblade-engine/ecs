@@ -17,7 +17,7 @@ public struct Entity {
     /// The unique entity identifier.
     public private(set) var identifier: EntityIdentifier
 
-    internal init(nexus: Nexus, id: EntityIdentifier) {
+    init(nexus: Nexus, id: EntityIdentifier) {
         self.nexus = nexus
         identifier = id
     }

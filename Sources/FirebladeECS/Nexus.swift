@@ -42,11 +42,11 @@ public final class Nexus {
                   codingStrategy: DefaultCodingStrategy())
     }
 
-    internal init(componentsByType: [ComponentIdentifier: ManagedContiguousArray<Component>],
-                  componentsByEntity: [EntityIdentifier: Set<ComponentIdentifier>],
-                  entityIdGenerator: EntityIdentifierGenerator,
-                  familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>],
-                  codingStrategy: CodingStrategy)
+    init(componentsByType: [ComponentIdentifier: ManagedContiguousArray<Component>],
+         componentsByEntity: [EntityIdentifier: Set<ComponentIdentifier>],
+         entityIdGenerator: EntityIdentifierGenerator,
+         familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>],
+         codingStrategy: CodingStrategy)
     {
         self.componentsByType = componentsByType
         componentIdsByEntity = componentsByEntity

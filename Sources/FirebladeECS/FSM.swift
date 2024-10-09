@@ -97,9 +97,7 @@ extension ComponentTypeProvider: ComponentProvider {
 /// This component provider always returns the same instance of the component. The instance
 /// is created when first required and is of the type passed in to the initializer.
 public final class ComponentSingletonProvider {
-    private lazy var instance: Component = {
-        componentType.init()
-    }()
+    private lazy var instance: Component = componentType.init()
 
     private var componentType: ComponentInitializable.Type
 
@@ -171,7 +169,7 @@ extension DynamicComponentProvider: ComponentProvider {
 /// Represents a state for an EntityStateMachine. The state contains any number of ComponentProviders which
 /// are used to add components to the entity when this state is entered.
 public class EntityState {
-    internal var providers = [ComponentIdentifier: ComponentProvider]()
+    var providers = [ComponentIdentifier: ComponentProvider]()
 
     public init() {}
 
@@ -272,7 +270,7 @@ public class StateComponentMapping {
     /// by more specific mappings if other methods are called.
     /// - Parameter creatingState: The EntityState that the mapping will belong to
     /// - Parameter type: The component type for the mapping
-    internal init(creatingState: EntityState, type: ComponentInitializable.Type) {
+    init(creatingState: EntityState, type: ComponentInitializable.Type) {
         self.creatingState = creatingState
         componentType = type
         provider = ComponentTypeProvider(type: type)

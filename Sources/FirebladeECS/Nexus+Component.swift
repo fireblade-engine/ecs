@@ -93,7 +93,7 @@ extension Nexus {
             return false
         }
         var iter = allComponents.makeIterator()
-        var removedAll: Bool = true
+        var removedAll = true
         while let component = iter.next() {
             removedAll = removedAll && remove(component: component, from: entityId)
         }

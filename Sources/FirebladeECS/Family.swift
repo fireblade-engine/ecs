@@ -52,7 +52,7 @@ public struct Family<R> where R: FamilyRequirementsManaging {
     /// - Parameter builder: The family member builder.
     /// - Returns: The newly created member entity.
     @discardableResult
-    public func createMember(@FamilyMemberBuilder <R> using builder: () -> R.Components) -> Entity {
+    public func createMember(@FamilyMemberBuilder<R> using builder: () -> R.Components) -> Entity {
         createMember(with: builder())
     }
 }

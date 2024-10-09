@@ -1,79 +1,53 @@
-# Version 1.0.0
-UNAME_S := $(shell uname -s)
+SWIFT_PACKAGE_VERSION := $(shell swift package tools-version)
 
-# Lint
-lint:
-	swiftlint autocorrect --format
-	swiftlint lint --quiet
+# Lint fix and format code.
+.PHONY: lint-fix
+lint-fix:
+	mint run swiftlint --fix --quiet
+	mint run swiftformat ${SOURCES_DIR} --exclude **/*.generated.swift --swiftversion ${SWIFT_PACKAGE_VERSION}
 
-lintErrorOnly:
-	@swiftlint autocorrect --format --quiet
-	@swiftlint lint --quiet | grep error
+# Generate code
+.PHONY: generate-code
+generate-code:
+	mint run sourcery --quiet --config ./.sourcery.yml
+	mint run sourcery --quiet --config ./.sourceryTests.yml
 
-# Git
-precommit: generateCode generateTestsCode lint genLinuxTests
+# Run pre-push tasks
+.PHONY: pre-push
+pre-push: generate-code lint-fix
 
-submodule:
-	git submodule init
-	git submodule update --recursive
+.PHONY: setup-brew
+setup-brew:
+	@which -s brew || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+	@brew update
 
-# Tests
-genLinuxTests:
-	swift test --generate-linuxmain
-	swiftlint autocorrect --format --path Tests/
+.PHONY: install-dependencies-macOS
+install-dependencies-macOS: setup-brew
+	brew install mint
+	mint bootstrap
 
-test: genLinuxTests
-	swift test
+# Build debug version
+.PHONY: build-debug
+build-debug:
+	swift build -c debug
 
-# Package
-latest:
-	swift package update
-
-resolve:
-	swift package resolve
-
-# Xcode
-genXcode:
-	swift package generate-xcodeproj --enable-code-coverage --skip-extra-files
-
-genXcodeOpen: genXcode
-	open *.xcodeproj
-
-# Clean
-clean:
-	swift package reset
-	-rm -rdf .swiftpm/xcode
-	-rm -rdf .build/
-	-rm Package.resolved
-	-rm .DS_Store
-
-cleanArtifacts:
-	swift package clean
+# Build release version 
+.PHONY: build-release
+build-release:
+	swift build -c release --skip-update
 
 # Test links in README
 # requires <https://github.com/tcort/markdown-link-check>
+.PHONY: testReadme
 testReadme:
 	markdown-link-check -p -v ./README.md
 
-generateCode:
-	sourcery --config ./.sourcery.yml --verbose
-generateTestsCode:
-	sourcery --config ./.sourceryTests.yml --verbose
+# Delete package build artifacts.
+.PHONY: clean
+clean: clean-sourcery
+	swift package clean
 
-brewInstallDeps: brewUpdate
-	brew install swiftenv
-	brew install swiftlint
-	brew install sourcery
-
-brewSetup:
-	which -s brew || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-
-brewUpdate: brewSetup
-	brew update
-
-setupEnvironment: brewInstallDeps
-	open Package.swift
-
-# lines of code
-loc: clean
-	find . -name "*.swift" -print0 | xargs -0 wc -l
+# Clean sourcery cache
+.PHONY: clean-sourcery
+clean-sourcery:
+	rm -rdf ${HOME}/Library/Caches/Sourcery

@@ -22,7 +22,7 @@ extension Nexus {
     }
 
     @discardableResult
-    public func createEntity<C>(with components: C) -> Entity where C: Collection, C.Element == Component {
+    public func createEntity(with components: some Collection<Component>) -> Entity {
         let entity = createEntity()
         assign(components: components, to: entity.identifier)
         return entity

@@ -9,3 +9,5 @@
 --commas inline
 --self remove
 --selfrequired get
+--disable preferKeyPath
+--disable opaqueGenericParameters

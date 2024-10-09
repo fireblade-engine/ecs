@@ -28,12 +28,12 @@ extension Nexus {
     }
 
     @discardableResult
-    public final func assign<C>(component: C, to entity: Entity) -> Bool where C: Component {
+    public final func assign(component: some Component, to entity: Entity) -> Bool {
         assign(component: component, to: entity)
     }
 
     @discardableResult
-    public final func assign<C>(components: C, to entity: Entity) -> Bool where C: Collection, C.Element == Component {
+    public final func assign(components: some Collection<Component>, to entity: Entity) -> Bool {
         assign(components: components, to: entity.identifier)
     }
 

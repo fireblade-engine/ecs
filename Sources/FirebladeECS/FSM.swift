@@ -251,7 +251,7 @@ extension EntityState {
     /// - Returns: This EntityState, so more modifications can be applied.
     @inline(__always)
     @discardableResult
-    public func addProvider<C: ComponentInitializable>(type: C.Type, provider: ComponentProvider) -> Self {
+    public func addProvider(type: (some ComponentInitializable).Type, provider: ComponentProvider) -> Self {
         addMapping(for: type).withProvider(provider)
         return self
     }
@@ -316,7 +316,7 @@ public class StateComponentMapping {
     /// - Parameter closure: The Closure instance to return the component instance
     /// - Returns: This ComponentMapping, so more modifications can be applied
     @discardableResult
-    public func withMethod<C: Component>(_ closure: DynamicComponentProvider<C>.Closure) -> Self {
+    public func withMethod(_ closure: DynamicComponentProvider<some Component>.Closure) -> Self {
         setProvider(DynamicComponentProvider(closure: closure))
         return self
     }
@@ -401,7 +401,7 @@ public class EntityStateMachine<StateIdentifier: Hashable> {
 
         var toAdd: [ComponentIdentifier: ComponentProvider]
 
-        if let currentState = currentState {
+        if let currentState {
             toAdd = .init()
             for (identifier, provider) in newState.providers {
                 toAdd[identifier] = provider

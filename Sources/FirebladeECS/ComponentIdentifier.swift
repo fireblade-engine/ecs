@@ -14,14 +14,14 @@ public struct ComponentIdentifier {
 extension ComponentIdentifier {
     @usableFromInline
     init<C>(_ componentType: C.Type) where C: Component {
-        self.id = Self.makeRuntimeHash(componentType)
+        id = Self.makeRuntimeHash(componentType)
     }
 
     /// object identifier hash (only stable during runtime) - arbitrary hash is ok.
-    internal static func makeRuntimeHash<C>(_ componentType: C.Type) -> Identifier where C: Component {
+    static func makeRuntimeHash<C>(_ componentType: C.Type) -> Identifier where C: Component {
         ObjectIdentifier(componentType).hashValue
     }
 }
 
-extension ComponentIdentifier: Equatable { }
-extension ComponentIdentifier: Hashable { }
+extension ComponentIdentifier: Equatable {}
+extension ComponentIdentifier: Hashable {}

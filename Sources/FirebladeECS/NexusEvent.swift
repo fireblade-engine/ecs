@@ -1,5 +1,5 @@
 //
-//	NexusEvents.swift
+//	NexusEvent.swift
 //  FirebladeECS
 //
 //  Created by Christian Treffs on 08.10.17.

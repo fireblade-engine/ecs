@@ -20,6 +20,18 @@ jobs:
 
       - name: Test
         run: swift test -v --skip-update --parallel --enable-test-discovery
+
+      - name: Upload test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4.4.2
+        with:
+          name: test-artifacts-${{ matrix.swift }}-${{ github.run_id }}
+          path: |
+            .build/*.yaml
+            .build/*.json
+            .build/**/*.json
+            .build/**/*.xctest
+            .build/**/*.txt
       
       - name: Build Release
         run: swift build -c release

@@ -12,6 +12,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build
-        uses: swiftwasm/swiftwasm-action@v5.8
+        uses: swiftwasm/swiftwasm-action@v5.9
         with:
           shell-action: swift build --triple wasm32-unknown-wasi

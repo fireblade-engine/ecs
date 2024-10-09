@@ -10,14 +10,12 @@ jobs:
   windows-test-build-release:
     runs-on: windows-latest
     steps:
-      - uses: compnerd/gha-setup-swift@main
-        with:
-          branch: swift-5.7-release
-          tag: 5.7-RELEASE
+      - name: Setup
+        uses: compnerd/gha-setup-swift@v0.2.3
 
       - name: Checkout
         uses: actions/checkout@v4
-    
+
       - name: Test
         run: swift test -v --skip-update --parallel --enable-test-discovery
 

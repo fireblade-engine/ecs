@@ -5,6 +5,7 @@
 //  Created by Christian Treffs on 05.10.19.
 //
 
+#if os(macOS)
 import FirebladeECS
 import XCTest
 
@@ -30,7 +31,7 @@ final class TypeIdentifierPerformanceTests: XCTestCase {
     /// release: 1.034 sec
     /// debug:
     func testPerformanceHash() {
-        measure {
+        measure(options: .default) {
             for _ in 0..<maxIterations {
                 _ = StringHashing.singer_djb2(String(describing: Color.self))
                 _ = StringHashing.singer_djb2(String(describing: EmptyComponent.self))
@@ -91,3 +92,6 @@ final class TypeIdentifierPerformanceTests: XCTestCase {
         }
     }
 }
+#else
+#warning("Skipping TypeIdentifierPerformanceTests tests")
+#endif

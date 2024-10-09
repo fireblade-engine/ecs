@@ -16,24 +16,24 @@ jobs:
       image: swift:${{ matrix.swift }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-      - name: "Update APT"
-        shell: bash
-        run: "apt update"
-      - name: "Install curl"
-        shell: bash
-        run: "apt-get install -y curl"
-      - name: Swift version
-        run: swift --version
+        uses: actions/checkout@v4
+
       - name: Test
-        run: swift test -v --skip-update --parallel --enable-test-discovery --enable-code-coverage
-      - name: Generate coverage report
-        run: llvm-cov export -format="lcov" .build/debug/*PackageTests.xctest -instr-profile .build/debug/codecov/default.profdata > coverage.lcov
-      - name: Upload code coverage report
-        uses: codecov/codecov-action@v3.1.3
+        run: swift test -c release --enable-xctest --parallel --xunit-output .build/xUnit-output.xml
+
+      - name: Upload test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4.4.2
         with:
-          token: ${{secrets.CODECOV_TOKEN}}
-          file: coverage.lcov
-          fail_ci_if_error: true
-      - name: Build Release
-        run: swift build -c release
+          name: test-artifacts-linux-${{ matrix.swift }}-${{ github.run_id }}
+          path: |
+            .build/*.yaml
+            .build/*.xml
+            .build/*.json
+            .build/*.txt
+            .build/**/*.xctest
+            .build/**/*.json
+            .build/**/*.txt
+          if-no-files-found: warn
+          include-hidden-files: true
+

@@ -18,7 +18,7 @@ jobs:
       - name: Select Xcode ${{ matrix.xcode }}
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
       - name: Test
-        run: swift test -v --skip-update --parallel --enable-test-discovery --enable-code-coverage
+        run: swift test -c release --enable-xctest --parallel --xunit-output .build/xUnit-output.xml --enable-code-coverage
         env:
           DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer
       - name: Upload test artifacts
@@ -28,10 +28,14 @@ jobs:
           name: test-artifacts-${{ matrix.xcode }}-${{ github.run_id }}
           path: |
             .build/*.yaml
+            .build/*.xml
             .build/*.json
-            .build/**/*.json
+            .build/*.txt
             .build/**/*.xctest
+            .build/**/*.json
             .build/**/*.txt
+          if-no-files-found: warn
+          include-hidden-files: true
 
       - name: Generate coverage report
         run: xcrun llvm-cov export -format="lcov" .build/debug/*PackageTests.xctest/Contents/MacOS/*PackageTests -instr-profile .build/debug/codecov/default.profdata > coverage.lcov
@@ -41,22 +45,3 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: coverage.lcov
           fail_ci_if_error: true
-
-      - name: Build Release
-        run: swift build -c release
-        env:
-          DEVELOPER_DIR: /Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer
-
-      - name: Upload build artifacts
-        if: failure()
-        uses: actions/upload-artifact@v4.4.2
-        with:
-          name: build-artifacts-${{ matrix.xcode }}-${{ github.run_id }}
-          path: |
-            *.lcov
-            .build/*.yaml
-            .build/**/*.a
-            .build/**/*.so
-            .build/**/*.dylib
-            .build/**/*.dSYM 
-            .build/**/*.json

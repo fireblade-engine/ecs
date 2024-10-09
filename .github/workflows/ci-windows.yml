@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Test
-        run: swift test -c release --parallel --enable-test-discovery
+        run: swift test -c release --enable-xctest --parallel --xunit-output .build/xUnit-output.xml
 
       - name: Upload test artifacts
         if: failure()
@@ -29,10 +29,11 @@ jobs:
           name: test-artifacts-windows-${{ github.run_id }}
           path: |
             .build/*.yaml
+            .build/*.xml
             .build/*.json
-            .build/**/*.json
+            .build/*.txt
             .build/**/*.xctest
+            .build/**/*.json
             .build/**/*.txt
-
-      - name: Build Release
-        run: swift build -c release
+          if-no-files-found: warn
+          include-hidden-files: true

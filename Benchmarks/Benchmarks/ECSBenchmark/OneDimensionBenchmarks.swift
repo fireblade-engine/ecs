@@ -1,3 +1,4 @@
+// swiftformat:disable preferForLoop
 import Benchmark
 import FirebladeECS
 

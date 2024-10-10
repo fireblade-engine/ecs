@@ -8,6 +8,7 @@ on:
   workflow_dispatch:
 
 env:
+  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
   CODECOV_XCODE_VERSION: "15.4"  # Xcode version used to generate code coverage
 
 jobs:
@@ -47,13 +48,13 @@ jobs:
 
       # Only run coverage steps if the CODECOV_TOKEN is available and the matrix.xcode matches CODECOV_XCODE_VERSION
       - name: Generate coverage report
-        if: secrets.CODECOV_TOKEN != '' && matrix.xcode == env.CODECOV_XCODE_VERSION
+        if: env.CODECOV_TOKEN != '' && matrix.xcode == env.CODECOV_XCODE_VERSION
         run: xcrun llvm-cov export -format="lcov" .build/**/*PackageTests.xctest/Contents/MacOS/*PackageTests -instr-profile .build/**/codecov/default.profdata > coverage.lcov
 
       - name: Upload code coverage report
-        if: secrets.CODECOV_TOKEN != '' && matrix.xcode == env.CODECOV_XCODE_VERSION
+        if: env.CODECOV_TOKEN != '' && matrix.xcode == env.CODECOV_XCODE_VERSION
         uses: codecov/codecov-action@v4.6.0
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ env.CODECOV_TOKEN }}
           file: coverage.lcov
           fail_ci_if_error: true

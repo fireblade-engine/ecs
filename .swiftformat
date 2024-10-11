@@ -1,0 +1,13 @@
+# file options
+--exclude Sources/**/*.generated.swift
+--exclude Sources/FirebladeECS/Entity+Component.swift # problems with self.get { }
+--exclude Tests/**/*.swift
+
+# format options
+--extensionacl on-declarations
+--stripunusedargs closure-only
+--commas inline
+--self remove
+--selfrequired get
+--disable preferKeyPath
+--disable opaqueGenericParameters

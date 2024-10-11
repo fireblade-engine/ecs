@@ -1,5 +1,6 @@
 ignore:
   - "Tests/"
+  - "Benchmarks/"
 
 comment:
   layout: header, changes, diff

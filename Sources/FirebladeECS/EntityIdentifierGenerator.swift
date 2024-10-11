@@ -49,10 +49,10 @@ public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
 
         @usableFromInline
         init<EntityIds>(startProviding initialEntityIds: EntityIds) where EntityIds: BidirectionalCollection, EntityIds.Element == EntityIdentifier {
-            let initialInUse: [EntityIdentifier.Identifier] = initialEntityIds.map { $0.id }
+            let initialInUse: [EntityIdentifier.Identifier] = initialEntityIds.map(\.id)
             let maxInUseValue = initialInUse.max() ?? 0
             let inUseSet = Set(initialInUse) // a set of all eIds in use
-            let allSet = Set(0...maxInUseValue) // all eIds from 0 to including maxInUseValue
+            let allSet = Set(0 ... maxInUseValue) // all eIds from 0 to including maxInUseValue
             let freeSet = allSet.subtracting(inUseSet) // all "holes" / unused / free eIds
             let initialFree = Array(freeSet).sorted().reversed() // order them to provide them linear increasing after all initially used are provided.
             stack = initialFree + initialInUse
@@ -83,12 +83,12 @@ public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
 
     @inlinable
     public init<EntityIds>(startProviding initialEntityIds: EntityIds) where EntityIds: BidirectionalCollection, EntityIds.Element == EntityIdentifier {
-        self.storage = Storage(startProviding: initialEntityIds)
+        storage = Storage(startProviding: initialEntityIds)
     }
 
     @inlinable
     public init() {
-        self.storage = Storage()
+        storage = Storage()
     }
 
     @inline(__always)

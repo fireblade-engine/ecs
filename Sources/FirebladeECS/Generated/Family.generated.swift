@@ -1,4 +1,4 @@
-// Generated using Sourcery 1.6.1 — https://github.com/krzysztofzablocki/Sourcery
+// Generated using Sourcery 2.2.5 — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
 // swiftlint:disable file_length
 // swiftlint:disable function_parameter_count
@@ -27,7 +27,7 @@ public struct Requires1<Comp1>: FamilyRequirementsManaging where Comp1: Componen
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1) {
-        let entity: Entity = Entity(nexus: nexus, id: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         return (entity, comp1)
     }
@@ -39,9 +39,9 @@ public struct Requires1<Comp1>: FamilyRequirementsManaging where Comp1: Componen
 
 extension Requires1: RequiringComponents1 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents1  {
+extension FamilyMemberBuilder where R: RequiringComponents1 {
     public static func buildBlock(_ comp1: R.Comp1) -> (R.Components) {
-        return (comp1)
+        (comp1)
     }
 }
 
@@ -121,7 +121,7 @@ public struct Requires2<Comp1, Comp2>: FamilyRequirementsManaging where Comp1: C
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2) {
-        let entity: Entity = Entity(nexus: nexus, id: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
         return (entity, comp1, comp2)
@@ -134,9 +134,9 @@ public struct Requires2<Comp1, Comp2>: FamilyRequirementsManaging where Comp1: C
 
 extension Requires2: RequiringComponents2 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents2  {
+extension FamilyMemberBuilder where R: RequiringComponents2 {
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2) -> (R.Components) {
-        return (comp1, comp2)
+        (comp1, comp2)
     }
 }
 
@@ -221,7 +221,7 @@ public struct Requires3<Comp1, Comp2, Comp3>: FamilyRequirementsManaging where C
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3) {
-        let entity: Entity = Entity(nexus: nexus, id: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
         let comp3: Comp3 = nexus.get(unsafe: entityId)
@@ -235,9 +235,9 @@ public struct Requires3<Comp1, Comp2, Comp3>: FamilyRequirementsManaging where C
 
 extension Requires3: RequiringComponents3 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents3  {
+extension FamilyMemberBuilder where R: RequiringComponents3 {
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3) -> (R.Components) {
-        return (comp1, comp2, comp3)
+        (comp1, comp2, comp3)
     }
 }
 
@@ -327,7 +327,7 @@ public struct Requires4<Comp1, Comp2, Comp3, Comp4>: FamilyRequirementsManaging 
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4) {
-        let entity: Entity = Entity(nexus: nexus, id: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
         let comp3: Comp3 = nexus.get(unsafe: entityId)
@@ -342,9 +342,9 @@ public struct Requires4<Comp1, Comp2, Comp3, Comp4>: FamilyRequirementsManaging 
 
 extension Requires4: RequiringComponents4 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents4  {
+extension FamilyMemberBuilder where R: RequiringComponents4 {
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3, _ comp4: R.Comp4) -> (R.Components) {
-        return (comp1, comp2, comp3, comp4)
+        (comp1, comp2, comp3, comp4)
     }
 }
 
@@ -439,7 +439,7 @@ public struct Requires5<Comp1, Comp2, Comp3, Comp4, Comp5>: FamilyRequirementsMa
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5) {
-        let entity: Entity = Entity(nexus: nexus, id: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
         let comp3: Comp3 = nexus.get(unsafe: entityId)
@@ -455,9 +455,9 @@ public struct Requires5<Comp1, Comp2, Comp3, Comp4, Comp5>: FamilyRequirementsMa
 
 extension Requires5: RequiringComponents5 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents5  {
+extension FamilyMemberBuilder where R: RequiringComponents5 {
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3, _ comp4: R.Comp4, _ comp5: R.Comp5) -> (R.Components) {
-        return (comp1, comp2, comp3, comp4, comp5)
+        (comp1, comp2, comp3, comp4, comp5)
     }
 }
 
@@ -557,7 +557,7 @@ public struct Requires6<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6>: FamilyRequire
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5, Comp6) {
-        let entity: Entity = Entity(nexus: nexus, id: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
         let comp3: Comp3 = nexus.get(unsafe: entityId)
@@ -574,9 +574,9 @@ public struct Requires6<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6>: FamilyRequire
 
 extension Requires6: RequiringComponents6 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents6  {
+extension FamilyMemberBuilder where R: RequiringComponents6 {
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3, _ comp4: R.Comp4, _ comp5: R.Comp5, _ comp6: R.Comp6) -> (R.Components) {
-        return (comp1, comp2, comp3, comp4, comp5, comp6)
+        (comp1, comp2, comp3, comp4, comp5, comp6)
     }
 }
 
@@ -681,7 +681,7 @@ public struct Requires7<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7>: Family
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7) {
-        let entity: Entity = Entity(nexus: nexus, id: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
         let comp3: Comp3 = nexus.get(unsafe: entityId)
@@ -699,9 +699,9 @@ public struct Requires7<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7>: Family
 
 extension Requires7: RequiringComponents7 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents7  {
+extension FamilyMemberBuilder where R: RequiringComponents7 {
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3, _ comp4: R.Comp4, _ comp5: R.Comp5, _ comp6: R.Comp6, _ comp7: R.Comp7) -> (R.Components) {
-        return (comp1, comp2, comp3, comp4, comp5, comp6, comp7)
+        (comp1, comp2, comp3, comp4, comp5, comp6, comp7)
     }
 }
 
@@ -811,7 +811,7 @@ public struct Requires8<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8>:
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8) {
-        let entity: Entity = Entity(nexus: nexus, id: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
         let comp3: Comp3 = nexus.get(unsafe: entityId)
@@ -830,9 +830,9 @@ public struct Requires8<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8>:
 
 extension Requires8: RequiringComponents8 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents8  {
+extension FamilyMemberBuilder where R: RequiringComponents8 {
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3, _ comp4: R.Comp4, _ comp5: R.Comp5, _ comp6: R.Comp6, _ comp7: R.Comp7, _ comp8: R.Comp8) -> (R.Components) {
-        return (comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8)
+        (comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8)
     }
 }
 
@@ -947,7 +947,7 @@ public struct Requires9<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8, 
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8, Comp9) {
-        let entity: Entity = Entity(nexus: nexus, id: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
         let comp3: Comp3 = nexus.get(unsafe: entityId)
@@ -967,9 +967,9 @@ public struct Requires9<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8, 
 
 extension Requires9: RequiringComponents9 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents9  {
+extension FamilyMemberBuilder where R: RequiringComponents9 {
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3, _ comp4: R.Comp4, _ comp5: R.Comp5, _ comp6: R.Comp6, _ comp7: R.Comp7, _ comp8: R.Comp8, _ comp9: R.Comp9) -> (R.Components) {
-        return (comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8, comp9)
+        (comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8, comp9)
     }
 }
 
@@ -1089,7 +1089,7 @@ public struct Requires10<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8,
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8, Comp9, Comp10) {
-        let entity: Entity = Entity(nexus: nexus, id: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
         let comp3: Comp3 = nexus.get(unsafe: entityId)
@@ -1110,9 +1110,9 @@ public struct Requires10<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8,
 
 extension Requires10: RequiringComponents10 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents10  {
+extension FamilyMemberBuilder where R: RequiringComponents10 {
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3, _ comp4: R.Comp4, _ comp5: R.Comp5, _ comp6: R.Comp6, _ comp7: R.Comp7, _ comp8: R.Comp8, _ comp9: R.Comp9, _ comp10: R.Comp10) -> (R.Components) {
-        return (comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8, comp9, comp10)
+        (comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8, comp9, comp10)
     }
 }
 
@@ -1237,7 +1237,7 @@ public struct Requires11<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8,
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8, Comp9, Comp10, Comp11) {
-        let entity: Entity = Entity(nexus: nexus, id: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
         let comp3: Comp3 = nexus.get(unsafe: entityId)
@@ -1259,9 +1259,9 @@ public struct Requires11<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8,
 
 extension Requires11: RequiringComponents11 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents11  {
+extension FamilyMemberBuilder where R: RequiringComponents11 {
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3, _ comp4: R.Comp4, _ comp5: R.Comp5, _ comp6: R.Comp6, _ comp7: R.Comp7, _ comp8: R.Comp8, _ comp9: R.Comp9, _ comp10: R.Comp10, _ comp11: R.Comp11) -> (R.Components) {
-        return (comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8, comp9, comp10, comp11)
+        (comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8, comp9, comp10, comp11)
     }
 }
 
@@ -1391,7 +1391,7 @@ public struct Requires12<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8,
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8, Comp9, Comp10, Comp11, Comp12) {
-        let entity: Entity = Entity(nexus: nexus, id: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
         let comp3: Comp3 = nexus.get(unsafe: entityId)
@@ -1414,9 +1414,9 @@ public struct Requires12<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8,
 
 extension Requires12: RequiringComponents12 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents12  {
+extension FamilyMemberBuilder where R: RequiringComponents12 {
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3, _ comp4: R.Comp4, _ comp5: R.Comp5, _ comp6: R.Comp6, _ comp7: R.Comp7, _ comp8: R.Comp8, _ comp9: R.Comp9, _ comp10: R.Comp10, _ comp11: R.Comp11, _ comp12: R.Comp12) -> (R.Components) {
-        return (comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8, comp9, comp10, comp11, comp12)
+        (comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8, comp9, comp10, comp11, comp12)
     }
 }
 
@@ -1551,7 +1551,7 @@ public struct Requires13<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8,
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8, Comp9, Comp10, Comp11, Comp12, Comp13) {
-        let entity: Entity = Entity(nexus: nexus, id: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
         let comp3: Comp3 = nexus.get(unsafe: entityId)
@@ -1575,9 +1575,9 @@ public struct Requires13<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8,
 
 extension Requires13: RequiringComponents13 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents13  {
+extension FamilyMemberBuilder where R: RequiringComponents13 {
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3, _ comp4: R.Comp4, _ comp5: R.Comp5, _ comp6: R.Comp6, _ comp7: R.Comp7, _ comp8: R.Comp8, _ comp9: R.Comp9, _ comp10: R.Comp10, _ comp11: R.Comp11, _ comp12: R.Comp12, _ comp13: R.Comp13) -> (R.Components) {
-        return (comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8, comp9, comp10, comp11, comp12, comp13)
+        (comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8, comp9, comp10, comp11, comp12, comp13)
     }
 }
 
@@ -1717,7 +1717,7 @@ public struct Requires14<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8,
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8, Comp9, Comp10, Comp11, Comp12, Comp13, Comp14) {
-        let entity: Entity = Entity(nexus: nexus, id: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
         let comp3: Comp3 = nexus.get(unsafe: entityId)
@@ -1742,9 +1742,9 @@ public struct Requires14<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8,
 
 extension Requires14: RequiringComponents14 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents14  {
+extension FamilyMemberBuilder where R: RequiringComponents14 {
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3, _ comp4: R.Comp4, _ comp5: R.Comp5, _ comp6: R.Comp6, _ comp7: R.Comp7, _ comp8: R.Comp8, _ comp9: R.Comp9, _ comp10: R.Comp10, _ comp11: R.Comp11, _ comp12: R.Comp12, _ comp13: R.Comp13, _ comp14: R.Comp14) -> (R.Components) {
-        return (comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8, comp9, comp10, comp11, comp12, comp13, comp14)
+        (comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8, comp9, comp10, comp11, comp12, comp13, comp14)
     }
 }
 
@@ -1889,7 +1889,7 @@ public struct Requires15<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8,
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8, Comp9, Comp10, Comp11, Comp12, Comp13, Comp14, Comp15) {
-        let entity: Entity = Entity(nexus: nexus, id: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
         let comp3: Comp3 = nexus.get(unsafe: entityId)
@@ -1915,9 +1915,9 @@ public struct Requires15<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8,
 
 extension Requires15: RequiringComponents15 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents15  {
+extension FamilyMemberBuilder where R: RequiringComponents15 {
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3, _ comp4: R.Comp4, _ comp5: R.Comp5, _ comp6: R.Comp6, _ comp7: R.Comp7, _ comp8: R.Comp8, _ comp9: R.Comp9, _ comp10: R.Comp10, _ comp11: R.Comp11, _ comp12: R.Comp12, _ comp13: R.Comp13, _ comp14: R.Comp14, _ comp15: R.Comp15) -> (R.Components) {
-        return (comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8, comp9, comp10, comp11, comp12, comp13, comp14, comp15)
+        (comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8, comp9, comp10, comp11, comp12, comp13, comp14, comp15)
     }
 }
 
@@ -2067,7 +2067,7 @@ public struct Requires16<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8,
     }
 
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8, Comp9, Comp10, Comp11, Comp12, Comp13, Comp14, Comp15, Comp16) {
-        let entity: Entity = Entity(nexus: nexus, id: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
         let comp3: Comp3 = nexus.get(unsafe: entityId)
@@ -2094,9 +2094,9 @@ public struct Requires16<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8,
 
 extension Requires16: RequiringComponents16 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents16  {
+extension FamilyMemberBuilder where R: RequiringComponents16 {
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3, _ comp4: R.Comp4, _ comp5: R.Comp5, _ comp6: R.Comp6, _ comp7: R.Comp7, _ comp8: R.Comp8, _ comp9: R.Comp9, _ comp10: R.Comp10, _ comp11: R.Comp11, _ comp12: R.Comp12, _ comp13: R.Comp13, _ comp14: R.Comp14, _ comp15: R.Comp15, _ comp16: R.Comp16) -> (R.Components) {
-        return (comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8, comp9, comp10, comp11, comp12, comp13, comp14, comp15, comp16)
+        (comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8, comp9, comp10, comp11, comp12, comp13, comp14, comp15, comp16)
     }
 }
 

@@ -92,6 +92,7 @@ public struct ManagedContiguousArray<Element> {
 }
 
 // MARK: - Equatable
+
 extension ManagedContiguousArray: Equatable where Element: Equatable {
     public static func == (lhs: ManagedContiguousArray<Element>, rhs: ManagedContiguousArray<Element>) -> Bool {
         lhs.store == rhs.store
@@ -99,4 +100,5 @@ extension ManagedContiguousArray: Equatable where Element: Equatable {
 }
 
 // MARK: - Codable
-extension ManagedContiguousArray: Codable where Element: Codable { }
+
+extension ManagedContiguousArray: Codable where Element: Codable {}

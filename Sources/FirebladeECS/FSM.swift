@@ -97,9 +97,7 @@ public protocol DefaultInitializable {
 ///// This component provider always returns the same instance of the component. The instance
 ///// is created when first required and is of the type passed in to the initializer.
 //public final class ComponentSingletonProvider {
-//    private lazy var instance: Component = {
-//        componentType.init()
-//    }()
+//    private lazy var instance: Component = componentType.init()
 //
 //    private var componentType: ComponentInitializable.Type
 //
@@ -171,7 +169,7 @@ public protocol DefaultInitializable {
 ///// Represents a state for an EntityStateMachine. The state contains any number of ComponentProviders which
 ///// are used to add components to the entity when this state is entered.
 //public class EntityState {
-//    internal var providers = [ComponentIdentifier: ComponentProvider]()
+//    var providers = [ComponentIdentifier: ComponentProvider]()
 //
 //    public init() {}
 //
@@ -253,7 +251,7 @@ public protocol DefaultInitializable {
 //    /// - Returns: This EntityState, so more modifications can be applied.
 //    @inline(__always)
 //    @discardableResult
-//    public func addProvider<C: ComponentInitializable>(type: C.Type, provider: ComponentProvider) -> Self {
+//    public func addProvider(type: (some ComponentInitializable).Type, provider: ComponentProvider) -> Self {
 //        addMapping(for: type).withProvider(provider)
 //        return self
 //    }
@@ -272,7 +270,7 @@ public protocol DefaultInitializable {
 //    /// by more specific mappings if other methods are called.
 //    /// - Parameter creatingState: The EntityState that the mapping will belong to
 //    /// - Parameter type: The component type for the mapping
-//    internal init(creatingState: EntityState, type: ComponentInitializable.Type) {
+//    init(creatingState: EntityState, type: ComponentInitializable.Type) {
 //        self.creatingState = creatingState
 //        componentType = type
 //        provider = ComponentTypeProvider(type: type)
@@ -318,7 +316,7 @@ public protocol DefaultInitializable {
 //    /// - Parameter closure: The Closure instance to return the component instance
 //    /// - Returns: This ComponentMapping, so more modifications can be applied
 //    @discardableResult
-//    public func withMethod<C: Component>(_ closure: DynamicComponentProvider<C>.Closure) -> Self {
+//    public func withMethod(_ closure: DynamicComponentProvider<some Component>.Closure) -> Self {
 //        setProvider(DynamicComponentProvider(closure: closure))
 //        return self
 //    }
@@ -403,7 +401,7 @@ public protocol DefaultInitializable {
 //
 //        var toAdd: [ComponentIdentifier: ComponentProvider]
 //
-//        if let currentState = currentState {
+//        if let currentState {
 //            toAdd = .init()
 //            for (identifier, provider) in newState.providers {
 //                toAdd[identifier] = provider
@@ -411,7 +409,8 @@ public protocol DefaultInitializable {
 //
 //            for (identifier, _) in currentState.providers {
 //                if let other = toAdd[identifier], let current = currentState.providers[identifier],
-//                   current.identifier == other.identifier {
+//                   current.identifier == other.identifier
+//                {
 //                    toAdd[identifier] = nil
 //                } else {
 //                    entity.remove(identifier)

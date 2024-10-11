@@ -53,7 +53,7 @@ public struct Family<R> where R: FamilyRequirementsManaging {
     /// - Returns: The newly created member entity.
     @discardableResult
     public func createMember(@FamilyMemberBuilder<R> using builder: () -> R.Components) -> Entity {
-        self.createMember(with: builder())
+        createMember(with: builder())
     }
 }
 
@@ -70,16 +70,17 @@ extension Family: Sequence {
     }
 }
 
-extension Family: LazySequenceProtocol { }
+extension Family: LazySequenceProtocol {}
 
 // MARK: - components iterator
+
 extension Family {
     public struct ComponentsIterator: IteratorProtocol {
         @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>.ElementIterator
         @usableFromInline unowned let nexus: Nexus
 
         public init(family: Family<R>) {
-            self.nexus = family.nexus
+            nexus = family.nexus
             memberIdsIterator = family.memberIds.makeIterator()
         }
 
@@ -93,10 +94,11 @@ extension Family {
     }
 }
 
-extension Family.ComponentsIterator: LazySequenceProtocol { }
-extension Family.ComponentsIterator: Sequence { }
+extension Family.ComponentsIterator: LazySequenceProtocol {}
+extension Family.ComponentsIterator: Sequence {}
 
 // MARK: - entity iterator
+
 extension Family {
     @inlinable public var entities: EntityIterator {
         EntityIterator(family: self)
@@ -107,7 +109,7 @@ extension Family {
         @usableFromInline unowned let nexus: Nexus
 
         public init(family: Family<R>) {
-            self.nexus = family.nexus
+            nexus = family.nexus
             memberIdsIterator = family.memberIds.makeIterator()
         }
 
@@ -120,10 +122,11 @@ extension Family {
     }
 }
 
-extension Family.EntityIterator: LazySequenceProtocol { }
-extension Family.EntityIterator: Sequence { }
+extension Family.EntityIterator: LazySequenceProtocol {}
+extension Family.EntityIterator: Sequence {}
 
 // MARK: - entity component iterator
+
 extension Family {
     @inlinable public var entityAndComponents: EntityComponentIterator {
         EntityComponentIterator(family: self)
@@ -134,7 +137,7 @@ extension Family {
         @usableFromInline unowned let nexus: Nexus
 
         public init(family: Family<R>) {
-            self.nexus = family.nexus
+            nexus = family.nexus
             memberIdsIterator = family.memberIds.makeIterator()
         }
 
@@ -147,10 +150,11 @@ extension Family {
     }
 }
 
-extension Family.EntityComponentIterator: LazySequenceProtocol { }
-extension Family.EntityComponentIterator: Sequence { }
+extension Family.EntityComponentIterator: LazySequenceProtocol {}
+extension Family.EntityComponentIterator: Sequence {}
 
 // MARK: - member creation
+
 extension Family {
     /// Create a new entity with components required by this family.
     ///

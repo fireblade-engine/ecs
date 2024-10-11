@@ -17,9 +17,9 @@ public struct Entity {
     /// The unique entity identifier.
     public private(set) var identifier: EntityIdentifier
 
-    internal init(nexus: Nexus, id: EntityIdentifier) {
+    init(nexus: Nexus, id: EntityIdentifier) {
         self.nexus = nexus
-        self.identifier = id
+        identifier = id
     }
 
     /// Returns the number of components for this entity.
@@ -38,13 +38,13 @@ public struct Entity {
     }
 
     @discardableResult
-    public func createEntity<C>(with components: C) -> Entity where C: Collection, C.Element == Component {
+    public func createEntity(with components: some Collection<Component>) -> Entity {
         nexus.createEntity(with: components)
     }
 
     /// Checks if a component with given type is assigned to this entity.
     /// - Parameter type: the component type.
-    public func has<C>(_ type: C.Type) -> Bool where C: Component {
+    public func has(_ type: (some Component).Type) -> Bool {
         has(type.identifier)
     }
 
@@ -78,13 +78,13 @@ public struct Entity {
     /// Add a typed component to this entity.
     /// - Parameter component: the typed component.
     @discardableResult
-    public func assign<C>(_ component: C) -> Entity where C: Component {
+    public func assign(_ component: some Component) -> Entity {
         assign(component)
         return self
     }
 
     @discardableResult
-    public func assign<C>(_ components: C) -> Entity where C: Collection, C.Element == Component {
+    public func assign(_ components: some Collection<Component>) -> Entity {
         nexus.assign(components: components, to: self)
         return self
     }
@@ -92,14 +92,14 @@ public struct Entity {
     /// Remove a component from this entity.
     /// - Parameter component: the component.
     @discardableResult
-    public func remove<C>(_ component: C) -> Entity where C: Component {
+    public func remove(_ component: some Component) -> Entity {
         remove(component.identifier)
     }
 
     /// Remove a component by type from this entity.
     /// - Parameter compType: the component type.
     @discardableResult
-    public func remove<C>(_ compType: C.Type) -> Entity where C: Component {
+    public func remove(_ compType: (some Component).Type) -> Entity {
         remove(compType.identifier)
     }
 
@@ -130,7 +130,7 @@ public struct Entity {
 
 extension Entity {
     public struct ComponentsIterator: IteratorProtocol {
-        private var iterator: IndexingIterator<([Component])>?
+        private var iterator: IndexingIterator<[Component]>?
 
         @usableFromInline
         init(nexus: Nexus, entityIdentifier: EntityIdentifier) {
@@ -144,8 +144,9 @@ extension Entity {
         }
     }
 }
-extension Entity.ComponentsIterator: LazySequenceProtocol { }
-extension Entity.ComponentsIterator: Sequence { }
+
+extension Entity.ComponentsIterator: LazySequenceProtocol {}
+extension Entity.ComponentsIterator: Sequence {}
 
 extension Entity: Equatable {
     public static func == (lhs: Entity, rhs: Entity) -> Bool {

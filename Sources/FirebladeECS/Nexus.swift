@@ -42,13 +42,14 @@ public final class Nexus {
                   codingStrategy: DefaultCodingStrategy())
     }
 
-    internal init(componentsByType: [ComponentIdentifier: ManagedContiguousArray<Component>],
-                  componentsByEntity: [EntityIdentifier: Set<ComponentIdentifier>],
-                  entityIdGenerator: EntityIdentifierGenerator,
-                  familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>],
-                  codingStrategy: CodingStrategy) {
+    init(componentsByType: [ComponentIdentifier: ManagedContiguousArray<Component>],
+         componentsByEntity: [EntityIdentifier: Set<ComponentIdentifier>],
+         entityIdGenerator: EntityIdentifierGenerator,
+         familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>],
+         codingStrategy: CodingStrategy)
+    {
         self.componentsByType = componentsByType
-        self.componentIdsByEntity = componentsByEntity
+        componentIdsByEntity = componentsByEntity
         self.familyMembersByTraits = familyMembersByTraits
         self.entityIdGenerator = entityIdGenerator
         self.codingStrategy = codingStrategy
@@ -66,6 +67,7 @@ public final class Nexus {
 }
 
 // MARK: - CustomDebugStringConvertible
+
 extension Nexus: CustomDebugStringConvertible {
     public var debugDescription: String {
         "<Nexus entities:\(numEntities) components:\(numComponents) families:\(numFamilies)>"
@@ -73,8 +75,9 @@ extension Nexus: CustomDebugStringConvertible {
 }
 
 // MARK: - default coding strategy
+
 public struct DefaultCodingStrategy: CodingStrategy {
-    public init() { }
+    public init() {}
 
     public func codingKey<C>(for componentType: C.Type) -> DynamicCodingKey where C: Component {
         DynamicCodingKey(stringValue: "\(C.self)").unsafelyUnwrapped

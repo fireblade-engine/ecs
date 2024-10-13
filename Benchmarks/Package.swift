@@ -10,7 +10,7 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../"),
-        .package(url: "https://github.com/ordo-one/package-benchmark", .upToNextMajor(from: "1.4.0"))
+        .package(url: "https://github.com/ordo-one/package-benchmark", .upToNextMajor(from: "1.27.2"))
     ],
     targets: [
         .executableTarget(

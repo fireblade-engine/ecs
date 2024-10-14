@@ -30,7 +30,9 @@ jobs:
       run: brew install jemalloc
 
     - name: Run benchmark
-      run: swift package --allow-writing-to-package-directory benchmark --format jmh --path .
+      run: |
+        swift package --allow-writing-to-package-directory benchmark --no-progress --format jmh
+        ls -la
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4.4.3

@@ -49,7 +49,7 @@ jobs:
           include-hidden-files: true
 
       - name: JMH Benchmark Action
-        uses: kitlangton/jmh-benchmark-action@v0.1.1
+        uses: kitlangton/jmh-benchmark-action@main
         with:
           jmh-output-path: Benchmarks/Current_run.jmh.json
           github-token: ${{ secrets.GITHUB_TOKEN }}

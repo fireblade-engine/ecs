@@ -15,8 +15,9 @@ jobs:
   build:
     if: ${{ github.event.label.name == 'benchmark' }}
     runs-on: macos-latest
-    env:
-        working_directory: ./Benchmarks/
+    defaults:
+        run:
+          working-directory: ./Benchmarks
     strategy:
       matrix:
         xcode: ["15.4"]

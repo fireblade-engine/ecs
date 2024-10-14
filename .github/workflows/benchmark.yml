@@ -39,6 +39,8 @@ jobs:
       with:
         name: benchmarks-${{ matrix.xcode }}-${{ github.run_id }}
         path: |
+            Current_run.jmh.json
+            Benchmarks/Current_run.jmh.json
             *.jmh.json
-        if-no-files-found: error
+        if-no-files-found: warn
         include-hidden-files: true

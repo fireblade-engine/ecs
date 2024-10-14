@@ -1,0 +1,38 @@
+name: Benchmark
+
+on:
+    workflow_dispatch:
+  
+
+# Make sure that we only benchmark the last version per branch, max one at the time
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-latest
+    env:
+        working_directory: ./Benchmarks/
+    strategy:
+      matrix:
+        xcode: ["15.4"]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      run: brew install jemalloc
+
+    - name: Run benchmark
+      run: swift package --allow-writing-to-package-directory benchmark --format jmh --path .
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4.4.3
+      with:
+        name: benchmarks-${{ matrix.xcode }}-${{ github.run_id }}
+        path: |
+            *.jmh.json
+        if-no-files-found: error
+        include-hidden-files: true

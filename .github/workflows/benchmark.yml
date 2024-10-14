@@ -51,5 +51,5 @@ jobs:
       - name: JMH Benchmark Action
         uses: kitlangton/jmh-benchmark-action@main
         with:
-          jmh-output-path: Benchmarks/Current_run.jmh.json
+          jmh-output-path: ./Current_run.jmh.json
           github-token: ${{ secrets.GITHUB_TOKEN }}

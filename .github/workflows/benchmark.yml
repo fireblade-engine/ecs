@@ -53,10 +53,21 @@ jobs:
         uses: benchmark-action/github-action-benchmark@v1.20.3
         with:
           # What benchmark tool the output.txt came from
-          tool: 'jmh'
+          tool: "jmh"
           # Where the output from the benchmark tool is stored
           output-file-path: Benchmarks/Current_run.jmh.json
           # Where the previous data file is stored
           # external-data-json-path: ./cache/benchmark-data.json
           # Workflow will fail when an alert happens
           # fail-on-alert: true
+          fail-on-alert: true
+          # GitHub API token to make a commit comment
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Enable alert commit comment
+          # comment-on-alert: true
+          # Enable Job Summary for PRs
+          summary-always: true
+          # Mention @rhysd in the commit comment
+          # alert-comment-cc-users: "@rhysd"
+          save-data-file: false
+          skip-fetch-gh-pages: true

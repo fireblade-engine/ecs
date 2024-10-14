@@ -55,7 +55,7 @@ jobs:
           # What benchmark tool the output.txt came from
           tool: 'jmh'
           # Where the output from the benchmark tool is stored
-          output-file-path: Current_run.jmh.json
+          output-file-path: Benchmarks/Current_run.jmh.json
           # Where the previous data file is stored
           # external-data-json-path: ./cache/benchmark-data.json
           # Workflow will fail when an alert happens

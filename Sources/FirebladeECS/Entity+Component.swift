@@ -48,7 +48,7 @@ extension Entity {
                 self.remove(Comp.self)
                 return
             }
-            if self.get(component: componentType) === newComponent {
+            if self.get(component: componentType) != nil {
                 return
             }
             self.assign(newComponent)

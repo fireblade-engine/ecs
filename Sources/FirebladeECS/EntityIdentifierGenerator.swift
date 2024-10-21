@@ -101,4 +101,5 @@ public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
         storage.markUnused(entityId: entityId)
     }
 }
-extension LinearIncrementingEntityIdGenerator.Storage: Codable { }
+
+extension LinearIncrementingEntityIdGenerator.Storage: Codable {}

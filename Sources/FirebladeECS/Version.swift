@@ -45,22 +45,24 @@ public struct Version {
 
         guard requiredComponents.count == 3 else { return nil }
 
-        self.major = requiredComponents[0]
-        self.minor = requiredComponents[1]
-        self.patch = requiredComponents[2]
+        major = requiredComponents[0]
+        minor = requiredComponents[1]
+        patch = requiredComponents[2]
 
         func identifiers(start: String.Index?, end: String.Index) -> [String] {
-            guard let start = start else { return [] }
-            let identifiers = versionString[versionString.index(after: start)..<end]
+            guard let start else { return [] }
+            let identifiers = versionString[versionString.index(after: start) ..< end]
             return identifiers.split(separator: ".").map(String.init)
         }
 
-        self.prereleaseIdentifiers = identifiers(
+        prereleaseIdentifiers = identifiers(
             start: prereleaseStartIndex,
-            end: metadataStartIndex ?? versionString.endIndex)
-        self.buildMetadataIdentifiers = identifiers(
+            end: metadataStartIndex ?? versionString.endIndex
+        )
+        buildMetadataIdentifiers = identifiers(
             start: metadataStartIndex,
-            end: versionString.endIndex)
+            end: versionString.endIndex
+        )
     }
 
     public var versionString: String {
@@ -75,7 +77,7 @@ public struct Version {
     }
 }
 
-extension Version: Equatable { }
+extension Version: Equatable {}
 extension Version: Comparable {
     func isEqualWithoutPrerelease(_ other: Version) -> Bool {
         major == other.major && minor == other.minor && patch == other.patch
@@ -89,11 +91,11 @@ extension Version: Comparable {
             return lhsComparators.lexicographicallyPrecedes(rhsComparators)
         }
 
-        guard lhs.prereleaseIdentifiers.count > 0 else {
+        guard !lhs.prereleaseIdentifiers.isEmpty else {
             return false // Non-prerelease lhs >= potentially prerelease rhs
         }
 
-        guard rhs.prereleaseIdentifiers.count > 0 else {
+        guard !rhs.prereleaseIdentifiers.isEmpty else {
             return true // Prerelease lhs < non-prerelease rhs
         }
 
@@ -111,7 +113,6 @@ extension Version: Comparable {
             case let (string1 as String, string2 as String): return string1 < string2
             case (is Int, is String): return true // Int prereleases < String prereleases
             case (is String, is Int): return false
-
             default:
                 return false
             }

@@ -7,7 +7,7 @@
 
 extension Nexus: Encodable {
     public func encode(to encoder: Encoder) throws {
-        let serializedNexus = try self.serialize()
+        let serializedNexus = try serialize()
         var container = encoder.singleValueContainer()
         try container.encode(serializedNexus)
     }

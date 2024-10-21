@@ -31,7 +31,7 @@ extension Nexus {
     }
 
     final func deserialize(from sNexus: SNexus, into nexus: Nexus) throws {
-        for freeId in sNexus.entities.map { $0.key }.reversed() {
+        for freeId in sNexus.entities.map(\.key).reversed() {
             nexus.entityIdGenerator.markUnused(entityId: freeId)
         }
 

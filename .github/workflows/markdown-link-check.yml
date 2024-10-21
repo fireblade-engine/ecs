@@ -1,6 +1,11 @@
 name: Check markdown links
 
-on: push
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   markdown-link-check:

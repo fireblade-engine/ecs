@@ -21,6 +21,17 @@ extension ComponentIdentifier {
     static func makeRuntimeHash(_ componentType: (some Component).Type) -> Identifier {
         ObjectIdentifier(componentType).hashValue
     }
+
+    typealias StableId = UInt64
+    static func makeStableTypeHash(component: Component) -> StableId {
+        let componentTypeString = String(describing: type(of: component))
+        return StringHashing.singer_djb2(componentTypeString)
+    }
+
+    static func makeStableInstanceHash(component: Component, entityId: EntityIdentifier) -> StableId {
+        let componentTypeString = String(describing: type(of: component)) + String(entityId.id)
+        return StringHashing.singer_djb2(componentTypeString)
+    }
 }
 
 extension ComponentIdentifier: Equatable {}

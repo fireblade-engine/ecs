@@ -23,8 +23,8 @@ public struct EntityIdentifier {
     }
 }
 
-extension EntityIdentifier: Equatable { }
-extension EntityIdentifier: Hashable { }
+extension EntityIdentifier: Equatable {}
+extension EntityIdentifier: Hashable {}
 
 extension EntityIdentifier: RawRepresentable {
     /// The entity identifier represented as a raw value.
@@ -33,7 +33,7 @@ extension EntityIdentifier: RawRepresentable {
 
     @inlinable
     public init(rawValue: Identifier) {
-        self.id = rawValue
+        id = rawValue
     }
 }
 

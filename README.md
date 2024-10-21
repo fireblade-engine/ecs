@@ -1,11 +1,13 @@
 # Fireblade ECS (Entity-Component System)
 [![license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
-[![github CI](https://github.com/fireblade-engine/ecs/workflows/CI/badge.svg)](https://github.com/fireblade-engine/ecs/actions?query=workflow%3ACI)
-[![codecov](https://codecov.io/gh/fireblade-engine/ecs/branch/master/graph/badge.svg)](https://codecov.io/gh/fireblade-engine/ecs)
+[![macOS](https://github.com/fireblade-engine/ecs/actions/workflows/ci-macos.yml/badge.svg)](https://github.com/fireblade-engine/ecs/actions/workflows/ci-macos.yml)
+[![Linux](https://github.com/fireblade-engine/ecs/actions/workflows/ci-linux.yml/badge.svg)](https://github.com/fireblade-engine/ecs/actions/workflows/ci-linux.yml)
+[![Windows](https://github.com/fireblade-engine/ecs/actions/workflows/ci-windows.yml/badge.svg)](https://github.com/fireblade-engine/ecs/actions/workflows/ci-windows.yml)
+[![WASM](https://github.com/fireblade-engine/ecs/actions/workflows/ci-wasm.yml/badge.svg)](https://github.com/fireblade-engine/ecs/actions/workflows/ci-wasm.yml)
 [![documentation](https://github.com/fireblade-engine/ecs/workflows/Documentation/badge.svg)](https://github.com/fireblade-engine/ecs/wiki)  
+[![codecov](https://codecov.io/gh/fireblade-engine/ecs/branch/master/graph/badge.svg)](https://codecov.io/gh/fireblade-engine/ecs)
 [![spi-swift-versions](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Ffireblade-engine%2Fecs%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/fireblade-engine/ecs)
 [![spi-swift-platforms](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Ffireblade-engine%2Fecs%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/fireblade-engine/ecs)
-[![platform-webassembly](https://img.shields.io/badge/Platform-WebAssembly-blue.svg)](https://github.com/swiftwasm/swift#swiftwasm)
 
 This is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component System](https://en.wikipedia.org/wiki/Entity_component_system) implementation in Swift. It is developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
 
@@ -23,19 +25,19 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### 💻 Installing
 
-Fireblade ECS is available for all platforms that support [Swift 5.1](https://swift.org/) and higher and the [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager).
+Fireblade ECS is available for all platforms that support [Swift 5.8](https://swift.org/) and higher and the [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager).
 
 Extend the following lines in your `Package.swift` file or use it to create a new project.
 
 ```swift
-// swift-tools-version:5.1
+// swift-tools-version:5.8
 
 import PackageDescription
 
 let package = Package(
     name: "YourPackageName",
     dependencies: [
-        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.17.3")
+        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.17.5")
     ],
     targets: [
         .target(

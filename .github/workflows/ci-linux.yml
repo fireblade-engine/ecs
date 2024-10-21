@@ -1,0 +1,39 @@
+name: Linux
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  linux-test-build-release:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        swift: ["latest"]
+    container:
+      image: swift:${{ matrix.swift }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test
+        run: swift test -c release --enable-xctest --parallel --xunit-output .build/xUnit-output.xml
+
+      - name: Upload test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          name: test-artifacts-linux-${{ matrix.swift }}-${{ github.run_id }}
+          path: |
+            .build/*.yaml
+            .build/*.xml
+            .build/*.json
+            .build/*.txt
+            .build/**/*.xctest
+            .build/**/*.json
+            .build/**/*.txt
+          if-no-files-found: warn
+          include-hidden-files: true
+

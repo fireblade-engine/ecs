@@ -5,6 +5,10 @@
 //  Created by Christian Treffs on 07.08.20.
 //
 
-@_functionBuilder
-public enum FamilyMemberBuilderPreview<R> where R: FamilyRequirementsManaging { }
-public typealias FamilyMemberBuilder<R> = FamilyMemberBuilderPreview<R> where R: FamilyRequirementsManaging
+#if swift(<5.4)
+    @_functionBuilder
+    public enum FamilyMemberBuilder<R> where R: FamilyRequirementsManaging {}
+#else
+    @resultBuilder
+    public enum FamilyMemberBuilder<R> where R: FamilyRequirementsManaging {}
+#endif

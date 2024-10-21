@@ -5,6 +5,7 @@
 //  Created by Christian Treffs on 14.02.19.
 //
 
+#if os(macOS)
 import FirebladeECS
 import XCTest
 
@@ -97,3 +98,6 @@ class HashingPerformanceTests: XCTestCase {
         #endif
     }
 }
+#else
+    #warning("Skipping HashingPerformanceTests")
+#endif

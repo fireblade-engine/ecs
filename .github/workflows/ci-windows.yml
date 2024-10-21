@@ -1,0 +1,39 @@
+name: Windows
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  windows-test-build-release:
+    runs-on: windows-latest
+    steps:
+      - name: Setup
+        uses: compnerd/gha-setup-swift@v0.2.3
+        with:
+          branch: swift-5.10-release
+          tag: 5.10-RELEASE
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test
+        run: swift test -c release --parallel --xunit-output .build/xUnit-output.xml
+
+      - name: Upload test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          name: test-artifacts-windows-${{ github.run_id }}
+          path: |
+            .build/*.yaml
+            .build/*.xml
+            .build/*.json
+            .build/*.txt
+            .build/**/*.xctest
+            .build/**/*.json
+            .build/**/*.txt
+          if-no-files-found: warn
+          include-hidden-files: true

@@ -32,13 +32,13 @@ extension Single where A: SingleComponent {
     }
 
     public var entity: Entity {
-        Entity(nexus: self.nexus, id: entityId)
+        Entity(nexus: nexus, id: entityId)
     }
 }
 
 extension Nexus {
     public func single<S>(_ component: S.Type) -> Single<S> where S: SingleComponent {
-        let family = self.family(requires: S.self)
+        let family = family(requires: S.self)
         precondition(family.count <= 1, "Singleton count of \(S.self) must be 0 or 1: \(family.count)")
         let entityId: EntityIdentifier
         if family.isEmpty {

@@ -8,7 +8,7 @@
 extension Nexus {
     @usableFromInline
     @discardableResult
-    func assign<C>(components: C, to entityId: EntityIdentifier) -> Bool where C: Collection, C.Element == Component {
+    func assign(components: some Collection<Component>, to entityId: EntityIdentifier) -> Bool {
         var iter = components.makeIterator()
         while let component = iter.next() {
             let componentId = component.identifier
@@ -103,8 +103,8 @@ extension Nexus {
             return
         }
 
-        let isMember: Bool = self.isMember(entity: entityId, inFamilyWithTraits: traits)
-        if !exists(entity: entityId) && isMember {
+        let isMember: Bool = isMember(entity: entityId, inFamilyWithTraits: traits)
+        if !exists(entity: entityId), isMember {
             remove(entityWithId: entityId, fromFamilyWithTraits: traits)
             return
         }

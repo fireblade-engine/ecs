@@ -59,3 +59,13 @@ clean: clean-sourcery
 .PHONY: clean-sourcery
 clean-sourcery:
 	rm -rdf ${HOME}/Library/Caches/Sourcery
+
+# Preview DocC documentation
+.PHONY: preview-docs
+preview-docs:
+	swift package --disable-sandbox preview-documentation --target FirebladeECS
+
+# Preview DocC documentation with analysis/warnings and overview of coverage
+.PHONY: preview-analysis-docs
+preview-analysis-docs:
+	swift package --disable-sandbox preview-documentation --target FirebladeECS --analyze --experimental-documentation-coverage --level brief

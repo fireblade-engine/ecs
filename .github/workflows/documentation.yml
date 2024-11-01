@@ -58,7 +58,7 @@ jobs:
                 --target FirebladeECS \
                 --output-path docs/"$tag" \
                 --transform-for-static-hosting \
-                --hosting-base-path /swift-composable-architecture/"$tag" \
+                --hosting-base-path /FirebladeECS/"$tag" \
                 && echo "✅ Documentation generated for FirebladeECS @ "$tag" release." \
                 || echo "⚠️ Documentation skipped for FirebladeECS @ "$tag".";
             fi;

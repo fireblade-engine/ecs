@@ -59,7 +59,7 @@ jobs:
                 --target FirebladeECS \
                 --output-path docs/"$tag" \
                 --transform-for-static-hosting \
-                --hosting-base-path https://fireblade-engine.github.io/ecs/"$tag" \
+                --hosting-base-path ecs/"$tag" \
                 && echo "✅ Documentation generated for FirebladeECS @ "$tag" release." \
                 || echo "⚠️ Documentation skipped for FirebladeECS @ "$tag".";
             fi;

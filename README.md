@@ -233,8 +233,9 @@ See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) t
 
 ## 📖 Documentation
 
-Consult the [wiki](https://github.com/fireblade-engine/ecs/wiki) for in-depth [documentation](https://github.com/fireblade-engine/ecs/wiki).
+Consult the [online documentation](https://swiftpackageindex.com/fireblade-engine/ecs/documentation/FirebladeECS), or preview it locally:
 
+- `make preview-docs`
 
 ## 💁 How to contribute
 

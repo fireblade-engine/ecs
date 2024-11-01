@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 30.10.17.
 //
 
-/// An (unordered) sparse set.
+/// An unordered sparse set.
 ///
 /// - `Element`: the element (instance) to store.
 /// - `Key`: the unique, hashable datastructure to use as a key to retrieve
@@ -130,6 +130,7 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
         }
     }
 
+    /// Creates a new sparse set.
     public init() {
         self.init(storage: Storage())
     }
@@ -141,21 +142,26 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
 
     @usableFromInline let storage: Storage
 
+    /// The size of the set.
     public var count: Int { storage.count }
+    /// A Boolean value that indicates whether the set is empty.
     public var isEmpty: Bool { storage.isEmpty }
 
+    /// Returns a Boolean value that indicates whether the key is included in the set.
+    /// - Parameter key: The key to inspect.
     @inlinable
     public func contains(_ key: Key) -> Bool {
         storage.findIndex(at: key) != nil
     }
 
     /// Inset an element for a given key into the set in O(1).
+    ///
     /// Elements at previously set keys will be replaced.
     ///
     /// - Parameters:
-    ///   - element: the element
-    ///   - key: the key
-    /// - Returns: true if new, false if replaced.
+    ///   - element: The element.
+    ///   - key: The key.
+    /// - Returns: `true` if new, `false` if replaced.
     @discardableResult
     public func insert(_ element: Element, at key: Key) -> Bool {
         storage.insert(element, at: key)
@@ -163,13 +169,16 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
 
     /// Get the element for the given key in O(1).
     ///
-    /// - Parameter key: the key
-    /// - Returns: the element or nil of key not found.
+    /// - Parameter key: The key.
+    /// - Returns: the element or `nil` if the key wasn't found.
     @inlinable
     public func get(at key: Key) -> Element? {
         storage.findElement(at: key)
     }
 
+    /// Unsafely gets the element for the given key,
+    /// - Parameter key: The key.
+    /// - Returns: The element.
     @inlinable
     public func get(unsafeAt key: Key) -> Element {
         storage.findElement(at: key).unsafelyUnwrapped
@@ -184,17 +193,21 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
         storage.remove(at: key)?.element
     }
 
+    /// Removes all keys and elements from the set.
+    /// - Parameter keepingCapacity: A Boolean value that indicates whether the set should maintain it's capacity.
     @inlinable
     public func removeAll(keepingCapacity: Bool = false) {
         storage.removeAll(keepingCapacity: keepingCapacity)
     }
 
+    /// The first element of the set.
     @inlinable public var first: Element? {
         storage.first
     }
 }
 
 extension UnorderedSparseSet where Key == Int {
+    /// Retrieve or set an element using the key.
     @inlinable
     public subscript(key: Key) -> Element {
         get {

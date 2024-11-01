@@ -21,8 +21,10 @@ public typealias ComponentTypeHash = Int
 
 // MARK: - hash combine
 
-/// Calculates the combined hash of two values. This implementation is based on boost::hash_combine.
-/// Will always produce the same result for the same combination of seed and value during the single run of a program.
+/// Calculates the combined hash of two values.
+///
+/// This implementation is based on boost::hash_combine.
+/// It produces the same result for the same combination of seed and value during the single run of a program.
 ///
 /// - Parameters:
 ///   - seed: seed hash.
@@ -46,8 +48,10 @@ public func hash(combine seed: Int, _ value: Int) -> Int {
     return Int(bitPattern: uSeed)
 }
 
-/// Calculates the combined hash value of the elements. This implementation is based on boost::hash_range.
-/// Is sensitive to the order of the elements.
+/// Calculates the combined hash value of the elements.
+///
+/// This implementation is based on boost::hash_range.
+/// The hash value this method computes is sensitive to the order of the elements.
 /// - Parameter hashValues: sequence of hash values to combine.
 /// - Returns: combined hash value.
 public func hash<H: Sequence>(combine hashValues: H) -> Int where H.Element: Hashable {
@@ -79,11 +83,13 @@ extension EntityComponentHash {
 
 // MARK: - string hashing
 
-/// <https://stackoverflow.com/a/52440609>
+/// A type that provides stable hash values for String.
+///
+/// The details are based on [StackOverflow Q&A on String hashing in Swift](https://stackoverflow.com/a/52440609)
 public enum StringHashing {
-    /// *Waren Singer djb2*
+    /// *Warren Stringer djb2*
     ///
-    /// <https://stackoverflow.com/a/43149500>
+    /// Implementation from <https://stackoverflow.com/a/43149500>
     public static func singer_djb2(_ utf8String: String) -> UInt64 {
         var hash: UInt64 = 5381
         var iter = utf8String.unicodeScalars.makeIterator()
@@ -95,8 +101,8 @@ public enum StringHashing {
 
     /// *Dan Bernstein djb2*
     ///
-    /// This algorithm (k=33) was first reported by dan bernstein many years ago in comp.lang.c.
-    /// Another version of this algorithm (now favored by bernstein) uses xor: hash(i) = hash(i - 1) * 33 ^ str[i];
+    /// This algorithm (k=33) was first reported by Dan Bernstein many years ago in `comp.lang.c`.
+    /// Another version of this algorithm (now favored by Bernstein) uses xor: `hash(i) = hash(i - 1) * 33 ^ str[i];`
     /// The magic of number 33 (why it works better than many other constants, prime or not) has never been adequately explained.
     ///
     /// <http://www.cse.yorku.ca/~oz/hash.html>

@@ -59,3 +59,37 @@ clean: clean-sourcery
 .PHONY: clean-sourcery
 clean-sourcery:
 	rm -rdf ${HOME}/Library/Caches/Sourcery
+
+# Preview DocC documentation
+.PHONY: preview-docs
+preview-docs:
+	swift package --disable-sandbox preview-documentation --target FirebladeECS
+
+# Preview DocC documentation with analysis/warnings and overview of coverage
+.PHONY: preview-analysis-docs
+preview-analysis-docs:
+	swift package --disable-sandbox preview-documentation --target FirebladeECS --analyze --experimental-documentation-coverage --level brief
+
+# Generates a plain DocC archive in the .build directory
+.PHONY: generate-docs
+generate-docs:
+	DOCC_JSON_PRETTYPRINT=YES \
+ 	swift package \
+	generate-documentation \
+	--fallback-bundle-identifier com.github.fireblade-engine.FirebladeECS \
+	--target FirebladeECS \
+
+# Generates documentation pages suitable to push/host on github pages (or another static site)
+# Expected location, if set up, would be:
+#   https://fireblade-engine.github.io/FirebladeECS/documentation/FirebladeECS/
+.PHONY: generate-docs-githubpages
+generate-docs-githubpages:
+	DOCC_JSON_PRETTYPRINT=YES \
+ 	swift package \
+	--allow-writing-to-directory ./docs \
+	generate-documentation \
+	--fallback-bundle-identifier com.github.fireblade-engine.FirebladeECS \
+	--target FirebladeECS \
+	--output-path ./docs \
+	--transform-for-static-hosting \
+	--hosting-base-path 'FirebladeECS'

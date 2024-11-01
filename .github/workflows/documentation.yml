@@ -37,9 +37,8 @@ jobs:
         run: >
           rm -rf docs/.git;
           rm -rf docs/master;
-          git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.*" | tail -n +6 | xargs -I {} rm -rf {}; // remove all tag folders except the newest 6
+          git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.*" | tail -n +6 | xargs -I {} rm -rf {};
 
-          // iterate the newest 6 tags and master
           for tag in $(echo "master"; git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.*" | head -6);
           do
             if [ -d "docs/$tag/data/documentation/firebladeecs" ] 

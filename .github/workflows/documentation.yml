@@ -37,9 +37,10 @@ jobs:
         run: >
           rm -rf docs/.git;
           rm -rf docs/master;
-          git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | tail -n +6 | xargs -I {} rm -rf {};
+          git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.*" | tail -n +6 | xargs -I {} rm -rf {}; // remove all tag folders except the newest 6
 
-          for tag in $(echo "master"; git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | head -6);
+          // iterate the newest 6 tags and master
+          for tag in $(echo "master"; git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.*" | head -6);
           do
             if [ -d "docs/$tag/data/documentation/firebladeecs" ] 
             then 
@@ -60,6 +61,8 @@ jobs:
                 --output-path docs/"$tag" \
                 --transform-for-static-hosting \
                 --hosting-base-path ecs/"$tag" \
+                --source-service github \
+                --source-service-base-url https://fireblade-engine.github.io/ecs/"$tag" \
                 && echo "✅ Documentation generated for FirebladeECS @ "$tag" release." \
                 || echo "⚠️ Documentation skipped for FirebladeECS @ "$tag".";
             fi;

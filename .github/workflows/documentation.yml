@@ -1,32 +1,75 @@
+# Build and deploy DocC to GitHub pages. Based off of pointfreeco/swift-composable-architecture:
+# https://github.com/pointfreeco/swift-composable-architecture/blob/main/.github/workflows/documentation.yml
 name: Documentation
 
 on:
+  release:
+    types:
+      - published
   push:
-    branches: [ master ]
-    paths:
-      - .github/workflows/documentation.yml
-      - Sources/FirebladeECS/**.swift
+    branches:
+      - master
   workflow_dispatch:
-    branches: [ master ]
-    paths:
-      - .github/workflows/documentation.yml
-      - Sources/FirebladeECS/**.swift
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
+    runs-on: macos-14
     steps:
-      - uses: actions/checkout@master
-      - name: Generate Swift Doc Documentation
-        uses: SwiftDocOrg/swift-doc@1.0.0-rc.1
+      - name: Select Xcode 16.0
+        run: sudo xcode-select -s /Applications/Xcode_16.0.app
+
+      - name: Checkout Package
+        uses: actions/checkout@v4
         with:
-          inputs: "Sources/FirebladeECS"
-          output: "Documentation"
-      - name: Publish to wiki
-        uses: SwiftDocOrg/github-wiki-publish-action@master
+          fetch-depth: 0
+
+      - name: Checkout gh-pages Branch
+        uses: actions/checkout@v4
         with:
-          path: "Documentation"
-        env:
-          GITHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          ref: gh-pages
+          path: docs
+
+      - name: Build documentation
+        run: >
+          rm -rf docs/.git;
+          rm -rf docs/master;
+          git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | tail -n +6 | xargs -I {} rm -rf {};
+
+          for tag in $(echo "master"; git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | head -6);
+          do
+            if [ -d "docs/$tag/data/documentation/fireblade-ecs" ] 
+            then 
+              echo "✅ Documentation for "$tag" already exists.";
+            else 
+              echo "⏳ Generating documentation for FirebladeECS @ "$tag" release.";
+              rm -rf "docs/$tag";
+
+              git checkout .;
+              git checkout "$tag";
+
+              DOCC_JSON_PRETTYPRINT=YES \
+              swift package \
+                --allow-writing-to-directory docs/"$tag" \
+                generate-documentation \
+                --target FirebladeECS \
+                --output-path docs/"$tag" \
+                --transform-for-static-hosting \
+                --hosting-base-path /FirebladeECS/"$tag" \
+                && echo "✅ Documentation generated for FirebladeECS @ "$tag" release." \
+                || echo "⚠️ Documentation skipped for FirebladeECS @ "$tag".";
+            fi;
+          done
+
+      - name: Fix permissions
+        run: 'sudo chown -R $USER docs'
+
+      - name: Publish documentation to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4.6.8
+        with:
+          branch: gh-pages
+          folder: docs
+          single-commit: true

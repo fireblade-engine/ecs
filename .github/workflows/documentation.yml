@@ -41,7 +41,7 @@ jobs:
 
           for tag in $(echo "master"; git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | head -6);
           do
-            if [ -d "docs/$tag/data/documentation/fireblade-ecs" ] 
+            if [ -d "docs/$tag/data/documentation/firebladeecs" ] 
             then 
               echo "✅ Documentation for "$tag" already exists.";
             else 
@@ -55,10 +55,11 @@ jobs:
               swift package \
                 --allow-writing-to-directory docs/"$tag" \
                 generate-documentation \
+                --fallback-bundle-identifier com.github.fireblade-engine.FirebladeECS \
                 --target FirebladeECS \
                 --output-path docs/"$tag" \
                 --transform-for-static-hosting \
-                --hosting-base-path /FirebladeECS/"$tag" \
+                --hosting-base-path "$tag" \
                 && echo "✅ Documentation generated for FirebladeECS @ "$tag" release." \
                 || echo "⚠️ Documentation skipped for FirebladeECS @ "$tag".";
             fi;

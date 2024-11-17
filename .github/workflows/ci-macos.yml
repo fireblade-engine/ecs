@@ -56,5 +56,5 @@ jobs:
         uses: codecov/codecov-action@v5.0.2
         with:
           token: ${{ env.CODECOV_TOKEN }}
-          file: coverage.lcov
+          files: coverage.lcov
           fail_ci_if_error: true

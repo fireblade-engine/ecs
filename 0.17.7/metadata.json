@@ -1,0 +1,9 @@
+{
+  "bundleDisplayName" : "FirebladeECS",
+  "bundleIdentifier" : "com.github.fireblade-engine.FirebladeECS",
+  "schemaVersion" : {
+    "major" : 0,
+    "minor" : 1,
+    "patch" : 0
+  }
+}

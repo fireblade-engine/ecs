@@ -12,7 +12,7 @@ env:
   CODECOV_XCODE_VERSION: "16.0"  # Xcode version used to generate code coverage
 
 jobs:
-  macos-test-build-release-xcode:
+  macos:
     runs-on: ${{ matrix.config.os }}
     strategy:
       fail-fast: true

@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  documentation:
     runs-on: macos-14
     steps:
       - name: Select Xcode 16.0

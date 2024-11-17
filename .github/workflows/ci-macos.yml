@@ -13,10 +13,11 @@ env:
 
 jobs:
   macos-test-build-release-xcode:
-    runs-on: macOS-latest
     strategy:
       matrix:
-        xcode: ["14.3.1", "15.4", "16.0"]
+        os: ["macos-14", "macos-15"]
+        xcode: ["15.4", "16.0"]
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout

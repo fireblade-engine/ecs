@@ -64,22 +64,13 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "Update swift-tools-version in Package.swift",
+      "description": "Update swift-tools-version in Package.swift and .swift-version",
       "fileMatch": [
+        ".swift-version",
         "Package\\.swift"
       ],
       "matchStrings": [
-        "swift-tools-version:\\s*(?<currentValue>.*)"
-      ],
-      "datasourceTemplate": "github-releases",
-      "depNameTemplate": "swiftlang/swift",
-      "extractVersionTemplate": "^swift-(?<version>.*)-RELEASE$"
-    },
-    {
-      "customType": "regex",
-      "description": "Update .swift-version",
-      "fileMatch": ".swift-version",
-      "matchStrings": [
+        "swift-tools-version:\\s*(?<currentValue>.*)",
         "(?<currentValue>.*)"
       ],
       "datasourceTemplate": "github-releases",

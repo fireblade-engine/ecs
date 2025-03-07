@@ -16,14 +16,14 @@ jobs:
       image: swift:${{ matrix.swift }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       - name: Test
         run: swift test -c release --enable-xctest --parallel --xunit-output .build/xUnit-output.xml
 
       - name: Upload test artifacts
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.1
         with:
           name: test-artifacts-linux-${{ matrix.swift }}-${{ github.run_id }}
           path: |

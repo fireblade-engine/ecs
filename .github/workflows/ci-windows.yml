@@ -17,14 +17,14 @@ jobs:
           tag: 5.10-RELEASE
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       - name: Test
         run: swift test -c release --parallel --xunit-output .build/xUnit-output.xml
 
       - name: Upload test artifacts
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.1
         with:
           name: test-artifacts-windows-${{ github.run_id }}
           path: |

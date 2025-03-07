@@ -63,9 +63,11 @@
     {
       "customType": "regex",
       "description": "Update .swift-version",
-      "fileMatch": ".swift-version",
+      "fileMatch": [
+        ".swift-version"
+      ],
       "matchStrings": [
-        "(?<currentValue>.*)"
+        "^(?<currentValue>\\d+\\.\\d+\\.\\d+)$"
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "swiftlang/swift",

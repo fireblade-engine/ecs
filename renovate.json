@@ -7,7 +7,19 @@
   "prCreation": "not-pending",
   "packageRules": [
     {
-      "groupName": "all dependencies",
+      "groupName": "Swift non-major dependencies",
+      "matchManagers": ["swift"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "labels": ["swift"]
+    },
+    {
+      "groupName": "CI non-major dependencies",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "labels": ["ci"]
+    },
+    {
+      "groupName": "Other non-major dependencies",
       "matchUpdateTypes": ["minor", "patch"]
     }
   ],

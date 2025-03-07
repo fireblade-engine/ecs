@@ -1,0 +1,288 @@
+{
+  "abstract" : [
+    {
+      "text" : "Inherited from ",
+      "type" : "text"
+    },
+    {
+      "code" : "EntityIdentifierGenerator.markUnused(entityId:)",
+      "type" : "codeVoice"
+    },
+    {
+      "text" : ".",
+      "type" : "text"
+    }
+  ],
+  "hierarchy" : {
+    "paths" : [
+      [
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/LinearIncrementingEntityIdGenerator"
+      ]
+    ]
+  },
+  "identifier" : {
+    "interfaceLanguage" : "swift",
+    "url" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/LinearIncrementingEntityIdGenerator\/markUnused(entityId:)"
+  },
+  "kind" : "symbol",
+  "metadata" : {
+    "externalID" : "s:12FirebladeECS35LinearIncrementingEntityIdGeneratorV10markUnused06entityF0yAA0E10IdentifierV_tF",
+    "fragments" : [
+      {
+        "kind" : "keyword",
+        "text" : "func"
+      },
+      {
+        "kind" : "text",
+        "text" : " "
+      },
+      {
+        "kind" : "identifier",
+        "text" : "markUnused"
+      },
+      {
+        "kind" : "text",
+        "text" : "("
+      },
+      {
+        "kind" : "externalParam",
+        "text" : "entityId"
+      },
+      {
+        "kind" : "text",
+        "text" : ": "
+      },
+      {
+        "kind" : "typeIdentifier",
+        "preciseIdentifier" : "s:12FirebladeECS16EntityIdentifierV",
+        "text" : "EntityIdentifier"
+      },
+      {
+        "kind" : "text",
+        "text" : ")"
+      }
+    ],
+    "modules" : [
+      {
+        "name" : "FirebladeECS"
+      }
+    ],
+    "role" : "symbol",
+    "roleHeading" : "Instance Method",
+    "symbolKind" : "method",
+    "title" : "markUnused(entityId:)"
+  },
+  "primaryContentSections" : [
+    {
+      "declarations" : [
+        {
+          "languages" : [
+            "swift"
+          ],
+          "platforms" : [
+            "macOS"
+          ],
+          "tokens" : [
+            {
+              "kind" : "keyword",
+              "text" : "func"
+            },
+            {
+              "kind" : "text",
+              "text" : " "
+            },
+            {
+              "kind" : "identifier",
+              "text" : "markUnused"
+            },
+            {
+              "kind" : "text",
+              "text" : "("
+            },
+            {
+              "kind" : "externalParam",
+              "text" : "entityId"
+            },
+            {
+              "kind" : "text",
+              "text" : ": "
+            },
+            {
+              "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/EntityIdentifier",
+              "kind" : "typeIdentifier",
+              "preciseIdentifier" : "s:12FirebladeECS16EntityIdentifierV",
+              "text" : "EntityIdentifier"
+            },
+            {
+              "kind" : "text",
+              "text" : ")"
+            }
+          ]
+        }
+      ],
+      "kind" : "declarations"
+    }
+  ],
+  "schemaVersion" : {
+    "major" : 0,
+    "minor" : 3,
+    "patch" : 0
+  },
+  "sections" : [
+
+  ],
+  "variants" : [
+    {
+      "paths" : [
+        "\/documentation\/firebladeecs\/linearincrementingentityidgenerator\/markunused(entityid:)"
+      ],
+      "traits" : [
+        {
+          "interfaceLanguage" : "swift"
+        }
+      ]
+    }
+  ]
+, 
+"references": {
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS": {
+  "abstract" : [
+    {
+      "text" : "Seamlessly, consistently, and asynchronously replicate data.",
+      "type" : "text"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS",
+  "kind" : "symbol",
+  "role" : "collection",
+  "title" : "FirebladeECS",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/EntityIdentifier": {
+  "abstract" : [
+    {
+      "inlineContent" : [
+        {
+          "text" : "EntityIdentifier",
+          "type" : "text"
+        }
+      ],
+      "type" : "strong"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "EntityIdentifier"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/EntityIdentifier",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "EntityIdentifier"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "EntityIdentifier",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/entityidentifier"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/LinearIncrementingEntityIdGenerator": {
+  "abstract" : [
+    {
+      "inlineContent" : [
+        {
+          "text" : "Linear incrementing entity id generator",
+          "type" : "text"
+        }
+      ],
+      "type" : "strong"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "LinearIncrementingEntityIdGenerator"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/LinearIncrementingEntityIdGenerator",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "LinearIncrementingEntityIdGenerator"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "LinearIncrementingEntityIdGenerator",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/linearincrementingentityidgenerator"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/LinearIncrementingEntityIdGenerator/markUnused(entityId:)": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "func"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "markUnused"
+    },
+    {
+      "kind" : "text",
+      "text" : "("
+    },
+    {
+      "kind" : "externalParam",
+      "text" : "entityId"
+    },
+    {
+      "kind" : "text",
+      "text" : ": "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:12FirebladeECS16EntityIdentifierV",
+      "text" : "EntityIdentifier"
+    },
+    {
+      "kind" : "text",
+      "text" : ")"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/LinearIncrementingEntityIdGenerator\/markUnused(entityId:)",
+  "kind" : "symbol",
+  "role" : "symbol",
+  "title" : "markUnused(entityId:)",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/linearincrementingentityidgenerator\/markunused(entityid:)"
+}
+}
+}

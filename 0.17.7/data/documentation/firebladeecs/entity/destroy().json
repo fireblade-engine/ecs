@@ -1,0 +1,192 @@
+{
+  "abstract" : [
+    {
+      "text" : "Destroy this entity.",
+      "type" : "text"
+    }
+  ],
+  "hierarchy" : {
+    "paths" : [
+      [
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Entity"
+      ]
+    ]
+  },
+  "identifier" : {
+    "interfaceLanguage" : "swift",
+    "url" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Entity\/destroy()"
+  },
+  "kind" : "symbol",
+  "metadata" : {
+    "externalID" : "s:12FirebladeECS6EntityV7destroyyyF",
+    "fragments" : [
+      {
+        "kind" : "keyword",
+        "text" : "func"
+      },
+      {
+        "kind" : "text",
+        "text" : " "
+      },
+      {
+        "kind" : "identifier",
+        "text" : "destroy"
+      },
+      {
+        "kind" : "text",
+        "text" : "()"
+      }
+    ],
+    "modules" : [
+      {
+        "name" : "FirebladeECS"
+      }
+    ],
+    "role" : "symbol",
+    "roleHeading" : "Instance Method",
+    "symbolKind" : "method",
+    "title" : "destroy()"
+  },
+  "primaryContentSections" : [
+    {
+      "declarations" : [
+        {
+          "languages" : [
+            "swift"
+          ],
+          "platforms" : [
+            "macOS"
+          ],
+          "tokens" : [
+            {
+              "kind" : "keyword",
+              "text" : "func"
+            },
+            {
+              "kind" : "text",
+              "text" : " "
+            },
+            {
+              "kind" : "identifier",
+              "text" : "destroy"
+            },
+            {
+              "kind" : "text",
+              "text" : "()"
+            }
+          ]
+        }
+      ],
+      "kind" : "declarations"
+    }
+  ],
+  "schemaVersion" : {
+    "major" : 0,
+    "minor" : 3,
+    "patch" : 0
+  },
+  "sections" : [
+
+  ],
+  "variants" : [
+    {
+      "paths" : [
+        "\/documentation\/firebladeecs\/entity\/destroy()"
+      ],
+      "traits" : [
+        {
+          "interfaceLanguage" : "swift"
+        }
+      ]
+    }
+  ]
+, 
+"references": {
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS": {
+  "abstract" : [
+    {
+      "text" : "Seamlessly, consistently, and asynchronously replicate data.",
+      "type" : "text"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS",
+  "kind" : "symbol",
+  "role" : "collection",
+  "title" : "FirebladeECS",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Entity": {
+  "abstract" : [
+    {
+      "inlineContent" : [
+        {
+          "text" : "Entity",
+          "type" : "text"
+        }
+      ],
+      "type" : "strong"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Entity"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Entity",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Entity"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Entity",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/entity"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Entity/destroy()": {
+  "abstract" : [
+    {
+      "text" : "Destroy this entity.",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "func"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "destroy"
+    },
+    {
+      "kind" : "text",
+      "text" : "()"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Entity\/destroy()",
+  "kind" : "symbol",
+  "role" : "symbol",
+  "title" : "destroy()",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/entity\/destroy()"
+}
+}
+}

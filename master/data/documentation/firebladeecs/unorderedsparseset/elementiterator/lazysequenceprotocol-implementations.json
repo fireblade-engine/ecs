@@ -1,0 +1,1205 @@
+{
+  "hierarchy" : {
+    "paths" : [
+      [
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet\/ElementIterator"
+      ]
+    ]
+  },
+  "identifier" : {
+    "interfaceLanguage" : "swift",
+    "url" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet\/ElementIterator\/LazySequenceProtocol-Implementations"
+  },
+  "kind" : "article",
+  "metadata" : {
+    "modules" : [
+      {
+        "name" : "FirebladeECS"
+      }
+    ],
+    "role" : "collectionGroup",
+    "roleHeading" : "API Collection",
+    "title" : "LazySequenceProtocol Implementations"
+  },
+  "schemaVersion" : {
+    "major" : 0,
+    "minor" : 3,
+    "patch" : 0
+  },
+  "sections" : [
+
+  ],
+  "topicSections" : [
+    {
+      "anchor" : "Instance-Properties",
+      "generated" : true,
+      "identifiers" : [
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet\/ElementIterator\/elements",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet\/ElementIterator\/lazy"
+      ],
+      "title" : "Instance Properties"
+    },
+    {
+      "anchor" : "Instance-Methods",
+      "generated" : true,
+      "identifiers" : [
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet\/ElementIterator\/compactMap(_:)-8natb",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet\/ElementIterator\/drop(while:)",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet\/ElementIterator\/filter(_:)",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet\/ElementIterator\/flatMap(_:)-3np02",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet\/ElementIterator\/flatMap(_:)-63csa",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet\/ElementIterator\/joined()-88mzm",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet\/ElementIterator\/map(_:)-52o9j",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet\/ElementIterator\/prefix(while:)"
+      ],
+      "title" : "Instance Methods"
+    }
+  ],
+  "variants" : [
+    {
+      "paths" : [
+        "\/documentation\/firebladeecs\/unorderedsparseset\/elementiterator\/lazysequenceprotocol-implementations"
+      ],
+      "traits" : [
+        {
+          "interfaceLanguage" : "swift"
+        }
+      ]
+    }
+  ]
+, 
+"references": {
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS": {
+  "abstract" : [
+    {
+      "text" : "Seamlessly, consistently, and asynchronously replicate data.",
+      "type" : "text"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS",
+  "kind" : "symbol",
+  "role" : "collection",
+  "title" : "FirebladeECS",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/UnorderedSparseSet": {
+  "abstract" : [
+    {
+      "text" : "An unordered sparse set.",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "UnorderedSparseSet"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "UnorderedSparseSet"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "UnorderedSparseSet",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/unorderedsparseset"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/UnorderedSparseSet/ElementIterator": {
+  "abstract" : [
+
+  ],
+  "conformance" : {
+    "availabilityPrefix" : [
+      {
+        "text" : "Available when",
+        "type" : "text"
+      }
+    ],
+    "conformancePrefix" : [
+      {
+        "text" : "Conforms when",
+        "type" : "text"
+      }
+    ],
+    "constraints" : [
+      {
+        "code" : "Key",
+        "type" : "codeVoice"
+      },
+      {
+        "text" : " conforms to ",
+        "type" : "text"
+      },
+      {
+        "code" : "Decodable",
+        "type" : "codeVoice"
+      },
+      {
+        "text" : ", ",
+        "type" : "text"
+      },
+      {
+        "code" : "Encodable",
+        "type" : "codeVoice"
+      },
+      {
+        "text" : ", and ",
+        "type" : "text"
+      },
+      {
+        "code" : "Hashable",
+        "type" : "codeVoice"
+      },
+      {
+        "text" : ".",
+        "type" : "text"
+      }
+    ]
+  },
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "ElementIterator"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet\/ElementIterator",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "ElementIterator"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "UnorderedSparseSet.ElementIterator",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/unorderedsparseset\/elementiterator"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/UnorderedSparseSet/ElementIterator/compactMap(_:)-8natb": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "func"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "compactMap"
+    },
+    {
+      "kind" : "text",
+      "text" : "<"
+    },
+    {
+      "kind" : "genericParameter",
+      "text" : "ElementOfResult"
+    },
+    {
+      "kind" : "text",
+      "text" : ">(("
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "Self"
+    },
+    {
+      "kind" : "text",
+      "text" : "."
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s20LazySequenceProtocolP8ElementsQa",
+      "text" : "Elements"
+    },
+    {
+      "kind" : "text",
+      "text" : "."
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:ST7ElementQa",
+      "text" : "Element"
+    },
+    {
+      "kind" : "text",
+      "text" : ") -> "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "ElementOfResult"
+    },
+    {
+      "kind" : "text",
+      "text" : "?) -> "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s15LazyMapSequenceV",
+      "text" : "LazyMapSequence"
+    },
+    {
+      "kind" : "text",
+      "text" : "<"
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s18LazyFilterSequenceV",
+      "text" : "LazyFilterSequence"
+    },
+    {
+      "kind" : "text",
+      "text" : "<"
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s15LazyMapSequenceV",
+      "text" : "LazyMapSequence"
+    },
+    {
+      "kind" : "text",
+      "text" : "<"
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "Self"
+    },
+    {
+      "kind" : "text",
+      "text" : "."
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s20LazySequenceProtocolP8ElementsQa",
+      "text" : "Elements"
+    },
+    {
+      "kind" : "text",
+      "text" : ", "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "ElementOfResult"
+    },
+    {
+      "kind" : "text",
+      "text" : "?>>, "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "ElementOfResult"
+    },
+    {
+      "kind" : "text",
+      "text" : ">"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet\/ElementIterator\/compactMap(_:)-8natb",
+  "kind" : "symbol",
+  "role" : "symbol",
+  "title" : "compactMap(_:)",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/unorderedsparseset\/elementiterator\/compactmap(_:)-8natb"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/UnorderedSparseSet/ElementIterator/drop(while:)": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "func"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "drop"
+    },
+    {
+      "kind" : "text",
+      "text" : "("
+    },
+    {
+      "kind" : "externalParam",
+      "text" : "while"
+    },
+    {
+      "kind" : "text",
+      "text" : ": ("
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "Self"
+    },
+    {
+      "kind" : "text",
+      "text" : "."
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s20LazySequenceProtocolP8ElementsQa",
+      "text" : "Elements"
+    },
+    {
+      "kind" : "text",
+      "text" : "."
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:ST7ElementQa",
+      "text" : "Element"
+    },
+    {
+      "kind" : "text",
+      "text" : ") -> "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:Sb",
+      "text" : "Bool"
+    },
+    {
+      "kind" : "text",
+      "text" : ") -> "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s21LazyDropWhileSequenceV",
+      "text" : "LazyDropWhileSequence"
+    },
+    {
+      "kind" : "text",
+      "text" : "<"
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "Self"
+    },
+    {
+      "kind" : "text",
+      "text" : "."
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s20LazySequenceProtocolP8ElementsQa",
+      "text" : "Elements"
+    },
+    {
+      "kind" : "text",
+      "text" : ">"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet\/ElementIterator\/drop(while:)",
+  "kind" : "symbol",
+  "role" : "symbol",
+  "title" : "drop(while:)",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/unorderedsparseset\/elementiterator\/drop(while:)"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/UnorderedSparseSet/ElementIterator/elements": {
+  "abstract" : [
+
+  ],
+  "conformance" : {
+    "availabilityPrefix" : [
+      {
+        "text" : "Available when",
+        "type" : "text"
+      }
+    ],
+    "conformancePrefix" : [
+      {
+        "text" : "Conforms when",
+        "type" : "text"
+      }
+    ],
+    "constraints" : [
+      {
+        "code" : "Self",
+        "type" : "codeVoice"
+      },
+      {
+        "text" : " is ",
+        "type" : "text"
+      },
+      {
+        "code" : "Self.Elements",
+        "type" : "codeVoice"
+      },
+      {
+        "text" : ".",
+        "type" : "text"
+      }
+    ]
+  },
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "var"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "elements"
+    },
+    {
+      "kind" : "text",
+      "text" : ": "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "Self"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet\/ElementIterator\/elements",
+  "kind" : "symbol",
+  "role" : "symbol",
+  "title" : "elements",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/unorderedsparseset\/elementiterator\/elements"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/UnorderedSparseSet/ElementIterator/filter(_:)": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "func"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "filter"
+    },
+    {
+      "kind" : "text",
+      "text" : "(("
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "Self"
+    },
+    {
+      "kind" : "text",
+      "text" : "."
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s20LazySequenceProtocolP8ElementsQa",
+      "text" : "Elements"
+    },
+    {
+      "kind" : "text",
+      "text" : "."
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:ST7ElementQa",
+      "text" : "Element"
+    },
+    {
+      "kind" : "text",
+      "text" : ") -> "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:Sb",
+      "text" : "Bool"
+    },
+    {
+      "kind" : "text",
+      "text" : ") -> "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s18LazyFilterSequenceV",
+      "text" : "LazyFilterSequence"
+    },
+    {
+      "kind" : "text",
+      "text" : "<"
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "Self"
+    },
+    {
+      "kind" : "text",
+      "text" : "."
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s20LazySequenceProtocolP8ElementsQa",
+      "text" : "Elements"
+    },
+    {
+      "kind" : "text",
+      "text" : ">"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet\/ElementIterator\/filter(_:)",
+  "kind" : "symbol",
+  "role" : "symbol",
+  "title" : "filter(_:)",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/unorderedsparseset\/elementiterator\/filter(_:)"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/UnorderedSparseSet/ElementIterator/flatMap(_:)-3np02": {
+  "abstract" : [
+
+  ],
+  "deprecated" : true,
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "func"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "flatMap"
+    },
+    {
+      "kind" : "text",
+      "text" : "<"
+    },
+    {
+      "kind" : "genericParameter",
+      "text" : "ElementOfResult"
+    },
+    {
+      "kind" : "text",
+      "text" : ">(("
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "Self"
+    },
+    {
+      "kind" : "text",
+      "text" : "."
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s20LazySequenceProtocolP8ElementsQa",
+      "text" : "Elements"
+    },
+    {
+      "kind" : "text",
+      "text" : "."
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:ST7ElementQa",
+      "text" : "Element"
+    },
+    {
+      "kind" : "text",
+      "text" : ") -> "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "ElementOfResult"
+    },
+    {
+      "kind" : "text",
+      "text" : "?) -> "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s15LazyMapSequenceV",
+      "text" : "LazyMapSequence"
+    },
+    {
+      "kind" : "text",
+      "text" : "<"
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s18LazyFilterSequenceV",
+      "text" : "LazyFilterSequence"
+    },
+    {
+      "kind" : "text",
+      "text" : "<"
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s15LazyMapSequenceV",
+      "text" : "LazyMapSequence"
+    },
+    {
+      "kind" : "text",
+      "text" : "<"
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "Self"
+    },
+    {
+      "kind" : "text",
+      "text" : "."
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s20LazySequenceProtocolP8ElementsQa",
+      "text" : "Elements"
+    },
+    {
+      "kind" : "text",
+      "text" : ", "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "ElementOfResult"
+    },
+    {
+      "kind" : "text",
+      "text" : "?>>, "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "ElementOfResult"
+    },
+    {
+      "kind" : "text",
+      "text" : ">"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet\/ElementIterator\/flatMap(_:)-3np02",
+  "kind" : "symbol",
+  "role" : "symbol",
+  "title" : "flatMap(_:)",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/unorderedsparseset\/elementiterator\/flatmap(_:)-3np02"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/UnorderedSparseSet/ElementIterator/flatMap(_:)-63csa": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "func"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "flatMap"
+    },
+    {
+      "kind" : "text",
+      "text" : "<"
+    },
+    {
+      "kind" : "genericParameter",
+      "text" : "SegmentOfResult"
+    },
+    {
+      "kind" : "text",
+      "text" : ">(("
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "Self"
+    },
+    {
+      "kind" : "text",
+      "text" : "."
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s20LazySequenceProtocolP8ElementsQa",
+      "text" : "Elements"
+    },
+    {
+      "kind" : "text",
+      "text" : "."
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:ST7ElementQa",
+      "text" : "Element"
+    },
+    {
+      "kind" : "text",
+      "text" : ") -> "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "SegmentOfResult"
+    },
+    {
+      "kind" : "text",
+      "text" : ") -> "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s12LazySequenceV",
+      "text" : "LazySequence"
+    },
+    {
+      "kind" : "text",
+      "text" : "<"
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s15FlattenSequenceV",
+      "text" : "FlattenSequence"
+    },
+    {
+      "kind" : "text",
+      "text" : "<"
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s15LazyMapSequenceV",
+      "text" : "LazyMapSequence"
+    },
+    {
+      "kind" : "text",
+      "text" : "<"
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "Self"
+    },
+    {
+      "kind" : "text",
+      "text" : "."
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s20LazySequenceProtocolP8ElementsQa",
+      "text" : "Elements"
+    },
+    {
+      "kind" : "text",
+      "text" : ", "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "SegmentOfResult"
+    },
+    {
+      "kind" : "text",
+      "text" : ">>>"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet\/ElementIterator\/flatMap(_:)-63csa",
+  "kind" : "symbol",
+  "role" : "symbol",
+  "title" : "flatMap(_:)",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/unorderedsparseset\/elementiterator\/flatmap(_:)-63csa"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/UnorderedSparseSet/ElementIterator/joined()-88mzm": {
+  "abstract" : [
+
+  ],
+  "conformance" : {
+    "availabilityPrefix" : [
+      {
+        "text" : "Available when",
+        "type" : "text"
+      }
+    ],
+    "conformancePrefix" : [
+      {
+        "text" : "Conforms when",
+        "type" : "text"
+      }
+    ],
+    "constraints" : [
+      {
+        "code" : "Element",
+        "type" : "codeVoice"
+      },
+      {
+        "text" : " conforms to ",
+        "type" : "text"
+      },
+      {
+        "code" : "Sequence",
+        "type" : "codeVoice"
+      },
+      {
+        "text" : ".",
+        "type" : "text"
+      }
+    ]
+  },
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "func"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "joined"
+    },
+    {
+      "kind" : "text",
+      "text" : "() -> "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s12LazySequenceV",
+      "text" : "LazySequence"
+    },
+    {
+      "kind" : "text",
+      "text" : "<"
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s15FlattenSequenceV",
+      "text" : "FlattenSequence"
+    },
+    {
+      "kind" : "text",
+      "text" : "<"
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "Self"
+    },
+    {
+      "kind" : "text",
+      "text" : "."
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s20LazySequenceProtocolP8ElementsQa",
+      "text" : "Elements"
+    },
+    {
+      "kind" : "text",
+      "text" : ">>"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet\/ElementIterator\/joined()-88mzm",
+  "kind" : "symbol",
+  "role" : "symbol",
+  "title" : "joined()",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/unorderedsparseset\/elementiterator\/joined()-88mzm"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/UnorderedSparseSet/ElementIterator/lazy": {
+  "abstract" : [
+
+  ],
+  "conformance" : {
+    "availabilityPrefix" : [
+      {
+        "text" : "Available when",
+        "type" : "text"
+      }
+    ],
+    "conformancePrefix" : [
+      {
+        "text" : "Conforms when",
+        "type" : "text"
+      }
+    ],
+    "constraints" : [
+      {
+        "code" : "Elements",
+        "type" : "codeVoice"
+      },
+      {
+        "text" : " conforms to ",
+        "type" : "text"
+      },
+      {
+        "code" : "LazySequenceProtocol",
+        "type" : "codeVoice"
+      },
+      {
+        "text" : ".",
+        "type" : "text"
+      }
+    ]
+  },
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "var"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "lazy"
+    },
+    {
+      "kind" : "text",
+      "text" : ": "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "Self"
+    },
+    {
+      "kind" : "text",
+      "text" : "."
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s20LazySequenceProtocolP8ElementsQa",
+      "text" : "Elements"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet\/ElementIterator\/lazy",
+  "kind" : "symbol",
+  "role" : "symbol",
+  "title" : "lazy",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/unorderedsparseset\/elementiterator\/lazy"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/UnorderedSparseSet/ElementIterator/map(_:)-52o9j": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "func"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "map"
+    },
+    {
+      "kind" : "text",
+      "text" : "<"
+    },
+    {
+      "kind" : "genericParameter",
+      "text" : "U"
+    },
+    {
+      "kind" : "text",
+      "text" : ">(("
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "Self"
+    },
+    {
+      "kind" : "text",
+      "text" : "."
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:ST7ElementQa",
+      "text" : "Element"
+    },
+    {
+      "kind" : "text",
+      "text" : ") -> "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "U"
+    },
+    {
+      "kind" : "text",
+      "text" : ") -> "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s15LazyMapSequenceV",
+      "text" : "LazyMapSequence"
+    },
+    {
+      "kind" : "text",
+      "text" : "<"
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "Self"
+    },
+    {
+      "kind" : "text",
+      "text" : "."
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s20LazySequenceProtocolP8ElementsQa",
+      "text" : "Elements"
+    },
+    {
+      "kind" : "text",
+      "text" : ", "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "U"
+    },
+    {
+      "kind" : "text",
+      "text" : ">"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet\/ElementIterator\/map(_:)-52o9j",
+  "kind" : "symbol",
+  "role" : "symbol",
+  "title" : "map(_:)",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/unorderedsparseset\/elementiterator\/map(_:)-52o9j"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/UnorderedSparseSet/ElementIterator/prefix(while:)": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "func"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "prefix"
+    },
+    {
+      "kind" : "text",
+      "text" : "("
+    },
+    {
+      "kind" : "externalParam",
+      "text" : "while"
+    },
+    {
+      "kind" : "text",
+      "text" : ": ("
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "Self"
+    },
+    {
+      "kind" : "text",
+      "text" : "."
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s20LazySequenceProtocolP8ElementsQa",
+      "text" : "Elements"
+    },
+    {
+      "kind" : "text",
+      "text" : "."
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:ST7ElementQa",
+      "text" : "Element"
+    },
+    {
+      "kind" : "text",
+      "text" : ") -> "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:Sb",
+      "text" : "Bool"
+    },
+    {
+      "kind" : "text",
+      "text" : ") -> "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s23LazyPrefixWhileSequenceV",
+      "text" : "LazyPrefixWhileSequence"
+    },
+    {
+      "kind" : "text",
+      "text" : "<"
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "Self"
+    },
+    {
+      "kind" : "text",
+      "text" : "."
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:s20LazySequenceProtocolP8ElementsQa",
+      "text" : "Elements"
+    },
+    {
+      "kind" : "text",
+      "text" : ">"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet\/ElementIterator\/prefix(while:)",
+  "kind" : "symbol",
+  "role" : "symbol",
+  "title" : "prefix(while:)",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/unorderedsparseset\/elementiterator\/prefix(while:)"
+}
+}
+}

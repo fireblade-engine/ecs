@@ -1,0 +1,414 @@
+{
+  "hierarchy" : {
+    "paths" : [
+      [
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family"
+      ]
+    ]
+  },
+  "identifier" : {
+    "interfaceLanguage" : "swift",
+    "url" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family\/ComponentsIterator"
+  },
+  "kind" : "symbol",
+  "metadata" : {
+    "conformance" : {
+      "availabilityPrefix" : [
+        {
+          "text" : "Available when",
+          "type" : "text"
+        }
+      ],
+      "conformancePrefix" : [
+        {
+          "text" : "Conforms when",
+          "type" : "text"
+        }
+      ],
+      "constraints" : [
+        {
+          "code" : "R",
+          "type" : "codeVoice"
+        },
+        {
+          "text" : " conforms to ",
+          "type" : "text"
+        },
+        {
+          "code" : "FamilyRequirementsManaging",
+          "type" : "codeVoice"
+        },
+        {
+          "text" : ".",
+          "type" : "text"
+        }
+      ]
+    },
+    "extendedModule" : "FirebladeECS",
+    "externalID" : "s:12FirebladeECS6FamilyV18ComponentsIteratorV",
+    "fragments" : [
+      {
+        "kind" : "keyword",
+        "text" : "struct"
+      },
+      {
+        "kind" : "text",
+        "text" : " "
+      },
+      {
+        "kind" : "identifier",
+        "text" : "ComponentsIterator"
+      }
+    ],
+    "modules" : [
+      {
+        "name" : "FirebladeECS"
+      }
+    ],
+    "navigatorTitle" : [
+      {
+        "kind" : "identifier",
+        "text" : "ComponentsIterator"
+      }
+    ],
+    "role" : "symbol",
+    "roleHeading" : "Structure",
+    "symbolKind" : "struct",
+    "title" : "Family.ComponentsIterator"
+  },
+  "primaryContentSections" : [
+    {
+      "declarations" : [
+        {
+          "languages" : [
+            "swift"
+          ],
+          "platforms" : [
+            "macOS"
+          ],
+          "tokens" : [
+            {
+              "kind" : "keyword",
+              "text" : "struct"
+            },
+            {
+              "kind" : "text",
+              "text" : " "
+            },
+            {
+              "kind" : "identifier",
+              "text" : "ComponentsIterator"
+            }
+          ]
+        }
+      ],
+      "kind" : "declarations"
+    }
+  ],
+  "relationshipsSections" : [
+    {
+      "identifiers" : [
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/s8CopyableP",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/St",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/s20LazySequenceProtocolP",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/ST"
+      ],
+      "kind" : "relationships",
+      "title" : "Conforms To",
+      "type" : "conformsTo"
+    }
+  ],
+  "schemaVersion" : {
+    "major" : 0,
+    "minor" : 3,
+    "patch" : 0
+  },
+  "sections" : [
+
+  ],
+  "topicSections" : [
+    {
+      "anchor" : "Initializers",
+      "generated" : true,
+      "identifiers" : [
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family\/ComponentsIterator\/init(family:)"
+      ],
+      "title" : "Initializers"
+    },
+    {
+      "anchor" : "Instance-Methods",
+      "generated" : true,
+      "identifiers" : [
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family\/ComponentsIterator\/next()"
+      ],
+      "title" : "Instance Methods"
+    },
+    {
+      "anchor" : "Default-Implementations",
+      "generated" : true,
+      "identifiers" : [
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family\/ComponentsIterator\/LazySequenceProtocol-Implementations",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family\/ComponentsIterator\/Sequence-Implementations"
+      ],
+      "title" : "Default Implementations"
+    }
+  ],
+  "variants" : [
+    {
+      "paths" : [
+        "\/documentation\/firebladeecs\/family\/componentsiterator"
+      ],
+      "traits" : [
+        {
+          "interfaceLanguage" : "swift"
+        }
+      ]
+    }
+  ]
+, 
+"references": {
+"doc://com.github.fireblade-engine.FirebladeECS/ST": {
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/ST",
+  "title" : "Swift.Sequence",
+  "type" : "unresolvable"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/St": {
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/St",
+  "title" : "Swift.IteratorProtocol",
+  "type" : "unresolvable"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS": {
+  "abstract" : [
+    {
+      "text" : "Seamlessly, consistently, and asynchronously replicate data.",
+      "type" : "text"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS",
+  "kind" : "symbol",
+  "role" : "collection",
+  "title" : "FirebladeECS",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Family": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Family"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Family"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Family",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/family"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Family/ComponentsIterator": {
+  "abstract" : [
+
+  ],
+  "conformance" : {
+    "availabilityPrefix" : [
+      {
+        "text" : "Available when",
+        "type" : "text"
+      }
+    ],
+    "conformancePrefix" : [
+      {
+        "text" : "Conforms when",
+        "type" : "text"
+      }
+    ],
+    "constraints" : [
+      {
+        "code" : "R",
+        "type" : "codeVoice"
+      },
+      {
+        "text" : " conforms to ",
+        "type" : "text"
+      },
+      {
+        "code" : "FamilyRequirementsManaging",
+        "type" : "codeVoice"
+      },
+      {
+        "text" : ".",
+        "type" : "text"
+      }
+    ]
+  },
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "ComponentsIterator"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family\/ComponentsIterator",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "ComponentsIterator"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Family.ComponentsIterator",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/family\/componentsiterator"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Family/ComponentsIterator/LazySequenceProtocol-Implementations": {
+  "abstract" : [
+
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family\/ComponentsIterator\/LazySequenceProtocol-Implementations",
+  "kind" : "article",
+  "role" : "collectionGroup",
+  "title" : "LazySequenceProtocol Implementations",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/family\/componentsiterator\/lazysequenceprotocol-implementations"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Family/ComponentsIterator/Sequence-Implementations": {
+  "abstract" : [
+
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family\/ComponentsIterator\/Sequence-Implementations",
+  "kind" : "article",
+  "role" : "collectionGroup",
+  "title" : "Sequence Implementations",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/family\/componentsiterator\/sequence-implementations"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Family/ComponentsIterator/init(family:)": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "identifier",
+      "text" : "init"
+    },
+    {
+      "kind" : "text",
+      "text" : "("
+    },
+    {
+      "kind" : "externalParam",
+      "text" : "family"
+    },
+    {
+      "kind" : "text",
+      "text" : ": "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:12FirebladeECS6FamilyV",
+      "text" : "Family"
+    },
+    {
+      "kind" : "text",
+      "text" : "<"
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "R"
+    },
+    {
+      "kind" : "text",
+      "text" : ">)"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family\/ComponentsIterator\/init(family:)",
+  "kind" : "symbol",
+  "role" : "symbol",
+  "title" : "init(family:)",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/family\/componentsiterator\/init(family:)"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Family/ComponentsIterator/next()": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "func"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "next"
+    },
+    {
+      "kind" : "text",
+      "text" : "() -> "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "R"
+    },
+    {
+      "kind" : "text",
+      "text" : "."
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:12FirebladeECS26FamilyRequirementsManagingP10ComponentsQa",
+      "text" : "Components"
+    },
+    {
+      "kind" : "text",
+      "text" : "?"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family\/ComponentsIterator\/next()",
+  "kind" : "symbol",
+  "role" : "symbol",
+  "title" : "next()",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/family\/componentsiterator\/next()"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/s20LazySequenceProtocolP": {
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/s20LazySequenceProtocolP",
+  "title" : "Swift.LazySequenceProtocol",
+  "type" : "unresolvable"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/s8CopyableP": {
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/s8CopyableP",
+  "title" : "Swift.Copyable",
+  "type" : "unresolvable"
+}
+}
+}

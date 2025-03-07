@@ -1,0 +1,540 @@
+{
+  "abstract" : [
+    {
+      "text" : "Creates a mapping for the component type to any ComponentProvider.",
+      "type" : "text"
+    }
+  ],
+  "hierarchy" : {
+    "paths" : [
+      [
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/EntityState"
+      ]
+    ]
+  },
+  "identifier" : {
+    "interfaceLanguage" : "swift",
+    "url" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/EntityState\/addProvider(type:provider:)"
+  },
+  "kind" : "symbol",
+  "metadata" : {
+    "extendedModule" : "FirebladeECS",
+    "externalID" : "s:12FirebladeECS11EntityStateC11addProvider4type8providerACXDxm_AA09ComponentF0_ptAA0I0RzAA20DefaultInitializableRzlF",
+    "fragments" : [
+      {
+        "kind" : "keyword",
+        "text" : "func"
+      },
+      {
+        "kind" : "text",
+        "text" : " "
+      },
+      {
+        "kind" : "identifier",
+        "text" : "addProvider"
+      },
+      {
+        "kind" : "text",
+        "text" : "("
+      },
+      {
+        "kind" : "externalParam",
+        "text" : "type"
+      },
+      {
+        "kind" : "text",
+        "text" : ": (some "
+      },
+      {
+        "kind" : "typeIdentifier",
+        "preciseIdentifier" : "s:12FirebladeECS9ComponentP",
+        "text" : "Component"
+      },
+      {
+        "kind" : "text",
+        "text" : " & "
+      },
+      {
+        "kind" : "typeIdentifier",
+        "preciseIdentifier" : "s:12FirebladeECS20DefaultInitializableP",
+        "text" : "DefaultInitializable"
+      },
+      {
+        "kind" : "text",
+        "text" : ").Type, "
+      },
+      {
+        "kind" : "externalParam",
+        "text" : "provider"
+      },
+      {
+        "kind" : "text",
+        "text" : ": any "
+      },
+      {
+        "kind" : "typeIdentifier",
+        "preciseIdentifier" : "s:12FirebladeECS17ComponentProviderP",
+        "text" : "ComponentProvider"
+      },
+      {
+        "kind" : "text",
+        "text" : ") -> "
+      },
+      {
+        "kind" : "typeIdentifier",
+        "text" : "Self"
+      }
+    ],
+    "modules" : [
+      {
+        "name" : "FirebladeECS"
+      }
+    ],
+    "role" : "symbol",
+    "roleHeading" : "Instance Method",
+    "symbolKind" : "method",
+    "title" : "addProvider(type:provider:)"
+  },
+  "primaryContentSections" : [
+    {
+      "declarations" : [
+        {
+          "languages" : [
+            "swift"
+          ],
+          "platforms" : [
+            "macOS"
+          ],
+          "tokens" : [
+            {
+              "kind" : "attribute",
+              "text" : "@discardableResult"
+            },
+            {
+              "kind" : "text",
+              "text" : " "
+            },
+            {
+              "kind" : "keyword",
+              "text" : "func"
+            },
+            {
+              "kind" : "text",
+              "text" : " "
+            },
+            {
+              "kind" : "identifier",
+              "text" : "addProvider"
+            },
+            {
+              "kind" : "text",
+              "text" : "("
+            },
+            {
+              "kind" : "externalParam",
+              "text" : "type"
+            },
+            {
+              "kind" : "text",
+              "text" : ": (some "
+            },
+            {
+              "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Component",
+              "kind" : "typeIdentifier",
+              "preciseIdentifier" : "s:12FirebladeECS9ComponentP",
+              "text" : "Component"
+            },
+            {
+              "kind" : "text",
+              "text" : " & "
+            },
+            {
+              "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/DefaultInitializable",
+              "kind" : "typeIdentifier",
+              "preciseIdentifier" : "s:12FirebladeECS20DefaultInitializableP",
+              "text" : "DefaultInitializable"
+            },
+            {
+              "kind" : "text",
+              "text" : ").Type, "
+            },
+            {
+              "kind" : "externalParam",
+              "text" : "provider"
+            },
+            {
+              "kind" : "text",
+              "text" : ": any "
+            },
+            {
+              "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ComponentProvider",
+              "kind" : "typeIdentifier",
+              "preciseIdentifier" : "s:12FirebladeECS17ComponentProviderP",
+              "text" : "ComponentProvider"
+            },
+            {
+              "kind" : "text",
+              "text" : ") -> "
+            },
+            {
+              "kind" : "typeIdentifier",
+              "text" : "Self"
+            }
+          ]
+        }
+      ],
+      "kind" : "declarations"
+    },
+    {
+      "kind" : "parameters",
+      "parameters" : [
+        {
+          "content" : [
+            {
+              "inlineContent" : [
+                {
+                  "text" : "The type of component to be mapped",
+                  "type" : "text"
+                }
+              ],
+              "type" : "paragraph"
+            }
+          ],
+          "name" : "type"
+        },
+        {
+          "content" : [
+            {
+              "inlineContent" : [
+                {
+                  "text" : "The component provider to use.",
+                  "type" : "text"
+                }
+              ],
+              "type" : "paragraph"
+            }
+          ],
+          "name" : "provider"
+        }
+      ]
+    },
+    {
+      "content" : [
+        {
+          "anchor" : "return-value",
+          "level" : 2,
+          "text" : "Return Value",
+          "type" : "heading"
+        },
+        {
+          "inlineContent" : [
+            {
+              "text" : "This EntityState, so more modifications can be applied.",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        }
+      ],
+      "kind" : "content"
+    }
+  ],
+  "schemaVersion" : {
+    "major" : 0,
+    "minor" : 3,
+    "patch" : 0
+  },
+  "sections" : [
+
+  ],
+  "variants" : [
+    {
+      "paths" : [
+        "\/documentation\/firebladeecs\/entitystate\/addprovider(type:provider:)"
+      ],
+      "traits" : [
+        {
+          "interfaceLanguage" : "swift"
+        }
+      ]
+    }
+  ]
+, 
+"references": {
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS": {
+  "abstract" : [
+    {
+      "text" : "Seamlessly, consistently, and asynchronously replicate data.",
+      "type" : "text"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS",
+  "kind" : "symbol",
+  "role" : "collection",
+  "title" : "FirebladeECS",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Component": {
+  "abstract" : [
+    {
+      "inlineContent" : [
+        {
+          "text" : "Component",
+          "type" : "text"
+        }
+      ],
+      "type" : "strong"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Component"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Component",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Component"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Component",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/component"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/ComponentProvider": {
+  "abstract" : [
+    {
+      "text" : "This is the Interface for component providers. Component providers are used to supply components",
+      "type" : "text"
+    },
+    {
+      "text" : " ",
+      "type" : "text"
+    },
+    {
+      "text" : "for states within an EntityStateMachine. FirebladeECS includes three standard component providers,",
+      "type" : "text"
+    },
+    {
+      "text" : " ",
+      "type" : "text"
+    },
+    {
+      "text" : "ComponentTypeProvider, ComponentInstanceProvider and ComponentSingletonProvider. Developers",
+      "type" : "text"
+    },
+    {
+      "text" : " ",
+      "type" : "text"
+    },
+    {
+      "text" : "may wish to create more.",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "ComponentProvider"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ComponentProvider",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "ComponentProvider"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "ComponentProvider",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/componentprovider"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/DefaultInitializable": {
+  "abstract" : [
+    {
+      "text" : "Requires initializer with default values.",
+      "type" : "text"
+    },
+    {
+      "text" : " ",
+      "type" : "text"
+    },
+    {
+      "text" : "In case of component - makes sure it can be instantiated by component provider",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "DefaultInitializable"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/DefaultInitializable",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "DefaultInitializable"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "DefaultInitializable",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/defaultinitializable"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/EntityState": {
+  "abstract" : [
+    {
+      "text" : "Represents a state for an EntityStateMachine. The state contains any number of ComponentProviders which",
+      "type" : "text"
+    },
+    {
+      "text" : " ",
+      "type" : "text"
+    },
+    {
+      "text" : "are used to add components to the entity when this state is entered.",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "class"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "EntityState"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/EntityState",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "EntityState"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "EntityState",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/entitystate"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/EntityState/addProvider(type:provider:)": {
+  "abstract" : [
+    {
+      "text" : "Creates a mapping for the component type to any ComponentProvider.",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "func"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "addProvider"
+    },
+    {
+      "kind" : "text",
+      "text" : "("
+    },
+    {
+      "kind" : "externalParam",
+      "text" : "type"
+    },
+    {
+      "kind" : "text",
+      "text" : ": (some "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:12FirebladeECS9ComponentP",
+      "text" : "Component"
+    },
+    {
+      "kind" : "text",
+      "text" : " & "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:12FirebladeECS20DefaultInitializableP",
+      "text" : "DefaultInitializable"
+    },
+    {
+      "kind" : "text",
+      "text" : ").Type, "
+    },
+    {
+      "kind" : "externalParam",
+      "text" : "provider"
+    },
+    {
+      "kind" : "text",
+      "text" : ": any "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:12FirebladeECS17ComponentProviderP",
+      "text" : "ComponentProvider"
+    },
+    {
+      "kind" : "text",
+      "text" : ") -> "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "Self"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/EntityState\/addProvider(type:provider:)",
+  "kind" : "symbol",
+  "role" : "symbol",
+  "title" : "addProvider(type:provider:)",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/entitystate\/addprovider(type:provider:)"
+}
+}
+}

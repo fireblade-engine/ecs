@@ -1,0 +1,2855 @@
+{
+  "abstract" : [
+    {
+      "text" : "Seamlessly, consistently, and asynchronously replicate data.",
+      "type" : "text"
+    }
+  ],
+  "hierarchy" : {
+    "paths" : [
+      [
+
+      ]
+    ]
+  },
+  "identifier" : {
+    "interfaceLanguage" : "swift",
+    "url" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS"
+  },
+  "kind" : "symbol",
+  "metadata" : {
+    "externalID" : "FirebladeECS",
+    "modules" : [
+      {
+        "name" : "FirebladeECS"
+      }
+    ],
+    "role" : "collection",
+    "roleHeading" : "Framework",
+    "symbolKind" : "module",
+    "title" : "FirebladeECS"
+  },
+  "primaryContentSections" : [
+    {
+      "content" : [
+        {
+          "anchor" : "Overview",
+          "level" : 2,
+          "text" : "Overview",
+          "type" : "heading"
+        },
+        {
+          "inlineContent" : [
+            {
+              "text" : "This is a ",
+              "type" : "text"
+            },
+            {
+              "inlineContent" : [
+                {
+                  "text" : "dependency free",
+                  "type" : "text"
+                }
+              ],
+              "type" : "strong"
+            },
+            {
+              "text" : ", ",
+              "type" : "text"
+            },
+            {
+              "inlineContent" : [
+                {
+                  "text" : "lightweight",
+                  "type" : "text"
+                }
+              ],
+              "type" : "strong"
+            },
+            {
+              "text" : ", ",
+              "type" : "text"
+            },
+            {
+              "inlineContent" : [
+                {
+                  "text" : "fast",
+                  "type" : "text"
+                }
+              ],
+              "type" : "strong"
+            },
+            {
+              "text" : " and ",
+              "type" : "text"
+            },
+            {
+              "inlineContent" : [
+                {
+                  "text" : "easy to use",
+                  "type" : "text"
+                }
+              ],
+              "type" : "strong"
+            },
+            {
+              "text" : " ",
+              "type" : "text"
+            },
+            {
+              "identifier" : "https:\/\/en.wikipedia.org\/wiki\/Entity_component_system",
+              "isActive" : true,
+              "type" : "reference"
+            },
+            {
+              "text" : " implementation in Swift.",
+              "type" : "text"
+            },
+            {
+              "text" : " ",
+              "type" : "text"
+            },
+            {
+              "text" : "An ECS comprises entities composed from components of data, with systems which operate on the components.",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "inlineContent" : [
+            {
+              "text" : "Fireblade ECS is available for all platforms that support ",
+              "type" : "text"
+            },
+            {
+              "identifier" : "https:\/\/swift.org\/",
+              "isActive" : true,
+              "type" : "reference"
+            },
+            {
+              "text" : " and higher and the ",
+              "type" : "text"
+            },
+            {
+              "identifier" : "https:\/\/github.com\/apple\/swift-package-manager",
+              "isActive" : true,
+              "type" : "reference"
+            },
+            {
+              "text" : ".",
+              "type" : "text"
+            },
+            {
+              "text" : " ",
+              "type" : "text"
+            },
+            {
+              "text" : "It is developed and maintained as part of the ",
+              "type" : "text"
+            },
+            {
+              "identifier" : "https:\/\/github.com\/fireblade-engine",
+              "isActive" : true,
+              "type" : "reference"
+            },
+            {
+              "text" : ".",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "inlineContent" : [
+            {
+              "text" : "For a more detailed example of FirebladeECS in action, see the ",
+              "type" : "text"
+            },
+            {
+              "identifier" : "https:\/\/github.com\/fireblade-engine\/ecs-demo",
+              "isActive" : true,
+              "type" : "reference"
+            },
+            {
+              "text" : ".",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        }
+      ],
+      "kind" : "content"
+    }
+  ],
+  "schemaVersion" : {
+    "major" : 0,
+    "minor" : 3,
+    "patch" : 0
+  },
+  "sections" : [
+
+  ],
+  "topicSections" : [
+    {
+      "anchor" : "Essentials",
+      "identifiers" : [
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/GettingStartedWithFirebladeECS",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Nexus",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/NexusEvent",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/NexusEventDelegate"
+      ],
+      "title" : "Essentials"
+    },
+    {
+      "anchor" : "Entities",
+      "identifiers" : [
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Entity",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/EntityState",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/EntityStateMachine",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/EntityCreated",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/EntityDestroyed",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/EntityComponentHash",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/EntityIdentifier",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/EntityIdentifierGenerator",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/DefaultEntityIdGenerator",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/LinearIncrementingEntityIdGenerator"
+      ],
+      "title" : "Entities"
+    },
+    {
+      "anchor" : "Components",
+      "identifiers" : [
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Component",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ComponentAdded",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ComponentRemoved",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ComponentProvider",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ComponentsBuilder",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ComponentsBuilder",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ComponentInstanceProvider",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ComponentIdentifier",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ComponentInitializable",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ComponentTypeHash",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ComponentTypeProvider",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ComponentSingletonProvider",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/SingleComponent",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/EntityComponentHash",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/StateComponentMapping",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/DynamicComponentProvider",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/RequiringComponents1",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/RequiringComponents2",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/RequiringComponents3",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/RequiringComponents4",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/RequiringComponents5",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/RequiringComponents6",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/RequiringComponents7",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/RequiringComponents8",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/DefaultInitializable",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/SingleComponent"
+      ],
+      "title" : "Components"
+    },
+    {
+      "anchor" : "Systems",
+      "identifiers" : [
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/FamilyEncoding",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/FamilyDecoding",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/FamilyMemberAdded",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/FamilyMemberRemoved",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/FamilyMemberBuilder",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/FamilyMemberBuilder",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/FamilyTraitSet",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Requires1",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Requires2",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Requires3",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Requires4",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Requires5",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Requires6",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Requires7",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Requires8",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Single",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family1",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family2",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family3",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family4",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family5",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family6",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family7",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family8",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/FamilyRequirementsManaging"
+      ],
+      "title" : "Systems"
+    },
+    {
+      "anchor" : "Coding-Strategies",
+      "identifiers" : [
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/CodingStrategy",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/DefaultCodingStrategy",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/TopLevelDecoder",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/TopLevelEncoder",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/DynamicCodingKey"
+      ],
+      "title" : "Coding Strategies"
+    },
+    {
+      "anchor" : "Supporting-Types",
+      "identifiers" : [
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ManagedContiguousArray",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet"
+      ],
+      "title" : "Supporting Types"
+    },
+    {
+      "anchor" : "Hash-Functions",
+      "identifiers" : [
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/hash(combine:)",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/hash(combine:_:)",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/StringHashing"
+      ],
+      "title" : "Hash Functions"
+    }
+  ],
+  "variants" : [
+    {
+      "paths" : [
+        "\/documentation\/firebladeecs"
+      ],
+      "traits" : [
+        {
+          "interfaceLanguage" : "swift"
+        }
+      ]
+    }
+  ]
+, 
+"references": {
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS": {
+  "abstract" : [
+    {
+      "text" : "Seamlessly, consistently, and asynchronously replicate data.",
+      "type" : "text"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS",
+  "kind" : "symbol",
+  "role" : "collection",
+  "title" : "FirebladeECS",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/CodingStrategy": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "CodingStrategy"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/CodingStrategy",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "CodingStrategy"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "CodingStrategy",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/codingstrategy"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Component": {
+  "abstract" : [
+    {
+      "inlineContent" : [
+        {
+          "text" : "Component",
+          "type" : "text"
+        }
+      ],
+      "type" : "strong"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Component"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Component",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Component"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Component",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/component"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/ComponentAdded": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "ComponentAdded"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ComponentAdded",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "ComponentAdded"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "ComponentAdded",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/componentadded"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/ComponentIdentifier": {
+  "abstract" : [
+    {
+      "text" : "Identifies a component by it’s meta type",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "ComponentIdentifier"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ComponentIdentifier",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "ComponentIdentifier"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "ComponentIdentifier",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/componentidentifier"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/ComponentInitializable": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "typealias"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "ComponentInitializable"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ComponentInitializable",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "ComponentInitializable"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "ComponentInitializable",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/componentinitializable"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/ComponentInstanceProvider": {
+  "abstract" : [
+    {
+      "text" : "This component provider always returns the same instance of the component. The instance",
+      "type" : "text"
+    },
+    {
+      "text" : " ",
+      "type" : "text"
+    },
+    {
+      "text" : "is passed to the provider at initialisation.",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "class"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "ComponentInstanceProvider"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ComponentInstanceProvider",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "ComponentInstanceProvider"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "ComponentInstanceProvider",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/componentinstanceprovider"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/ComponentProvider": {
+  "abstract" : [
+    {
+      "text" : "This is the Interface for component providers. Component providers are used to supply components",
+      "type" : "text"
+    },
+    {
+      "text" : " ",
+      "type" : "text"
+    },
+    {
+      "text" : "for states within an EntityStateMachine. FirebladeECS includes three standard component providers,",
+      "type" : "text"
+    },
+    {
+      "text" : " ",
+      "type" : "text"
+    },
+    {
+      "text" : "ComponentTypeProvider, ComponentInstanceProvider and ComponentSingletonProvider. Developers",
+      "type" : "text"
+    },
+    {
+      "text" : " ",
+      "type" : "text"
+    },
+    {
+      "text" : "may wish to create more.",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "ComponentProvider"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ComponentProvider",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "ComponentProvider"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "ComponentProvider",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/componentprovider"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/ComponentRemoved": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "ComponentRemoved"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ComponentRemoved",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "ComponentRemoved"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "ComponentRemoved",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/componentremoved"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/ComponentSingletonProvider": {
+  "abstract" : [
+    {
+      "text" : "This component provider always returns the same instance of the component. The instance",
+      "type" : "text"
+    },
+    {
+      "text" : " ",
+      "type" : "text"
+    },
+    {
+      "text" : "is created when first required and is of the type passed in to the initializer.",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "class"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "ComponentSingletonProvider"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ComponentSingletonProvider",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "ComponentSingletonProvider"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "ComponentSingletonProvider",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/componentsingletonprovider"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/ComponentTypeHash": {
+  "abstract" : [
+    {
+      "text" : "component object identifier hash value",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "typealias"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "ComponentTypeHash"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ComponentTypeHash",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "ComponentTypeHash"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "ComponentTypeHash",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/componenttypehash"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/ComponentTypeProvider": {
+  "abstract" : [
+    {
+      "text" : "This component provider always returns a new instance of a component. An instance",
+      "type" : "text"
+    },
+    {
+      "text" : " ",
+      "type" : "text"
+    },
+    {
+      "text" : "is created when requested and is of the type passed in to the initializer.",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "class"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "ComponentTypeProvider"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ComponentTypeProvider",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "ComponentTypeProvider"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "ComponentTypeProvider",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/componenttypeprovider"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/ComponentsBuilder": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "enum"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "ComponentsBuilder"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ComponentsBuilder",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "ComponentsBuilder"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "ComponentsBuilder",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/componentsbuilder"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/DefaultCodingStrategy": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "DefaultCodingStrategy"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/DefaultCodingStrategy",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "DefaultCodingStrategy"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "DefaultCodingStrategy",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/defaultcodingstrategy"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/DefaultEntityIdGenerator": {
+  "abstract" : [
+    {
+      "text" : "A default entity identifier generator implementation.",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "typealias"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "DefaultEntityIdGenerator"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/DefaultEntityIdGenerator",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "DefaultEntityIdGenerator"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "DefaultEntityIdGenerator",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/defaultentityidgenerator"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/DefaultInitializable": {
+  "abstract" : [
+    {
+      "text" : "Requires initializer with default values.",
+      "type" : "text"
+    },
+    {
+      "text" : " ",
+      "type" : "text"
+    },
+    {
+      "text" : "In case of component - makes sure it can be instantiated by component provider",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "DefaultInitializable"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/DefaultInitializable",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "DefaultInitializable"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "DefaultInitializable",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/defaultinitializable"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/DynamicCodingKey": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "DynamicCodingKey"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/DynamicCodingKey",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "DynamicCodingKey"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "DynamicCodingKey",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/dynamiccodingkey"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/DynamicComponentProvider": {
+  "abstract" : [
+    {
+      "text" : "This component provider calls a function to get the component instance. The function must",
+      "type" : "text"
+    },
+    {
+      "text" : " ",
+      "type" : "text"
+    },
+    {
+      "text" : "return a single component of the appropriate type.",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "class"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "DynamicComponentProvider"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/DynamicComponentProvider",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "DynamicComponentProvider"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "DynamicComponentProvider",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/dynamiccomponentprovider"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Entity": {
+  "abstract" : [
+    {
+      "inlineContent" : [
+        {
+          "text" : "Entity",
+          "type" : "text"
+        }
+      ],
+      "type" : "strong"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Entity"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Entity",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Entity"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Entity",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/entity"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/EntityComponentHash": {
+  "abstract" : [
+    {
+      "text" : "entity id ^ component identifier hash",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "typealias"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "EntityComponentHash"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/EntityComponentHash",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "EntityComponentHash"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "EntityComponentHash",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/entitycomponenthash"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/EntityCreated": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "EntityCreated"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/EntityCreated",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "EntityCreated"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "EntityCreated",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/entitycreated"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/EntityDestroyed": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "EntityDestroyed"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/EntityDestroyed",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "EntityDestroyed"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "EntityDestroyed",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/entitydestroyed"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/EntityIdentifier": {
+  "abstract" : [
+    {
+      "inlineContent" : [
+        {
+          "text" : "EntityIdentifier",
+          "type" : "text"
+        }
+      ],
+      "type" : "strong"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "EntityIdentifier"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/EntityIdentifier",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "EntityIdentifier"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "EntityIdentifier",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/entityidentifier"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/EntityIdentifierGenerator": {
+  "abstract" : [
+    {
+      "inlineContent" : [
+        {
+          "text" : "Entity Identifier Generator",
+          "type" : "text"
+        }
+      ],
+      "type" : "strong"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "EntityIdentifierGenerator"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/EntityIdentifierGenerator",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "EntityIdentifierGenerator"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "EntityIdentifierGenerator",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/entityidentifiergenerator"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/EntityState": {
+  "abstract" : [
+    {
+      "text" : "Represents a state for an EntityStateMachine. The state contains any number of ComponentProviders which",
+      "type" : "text"
+    },
+    {
+      "text" : " ",
+      "type" : "text"
+    },
+    {
+      "text" : "are used to add components to the entity when this state is entered.",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "class"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "EntityState"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/EntityState",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "EntityState"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "EntityState",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/entitystate"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/EntityStateMachine": {
+  "abstract" : [
+    {
+      "text" : "This is a state machine for an entity. The state machine manages a set of states,",
+      "type" : "text"
+    },
+    {
+      "text" : " ",
+      "type" : "text"
+    },
+    {
+      "text" : "each of which has a set of component providers. When the state machine changes the state, it removes",
+      "type" : "text"
+    },
+    {
+      "text" : " ",
+      "type" : "text"
+    },
+    {
+      "text" : "components associated with the previous state and adds components associated with the new state.",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "class"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "EntityStateMachine"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/EntityStateMachine",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "EntityStateMachine"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "EntityStateMachine",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/entitystatemachine"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Family": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Family"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Family"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Family",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/family"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Family1": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "typealias"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Family1"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family1",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Family1"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Family1",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/family1"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Family2": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "typealias"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Family2"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family2",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Family2"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Family2",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/family2"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Family3": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "typealias"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Family3"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family3",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Family3"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Family3",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/family3"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Family4": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "typealias"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Family4"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family4",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Family4"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Family4",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/family4"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Family5": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "typealias"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Family5"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family5",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Family5"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Family5",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/family5"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Family6": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "typealias"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Family6"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family6",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Family6"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Family6",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/family6"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Family7": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "typealias"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Family7"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family7",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Family7"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Family7",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/family7"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Family8": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "typealias"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Family8"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Family8",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Family8"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Family8",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/family8"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/FamilyDecoding": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "FamilyDecoding"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/FamilyDecoding",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "FamilyDecoding"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "FamilyDecoding",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/familydecoding"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/FamilyEncoding": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "FamilyEncoding"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/FamilyEncoding",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "FamilyEncoding"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "FamilyEncoding",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/familyencoding"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/FamilyMemberAdded": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "FamilyMemberAdded"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/FamilyMemberAdded",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "FamilyMemberAdded"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "FamilyMemberAdded",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/familymemberadded"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/FamilyMemberBuilder": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "enum"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "FamilyMemberBuilder"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/FamilyMemberBuilder",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "FamilyMemberBuilder"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "FamilyMemberBuilder",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/familymemberbuilder"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/FamilyMemberRemoved": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "FamilyMemberRemoved"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/FamilyMemberRemoved",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "FamilyMemberRemoved"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "FamilyMemberRemoved",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/familymemberremoved"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/FamilyRequirementsManaging": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "FamilyRequirementsManaging"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/FamilyRequirementsManaging",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "FamilyRequirementsManaging"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "FamilyRequirementsManaging",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/familyrequirementsmanaging"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/FamilyTraitSet": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "FamilyTraitSet"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/FamilyTraitSet",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "FamilyTraitSet"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "FamilyTraitSet",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/familytraitset"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/GettingStartedWithFirebladeECS": {
+  "abstract" : [
+    {
+      "text" : "Learn the API and key types Fireblade provides to compose your game or app logic.",
+      "type" : "text"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/GettingStartedWithFirebladeECS",
+  "kind" : "article",
+  "role" : "article",
+  "title" : "Getting started with Fireblade ECS",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/gettingstartedwithfirebladeecs"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/LinearIncrementingEntityIdGenerator": {
+  "abstract" : [
+    {
+      "inlineContent" : [
+        {
+          "text" : "Linear incrementing entity id generator",
+          "type" : "text"
+        }
+      ],
+      "type" : "strong"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "LinearIncrementingEntityIdGenerator"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/LinearIncrementingEntityIdGenerator",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "LinearIncrementingEntityIdGenerator"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "LinearIncrementingEntityIdGenerator",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/linearincrementingentityidgenerator"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/ManagedContiguousArray": {
+  "abstract" : [
+    {
+      "text" : "A type that provides a managed contiguous array of elements that you provide.",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "ManagedContiguousArray"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/ManagedContiguousArray",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "ManagedContiguousArray"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "ManagedContiguousArray",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/managedcontiguousarray"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Nexus": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "class"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Nexus"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Nexus",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Nexus"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Nexus",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/nexus"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/NexusEvent": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "NexusEvent"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/NexusEvent",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "NexusEvent"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "NexusEvent",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/nexusevent"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/NexusEventDelegate": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "NexusEventDelegate"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/NexusEventDelegate",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "NexusEventDelegate"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "NexusEventDelegate",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/nexuseventdelegate"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Requires1": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Requires1"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Requires1",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Requires1"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Requires1",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/requires1"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Requires2": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Requires2"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Requires2",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Requires2"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Requires2",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/requires2"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Requires3": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Requires3"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Requires3",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Requires3"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Requires3",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/requires3"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Requires4": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Requires4"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Requires4",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Requires4"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Requires4",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/requires4"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Requires5": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Requires5"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Requires5",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Requires5"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Requires5",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/requires5"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Requires6": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Requires6"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Requires6",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Requires6"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Requires6",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/requires6"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Requires7": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Requires7"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Requires7",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Requires7"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Requires7",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/requires7"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Requires8": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Requires8"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Requires8",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Requires8"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Requires8",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/requires8"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/RequiringComponents1": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "RequiringComponents1"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/RequiringComponents1",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "RequiringComponents1"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "RequiringComponents1",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/requiringcomponents1"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/RequiringComponents2": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "RequiringComponents2"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/RequiringComponents2",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "RequiringComponents2"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "RequiringComponents2",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/requiringcomponents2"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/RequiringComponents3": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "RequiringComponents3"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/RequiringComponents3",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "RequiringComponents3"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "RequiringComponents3",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/requiringcomponents3"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/RequiringComponents4": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "RequiringComponents4"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/RequiringComponents4",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "RequiringComponents4"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "RequiringComponents4",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/requiringcomponents4"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/RequiringComponents5": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "RequiringComponents5"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/RequiringComponents5",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "RequiringComponents5"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "RequiringComponents5",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/requiringcomponents5"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/RequiringComponents6": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "RequiringComponents6"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/RequiringComponents6",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "RequiringComponents6"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "RequiringComponents6",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/requiringcomponents6"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/RequiringComponents7": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "RequiringComponents7"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/RequiringComponents7",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "RequiringComponents7"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "RequiringComponents7",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/requiringcomponents7"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/RequiringComponents8": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "RequiringComponents8"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/RequiringComponents8",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "RequiringComponents8"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "RequiringComponents8",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/requiringcomponents8"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Single": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Single"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Single",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Single"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Single",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/single"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/SingleComponent": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "SingleComponent"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/SingleComponent",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "SingleComponent"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "SingleComponent",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/singlecomponent"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/StateComponentMapping": {
+  "abstract" : [
+    {
+      "text" : "Used by the EntityState class to create the mappings of components to providers via a fluent interface.",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "class"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "StateComponentMapping"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/StateComponentMapping",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "StateComponentMapping"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "StateComponentMapping",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/statecomponentmapping"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/StringHashing": {
+  "abstract" : [
+    {
+      "text" : "A type that provides stable hash values for String.",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "enum"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "StringHashing"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/StringHashing",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "StringHashing"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "StringHashing",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/stringhashing"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/TopLevelDecoder": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "TopLevelDecoder"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/TopLevelDecoder",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "TopLevelDecoder"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "TopLevelDecoder",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/topleveldecoder"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/TopLevelEncoder": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "TopLevelEncoder"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/TopLevelEncoder",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "TopLevelEncoder"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "TopLevelEncoder",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/toplevelencoder"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/UnorderedSparseSet": {
+  "abstract" : [
+    {
+      "text" : "An unordered sparse set.",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "struct"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "UnorderedSparseSet"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/UnorderedSparseSet",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "UnorderedSparseSet"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "UnorderedSparseSet",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/unorderedsparseset"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/hash(combine:)": {
+  "abstract" : [
+    {
+      "text" : "Calculates the combined hash value of the elements.",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "func"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "hash"
+    },
+    {
+      "kind" : "text",
+      "text" : "<"
+    },
+    {
+      "kind" : "genericParameter",
+      "text" : "H"
+    },
+    {
+      "kind" : "text",
+      "text" : ">("
+    },
+    {
+      "kind" : "externalParam",
+      "text" : "combine"
+    },
+    {
+      "kind" : "text",
+      "text" : ": "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "text" : "H"
+    },
+    {
+      "kind" : "text",
+      "text" : ") -> "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:Si",
+      "text" : "Int"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/hash(combine:)",
+  "kind" : "symbol",
+  "role" : "symbol",
+  "title" : "hash(combine:)",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/hash(combine:)"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/hash(combine:_:)": {
+  "abstract" : [
+    {
+      "text" : "Calculates the combined hash of two values.",
+      "type" : "text"
+    }
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "func"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "hash"
+    },
+    {
+      "kind" : "text",
+      "text" : "("
+    },
+    {
+      "kind" : "externalParam",
+      "text" : "combine"
+    },
+    {
+      "kind" : "text",
+      "text" : ": "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:Si",
+      "text" : "Int"
+    },
+    {
+      "kind" : "text",
+      "text" : ", "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:Si",
+      "text" : "Int"
+    },
+    {
+      "kind" : "text",
+      "text" : ") -> "
+    },
+    {
+      "kind" : "typeIdentifier",
+      "preciseIdentifier" : "s:Si",
+      "text" : "Int"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/hash(combine:_:)",
+  "kind" : "symbol",
+  "role" : "symbol",
+  "title" : "hash(combine:_:)",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/hash(combine:_:)"
+},
+"https://en.wikipedia.org/wiki/Entity_component_system": {
+  "identifier" : "https:\/\/en.wikipedia.org\/wiki\/Entity_component_system",
+  "title" : "Entity-Component System",
+  "titleInlineContent" : [
+    {
+      "text" : "Entity-Component System",
+      "type" : "text"
+    }
+  ],
+  "type" : "link",
+  "url" : "https:\/\/en.wikipedia.org\/wiki\/Entity_component_system"
+},
+"https://github.com/apple/swift-package-manager": {
+  "identifier" : "https:\/\/github.com\/apple\/swift-package-manager",
+  "title" : "Swift Package Manager (SPM)",
+  "titleInlineContent" : [
+    {
+      "text" : "Swift Package Manager (SPM)",
+      "type" : "text"
+    }
+  ],
+  "type" : "link",
+  "url" : "https:\/\/github.com\/apple\/swift-package-manager"
+},
+"https://github.com/fireblade-engine": {
+  "identifier" : "https:\/\/github.com\/fireblade-engine",
+  "title" : "Fireblade Game Engine project",
+  "titleInlineContent" : [
+    {
+      "text" : "Fireblade Game Engine project",
+      "type" : "text"
+    }
+  ],
+  "type" : "link",
+  "url" : "https:\/\/github.com\/fireblade-engine"
+},
+"https://github.com/fireblade-engine/ecs-demo": {
+  "identifier" : "https:\/\/github.com\/fireblade-engine\/ecs-demo",
+  "title" : "Fireblade ECS Demo App",
+  "titleInlineContent" : [
+    {
+      "text" : "Fireblade ECS Demo App",
+      "type" : "text"
+    }
+  ],
+  "type" : "link",
+  "url" : "https:\/\/github.com\/fireblade-engine\/ecs-demo"
+},
+"https://swift.org/": {
+  "identifier" : "https:\/\/swift.org\/",
+  "title" : "Swift 5.8",
+  "titleInlineContent" : [
+    {
+      "text" : "Swift 5.8",
+      "type" : "text"
+    }
+  ],
+  "type" : "link",
+  "url" : "https:\/\/swift.org\/"
+}
+}
+}

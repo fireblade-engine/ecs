@@ -1,0 +1,925 @@
+{
+  "abstract" : [
+    {
+      "text" : "Learn the API and key types Fireblade provides to compose your game or app logic.",
+      "type" : "text"
+    }
+  ],
+  "hierarchy" : {
+    "paths" : [
+      [
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS"
+      ]
+    ]
+  },
+  "identifier" : {
+    "interfaceLanguage" : "swift",
+    "url" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/GettingStartedWithFirebladeECS"
+  },
+  "kind" : "article",
+  "metadata" : {
+    "modules" : [
+      {
+        "name" : "FirebladeECS"
+      }
+    ],
+    "role" : "article",
+    "roleHeading" : "Article",
+    "title" : "Getting started with Fireblade ECS"
+  },
+  "primaryContentSections" : [
+    {
+      "content" : [
+        {
+          "anchor" : "Overview",
+          "level" : 2,
+          "text" : "Overview",
+          "type" : "heading"
+        },
+        {
+          "inlineContent" : [
+            {
+              "text" : "Fireblade ECS is a dependency free, Swift language implementation of an Entity-Component-System (",
+              "type" : "text"
+            },
+            {
+              "identifier" : "https:\/\/en.wikipedia.org\/wiki\/Entity_component_system",
+              "isActive" : true,
+              "type" : "reference"
+            },
+            {
+              "text" : ").",
+              "type" : "text"
+            },
+            {
+              "text" : " ",
+              "type" : "text"
+            },
+            {
+              "text" : "An ECS comprises entities composed from components of data, with systems which operate on the components.",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "inlineContent" : [
+            {
+              "text" : "Extend the following lines in your ",
+              "type" : "text"
+            },
+            {
+              "code" : "Package.swift",
+              "type" : "codeVoice"
+            },
+            {
+              "text" : " file or use it to create a new project.",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "code" : [
+            "\/\/ swift-tools-version:5.8",
+            "",
+            "import PackageDescription",
+            "",
+            "let package = Package(",
+            "    name: \"YourPackageName\",",
+            "    dependencies: [",
+            "        .package(url: \"https:\/\/github.com\/fireblade-engine\/ecs.git\", from: \"0.17.5\")",
+            "    ],",
+            "    targets: [",
+            "        .target(",
+            "            name: \"YourTargetName\",",
+            "            dependencies: [\"FirebladeECS\"])",
+            "    ]",
+            ")",
+            ""
+          ],
+          "syntax" : "swift",
+          "type" : "codeListing"
+        },
+        {
+          "inlineContent" : [
+            {
+              "text" : "This article introduces you to the key concepts of Fireblade ECS’s API.",
+              "type" : "text"
+            },
+            {
+              "text" : " ",
+              "type" : "text"
+            },
+            {
+              "text" : "For a more detailed example, see the ",
+              "type" : "text"
+            },
+            {
+              "identifier" : "https:\/\/github.com\/fireblade-engine\/ecs-demo",
+              "isActive" : true,
+              "type" : "reference"
+            },
+            {
+              "text" : ".",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "anchor" : "%F0%9F%8F%9B%EF%B8%8F-Nexus",
+          "level" : 3,
+          "text" : "🏛️ Nexus",
+          "type" : "heading"
+        },
+        {
+          "inlineContent" : [
+            {
+              "text" : "The core element in the Fireblade-ECS is the ",
+              "type" : "text"
+            },
+            {
+              "identifier" : "https:\/\/en.wiktionary.org\/wiki\/nexus#Noun",
+              "isActive" : true,
+              "type" : "reference"
+            },
+            {
+              "text" : ".",
+              "type" : "text"
+            },
+            {
+              "text" : " ",
+              "type" : "text"
+            },
+            {
+              "text" : "It acts as a centralized way to store, access and manage entities and their components.",
+              "type" : "text"
+            },
+            {
+              "text" : " ",
+              "type" : "text"
+            },
+            {
+              "text" : "A single ",
+              "type" : "text"
+            },
+            {
+              "code" : "Nexus",
+              "type" : "codeVoice"
+            },
+            {
+              "text" : " may (theoretically) hold up to 4294967295 ",
+              "type" : "text"
+            },
+            {
+              "code" : "Entities",
+              "type" : "codeVoice"
+            },
+            {
+              "text" : " at a time.",
+              "type" : "text"
+            },
+            {
+              "text" : "\n",
+              "type" : "text"
+            },
+            {
+              "text" : "You may use more than one ",
+              "type" : "text"
+            },
+            {
+              "code" : "Nexus",
+              "type" : "codeVoice"
+            },
+            {
+              "text" : " at a time.",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "inlineContent" : [
+            {
+              "text" : "Initialize a ",
+              "type" : "text"
+            },
+            {
+              "code" : "Nexus",
+              "type" : "codeVoice"
+            },
+            {
+              "text" : " with",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "code" : [
+            "let nexus = Nexus()"
+          ],
+          "syntax" : "swift",
+          "type" : "codeListing"
+        },
+        {
+          "anchor" : "%F0%9F%91%A4-Entities",
+          "level" : 3,
+          "text" : "👤 Entities",
+          "type" : "heading"
+        },
+        {
+          "inlineContent" : [
+            {
+              "text" : "then create entities by letting the ",
+              "type" : "text"
+            },
+            {
+              "code" : "Nexus",
+              "type" : "codeVoice"
+            },
+            {
+              "text" : " generate them.",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "code" : [
+            "\/\/ an entity without components",
+            "let newEntity = nexus.createEntity()"
+          ],
+          "syntax" : "swift",
+          "type" : "codeListing"
+        },
+        {
+          "inlineContent" : [
+            {
+              "text" : "To define components, conform your class to the ",
+              "type" : "text"
+            },
+            {
+              "code" : "Component",
+              "type" : "codeVoice"
+            },
+            {
+              "text" : " protocol",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "code" : [
+            "final class Position: Component {",
+            "    var x: Int = 0",
+            "    var y: Int = 0",
+            "}"
+          ],
+          "syntax" : "swift",
+          "type" : "codeListing"
+        },
+        {
+          "inlineContent" : [
+            {
+              "text" : "and assign instances of it to an ",
+              "type" : "text"
+            },
+            {
+              "code" : "Entity",
+              "type" : "codeVoice"
+            },
+            {
+              "text" : " with",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "code" : [
+            "let position = Position(x: 1, y: 2)",
+            "entity.assign(position)"
+          ],
+          "syntax" : "swift",
+          "type" : "codeListing"
+        },
+        {
+          "inlineContent" : [
+            {
+              "text" : "You can be more efficient by assigning components while creating an entity.",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "code" : [
+            "\/\/ an entity with two components assigned.",
+            "nexus.createEntity {",
+            "    Position(x: 1, y: 2)",
+            "    Color(.red)",
+            "}",
+            "",
+            "\/\/ bulk create entities with multiple components assigned.",
+            "nexus.createEntities(count: 100) { _ in",
+            "    Position()",
+            "    Color()",
+            "}",
+            ""
+          ],
+          "syntax" : "swift",
+          "type" : "codeListing"
+        },
+        {
+          "anchor" : "%F0%9F%91%AA-Families",
+          "level" : 3,
+          "text" : "👪 Families",
+          "type" : "heading"
+        },
+        {
+          "inlineContent" : [
+            {
+              "text" : "This ECS uses a grouping approach for entities with the same component types to optimize cache locality and ease up access to them.",
+              "type" : "text"
+            },
+            {
+              "text" : "\n",
+              "type" : "text"
+            },
+            {
+              "text" : "Entities with the ",
+              "type" : "text"
+            },
+            {
+              "inlineContent" : [
+                {
+                  "text" : "same component types",
+                  "type" : "text"
+                }
+              ],
+              "type" : "strong"
+            },
+            {
+              "text" : " may belong to one ",
+              "type" : "text"
+            },
+            {
+              "code" : "Family",
+              "type" : "codeVoice"
+            },
+            {
+              "text" : ".",
+              "type" : "text"
+            },
+            {
+              "text" : " ",
+              "type" : "text"
+            },
+            {
+              "text" : "A ",
+              "type" : "text"
+            },
+            {
+              "code" : "Family",
+              "type" : "codeVoice"
+            },
+            {
+              "text" : " has entities as members and component types as family traits.",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "inlineContent" : [
+            {
+              "text" : "Create a family by calling ",
+              "type" : "text"
+            },
+            {
+              "code" : ".family",
+              "type" : "codeVoice"
+            },
+            {
+              "text" : " with a set of traits on the nexus.",
+              "type" : "text"
+            },
+            {
+              "text" : " ",
+              "type" : "text"
+            },
+            {
+              "text" : "A family that contains only entities with a ",
+              "type" : "text"
+            },
+            {
+              "code" : "Movement",
+              "type" : "codeVoice"
+            },
+            {
+              "text" : " and ",
+              "type" : "text"
+            },
+            {
+              "code" : "PlayerInput",
+              "type" : "codeVoice"
+            },
+            {
+              "text" : " component, but no ",
+              "type" : "text"
+            },
+            {
+              "code" : "Texture",
+              "type" : "codeVoice"
+            },
+            {
+              "text" : " component is created by",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "code" : [
+            "let family = nexus.family(requiresAll: Movement.self, PlayerInput.self,",
+            "                          excludesAll: Texture.self)"
+          ],
+          "syntax" : "swift",
+          "type" : "codeListing"
+        },
+        {
+          "inlineContent" : [
+            {
+              "text" : "These entities are cached in the nexus for efficient access and iteration.",
+              "type" : "text"
+            },
+            {
+              "text" : " ",
+              "type" : "text"
+            },
+            {
+              "text" : "Families conform to the ",
+              "type" : "text"
+            },
+            {
+              "identifier" : "https:\/\/developer.apple.com\/documentation\/swift\/sequence",
+              "isActive" : true,
+              "type" : "reference"
+            },
+            {
+              "text" : " protocol so that members (components)",
+              "type" : "text"
+            },
+            {
+              "text" : " ",
+              "type" : "text"
+            },
+            {
+              "text" : "may be iterated and accessed like any other sequence in Swift.",
+              "type" : "text"
+            },
+            {
+              "text" : "\n",
+              "type" : "text"
+            },
+            {
+              "text" : "Access a family’s components directly on the family instance. To get family entities and access components at the same time call ",
+              "type" : "text"
+            },
+            {
+              "code" : "family.entityAndComponents",
+              "type" : "codeVoice"
+            },
+            {
+              "text" : ".",
+              "type" : "text"
+            },
+            {
+              "text" : " ",
+              "type" : "text"
+            },
+            {
+              "text" : "If you are only interested in a family’s entities call ",
+              "type" : "text"
+            },
+            {
+              "code" : "family.entities",
+              "type" : "codeVoice"
+            },
+            {
+              "text" : ".",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "code" : [
+            "class PlayerMovementSystem {",
+            "    let family = nexus.family(requiresAll: Movement.self, PlayerInput.self,",
+            "                              excludesAll: Texture.self)",
+            "",
+            "    func update() {",
+            "        family",
+            "            .forEach { (mov: Movement, input: PlayerInput) in",
+            "            ",
+            "            \/\/ position & velocity component for the current entity",
+            "            ",
+            "            \/\/ get properties",
+            "            _ = mov.position",
+            "            _ = mov.velocity",
+            "            ",
+            "            \/\/ set properties",
+            "            mov.position.x = mov.position.x + 3.0",
+            "            ...",
+            "            ",
+            "            \/\/ current input command for the given entity",
+            "            _ = input.command",
+            "            ...",
+            "            ",
+            "        }",
+            "    }",
+            "",
+            "    func update2() {",
+            "        family",
+            "            .entityAndComponents",
+            "            .forEach { (entity: Entity, mov: Movement, input: PlayerInput) in",
+            "            ",
+            "            \/\/ the current entity instance",
+            "            _ = entity",
+            "",
+            "            \/\/ position & velocity component for the current entity",
+            "            ",
+            "            \/\/ get properties",
+            "            _ = mov.position",
+            "            _ = mov.velocity",
+            "            ",
+            "            ",
+            "        }",
+            "    }",
+            "",
+            "    func update3() {",
+            "        family",
+            "            .entities",
+            "            .forEach { (entity: Entity) in",
+            "            ",
+            "            \/\/ the current entity instance",
+            "            _ = entity",
+            "        }",
+            "    }",
+            "}"
+          ],
+          "syntax" : "swift",
+          "type" : "codeListing"
+        },
+        {
+          "anchor" : "%F0%9F%A7%91-Singles",
+          "level" : 3,
+          "text" : "🧑 Singles",
+          "type" : "heading"
+        },
+        {
+          "inlineContent" : [
+            {
+              "text" : "A ",
+              "type" : "text"
+            },
+            {
+              "code" : "Single",
+              "type" : "codeVoice"
+            },
+            {
+              "text" : " on the other hand is a special kind of family that holds exactly ",
+              "type" : "text"
+            },
+            {
+              "inlineContent" : [
+                {
+                  "text" : "one",
+                  "type" : "text"
+                }
+              ],
+              "type" : "strong"
+            },
+            {
+              "text" : " entity with exactly ",
+              "type" : "text"
+            },
+            {
+              "inlineContent" : [
+                {
+                  "text" : "one",
+                  "type" : "text"
+                }
+              ],
+              "type" : "strong"
+            },
+            {
+              "text" : " component for the entire lifetime of the Nexus. This may come in handy if you have components that have a ",
+              "type" : "text"
+            },
+            {
+              "identifier" : "https:\/\/en.wikipedia.org\/wiki\/Singleton_(mathematics)",
+              "isActive" : true,
+              "type" : "reference"
+            },
+            {
+              "text" : " character. Single components must conform to the ",
+              "type" : "text"
+            },
+            {
+              "code" : "SingleComponent",
+              "type" : "codeVoice"
+            },
+            {
+              "text" : " protocol and will not be available through regular family iteration.",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "code" : [
+            "final class GameState: SingleComponent {",
+            "    var quitGame: Bool = false",
+            "}",
+            "class GameLogicSystem {",
+            "    let gameState: Single<GameState>",
+            "    ",
+            "    init(nexus: Nexus) {",
+            "        gameState = nexus.single(GameState.self)",
+            "    }",
+            "    ",
+            "    func update() {",
+            "        \/\/ update your game sate here",
+            "        gameState.component.quitGame = true",
+            "        ",
+            "        \/\/ entity access is provided as well",
+            "        _ = gameState.entity",
+            "    }",
+            "}",
+            ""
+          ],
+          "syntax" : "swift",
+          "type" : "codeListing"
+        },
+        {
+          "anchor" : "%F0%9F%94%97-Serialization",
+          "level" : 3,
+          "text" : "🔗 Serialization",
+          "type" : "heading"
+        },
+        {
+          "inlineContent" : [
+            {
+              "text" : "To serialize\/deserialize entities you must conform their assigned components to the ",
+              "type" : "text"
+            },
+            {
+              "code" : "Codable",
+              "type" : "codeVoice"
+            },
+            {
+              "text" : " protocol.",
+              "type" : "text"
+            },
+            {
+              "text" : "\n",
+              "type" : "text"
+            },
+            {
+              "text" : "Conforming components can then be serialized per family like this:",
+              "type" : "text"
+            }
+          ],
+          "type" : "paragraph"
+        },
+        {
+          "code" : [
+            "\/\/ MyComponent and YourComponent both conform to Component and Codable protocols.",
+            "let nexus = Nexus()",
+            "let family = nexus.family(requiresAll: MyComponent.self, YourComponent.self)",
+            "",
+            "\/\/ JSON encode entities from given family.",
+            "var jsonEncoder = JSONEncoder()",
+            "let encodedData = try family.encodeMembers(using: &jsonEncoder)",
+            "",
+            "\/\/ Decode entities into given family from JSON. ",
+            "\/\/ The decoded entities will be added to the nexus.",
+            "var jsonDecoder = JSONDecoder()",
+            "let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)",
+            ""
+          ],
+          "syntax" : "swift",
+          "type" : "codeListing"
+        }
+      ],
+      "kind" : "content"
+    }
+  ],
+  "schemaVersion" : {
+    "major" : 0,
+    "minor" : 3,
+    "patch" : 0
+  },
+  "sections" : [
+
+  ],
+  "seeAlsoSections" : [
+    {
+      "anchor" : "Essentials",
+      "generated" : true,
+      "identifiers" : [
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Nexus",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/NexusEvent",
+        "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/NexusEventDelegate"
+      ],
+      "title" : "Essentials"
+    }
+  ],
+  "variants" : [
+    {
+      "paths" : [
+        "\/documentation\/firebladeecs\/gettingstartedwithfirebladeecs"
+      ],
+      "traits" : [
+        {
+          "interfaceLanguage" : "swift"
+        }
+      ]
+    }
+  ]
+, 
+"references": {
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS": {
+  "abstract" : [
+    {
+      "text" : "Seamlessly, consistently, and asynchronously replicate data.",
+      "type" : "text"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS",
+  "kind" : "symbol",
+  "role" : "collection",
+  "title" : "FirebladeECS",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/Nexus": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "class"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "Nexus"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/Nexus",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "Nexus"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "Nexus",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/nexus"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/NexusEvent": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "NexusEvent"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/NexusEvent",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "NexusEvent"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "NexusEvent",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/nexusevent"
+},
+"doc://com.github.fireblade-engine.FirebladeECS/documentation/FirebladeECS/NexusEventDelegate": {
+  "abstract" : [
+
+  ],
+  "fragments" : [
+    {
+      "kind" : "keyword",
+      "text" : "protocol"
+    },
+    {
+      "kind" : "text",
+      "text" : " "
+    },
+    {
+      "kind" : "identifier",
+      "text" : "NexusEventDelegate"
+    }
+  ],
+  "identifier" : "doc:\/\/com.github.fireblade-engine.FirebladeECS\/documentation\/FirebladeECS\/NexusEventDelegate",
+  "kind" : "symbol",
+  "navigatorTitle" : [
+    {
+      "kind" : "identifier",
+      "text" : "NexusEventDelegate"
+    }
+  ],
+  "role" : "symbol",
+  "title" : "NexusEventDelegate",
+  "type" : "topic",
+  "url" : "\/documentation\/firebladeecs\/nexuseventdelegate"
+},
+"https://developer.apple.com/documentation/swift/sequence": {
+  "identifier" : "https:\/\/developer.apple.com\/documentation\/swift\/sequence",
+  "title" : "Sequence",
+  "titleInlineContent" : [
+    {
+      "text" : "Sequence",
+      "type" : "text"
+    }
+  ],
+  "type" : "link",
+  "url" : "https:\/\/developer.apple.com\/documentation\/swift\/sequence"
+},
+"https://en.wikipedia.org/wiki/Entity_component_system": {
+  "identifier" : "https:\/\/en.wikipedia.org\/wiki\/Entity_component_system",
+  "title" : "ECS",
+  "titleInlineContent" : [
+    {
+      "text" : "ECS",
+      "type" : "text"
+    }
+  ],
+  "type" : "link",
+  "url" : "https:\/\/en.wikipedia.org\/wiki\/Entity_component_system"
+},
+"https://en.wikipedia.org/wiki/Singleton_(mathematics)": {
+  "identifier" : "https:\/\/en.wikipedia.org\/wiki\/Singleton_(mathematics)",
+  "title" : "Singleton",
+  "titleInlineContent" : [
+    {
+      "text" : "Singleton",
+      "type" : "text"
+    }
+  ],
+  "type" : "link",
+  "url" : "https:\/\/en.wikipedia.org\/wiki\/Singleton_(mathematics)"
+},
+"https://en.wiktionary.org/wiki/nexus#Noun": {
+  "identifier" : "https:\/\/en.wiktionary.org\/wiki\/nexus#Noun",
+  "title" : "Nexus",
+  "titleInlineContent" : [
+    {
+      "text" : "Nexus",
+      "type" : "text"
+    }
+  ],
+  "type" : "link",
+  "url" : "https:\/\/en.wiktionary.org\/wiki\/nexus#Noun"
+},
+"https://github.com/fireblade-engine/ecs-demo": {
+  "identifier" : "https:\/\/github.com\/fireblade-engine\/ecs-demo",
+  "title" : "Fireblade ECS Demo App",
+  "titleInlineContent" : [
+    {
+      "text" : "Fireblade ECS Demo App",
+      "type" : "text"
+    }
+  ],
+  "type" : "link",
+  "url" : "https:\/\/github.com\/fireblade-engine\/ecs-demo"
+}
+}
+}

@@ -14,6 +14,7 @@
   "packageRules": [
     {
       "groupName": "Swift non-major dependencies",
+      "description": "Group all Swift package minor and patch updates together",
       "matchManagers": [
         "swift"
       ],
@@ -22,11 +23,14 @@
         "patch"
       ],
       "labels": [
+        "dependencies",
+        "renovate",
         "swift"
       ]
     },
     {
-      "groupName": "CI non-major dependencies",
+      "groupName": "GitHub Actions non-major dependencies",
+      "description": "Group all GitHub Actions minor and patch updates together",
       "matchManagers": [
         "github-actions"
       ],
@@ -35,11 +39,14 @@
         "patch"
       ],
       "labels": [
+        "dependencies",
+        "renovate",
         "ci"
       ]
     },
     {
       "groupName": "Mint non-major dependencies",
+      "description": "Group all Mint package minor and patch updates together",
       "matchManagers": [
         "mint"
       ],
@@ -48,7 +55,25 @@
         "patch"
       ],
       "labels": [
+        "dependencies",
+        "renovate",
         "mint"
+      ]
+    },
+    {
+      "customType": "regex",
+      "description": "Update .swift-version",
+      "fileMatch": ".swift-version",
+      "matchStrings": [
+        "(?<currentValue>.*)"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "swiftlang/swift",
+      "extractVersionTemplate": "^swift-(?<version>.*)-RELEASE$",
+      "labels": [
+        "dependencies",
+        "renovate",
+        "swift-version"
       ]
     }
   ],

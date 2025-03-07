@@ -59,27 +59,11 @@
         "renovate",
         "mint"
       ]
-    },
-    {
-      "groupName": "SPM tools version",
-      "description": "Update Swift tools version in Package.swift",
-      "matchPackageNames": [
-        "swift-tools-version"
-      ],
-      "matchDatasources": [
-        "github-releases"
-      ],
-      "labels": [
-        "dependencies",
-        "renovate",
-        "swift-tools-version"
-      ]
     }
   ],
   "customManagers": [
     {
       "customType": "regex",
-      "packageNameTemplate": "swift-tools-version",
       "fileMatch": [
         "Package\\.swift"
       ],

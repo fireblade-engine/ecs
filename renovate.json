@@ -11,6 +11,24 @@
   "prHourlyLimit": 1,
   "recreateWhen": "auto",
   "prCreation": "not-pending",
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update Swift tools version in Package.swift",
+      "fileMatch": [
+        "Package\\.swift"
+      ],
+      "matchDatasources": [
+        "github-releases"
+      ],
+      "matchStrings": [
+        "swift-tools-version:\\s*(?<currentValue>\\d+\\.\\d+\\.\\d+)"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "swiftlang/swift",
+      "extractVersionTemplate": "^swift-(?<version>.*)-RELEASE$"
+    }
+  ],
   "packageRules": [
     {
       "groupName": "Swift non-major dependencies",
@@ -58,27 +76,6 @@
         "dependencies",
         "renovate",
         "mint"
-      ]
-    },
-    {
-      "customType": "regex",
-      "description": "Update Swift tools version in Package.swift",
-      "fileMatch": [
-        "Package\\.swift"
-      ],
-      "matchDatasources": [
-        "github-releases"
-      ],
-      "matchStrings": [
-        "swift-tools-version:\\s*(?<currentValue>\\d+\\.\\d+\\.\\d+)"
-      ],
-      "datasourceTemplate": "github-releases",
-      "depNameTemplate": "swiftlang/swift",
-      "extractVersionTemplate": "^swift-(?<version>.*)-RELEASE$",
-      "labels": [
-        "dependencies",
-        "renovate",
-        "swift-tools-version"
       ]
     }
   ],

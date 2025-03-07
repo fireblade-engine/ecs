@@ -1,6 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:base"],
+  "extends": [
+    "config:recommended"
+  ],
   "prConcurrentLimit": 3,
   "prHourlyLimit": 1,
   "recreateWhen": "auto",
@@ -8,20 +10,39 @@
   "packageRules": [
     {
       "groupName": "Swift non-major dependencies",
-      "matchManagers": ["swift"],
-      "matchUpdateTypes": ["minor", "patch"],
-      "labels": ["swift"]
+      "matchManagers": [
+        "swift"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "labels": [
+        "swift"
+      ]
     },
     {
       "groupName": "CI non-major dependencies",
-      "matchManagers": ["github-actions"],
-      "matchUpdateTypes": ["minor", "patch"],
-      "labels": ["ci"]
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "labels": [
+        "ci"
+      ]
     },
     {
       "groupName": "Other non-major dependencies",
-      "matchUpdateTypes": ["minor", "patch"]
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ]
     }
   ],
-  "labels": ["dependencies"]
+  "labels": [
+    "dependencies"
+  ]
 }

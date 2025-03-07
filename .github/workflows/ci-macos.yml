@@ -34,7 +34,7 @@ jobs:
 
       - name: Upload test artifacts
         if: failure()
-        uses: actions/upload-artifact@v4.6.1
+        uses: actions/upload-artifact@v4
         with:
           name: test-artifacts-${{ matrix.config.xcode }}-${{ github.run_id }}
           path: |

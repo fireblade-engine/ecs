@@ -24,7 +24,7 @@ jobs:
 
       - name: Upload test artifacts
         if: failure()
-        uses: actions/upload-artifact@v4.6.1
+        uses: actions/upload-artifact@v4
         with:
           name: test-artifacts-windows-${{ github.run_id }}
           path: |

@@ -1,7 +1,11 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "config:recommended",
+    ":combinePatchMinorReleases",
+    ":rebaseStalePrs",
+    ":renovatePrefix",
+    "customManagers:githubActionsVersions"
   ],
   "prConcurrentLimit": 3,
   "prHourlyLimit": 1,
@@ -35,14 +39,21 @@
       ]
     },
     {
-      "groupName": "Other non-major dependencies",
+      "groupName": "Mint non-major dependencies",
+      "matchManagers": [
+        "mint"
+      ],
       "matchUpdateTypes": [
         "minor",
         "patch"
+      ],
+      "labels": [
+        "mint"
       ]
     }
   ],
   "labels": [
-    "dependencies"
+    "dependencies",
+    "renovate"
   ]
 }

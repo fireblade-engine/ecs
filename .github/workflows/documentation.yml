@@ -69,7 +69,7 @@ jobs:
         run: 'sudo chown -R $USER docs'
 
       - name: Publish documentation to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4.6.9
+        uses: JamesIves/github-pages-deploy-action@v4.7.3
         with:
           branch: gh-pages
           folder: docs

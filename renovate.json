@@ -7,7 +7,7 @@
     ":renovatePrefix",
     "customManagers:githubActionsVersions"
   ],
-  "prConcurrentLimit": 3,
+  "prConcurrentLimit": 5,
   "prHourlyLimit": 1,
   "recreateWhen": "auto",
   "prCreation": "not-pending",
@@ -69,7 +69,7 @@
         "Package\\.swift"
       ],
       "matchStrings": [
-        "swift-tools-version:\\s*(?<currentValue>\\d+\\.\\d+\\.\\d+)"
+        "swift-tools-version:\\s*(?<currentValue>.*)"
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "swiftlang/swift",

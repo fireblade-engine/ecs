@@ -59,24 +59,6 @@
         "renovate",
         "mint"
       ]
-    },
-    {
-      "customType": "regex",
-      "description": "Update .swift-version",
-      "fileMatch": [
-        ".swift-version"
-      ],
-      "matchStrings": [
-        "^(?<currentValue>\\d+\\.\\d+\\.\\d+)$"
-      ],
-      "datasourceTemplate": "github-releases",
-      "depNameTemplate": "swiftlang/swift",
-      "extractVersionTemplate": "^swift-(?<version>.*)-RELEASE$",
-      "labels": [
-        "dependencies",
-        "renovate",
-        "swift-version"
-      ]
     }
   ],
   "labels": [

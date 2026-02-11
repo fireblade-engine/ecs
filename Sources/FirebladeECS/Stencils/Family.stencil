@@ -18,8 +18,7 @@
 {% set CompsSelf %}{{compSelf|join: ", "}}{% endset %} 
 {% map components into compsLowercased using comp %}{{ comp|lowercase }}{% endmap %}
 {% set CompsLowercased %}{{compsLowercased|join: ", "}}{% endset %} 
-{% map components into compsTuple using comp %}components.{{ maploop.counter }}{% endmap %}
-{% set CompsTuple %}{{compsTuple|join: ", "}}{% endset %} 
+{% set CompsTuple %}{% for comp in components %}components.{{ forloop.counter0 }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endset %}
 {% map components into compsTypeParams using comp %}{% if not maploop.first %}_ {% endif %}{{ comp|lowercase }}: {{ comp }}.Type{% endmap %}
 {% set CompsTypeParams %}{{compsTypeParams|join: ", "}}{% endset %} 
 {% map components into compsNamedParams using comp %}{% if not maploop.first %}_ {% endif %}{{ comp|lowercase }}: {{ comp }}{% endmap %}

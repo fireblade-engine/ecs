@@ -54,7 +54,7 @@ test-coverage:
 	else \
 		BINARY_PATH="$$XCTEST_PATH/FirebladeECSPackageTests"; \
 	fi; \
-	xcrrun llvm-cov report \
+	xcrun llvm-cov report \
 		"$$BINARY_PATH" \
 		-instr-profile=.build/debug/codecov/default.profdata \
 		-ignore-filename-regex=".build|Tests"

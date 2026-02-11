@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        swift: ["latest"]
+        swift: ["6.1"]
     container:
       image: swift:${{ matrix.swift }}
     steps:

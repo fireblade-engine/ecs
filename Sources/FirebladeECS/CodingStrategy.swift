@@ -5,11 +5,11 @@
 //  Created by Christian Treffs on 05.08.20.
 //
 
-public protocol CodingStrategy {
+public protocol CodingStrategy: Sendable {
     func codingKey<C>(for componentType: C.Type) -> DynamicCodingKey where C: Component
 }
 
-public struct DynamicCodingKey: CodingKey {
+public struct DynamicCodingKey: CodingKey, Sendable {
     public var intValue: Int?
     public var stringValue: String
 

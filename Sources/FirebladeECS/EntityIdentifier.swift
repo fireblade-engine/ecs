@@ -25,6 +25,7 @@ public struct EntityIdentifier {
 
 extension EntityIdentifier: Equatable {}
 extension EntityIdentifier: Hashable {}
+extension EntityIdentifier: Sendable {}
 
 extension EntityIdentifier: RawRepresentable {
     /// The entity identifier represented as a raw value.

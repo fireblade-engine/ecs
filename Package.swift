@@ -1,4 +1,4 @@
-// swift-tools-version:5.8
+// swift-tools-version: 6.1
 import PackageDescription
 
 let package = Package(
@@ -19,5 +19,5 @@ let package = Package(
         .testTarget(name: "FirebladeECSPerformanceTests",
                     dependencies: ["FirebladeECS"])
     ],
-    swiftLanguageVersions: [.v5]
+    swiftLanguageModes: [.v6]
 )

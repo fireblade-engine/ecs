@@ -54,8 +54,13 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable & Sendable> {
             self.init(sparse: [:], dense: [])
         }
 
-        @usableFromInline var count: Int { dense.count }
-        @usableFromInline var isEmpty: Bool { dense.isEmpty }
+        @usableFromInline var count: Int {
+            dense.count
+        }
+
+        @usableFromInline var isEmpty: Bool {
+            dense.isEmpty
+        }
 
         @inlinable var first: Element? {
             dense.first?.element
@@ -143,9 +148,14 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable & Sendable> {
     @usableFromInline let storage: Storage
 
     /// The size of the set.
-    public var count: Int { storage.count }
+    public var count: Int {
+        storage.count
+    }
+
     /// A Boolean value that indicates whether the set is empty.
-    public var isEmpty: Bool { storage.isEmpty }
+    public var isEmpty: Bool {
+        storage.isEmpty
+    }
 
     /// Returns a Boolean value that indicates whether the key is included in the set.
     /// - Parameter key: The key to inspect.

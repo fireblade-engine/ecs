@@ -25,3 +25,4 @@ extension ComponentIdentifier {
 
 extension ComponentIdentifier: Equatable {}
 extension ComponentIdentifier: Hashable {}
+extension ComponentIdentifier: Sendable {}

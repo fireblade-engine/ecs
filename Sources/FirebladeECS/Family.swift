@@ -167,3 +167,8 @@ extension Family {
         R.createMember(nexus: nexus, components: components)
     }
 }
+
+extension Family: Sendable {}
+extension Family.ComponentsIterator: Sendable {}
+extension Family.EntityIterator: Sendable {}
+extension Family.EntityComponentIterator: Sendable {}

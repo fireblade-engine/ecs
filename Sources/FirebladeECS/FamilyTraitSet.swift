@@ -56,6 +56,8 @@ extension FamilyTraitSet: Hashable {
     }
 }
 
+extension FamilyTraitSet: Sendable {}
+
 extension FamilyTraitSet: CustomStringConvertible {
     @inlinable public var description: String {
         "<FamilyTraitSet [requiresAll:\(requiresAll.description) excludesAll:\(excludesAll.description)]>"

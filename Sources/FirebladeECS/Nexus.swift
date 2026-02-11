@@ -66,6 +66,8 @@ public final class Nexus {
     }
 }
 
+extension Nexus: @unchecked Sendable {}
+
 // MARK: - CustomDebugStringConvertible
 
 extension Nexus: CustomDebugStringConvertible {

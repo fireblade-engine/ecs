@@ -29,7 +29,7 @@ import Testing
         #expect(provider1.identifier != provider2.identifier)
     }
 
-    class MockComponent: Component {
+    class MockComponent: Component, @unchecked Sendable {
         var value: Int
 
         init(value: Int) {
@@ -66,7 +66,7 @@ import Testing
         #expect(provider1.identifier != provider2.identifier)
     }
 
-    class MockComponent: Component, DefaultInitializable {
+    class MockComponent: Component, DefaultInitializable, @unchecked Sendable {
         var value: String
 
         required init() {
@@ -74,7 +74,7 @@ import Testing
         }
     }
 
-    class MockComponent2: Component, DefaultInitializable {
+    class MockComponent2: Component, DefaultInitializable, @unchecked Sendable {
         var value: Bool
 
         required init() {
@@ -112,7 +112,7 @@ import Testing
         #expect(provider1.identifier != provider2.identifier)
     }
 
-    class MockComponent: Component, DefaultInitializable {
+    class MockComponent: Component, DefaultInitializable, @unchecked Sendable {
         var value: Int
 
         required init() {
@@ -120,7 +120,7 @@ import Testing
         }
     }
 
-    class MockComponent2: Component, DefaultInitializable {
+    class MockComponent2: Component, DefaultInitializable, @unchecked Sendable {
         var value: String
 
         required init() {
@@ -157,7 +157,7 @@ import Testing
         #expect(provider1.identifier != provider2.identifier)
     }
 
-    class MockComponent: Component {
+    class MockComponent: Component, @unchecked Sendable {
         let value: Int
 
         init(value: Int) {
@@ -224,7 +224,7 @@ import Testing
         state.addMapping(for: MockComponent.self)
         let provider = state.provider(for: MockComponent.self)
         #expect(provider != nil)
-        #expect(provider is ComponentTypeProvider?)
+        #expect(provider is ComponentTypeProvider)
     }
 
     @Test func providerForTypeReturnsInstanceProvider() {
@@ -233,7 +233,7 @@ import Testing
         state.addMapping(for: MockComponent.self).withInstance(component)
         let provider = state.provider(for: MockComponent.self)
         #expect(provider != nil)
-        #expect(provider is ComponentInstanceProvider?)
+        #expect(provider is ComponentInstanceProvider)
     }
 
     @Test func providerForTypeReturnsSingletonProvider() {
@@ -241,7 +241,7 @@ import Testing
         state.addMapping(for: MockComponent.self).withSingleton(MockComponent.self)
         let provider = state.provider(for: MockComponent.self)
         #expect(provider != nil)
-        #expect(provider is ComponentSingletonProvider?)
+        #expect(provider is ComponentSingletonProvider)
     }
 
     @Test func providerForTypeReturnsDynamicProvider() {
@@ -249,7 +249,7 @@ import Testing
         state.addMapping(for: MockComponent.self).withMethod(.init { MockComponent() })
         let provider = state.provider(for: MockComponent.self)
         #expect(provider != nil)
-        #expect(provider is DynamicComponentProvider<MockComponent>?)
+        #expect(provider is DynamicComponentProvider<MockComponent>)
     }
 
     @Test func providerForTypeReturnsTypeProvider() {
@@ -257,7 +257,7 @@ import Testing
         state.addMapping(for: MockComponent.self).withType(MockComponent.self)
         let provider = state.provider(for: MockComponent.self)
         #expect(provider != nil)
-        #expect(provider is ComponentTypeProvider?)
+        #expect(provider is ComponentTypeProvider)
     }
 
     @Test func providerForTypeReturnsPassedProvider() {
@@ -284,31 +284,31 @@ import Testing
         let state = EntityState()
         let component = MockComponent()
         state.addInstance(component)
-        #expect(state.provider(for: MockComponent.self) is ComponentInstanceProvider?)
+        #expect(state.provider(for: MockComponent.self) is ComponentInstanceProvider)
         #expect(state.provider(for: MockComponent.self)?.getComponent() === component)
     }
 
     @Test func addTypeCreatesMappingAndSetsTypeProviderForType() {
         let state = EntityState()
         state.addType(MockComponent.self)
-        #expect(state.provider(for: MockComponent.self) is ComponentTypeProvider?)
+        #expect(state.provider(for: MockComponent.self) is ComponentTypeProvider)
         #expect(state.provider(for: MockComponent.self)?.getComponent() != nil)
-        #expect(state.provider(for: MockComponent.self)?.getComponent() is MockComponent?)
+        #expect(state.provider(for: MockComponent.self)?.getComponent() is MockComponent)
     }
 
     @Test func addSingletonCreatesMappingAndSetsSingletonProviderForType() {
         let state = EntityState()
         state.addSingleton(MockComponent.self)
-        #expect(state.provider(for: MockComponent.self) is ComponentSingletonProvider?)
+        #expect(state.provider(for: MockComponent.self) is ComponentSingletonProvider)
         #expect(state.provider(for: MockComponent.self)?.getComponent() != nil)
-        #expect(state.provider(for: MockComponent.self)?.getComponent() is MockComponent?)
+        #expect(state.provider(for: MockComponent.self)?.getComponent() is MockComponent)
     }
 
     @Test func addMethodCreatesMappingAndSetsDynamicProviderForType() {
         let state = EntityState()
         let component = MockComponent()
         state.addMethod(closure: .init { component })
-        #expect(state.provider(for: MockComponent.self) is DynamicComponentProvider<MockComponent>?)
+        #expect(state.provider(for: MockComponent.self) is DynamicComponentProvider<MockComponent>)
         #expect(state.provider(for: MockComponent.self)?.getComponent() === component)
     }
 
@@ -316,11 +316,11 @@ import Testing
         let state = EntityState()
         let provider = ComponentSingletonProvider(type: MockComponent.self)
         state.addProvider(type: MockComponent.self, provider: provider)
-        #expect(state.provider(for: MockComponent.self) is ComponentSingletonProvider?)
+        #expect(state.provider(for: MockComponent.self) is ComponentSingletonProvider)
         #expect(state.provider(for: MockComponent.self) != nil)
     }
 
-    class MockComponent: ComponentInitializable {
+    class MockComponent: ComponentInitializable, @unchecked Sendable {
         let value: Int
 
         init(value: Int) {
@@ -332,7 +332,7 @@ import Testing
         }
     }
 
-    class MockComponent2: MockComponent {}
+    class MockComponent2: MockComponent, @unchecked Sendable {}
 }
 
 // MARK: -
@@ -391,7 +391,7 @@ import Testing
         let nexus = Nexus()
         let entity = nexus.createEntity()
         let fsm = EntityStateMachine<String>(entity: entity)
-        class EventDelegate: NexusEventDelegate {
+        class EventDelegate: NexusEventDelegate, @unchecked Sendable {
             init() {}
 
             func nexusEvent(_ event: NexusEvent) {
@@ -481,7 +481,7 @@ import Testing
     }
 
     @Test func getsDeinitedWhileBeingStronglyReferencedByComponentAssignedToEntity() {
-        class Marker: Component {
+        class Marker: Component, @unchecked Sendable {
             let fsm: EntityStateMachine<String>
             init(fsm: EntityStateMachine<String>) {
                 self.fsm = fsm
@@ -501,7 +501,7 @@ import Testing
         #expect(weakFsm == nil)
     }
 
-    class MockComponent: ComponentInitializable {
+    class MockComponent: ComponentInitializable, @unchecked Sendable {
         let value: Int
 
         init(value: Int) {
@@ -513,7 +513,7 @@ import Testing
         }
     }
 
-    class MockComponent2: ComponentInitializable {
+    class MockComponent2: ComponentInitializable, @unchecked Sendable {
         let value: String
 
         init(value: String) {
@@ -548,7 +548,7 @@ import Testing
         #expect(state.hasProvider(for: MockComponent.self))
     }
 
-    class MockComponent: ComponentInitializable {
+    class MockComponent: ComponentInitializable, @unchecked Sendable {
         let value: Int
 
         init(value: Int) {
@@ -556,11 +556,11 @@ import Testing
         }
 
         required init() {
-            self.value = 0
+            value = 0
         }
     }
 
-    class MockComponent2: ComponentInitializable {
+    class MockComponent2: ComponentInitializable, @unchecked Sendable {
         let value: String
 
         init(value: String) {

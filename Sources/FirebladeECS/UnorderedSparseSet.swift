@@ -12,10 +12,10 @@
 ///          an element from the sparse set.
 ///
 /// See <https://github.com/bombela/sparseset/blob/master/src/lib.rs> for a reference implementation.
-public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
+public struct UnorderedSparseSet<Element, Key: Hashable & Codable & Sendable> {
     // swiftlint:disable nesting
     @usableFromInline
-    final class Storage {
+    final class Storage: @unchecked Sendable {
         /// An index into the dense store.
         @usableFromInline
         typealias DenseIndex = Int
@@ -242,6 +242,8 @@ extension UnorderedSparseSet: Sequence {
     }
 }
 
+extension UnorderedSparseSet.ElementIterator: Sendable where Element: Sendable {}
+
 extension UnorderedSparseSet.ElementIterator: LazySequenceProtocol {}
 extension UnorderedSparseSet.ElementIterator: Sequence {}
 
@@ -266,3 +268,8 @@ extension UnorderedSparseSet: Equatable where Element: Equatable {
 extension UnorderedSparseSet.Storage.Entry: Codable where Element: Codable {}
 extension UnorderedSparseSet.Storage: Codable where Element: Codable {}
 extension UnorderedSparseSet: Codable where Element: Codable {}
+
+extension UnorderedSparseSet: Sendable where Element: Sendable {}
+
+extension UnorderedSparseSet.Storage: Sendable where Element: Sendable {}
+extension UnorderedSparseSet.Storage.Entry: Sendable where Element: Sendable {}

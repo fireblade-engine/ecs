@@ -165,3 +165,5 @@ extension Entity: CustomDebugStringConvertible {
         "<Entity id:\(identifier.id) numComponents:\(numComponents)>"
     }
 }
+
+extension Entity: Sendable {}

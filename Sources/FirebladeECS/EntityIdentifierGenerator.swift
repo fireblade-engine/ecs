@@ -11,7 +11,7 @@
 /// It also allows entity ids to be marked as unused (to be re-usable).
 ///
 /// You should strive to keep entity ids tightly packed around `EntityIdentifier.Identifier.min` since it has an influence on the underlying memory layout.
-public protocol EntityIdentifierGenerator {
+public protocol EntityIdentifierGenerator: Sendable {
     /// Initialize the generator providing entity ids to begin with when creating new entities.
     ///
     /// Entity ids provided should be passed to `nextId()` in last out order up until the collection is empty.
@@ -43,7 +43,7 @@ public typealias DefaultEntityIdGenerator = LinearIncrementingEntityIdGenerator
 /// until all are in use. After that the free entities start at the lowest available id increasing linearly skipping already in-use entity ids.
 public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
     @usableFromInline
-    final class Storage {
+    final class Storage: @unchecked Sendable {
         @usableFromInline var stack: [EntityIdentifier.Identifier]
         @usableFromInline var count: Int { stack.count }
 
@@ -101,3 +101,4 @@ public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
         storage.markUnused(entityId: entityId)
     }
 }
+extension LinearIncrementingEntityIdGenerator: Sendable {}

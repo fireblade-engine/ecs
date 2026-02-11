@@ -17,7 +17,7 @@ public typealias ComponentInitializable = Component & DefaultInitializable
 /// for states within an EntityStateMachine. FirebladeECS includes three standard component providers,
 /// ComponentTypeProvider, ComponentInstanceProvider and ComponentSingletonProvider. Developers
 /// may wish to create more.
-public protocol ComponentProvider {
+public protocol ComponentProvider: Sendable {
     /// Returns an identifier that is used to determine whether two component providers will
     /// return the equivalent components.
 
@@ -39,7 +39,7 @@ public protocol ComponentProvider {
 
 /// This component provider always returns the same instance of the component. The instance
 /// is passed to the provider at initialisation.
-public final class ComponentInstanceProvider {
+public final class ComponentInstanceProvider: @unchecked Sendable {
     private var instance: Component
 
     /// Initializer
@@ -68,7 +68,7 @@ extension ComponentInstanceProvider: ComponentProvider {
 
 /// This component provider always returns a new instance of a component. An instance
 /// is created when requested and is of the type passed in to the initializer.
-public final class ComponentTypeProvider {
+public final class ComponentTypeProvider: @unchecked Sendable {
     private var componentType: ComponentInitializable.Type
 
     /// Used to compare this provider with others. Any ComponentTypeProvider that returns
@@ -96,7 +96,7 @@ extension ComponentTypeProvider: ComponentProvider {
 
 /// This component provider always returns the same instance of the component. The instance
 /// is created when first required and is of the type passed in to the initializer.
-public final class ComponentSingletonProvider {
+public final class ComponentSingletonProvider: @unchecked Sendable {
     private lazy var instance: Component = componentType.init()
 
     private var componentType: ComponentInitializable.Type
@@ -127,14 +127,14 @@ extension ComponentSingletonProvider: ComponentProvider {
 
 /// This component provider calls a function to get the component instance. The function must
 /// return a single component of the appropriate type.
-public final class DynamicComponentProvider<C: Component> {
+public final class DynamicComponentProvider<C: Component>: @unchecked Sendable {
     /// Wrapper for closure to make it hashable via ObjectIdentifier
-    public final class Closure {
-        let provideComponent: () -> C
+    public final class Closure: @unchecked Sendable {
+        let provideComponent: @Sendable () -> C
 
         /// Initializer
         /// - Parameter provideComponent: Swift closure returning component of the appropriate type
-        public init(provideComponent: @escaping () -> C) {
+        public init(provideComponent: @escaping @Sendable () -> C) {
             self.provideComponent = provideComponent
         }
     }
@@ -168,7 +168,7 @@ extension DynamicComponentProvider: ComponentProvider {
 
 /// Represents a state for an EntityStateMachine. The state contains any number of ComponentProviders which
 /// are used to add components to the entity when this state is entered.
-public class EntityState {
+public class EntityState: @unchecked Sendable {
     var providers = [ComponentIdentifier: ComponentProvider]()
 
     public init() {}
@@ -260,7 +260,7 @@ extension EntityState {
 // MARK: -
 
 /// Used by the EntityState class to create the mappings of components to providers via a fluent interface.
-public class StateComponentMapping {
+public class StateComponentMapping: @unchecked Sendable {
     private var componentType: ComponentInitializable.Type
     private let creatingState: EntityState
     private var provider: ComponentProvider
@@ -351,7 +351,7 @@ public class StateComponentMapping {
 /// each of which has a set of component providers. When the state machine changes the state, it removes
 /// components associated with the previous state and adds components associated with the new state.
 /// - Parameter StateIdentifier: Generic hashable state name type
-public class EntityStateMachine<StateIdentifier: Hashable> {
+public class EntityStateMachine<StateIdentifier: Hashable>: @unchecked Sendable {
     private var states: [StateIdentifier: EntityState]
 
     /// The current state of the state machine.

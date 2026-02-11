@@ -10,5 +10,5 @@
     public enum FamilyMemberBuilder<R> where R: FamilyRequirementsManaging {}
 #else
     @resultBuilder
-    public enum FamilyMemberBuilder<R> where R: FamilyRequirementsManaging {}
+    public enum FamilyMemberBuilder<R>: Sendable where R: FamilyRequirementsManaging {}
 #endif

@@ -209,7 +209,7 @@ import Testing
 }
 
 
-fileprivate class DelegateTester: NexusEventDelegate {
+fileprivate class DelegateTester: NexusEventDelegate, @unchecked Sendable {
     var onEvent: (NexusEvent) -> ()
     var onNonFatal: (String) -> ()
     

@@ -7,10 +7,10 @@
 
 import FirebladeECS
 
-class EmptyComponent: Component {
+class EmptyComponent: Component, @unchecked Sendable {
 }
 
-final class Optionals: Component, DefaultInitializable {
+final class Optionals: Component, DefaultInitializable, @unchecked Sendable {
     var int: Int?
     var float: Float?
     var string: String?
@@ -33,7 +33,7 @@ extension Optionals: Equatable {
     }
 }
 
-final class Name: Component, DefaultInitializable {
+final class Name: Component, DefaultInitializable, @unchecked Sendable {
     var name: String
     init(name: String) {
         self.name = name
@@ -44,7 +44,7 @@ final class Name: Component, DefaultInitializable {
     }
 }
 
-final class Position: Component, DefaultInitializable {
+final class Position: Component, DefaultInitializable, @unchecked Sendable {
     var x: Int
     var y: Int
 
@@ -59,7 +59,7 @@ final class Position: Component, DefaultInitializable {
 }
 extension Position: Codable { }
 
-final class Velocity: Component, DefaultInitializable {
+final class Velocity: Component, DefaultInitializable, @unchecked Sendable {
     var a: Float
 
     init(a: Float) {
@@ -71,7 +71,7 @@ final class Velocity: Component, DefaultInitializable {
     }
 }
 
-final class Party: Component {
+final class Party: Component, @unchecked Sendable {
     var partying: Bool
 
     init(partying: Bool) {
@@ -80,7 +80,7 @@ final class Party: Component {
 }
 extension Party: Codable { }
 
-final class Color: Component {
+final class Color: Component, @unchecked Sendable {
     var r: UInt8
     var g: UInt8
     var b: UInt8
@@ -93,7 +93,7 @@ final class Color: Component {
 }
 extension Color: Codable { }
 
-class Index: Component {
+class Index: Component, @unchecked Sendable {
     var index: Int
 
     init(index: Int) {
@@ -101,7 +101,7 @@ class Index: Component {
     }
 }
 
-final class MyComponent: Component {
+final class MyComponent: Component, @unchecked Sendable {
     var name: String
     var flag: Bool
 
@@ -113,7 +113,7 @@ final class MyComponent: Component {
 extension MyComponent: Decodable { }
 extension MyComponent: Encodable { }
 
-final class YourComponent: Component {
+final class YourComponent: Component, @unchecked Sendable {
     var number: Float
 
     init(number: Float) {
@@ -123,7 +123,7 @@ final class YourComponent: Component {
 extension YourComponent: Decodable { }
 extension YourComponent: Encodable { }
 
-final class SingleGameState: SingleComponent {
+final class SingleGameState: SingleComponent, @unchecked Sendable {
     var shouldQuit: Bool = false
     var playerHealth: Int = 67
 }

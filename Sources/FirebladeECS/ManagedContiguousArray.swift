@@ -130,3 +130,5 @@ extension ManagedContiguousArray: Equatable where Element: Equatable {
 // MARK: - Codable
 
 extension ManagedContiguousArray: Codable where Element: Codable {}
+
+extension ManagedContiguousArray: Sendable where Element: Sendable {}

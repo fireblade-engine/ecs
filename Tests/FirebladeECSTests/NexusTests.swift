@@ -6,60 +6,50 @@
 //
 
 @testable import FirebladeECS
-import XCTest
+import Testing
 
-class NexusTests: XCTestCase {
-    var nexus: Nexus!
-
-    override func setUp() {
-        super.setUp()
-        nexus = Nexus()
-    }
-
-    override func tearDown() {
-        nexus = nil
-        super.tearDown()
-    }
-
-    func testEntityCreate() {
-        XCTAssertEqual(nexus.numEntities, 0)
+@Suite struct NexusTests {
+    @Test func entityCreate() {
+        let nexus = Nexus()
+        #expect(nexus.numEntities == 0)
 
         let e0 = nexus.createEntity()
 
-        XCTAssertEqual(e0.identifier.id, 0)
-        XCTAssertEqual(nexus.numEntities, 1)
+        #expect(e0.identifier.id == 0)
+        #expect(nexus.numEntities == 1)
 
         let e1 = nexus.createEntity(with: Name(name: "Entity 1"))
 
-        XCTAssert(e1.identifier.id == 1)
-        XCTAssert(nexus.numEntities == 2)
-        XCTAssertFalse(nexus.debugDescription.isEmpty)
+        #expect(e1.identifier.id == 1)
+        #expect(nexus.numEntities == 2)
+        #expect(!nexus.debugDescription.isEmpty)
     }
 
-    func testEntityDestroy() {
-        testEntityCreate()
-        XCTAssertEqual(nexus.numEntities, 2)
+    @Test func entityDestroy() {
+        let nexus = Nexus()
+        let e0 = nexus.createEntity()
+        let e1 = nexus.createEntity(with: Name(name: "Entity 1"))
+        #expect(nexus.numEntities == 2)
 
-        let e1 = nexus.entity(from: EntityIdentifier(1))
-        XCTAssertTrue(nexus.exists(entity: EntityIdentifier(1)))
-        XCTAssertEqual(e1.identifier.id, 1)
+        let e1Fetched = nexus.entity(from: EntityIdentifier(1))
+        #expect(nexus.exists(entity: EntityIdentifier(1)))
+        #expect(e1Fetched.identifier.id == 1)
 
-        XCTAssertTrue(nexus.destroy(entity: e1))
-        XCTAssertFalse(nexus.destroy(entity: e1))
+        #expect(nexus.destroy(entity: e1))
+        #expect(!nexus.destroy(entity: e1))
 
-        XCTAssertFalse(nexus.exists(entity: EntityIdentifier(1)))
+        #expect(!nexus.exists(entity: EntityIdentifier(1)))
 
-        XCTAssertEqual(nexus.numEntities, 1)
-
-        XCTAssertEqual(nexus.numEntities, 1)
+        #expect(nexus.numEntities == 1)
 
         nexus.clear()
 
-        XCTAssertEqual(nexus.numEntities, 0)
+        #expect(nexus.numEntities == 0)
     }
 
-    func testComponentCreation() {
-        XCTAssert(nexus.numEntities == 0)
+    @Test func componentCreation() {
+        let nexus = Nexus()
+        #expect(nexus.numEntities == 0)
 
         let e0: Entity = nexus.createEntity()
 
@@ -68,61 +58,63 @@ class NexusTests: XCTestCase {
         e0.assign(p0)
         // component collision: e0.assign(p0)
 
-        XCTAssert(e0.hasComponents)
-        XCTAssert(e0.numComponents == 1)
+        #expect(e0.hasComponents)
+        #expect(e0.numComponents == 1)
 
-        let rP0: Position = e0.get(component: Position.self)!
-        XCTAssert(rP0.x == 1)
-        XCTAssert(rP0.y == 2)
+        let rP0: Position? = e0.get(component: Position.self)
+        #expect(rP0?.x == 1)
+        #expect(rP0?.y == 2)
     }
 
-    func testComponentDeletion() {
+    @Test func componentDeletion() {
+        let nexus = Nexus()
         let identifier: EntityIdentifier = nexus.createEntity().identifier
 
         let e0 = nexus.entity(from: identifier)
 
-        XCTAssert(e0.numComponents == 0)
+        #expect(e0.numComponents == 0)
         e0.remove(Position.self)
-        XCTAssert(e0.numComponents == 0)
+        #expect(e0.numComponents == 0)
 
         let n0 = Name(name: "myName")
         let p0 = Position(x: 99, y: 111)
 
         e0.assign(n0)
-        XCTAssert(e0.numComponents == 1)
-        XCTAssert(e0.hasComponents)
+        #expect(e0.numComponents == 1)
+        #expect(e0.hasComponents)
 
         e0.remove(Name.self)
 
-        XCTAssert(e0.numComponents == 0)
-        XCTAssert(!e0.hasComponents)
+        #expect(e0.numComponents == 0)
+        #expect(!e0.hasComponents)
 
         e0.assign(p0)
 
-        XCTAssert(e0.numComponents == 1)
-        XCTAssert(e0.hasComponents)
+        #expect(e0.numComponents == 1)
+        #expect(e0.hasComponents)
 
         e0.remove(p0)
 
-        XCTAssert(e0.numComponents == 0)
-        XCTAssert(!e0.hasComponents)
+        #expect(e0.numComponents == 0)
+        #expect(!e0.hasComponents)
 
         e0.assign(n0)
         e0.assign(p0)
 
-        XCTAssert(e0.numComponents == 2)
+        #expect(e0.numComponents == 2)
         let (name, position) = e0.get(components: Name.self, Position.self)
 
-        XCTAssert(name?.name == "myName")
-        XCTAssert(position?.x == 99)
-        XCTAssert(position?.y == 111)
+        #expect(name?.name == "myName")
+        #expect(position?.x == 99)
+        #expect(position?.y == 111)
 
         e0.destroy()
 
-        XCTAssert(e0.numComponents == 0)
+        #expect(e0.numComponents == 0)
     }
 
-    func testComponentRetrieval() {
+    @Test func componentRetrieval() {
+        let nexus = Nexus()
         let pos = Position(x: 1, y: 2)
         let name = Name(name: "myName")
         let vel = Velocity(a: 3)
@@ -130,40 +122,42 @@ class NexusTests: XCTestCase {
 
         let (rPos, rName, rVel) = entity.get(components: Position.self, Name.self, Velocity.self)
 
-        XCTAssertTrue(rPos === pos)
-        XCTAssertTrue(rName === name)
-        XCTAssertTrue(rVel === vel)
+        #expect(rPos === pos)
+        #expect(rName === name)
+        #expect(rVel === vel)
     }
 
-    func testComponentUniqueness() {
+    @Test func componentUniqueness() {
+        let nexus = Nexus()
         let a = nexus.createEntity()
         let b = nexus.createEntity()
         let c = nexus.createEntity()
 
-        XCTAssert(nexus.numEntities == 3)
+        #expect(nexus.numEntities == 3)
 
         a.assign(Position(x: 0, y: 0))
         b.assign(Position(x: 0, y: 0))
         c.assign(Position(x: 0, y: 0))
 
-        let pA: Position = a.get()!
-        let pB: Position = b.get()!
+        let pA: Position? = a.get()
+        let pB: Position? = b.get()
 
-        pA.x = 23
-        pA.y = 32
+        pA?.x = 23
+        pA?.y = 32
 
-        XCTAssert(pB.x != pA.x)
-        XCTAssert(pB.y != pA.y)
+        #expect(pB?.x != pA?.x)
+        #expect(pB?.y != pA?.y)
     }
 
-    func testEntityIteration() {
+    @Test func entityIteration() {
+        let nexus = Nexus()
         nexus.createEntities(count: 1000) { ctx in Position(x: ctx.index, y: ctx.index) }
 
-        let entityArray = [Entity](nexus.makeEntitiesIterator()).lazy
+        let entityArray = Array(nexus.makeEntitiesIterator())
 
-        XCTAssertEqual(entityArray.count, 1000)
+        #expect(entityArray.count == 1000)
 
-        XCTAssertTrue(entityArray.contains(where: { $0.identifier.index == 0 }))
-        XCTAssertTrue(entityArray.contains(where: { $0.identifier.index == 999 }))
+        #expect(entityArray.contains(where: { $0.identifier.index == 0 }))
+        #expect(entityArray.contains(where: { $0.identifier.index == 999 }))
     }
 }

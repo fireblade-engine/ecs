@@ -6,23 +6,24 @@
 //
 
 import FirebladeECS
-import XCTest
+import Testing
+import Foundation
 
-final class FamilyCodingTests: XCTestCase {
-    func testEncodingFamily1() throws {
+@Suite struct FamilyCodingTests {
+    @Test func encodingFamily1() throws {
         let nexus = Nexus()
 
         let family = nexus.family(requires: MyComponent.self)
         family.createMember(with: MyComponent(name: "My Name", flag: true))
         family.createMember(with: MyComponent(name: "Your Name", flag: false))
-        XCTAssertEqual(family.count, 2)
+        #expect(family.count == 2)
 
         var jsonEncoder = JSONEncoder()
         let encodedData = try family.encodeMembers(using: &jsonEncoder)
-        XCTAssertGreaterThanOrEqual(encodedData.count, 90)
+        #expect(encodedData.count >= 90)
     }
 
-    func testDecodingFamily1() throws {
+    @Test func decodingFamily1() throws {
         let jsonString = """
          [
            {
@@ -43,27 +44,27 @@ final class FamilyCodingTests: XCTestCase {
 
         let nexus = Nexus()
         let family = nexus.family(requires: MyComponent.self)
-        XCTAssertTrue(family.isEmpty)
+        #expect(family.isEmpty)
         var jsonDecoder = JSONDecoder()
         let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
-        XCTAssertEqual(newEntities.count, 2)
-        XCTAssertEqual(family.count, 2)
+        #expect(newEntities.count == 2)
+        #expect(family.count == 2)
     }
 
-    func testEncodeFamily2() throws {
+    @Test func encodeFamily2() throws {
         let nexus = Nexus()
 
         let family = nexus.family(requiresAll: MyComponent.self, YourComponent.self)
         family.createMember(with: (MyComponent(name: "My Name", flag: true), YourComponent(number: 1.23)))
         family.createMember(with: (MyComponent(name: "Your Name", flag: false), YourComponent(number: 3.45)))
-        XCTAssertEqual(family.count, 2)
+        #expect(family.count == 2)
 
         var jsonEncoder = JSONEncoder()
         let encodedData = try family.encodeMembers(using: &jsonEncoder)
-        XCTAssertGreaterThanOrEqual(encodedData.count, 91)
+        #expect(encodedData.count >= 91)
     }
 
-    func testDecodingFamily2() throws {
+    @Test func decodingFamily2() throws {
         let jsonString = """
         [
           {
@@ -92,27 +93,27 @@ final class FamilyCodingTests: XCTestCase {
         let nexus = Nexus()
 
         let family = nexus.family(requiresAll: YourComponent.self, MyComponent.self)
-        XCTAssertTrue(family.isEmpty)
+        #expect(family.isEmpty)
         var jsonDecoder = JSONDecoder()
         let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
-        XCTAssertEqual(newEntities.count, 2)
-        XCTAssertEqual(family.count, 2)
+        #expect(newEntities.count == 2)
+        #expect(family.count == 2)
     }
 
-    func testEncodeFamily3() throws {
+    @Test func encodeFamily3() throws {
         let nexus = Nexus()
 
         let family = nexus.family(requiresAll: MyComponent.self, YourComponent.self, Position.self)
         family.createMember(with: (MyComponent(name: "My Name", flag: true), YourComponent(number: 1.23), Position(x: 1, y: 2)))
         family.createMember(with: (MyComponent(name: "Your Name", flag: false), YourComponent(number: 3.45), Position(x: 3, y: 4)))
-        XCTAssertEqual(family.count, 2)
+        #expect(family.count == 2)
 
         var jsonEncoder = JSONEncoder()
         let encodedData = try family.encodeMembers(using: &jsonEncoder)
-        XCTAssertGreaterThanOrEqual(encodedData.count, 200)
+        #expect(encodedData.count >= 200)
     }
 
-    func testDecodingFamily3() throws {
+    @Test func decodingFamily3() throws {
         let jsonString = """
         [
           {
@@ -150,28 +151,28 @@ final class FamilyCodingTests: XCTestCase {
 
         let family = nexus.family(requiresAll: YourComponent.self, MyComponent.self, Position.self)
         let family2 = nexus.family(requiresAll: YourComponent.self, MyComponent.self, excludesAll: Index.self)
-        XCTAssertTrue(family.isEmpty)
+        #expect(family.isEmpty)
         var jsonDecoder = JSONDecoder()
         let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
-        XCTAssertEqual(newEntities.count, 2)
-        XCTAssertEqual(family.count, 2)
-        XCTAssertEqual(family2.count, 2)
+        #expect(newEntities.count == 2)
+        #expect(family.count == 2)
+        #expect(family2.count == 2)
     }
 
-    func testEncodeFamily4() throws {
+    @Test func encodeFamily4() throws {
         let nexus = Nexus()
 
         let family = nexus.family(requiresAll: MyComponent.self, YourComponent.self, Position.self, Color.self)
         family.createMember(with: (MyComponent(name: "My Name", flag: true), YourComponent(number: 1.23), Position(x: 1, y: 2), Color(r: 1, g: 2, b: 3)))
         family.createMember(with: (MyComponent(name: "Your Name", flag: false), YourComponent(number: 3.45), Position(x: 3, y: 4), Color(r: 4, g: 5, b: 6)))
-        XCTAssertEqual(family.count, 2)
+        #expect(family.count == 2)
 
         var jsonEncoder = JSONEncoder()
         let encodedData = try family.encodeMembers(using: &jsonEncoder)
-        XCTAssertGreaterThanOrEqual(encodedData.count, 250)
+        #expect(encodedData.count >= 250)
     }
 
-    func testDecodeFamily4() throws {
+    @Test func decodeFamily4() throws {
         let jsonString = """
         [
           {
@@ -218,27 +219,27 @@ final class FamilyCodingTests: XCTestCase {
         let nexus = Nexus()
 
         let family = nexus.family(requiresAll: YourComponent.self, MyComponent.self, Position.self, Color.self)
-        XCTAssertTrue(family.isEmpty)
+        #expect(family.isEmpty)
         var jsonDecoder = JSONDecoder()
         let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
-        XCTAssertEqual(newEntities.count, 2)
-        XCTAssertEqual(family.count, 2)
+        #expect(newEntities.count == 2)
+        #expect(family.count == 2)
     }
 
-    func testEncodeFamily5() throws {
+    @Test func encodeFamily5() throws {
         let nexus = Nexus()
 
         let family = nexus.family(requiresAll: MyComponent.self, YourComponent.self, Position.self, Color.self, Party.self)
         family.createMember(with: (MyComponent(name: "My Name", flag: true), YourComponent(number: 1.23), Position(x: 1, y: 2), Color(r: 1, g: 2, b: 3), Party(partying: true)))
         family.createMember(with: (MyComponent(name: "Your Name", flag: false), YourComponent(number: 3.45), Position(x: 3, y: 4), Color(r: 4, g: 5, b: 6), Party(partying: false)))
-        XCTAssertEqual(family.count, 2)
+        #expect(family.count == 2)
 
         var jsonEncoder = JSONEncoder()
         let encodedData = try family.encodeMembers(using: &jsonEncoder)
-        XCTAssertGreaterThanOrEqual(encodedData.count, 320)
+        #expect(encodedData.count >= 320)
     }
 
-    func testDecodeFamily5() throws {
+    @Test func decodeFamily5() throws {
         let jsonString = """
         [
           {
@@ -291,14 +292,14 @@ final class FamilyCodingTests: XCTestCase {
         let nexus = Nexus()
 
         let family = nexus.family(requiresAll: YourComponent.self, MyComponent.self, Position.self, Color.self, Party.self)
-        XCTAssertTrue(family.isEmpty)
+        #expect(family.isEmpty)
         var jsonDecoder = JSONDecoder()
         let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
-        XCTAssertEqual(newEntities.count, 2)
-        XCTAssertEqual(family.count, 2)
+        #expect(newEntities.count == 2)
+        #expect(family.count == 2)
     }
 
-    func testFailDecodingFamily() {
+    @Test func failDecodingFamily() {
         let jsonString = """
         [
           {
@@ -343,6 +344,8 @@ final class FamilyCodingTests: XCTestCase {
         let nexus = Nexus()
 
         let family = nexus.family(requiresAll: YourComponent.self, MyComponent.self)
-        XCTAssertThrowsError(try family.decodeMembers(from: jsonData, using: &jsonDecoder))
+        #expect(throws: Error.self) {
+            try family.decodeMembers(from: jsonData, using: &jsonDecoder)
+        }
     }
 }

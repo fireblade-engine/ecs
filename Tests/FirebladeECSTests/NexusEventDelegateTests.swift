@@ -6,98 +6,93 @@
 //
 
 import FirebladeECS
-import XCTest
+import Testing
 
-final class NexusEventDelegateTests: XCTestCase {
-    lazy var nexus = Nexus()
-    fileprivate var delegateTester: DelegateTester!
-
-    override func setUp() {
-        super.setUp()
-        nexus = Nexus()
-        delegateTester = nil
-    }
-    
-    func testEventEntityCreated() {
+@Suite struct NexusEventDelegateTests {
+    @Test func eventEntityCreated() {
+        let nexus = Nexus()
         var entityCreatedEvents: [EntityCreated] = []
-        delegateTester = DelegateTester(onEvent: { event in
+        let delegateTester = DelegateTester(onEvent: { event in
             switch event {
             case let entityCreated as EntityCreated:
                 entityCreatedEvents.append(entityCreated)
             default:
-                XCTFail("unexpected event \(event)")
+                Issue.record("unexpected event \(event)")
                 return
             }
         })
         nexus.delegate = delegateTester
         
-        XCTAssertEqual(entityCreatedEvents.count, 0)
+        #expect(entityCreatedEvents.count == 0)
         nexus.createEntity()
-        XCTAssertEqual(entityCreatedEvents.count, 1)
+        #expect(entityCreatedEvents.count == 1)
         nexus.createEntities(count: 100)
-        XCTAssertEqual(entityCreatedEvents.count, 101)
+        #expect(entityCreatedEvents.count == 101)
     }
     
-    func testEventEntityDestroyed() {
+    @Test func eventEntityDestroyed() {
+        let nexus = Nexus()
         var events: [EntityDestroyed] = []
-        delegateTester = DelegateTester(onEvent: { event in
+        let delegateTester = DelegateTester(onEvent: { event in
             switch event {
             case let event as EntityDestroyed:
                 events.append(event)
             case _ as EntityCreated:
                 break
             default:
-                XCTFail("unexpected event \(event)")
+                Issue.record("unexpected event \(event)")
                 return
             }
         })
         nexus.delegate = delegateTester
         
-        XCTAssertEqual(events.count, 0)
+        #expect(events.count == 0)
         nexus.createEntities(count: 100)
-        XCTAssertEqual(events.count, 0)
+        #expect(events.count == 0)
         for entitiy in nexus.makeEntitiesIterator() {
             entitiy.destroy()
         }
-        XCTAssertEqual(events.count, 100)
+        #expect(events.count == 100)
     }
     
-    func testEventComponentAdded() {
+    @Test func eventComponentAdded() {
+        let nexus = Nexus()
         var componentsAddedEvents: [ComponentAdded] = []
         var entityCreatedEvents: [EntityCreated] = []
-        delegateTester = DelegateTester(onEvent: { event in
+        let delegateTester = DelegateTester(onEvent: { event in
             switch event {
             case let compAdded as ComponentAdded:
                 componentsAddedEvents.append(compAdded)
             case let entityCreated as EntityCreated:
                 entityCreatedEvents.append(entityCreated)
             default:
-                XCTFail("unexpected event \(event)")
+                Issue.record("unexpected event \(event)")
                 return
             }
         })
         nexus.delegate = delegateTester
         
-        XCTAssertEqual(componentsAddedEvents.count, 0)
-        XCTAssertEqual(entityCreatedEvents.count, 0)
+        #expect(componentsAddedEvents.count == 0)
+        #expect(entityCreatedEvents.count == 0)
         let entity = nexus.createEntity()
         entity.assign(MyComponent(name: "0", flag: true))
-        XCTAssertEqual(componentsAddedEvents.count, 1)
-        XCTAssertEqual(entityCreatedEvents.count, 1)
+        #expect(componentsAddedEvents.count == 1)
+        #expect(entityCreatedEvents.count == 1)
         let entity2 = nexus.createEntity()
         entity2.assign(MyComponent(name: "0", flag: true), YourComponent(number: 2))
-        XCTAssertEqual(componentsAddedEvents.count, 3)
-        XCTAssertEqual(entityCreatedEvents.count, 2)
+        #expect(componentsAddedEvents.count == 3)
+        #expect(entityCreatedEvents.count == 2)
     }
     
-    func testEventComponentRemoved() {
+    @Test func eventComponentRemoved() {
+        let nexus = Nexus()
         var events: [ComponentRemoved] = []
-        delegateTester = DelegateTester(onEvent: { event in
+        let delegateTester = DelegateTester(onEvent: { event in
             switch event {
             case let event as ComponentRemoved:
                 events.append(event)
             default:
-                XCTFail("unexpected event \(event)")
+                Issue.record("unexpected event \(event)")
                 return
             }
         })
@@ -109,30 +104,31 @@ final class NexusEventDelegateTests: XCTestCase {
             EmptyComponent()
         )
         
-        XCTAssertEqual(entity.numComponents, 3)
-        XCTAssertEqual(events.count, 0)
+        #expect(entity.numComponents == 3)
+        #expect(events.count == 0)
         
         nexus.delegate = delegateTester
         
         entity.remove(MyComponent.self)
-        XCTAssertEqual(events.count, 1)
-        XCTAssertEqual(entity.numComponents, 2)
+        #expect(events.count == 1)
+        #expect(entity.numComponents == 2)
         
         entity.remove(EmptyComponent.self)
-        XCTAssertEqual(events.count, 2)
-        XCTAssertEqual(entity.numComponents, 1)
+        #expect(events.count == 2)
+        #expect(entity.numComponents == 1)
         
         entity.remove(YourComponent.self)
-        XCTAssertEqual(events.count, 3)
-        XCTAssertEqual(entity.numComponents, 0)
+        #expect(events.count == 3)
+        #expect(entity.numComponents == 0)
         
     }
     
-    func testFamilyMemeberAdded() {
+    @Test func familyMemeberAdded() {
+        let nexus = Nexus()
         var eventsFamilyMemberRemoved: [FamilyMemberRemoved] = []
         var eventsComponentRemoved: [ComponentRemoved] = []
         var eventsEntityDestroyed: [EntityDestroyed] = []
-        delegateTester = DelegateTester(onEvent: { event in
+        let delegateTester = DelegateTester(onEvent: { event in
             switch event {
             case is FamilyMemberAdded,
                  is ComponentAdded,
@@ -145,7 +141,7 @@ final class NexusEventDelegateTests: XCTestCase {
             case let event as EntityDestroyed:
                 eventsEntityDestroyed.append(event)
             default:
-                XCTFail("unexpected event \(event)")
+                Issue.record("unexpected event \(event)")
                 return
             }
         })
@@ -157,24 +153,25 @@ final class NexusEventDelegateTests: XCTestCase {
         family.createMember(with: (MyComponent(name: "Hello", flag: false), YourComponent(number: 05050)))
         family.createMember(with: (MyComponent(name: "asdasd", flag: true), YourComponent(number: 9494949)))
      
-        XCTAssertEqual(eventsFamilyMemberRemoved.count, 0)
-        XCTAssertEqual(eventsComponentRemoved.count, 0)
-        XCTAssertEqual(family.count, 3)
-        XCTAssertEqual(eventsEntityDestroyed.count, 0)
+        #expect(eventsFamilyMemberRemoved.count == 0)
+        #expect(eventsComponentRemoved.count == 0)
+        #expect(family.count == 3)
+        #expect(eventsEntityDestroyed.count == 0)
         
-        XCTAssertTrue(family.destroyMembers())
+        #expect(family.destroyMembers())
         
-        XCTAssertEqual(eventsFamilyMemberRemoved.count, 3)
-        XCTAssertEqual(eventsComponentRemoved.count, 6)
-        XCTAssertEqual(family.count, 0)
-        XCTAssertEqual(eventsEntityDestroyed.count, 3)
+        #expect(eventsFamilyMemberRemoved.count == 3)
+        #expect(eventsComponentRemoved.count == 6)
+        #expect(family.count == 0)
+        #expect(eventsEntityDestroyed.count == 3)
     }
     
-    func testFamilyMemberRemoved() {
+    @Test func familyMemberRemoved() {
+        let nexus = Nexus()
         var eventsMemberAdded: [FamilyMemberAdded] = []
         var eventsComponentAdded: [ComponentAdded] = []
         var eventsEntityCreated: [EntityCreated] = []
-        delegateTester = DelegateTester(onEvent: { event in
+        let delegateTester = DelegateTester(onEvent: { event in
             switch event {
             case let event as FamilyMemberAdded:
                 eventsMemberAdded.append(event)
@@ -183,7 +180,7 @@ final class NexusEventDelegateTests: XCTestCase {
             case let event as EntityCreated:
                 eventsEntityCreated.append(event)
             default:
-                XCTFail("unexpected event \(event)")
+                Issue.record("unexpected event \(event)")
                 return
             }
         })
@@ -191,23 +188,23 @@ final class NexusEventDelegateTests: XCTestCase {
         let family = nexus.family(requiresAll: MyComponent.self, YourComponent.self)
         nexus.delegate = delegateTester
         
-        XCTAssertEqual(family.count, 0)
-        XCTAssertEqual(eventsMemberAdded.count, 0)
-        XCTAssertEqual(eventsComponentAdded.count, 0)
-        XCTAssertEqual(eventsEntityCreated.count, 0)
+        #expect(family.count == 0)
+        #expect(eventsMemberAdded.count == 0)
+        #expect(eventsComponentAdded.count == 0)
+        #expect(eventsEntityCreated.count == 0)
         
         family.createMember(with: (MyComponent(name: "Bla", flag: true), YourComponent(number: 85)))
-        XCTAssertEqual(family.count, 1)
-        XCTAssertEqual(eventsMemberAdded.count, 1)
-        XCTAssertEqual(eventsComponentAdded.count, 2)
-        XCTAssertEqual(eventsEntityCreated.count, 1)
+        #expect(family.count == 1)
+        #expect(eventsMemberAdded.count == 1)
+        #expect(eventsComponentAdded.count == 2)
+        #expect(eventsEntityCreated.count == 1)
         
         
         family.createMember(with: (MyComponent(name: "Hello", flag: false), YourComponent(number: 05050)))
-        XCTAssertEqual(family.count, 2)
-        XCTAssertEqual(eventsMemberAdded.count, 2)
-        XCTAssertEqual(eventsComponentAdded.count, 4)
-        XCTAssertEqual(eventsEntityCreated.count, 2)
+        #expect(family.count == 2)
+        #expect(eventsMemberAdded.count == 2)
+        #expect(eventsComponentAdded.count == 4)
+        #expect(eventsEntityCreated.count == 2)
     }
 }
 

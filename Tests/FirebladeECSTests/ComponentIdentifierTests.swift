@@ -4,18 +4,19 @@
 //
 //  Created by Christian Treffs on 05.10.19.
 //
-import XCTest
+import FirebladeECS
+import Testing
 
-final class ComponentIdentifierTests: XCTestCase {
-    func testMirrorAsStableIdentifier() {
+@Suite struct ComponentIdentifierTests {
+    @Test func mirrorAsStableIdentifier() {
         let m = String(reflecting: Position.self)
         let identifier: String = m
-        XCTAssertEqual(identifier, "FirebladeECSTests.Position")
+        #expect(identifier == "FirebladeECSTests.Position")
     }
 
-    func testStringDescribingAsStableIdentifier() {
+    @Test func stringDescribingAsStableIdentifier() {
         let s = String(describing: Position.self)
         let identifier: String = s
-        XCTAssertEqual(identifier, "Position")
+        #expect(identifier == "Position")
     }
 }

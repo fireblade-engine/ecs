@@ -6,77 +6,73 @@
 //
 
 import FirebladeECS
-import XCTest
+import Testing
 
-final class EntityIdGenTests: XCTestCase {
-    var gen: EntityIdentifierGenerator!
-
-    override func setUp() {
-        super.setUp()
-        gen = DefaultEntityIdGenerator()
+@Suite struct EntityIdGenTests {
+    @Test func generatorDefaultInit() {
+        let gen = DefaultEntityIdGenerator()
+        #expect(gen.nextId() == 0)
     }
 
-    func testGeneratorDefaultInit() {
-        XCTAssertEqual(gen.nextId(), 0)
+    @Test func generatorWithDefaultEmptyCollection() {
+        let gen = DefaultEntityIdGenerator(startProviding: [])
+        #expect(gen.nextId() == 0)
+        #expect(gen.nextId() == 1)
     }
 
-    func testGeneratorWithDefaultEmptyCollection() {
-        gen = DefaultEntityIdGenerator(startProviding: [])
-        XCTAssertEqual(gen.nextId(), 0)
-        XCTAssertEqual(gen.nextId(), 1)
-    }
-
-    func testLinearIncrement() {
+    @Test func linearIncrement() {
+        let gen = DefaultEntityIdGenerator()
         for i in 0..<1_000_000 {
-            XCTAssertEqual(gen.nextId(), EntityIdentifier(EntityIdentifier.Identifier(i)))
+            #expect(gen.nextId() == EntityIdentifier(EntityIdentifier.Identifier(i)))
         }
     }
 
-    func testGenerateWithInitialIds() {
+    @Test func generateWithInitialIds() {
         let initialIds: [EntityIdentifier] = [2, 4, 11, 3, 0, 304]
-        gen = DefaultEntityIdGenerator(startProviding: initialIds)
+        let gen = DefaultEntityIdGenerator(startProviding: initialIds)
 
         let generatedIds: [EntityIdentifier] = (0..<initialIds.count).map { _ in gen.nextId() }.reversed()
-        XCTAssertEqual(initialIds, generatedIds)
-        XCTAssertEqual(gen.nextId(), 1)
-        XCTAssertEqual(gen.nextId(), 5)
-        XCTAssertEqual(gen.nextId(), 6)
-        XCTAssertEqual(gen.nextId(), 7)
-        XCTAssertEqual(gen.nextId(), 8)
-        XCTAssertEqual(gen.nextId(), 9)
-        XCTAssertEqual(gen.nextId(), 10)
-        XCTAssertEqual(gen.nextId(), 12)
+        #expect(initialIds == generatedIds)
+        #expect(gen.nextId() == 1)
+        #expect(gen.nextId() == 5)
+        #expect(gen.nextId() == 6)
+        #expect(gen.nextId() == 7)
+        #expect(gen.nextId() == 8)
+        #expect(gen.nextId() == 9)
+        #expect(gen.nextId() == 10)
+        #expect(gen.nextId() == 12)
 
         for i in 13...304 {
-            XCTAssertEqual(gen.nextId(), EntityIdentifier(EntityIdentifier.Identifier(i)))
+            #expect(gen.nextId() == EntityIdentifier(EntityIdentifier.Identifier(i)))
         }
 
-        XCTAssertEqual(gen.nextId(), 305)
+        #expect(gen.nextId() == 305)
     }
 
-    func testGeneratorMarkUnused() {
-        XCTAssertEqual(gen.nextId(), 0)
-        XCTAssertEqual(gen.nextId(), 1)
-        XCTAssertEqual(gen.nextId(), 2)
+    @Test func generatorMarkUnused() {
+        let gen = DefaultEntityIdGenerator()
+        #expect(gen.nextId() == 0)
+        #expect(gen.nextId() == 1)
+        #expect(gen.nextId() == 2)
 
         gen.markUnused(entityId: EntityIdentifier(1))
 
-        XCTAssertEqual(gen.nextId(), 1)
-        XCTAssertEqual(gen.nextId(), 3)
-        XCTAssertEqual(gen.nextId(), 4)
+        #expect(gen.nextId() == 1)
+        #expect(gen.nextId() == 3)
+        #expect(gen.nextId() == 4)
 
         gen.markUnused(entityId: 3)
         gen.markUnused(entityId: 0)
 
-        XCTAssertEqual(gen.nextId(), 0)
-        XCTAssertEqual(gen.nextId(), 3)
+        #expect(gen.nextId() == 0)
+        #expect(gen.nextId() == 3)
 
         gen.markUnused(entityId: 3)
 
-        XCTAssertEqual(gen.nextId(), 3)
-        XCTAssertEqual(gen.nextId(), 5)
-        XCTAssertEqual(gen.nextId(), 6)
-        XCTAssertEqual(gen.nextId(), 7)
-        XCTAssertEqual(gen.nextId(), 8)
+        #expect(gen.nextId() == 3)
+        #expect(gen.nextId() == 5)
+        #expect(gen.nextId() == 6)
+        #expect(gen.nextId() == 7)
+        #expect(gen.nextId() == 8)
     }
 }

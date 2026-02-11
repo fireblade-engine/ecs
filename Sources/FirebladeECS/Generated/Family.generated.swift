@@ -1,4 +1,4 @@
-// Generated using Sourcery 2.2.5 — https://github.com/krzysztofzablocki/Sourcery
+// Generated using Sourcery 2.3.0 — https://github.com/krzysztofzablocki/Sourcery
 // DO NOT EDIT
 // swiftlint:disable file_length
 // swiftlint:disable function_parameter_count
@@ -39,9 +39,9 @@ public struct Requires1<Comp1>: FamilyRequirementsManaging where Comp1: Componen
 
 extension Requires1: RequiringComponents1 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents1 {
+extension FamilyMemberBuilder where R: RequiringComponents1  {
     public static func buildBlock(_ comp1: R.Comp1) -> (R.Components) {
-        (comp1)
+        return (comp1)
     }
 }
 
@@ -134,9 +134,9 @@ public struct Requires2<Comp1, Comp2>: FamilyRequirementsManaging where Comp1: C
 
 extension Requires2: RequiringComponents2 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents2 {
+extension FamilyMemberBuilder where R: RequiringComponents2  {
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2) -> (R.Components) {
-        (comp1, comp2)
+        return (comp1, comp2)
     }
 }
 
@@ -235,9 +235,9 @@ public struct Requires3<Comp1, Comp2, Comp3>: FamilyRequirementsManaging where C
 
 extension Requires3: RequiringComponents3 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents3 {
+extension FamilyMemberBuilder where R: RequiringComponents3  {
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3) -> (R.Components) {
-        (comp1, comp2, comp3)
+        return (comp1, comp2, comp3)
     }
 }
 
@@ -342,9 +342,9 @@ public struct Requires4<Comp1, Comp2, Comp3, Comp4>: FamilyRequirementsManaging 
 
 extension Requires4: RequiringComponents4 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents4 {
+extension FamilyMemberBuilder where R: RequiringComponents4  {
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3, _ comp4: R.Comp4) -> (R.Components) {
-        (comp1, comp2, comp3, comp4)
+        return (comp1, comp2, comp3, comp4)
     }
 }
 
@@ -455,9 +455,9 @@ public struct Requires5<Comp1, Comp2, Comp3, Comp4, Comp5>: FamilyRequirementsMa
 
 extension Requires5: RequiringComponents5 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents5 {
+extension FamilyMemberBuilder where R: RequiringComponents5  {
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3, _ comp4: R.Comp4, _ comp5: R.Comp5) -> (R.Components) {
-        (comp1, comp2, comp3, comp4, comp5)
+        return (comp1, comp2, comp3, comp4, comp5)
     }
 }
 
@@ -574,9 +574,9 @@ public struct Requires6<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6>: FamilyRequire
 
 extension Requires6: RequiringComponents6 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents6 {
+extension FamilyMemberBuilder where R: RequiringComponents6  {
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3, _ comp4: R.Comp4, _ comp5: R.Comp5, _ comp6: R.Comp6) -> (R.Components) {
-        (comp1, comp2, comp3, comp4, comp5, comp6)
+        return (comp1, comp2, comp3, comp4, comp5, comp6)
     }
 }
 
@@ -699,9 +699,9 @@ public struct Requires7<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7>: Family
 
 extension Requires7: RequiringComponents7 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents7 {
+extension FamilyMemberBuilder where R: RequiringComponents7  {
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3, _ comp4: R.Comp4, _ comp5: R.Comp5, _ comp6: R.Comp6, _ comp7: R.Comp7) -> (R.Components) {
-        (comp1, comp2, comp3, comp4, comp5, comp6, comp7)
+        return (comp1, comp2, comp3, comp4, comp5, comp6, comp7)
     }
 }
 
@@ -830,9 +830,9 @@ public struct Requires8<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8>:
 
 extension Requires8: RequiringComponents8 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents8 {
+extension FamilyMemberBuilder where R: RequiringComponents8  {
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3, _ comp4: R.Comp4, _ comp5: R.Comp5, _ comp6: R.Comp6, _ comp7: R.Comp7, _ comp8: R.Comp8) -> (R.Components) {
-        (comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8)
+        return (comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8)
     }
 }
 

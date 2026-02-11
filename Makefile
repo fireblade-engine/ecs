@@ -1,91 +1,109 @@
+UNAME_S := $(shell uname -s)
+SWIFT_FLAGS ?= --disable-sandbox
 SWIFT_PACKAGE_VERSION := $(shell swift package tools-version)
 
-# Lint fix and format code.
-.PHONY: lint-fix
-swiftlint:
-	mint run swiftlint lint --fix --config .swiftlint.yml --format --quiet
-swiftformat:
-	mint run swiftformat . --swiftversion ${SWIFT_PACKAGE_VERSION}
-lint-fix: swiftlint swiftformat
+# Repository name on GitHub Pages
+REPO_NAME ?= ecs
+# Subdirectory for versioned documentation (e.g., main, 1.0.0)
+DOCS_VERSION_PATH ?= main
 
-# Generate code
-.PHONY: generate-code
+# The full base path for hosting
+HOSTING_BASE_PATH ?= $(REPO_NAME)/$(DOCS_VERSION_PATH)
+
+.PHONY: setup generate-code lint lint-fix test test-coverage testReadme build-debug build-release docs docs-preview docs-generate docs-coverage docs-check-coverage docs-check-links preview-analysis-docs generate-docs-githubpages pre-commit clean clean-sourcery
+
+# --- Setup ---
+
+setup:
+	@which -s brew || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+	@brew update
+	@echo "Detected Package Swift Version: $(SWIFT_PACKAGE_VERSION)"
+	@which mint > /dev/null || (echo "Mint not found. Installing via Homebrew..." && brew install mint)
+	mint bootstrap
+	swift package resolve $(SWIFT_FLAGS)
+
+# --- Codegen ---
+
 generate-code:
 	mint run sourcery --quiet --config ./.sourcery.yml
 	mint run sourcery --quiet --config ./.sourceryTests.yml
 
-# Run pre-push tasks
-.PHONY: pre-push
-pre-push: generate-code lint-fix
+# --- Quality Assurance ---
 
-.PHONY: precommit
-precommit: pre-push
+lint:
+	mint run swiftlint lint --quiet Sources/ Tests/
+	mint run swiftformat --lint --swiftversion $(SWIFT_PACKAGE_VERSION) Sources/ Tests/
 
-.PHONY: setup-brew
-setup-brew:
-	@which -s brew || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-	@brew update
+lint-fix:
+	mint run swiftformat --swiftversion $(SWIFT_PACKAGE_VERSION) --config .swiftformat Sources/ Tests/
+	mint run swiftlint --fix --config .swiftlint.yml --format --quiet Sources/ Tests/
 
-.PHONY: install-dependencies-macOS
-install-dependencies-macOS: setup-brew
-	brew install mint
-	mint bootstrap
+# Run tests
+test:
+	swift test $(SWIFT_FLAGS) --parallel --enable-code-coverage -Xswiftc -warnings-as-errors
 
-.PHONY: setupEnvironment
-setupEnvironment: install-dependencies-macOS
-
-# Build debug version
-.PHONY: build-debug
-build-debug:
-	swift build -c debug
-
-# Build release version 
-.PHONY: build-release
-build-release:
-	swift build -c release --skip-update
+test-coverage:
+	$(MAKE) test
+	@XCTEST_PATH=$$(find .build -name "*.xctest" | grep "FirebladeECS" | head -n 1); \
+	if [ -z "$$XCTEST_PATH" ]; then \
+		echo "Could not find .xctest bundle"; \
+		exit 1; \
+	fi; \
+	if [ "$(UNAME_S)" = "Darwin" ]; then \
+		BINARY_PATH=$$(find "$$XCTEST_PATH" -type f -perm +111 | grep -v "CodeResources" | head -n 1); \
+	else \
+		BINARY_PATH="$$XCTEST_PATH/FirebladeECSPackageTests"; \
+	fi; \
+	xcrrun llvm-cov report \
+		"$$BINARY_PATH" \
+		-instr-profile=.build/debug/codecov/default.profdata \
+		-ignore-filename-regex=".build|Tests"
 
 # Test links in README
 # requires <https://github.com/tcort/markdown-link-check>
-.PHONY: testReadme
 testReadme:
 	markdown-link-check -p -v ./README.md
 
-# Delete package build artifacts.
-.PHONY: clean
-clean: clean-sourcery
-	swift package clean
+# --- Build ---
 
-# Clean sourcery cache
-.PHONY: clean-sourcery
-clean-sourcery:
-	rm -rdf ${HOME}/Library/Caches/Sourcery
+build-debug:
+	swift build -c debug
 
-# Preview DocC documentation
-.PHONY: preview-docs
-preview-docs:
+build-release:
+	swift build -c release --skip-update
+
+# --- Documentation ---
+
+docs: docs-generate
+
+docs-preview:
 	swift package --disable-sandbox preview-documentation --target FirebladeECS
 
-# Preview DocC documentation with analysis/warnings and overview of coverage
-.PHONY: preview-analysis-docs
-preview-analysis-docs:
-	swift package --disable-sandbox preview-documentation --target FirebladeECS --analyze --experimental-documentation-coverage --level brief
-
-# Generates a plain DocC archive in the .build directory
-.PHONY: generate-docs
-generate-docs:
+docs-generate:
 	DOCC_JSON_PRETTYPRINT=YES \
- 	swift package \
+	swift package \
 	generate-documentation \
 	--fallback-bundle-identifier com.github.fireblade-engine.FirebladeECS \
-	--target FirebladeECS \
+	--target FirebladeECS
+
+docs-coverage: docs-check-coverage
+
+docs-check-coverage:
+	swift package --disable-sandbox generate-documentation --target FirebladeECS --experimental-documentation-coverage --coverage-summary-level brief
+
+docs-check-links:
+	swift package --disable-sandbox generate-documentation --target FirebladeECS --analyze --warnings-as-errors
+
+# Preview DocC documentation with analysis/warnings and overview of coverage
+preview-analysis-docs:
+	swift package --disable-sandbox preview-documentation --target FirebladeECS --analyze --experimental-documentation-coverage --level brief
 
 # Generates documentation pages suitable to push/host on github pages (or another static site)
 # Expected location, if set up, would be:
 #   https://fireblade-engine.github.io/FirebladeECS/documentation/FirebladeECS/
-.PHONY: generate-docs-githubpages
 generate-docs-githubpages:
 	DOCC_JSON_PRETTYPRINT=YES \
- 	swift package \
+	swift package \
 	--allow-writing-to-directory ./docs \
 	generate-documentation \
 	--fallback-bundle-identifier com.github.fireblade-engine.FirebladeECS \
@@ -93,3 +111,17 @@ generate-docs-githubpages:
 	--output-path ./docs \
 	--transform-for-static-hosting \
 	--hosting-base-path 'FirebladeECS'
+
+# --- Workflows ---
+
+pre-commit: lint-fix test
+
+# --- Cleanup ---
+
+clean: clean-sourcery
+	swift package clean
+	rm -rf .build
+	rm -rf .swiftpm
+
+clean-sourcery:
+	rm -rdf ${HOME}/Library/Caches/Sourcery

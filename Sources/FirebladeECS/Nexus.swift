@@ -46,8 +46,7 @@ public final class Nexus {
          componentsByEntity: [EntityIdentifier: Set<ComponentIdentifier>],
          entityIdGenerator: EntityIdentifierGenerator,
          familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>],
-         codingStrategy: CodingStrategy)
-    {
+         codingStrategy: CodingStrategy) {
         self.componentsByType = componentsByType
         componentIdsByEntity = componentsByEntity
         self.familyMembersByTraits = familyMembersByTraits

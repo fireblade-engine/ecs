@@ -66,7 +66,6 @@ import Foundation
         var idx: Int = 0
         family.entities.forEach { (entity) in
             #expect(entity.numComponents == 1)
-            #expect(entity[\Comp1.self] != nil)
             #expect(entity[\Comp1.value] == 0 * 1_000_000 + idx)
             idx += 1
         }
@@ -220,9 +219,7 @@ import Foundation
         var idx: Int = 0
         family.entities.forEach { (entity) in
             #expect(entity.numComponents == 2)
-            #expect(entity[\Comp1.self] != nil)
             #expect(entity[\Comp1.value] == 0 * 1_000_000 + idx)
-            #expect(entity[\Comp2.self] != nil)
             #expect(entity[\Comp2.value] == 1 * 1_000_000 + idx)
             idx += 1
         }
@@ -382,11 +379,8 @@ import Foundation
         var idx: Int = 0
         family.entities.forEach { (entity) in
             #expect(entity.numComponents == 3)
-            #expect(entity[\Comp1.self] != nil)
             #expect(entity[\Comp1.value] == 0 * 1_000_000 + idx)
-            #expect(entity[\Comp2.self] != nil)
             #expect(entity[\Comp2.value] == 1 * 1_000_000 + idx)
-            #expect(entity[\Comp3.self] != nil)
             #expect(entity[\Comp3.value] == 2 * 1_000_000 + idx)
             idx += 1
         }
@@ -552,13 +546,9 @@ import Foundation
         var idx: Int = 0
         family.entities.forEach { (entity) in
             #expect(entity.numComponents == 4)
-            #expect(entity[\Comp1.self] != nil)
             #expect(entity[\Comp1.value] == 0 * 1_000_000 + idx)
-            #expect(entity[\Comp2.self] != nil)
             #expect(entity[\Comp2.value] == 1 * 1_000_000 + idx)
-            #expect(entity[\Comp3.self] != nil)
             #expect(entity[\Comp3.value] == 2 * 1_000_000 + idx)
-            #expect(entity[\Comp4.self] != nil)
             #expect(entity[\Comp4.value] == 3 * 1_000_000 + idx)
             idx += 1
         }
@@ -730,15 +720,10 @@ import Foundation
         var idx: Int = 0
         family.entities.forEach { (entity) in
             #expect(entity.numComponents == 5)
-            #expect(entity[\Comp1.self] != nil)
             #expect(entity[\Comp1.value] == 0 * 1_000_000 + idx)
-            #expect(entity[\Comp2.self] != nil)
             #expect(entity[\Comp2.value] == 1 * 1_000_000 + idx)
-            #expect(entity[\Comp3.self] != nil)
             #expect(entity[\Comp3.value] == 2 * 1_000_000 + idx)
-            #expect(entity[\Comp4.self] != nil)
             #expect(entity[\Comp4.value] == 3 * 1_000_000 + idx)
-            #expect(entity[\Comp5.self] != nil)
             #expect(entity[\Comp5.value] == 4 * 1_000_000 + idx)
             idx += 1
         }
@@ -916,17 +901,11 @@ import Foundation
         var idx: Int = 0
         family.entities.forEach { (entity) in
             #expect(entity.numComponents == 6)
-            #expect(entity[\Comp1.self] != nil)
             #expect(entity[\Comp1.value] == 0 * 1_000_000 + idx)
-            #expect(entity[\Comp2.self] != nil)
             #expect(entity[\Comp2.value] == 1 * 1_000_000 + idx)
-            #expect(entity[\Comp3.self] != nil)
             #expect(entity[\Comp3.value] == 2 * 1_000_000 + idx)
-            #expect(entity[\Comp4.self] != nil)
             #expect(entity[\Comp4.value] == 3 * 1_000_000 + idx)
-            #expect(entity[\Comp5.self] != nil)
             #expect(entity[\Comp5.value] == 4 * 1_000_000 + idx)
-            #expect(entity[\Comp6.self] != nil)
             #expect(entity[\Comp6.value] == 5 * 1_000_000 + idx)
             idx += 1
         }
@@ -1110,19 +1089,12 @@ import Foundation
         var idx: Int = 0
         family.entities.forEach { (entity) in
             #expect(entity.numComponents == 7)
-            #expect(entity[\Comp1.self] != nil)
             #expect(entity[\Comp1.value] == 0 * 1_000_000 + idx)
-            #expect(entity[\Comp2.self] != nil)
             #expect(entity[\Comp2.value] == 1 * 1_000_000 + idx)
-            #expect(entity[\Comp3.self] != nil)
             #expect(entity[\Comp3.value] == 2 * 1_000_000 + idx)
-            #expect(entity[\Comp4.self] != nil)
             #expect(entity[\Comp4.value] == 3 * 1_000_000 + idx)
-            #expect(entity[\Comp5.self] != nil)
             #expect(entity[\Comp5.value] == 4 * 1_000_000 + idx)
-            #expect(entity[\Comp6.self] != nil)
             #expect(entity[\Comp6.value] == 5 * 1_000_000 + idx)
-            #expect(entity[\Comp7.self] != nil)
             #expect(entity[\Comp7.value] == 6 * 1_000_000 + idx)
             idx += 1
         }
@@ -1312,21 +1284,13 @@ import Foundation
         var idx: Int = 0
         family.entities.forEach { (entity) in
             #expect(entity.numComponents == 8)
-            #expect(entity[\Comp1.self] != nil)
             #expect(entity[\Comp1.value] == 0 * 1_000_000 + idx)
-            #expect(entity[\Comp2.self] != nil)
             #expect(entity[\Comp2.value] == 1 * 1_000_000 + idx)
-            #expect(entity[\Comp3.self] != nil)
             #expect(entity[\Comp3.value] == 2 * 1_000_000 + idx)
-            #expect(entity[\Comp4.self] != nil)
             #expect(entity[\Comp4.value] == 3 * 1_000_000 + idx)
-            #expect(entity[\Comp5.self] != nil)
             #expect(entity[\Comp5.value] == 4 * 1_000_000 + idx)
-            #expect(entity[\Comp6.self] != nil)
             #expect(entity[\Comp6.value] == 5 * 1_000_000 + idx)
-            #expect(entity[\Comp7.self] != nil)
             #expect(entity[\Comp7.value] == 6 * 1_000_000 + idx)
-            #expect(entity[\Comp8.self] != nil)
             #expect(entity[\Comp8.value] == 7 * 1_000_000 + idx)
             idx += 1
         }

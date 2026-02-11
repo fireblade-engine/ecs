@@ -94,7 +94,6 @@ import Foundation
         family.entities.forEach { (entity) in
             #expect(entity.numComponents == {{ idx }})
             {% for comp in components %}
-            #expect(entity[\{{ comp }}.self] != nil)
             #expect(entity[\{{ comp }}.value] == {{ forloop.counter0 }} * 1_000_000 + idx)
             {% endfor %}
             idx += 1

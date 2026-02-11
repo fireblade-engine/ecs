@@ -492,8 +492,10 @@ import Testing
         var entity: Entity? = nexus.createEntity()
         var markerComponent: Marker? = Marker(fsm: EntityStateMachine<String>(entity: entity!))
         entity?.assign(markerComponent!)
-        weak var weakMarker = markerComponent
-        weak var weakFsm = markerComponent?.fsm
+        weak var weakMarker: Marker?
+        weakMarker = markerComponent
+        weak var weakFsm: EntityStateMachine<String>?
+        weakFsm = markerComponent?.fsm
         nexus.destroy(entity: entity!)
         entity = nexus.createEntity()
         markerComponent = .init(fsm: .init(entity: entity!))

@@ -6,8 +6,8 @@
 //
 
 #if canImport(Foundation)
-    import Foundation
+import Foundation
 
-    extension JSONEncoder: TopLevelEncoder {}
-    extension JSONDecoder: TopLevelDecoder {}
+extension JSONEncoder: TopLevelEncoder {}
+extension JSONDecoder: TopLevelDecoder {}
 #endif

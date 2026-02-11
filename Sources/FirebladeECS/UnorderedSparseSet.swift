@@ -13,7 +13,89 @@
 ///
 /// See <https://github.com/bombela/sparseset/blob/master/src/lib.rs> for a reference implementation.
 public struct UnorderedSparseSet<Element, Key: Hashable & Codable & Sendable> {
-    // swiftlint:disable nesting
+    /// Creates a new sparse set.
+    public init() {
+        self.init(storage: Storage())
+    }
+
+    @usableFromInline
+    init(storage: Storage) {
+        self.storage = storage
+    }
+
+    @usableFromInline let storage: Storage
+
+    /// The size of the set.
+    public var count: Int {
+        storage.count
+    }
+
+    /// A Boolean value that indicates whether the set is empty.
+    public var isEmpty: Bool {
+        storage.isEmpty
+    }
+
+    /// Returns a Boolean value that indicates whether the key is included in the set.
+    /// - Parameter key: The key to inspect.
+    @inlinable
+    public func contains(_ key: Key) -> Bool {
+        storage.findIndex(at: key) != nil
+    }
+
+    /// Inset an element for a given key into the set in O(1).
+    ///
+    /// Elements at previously set keys will be replaced.
+    ///
+    /// - Parameters:
+    ///   - element: The element.
+    ///   - key: The key.
+    /// - Returns: `true` if new, `false` if replaced.
+    @discardableResult
+    public func insert(_ element: Element, at key: Key) -> Bool {
+        storage.insert(element, at: key)
+    }
+
+    /// Get the element for the given key in O(1).
+    ///
+    /// - Parameter key: The key.
+    /// - Returns: the element or `nil` if the key wasn't found.
+    @inlinable
+    public func get(at key: Key) -> Element? {
+        storage.findElement(at: key)
+    }
+
+    /// Unsafely gets the element for the given key,
+    /// - Parameter key: The key.
+    /// - Returns: The element.
+    @inlinable
+    public func get(unsafeAt key: Key) -> Element {
+        storage.findElement(at: key).unsafelyUnwrapped
+    }
+
+    /// Removes the element entry for given key in O(1).
+    ///
+    /// - Parameter key: the key
+    /// - Returns: removed value or nil if key not found.
+    @discardableResult
+    public func remove(at key: Key) -> Element? {
+        storage.remove(at: key)?.element
+    }
+
+    /// Removes all keys and elements from the set.
+    /// - Parameter keepingCapacity: A Boolean value that indicates whether the set should maintain it's capacity.
+    @inlinable
+    public func removeAll(keepingCapacity: Bool = false) {
+        storage.removeAll(keepingCapacity: keepingCapacity)
+    }
+
+    /// The first element of the set.
+    @inlinable public var first: Element? {
+        storage.first
+    }
+}
+
+
+extension UnorderedSparseSet {
     @usableFromInline
     final class Storage: @unchecked Sendable {
         /// An index into the dense store.
@@ -133,86 +215,6 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable & Sendable> {
         func makeIterator() -> IndexingIterator<ContiguousArray<Storage.Entry>> {
             dense.makeIterator()
         }
-    }
-
-    /// Creates a new sparse set.
-    public init() {
-        self.init(storage: Storage())
-    }
-
-    @usableFromInline
-    init(storage: Storage) {
-        self.storage = storage
-    }
-
-    @usableFromInline let storage: Storage
-
-    /// The size of the set.
-    public var count: Int {
-        storage.count
-    }
-
-    /// A Boolean value that indicates whether the set is empty.
-    public var isEmpty: Bool {
-        storage.isEmpty
-    }
-
-    /// Returns a Boolean value that indicates whether the key is included in the set.
-    /// - Parameter key: The key to inspect.
-    @inlinable
-    public func contains(_ key: Key) -> Bool {
-        storage.findIndex(at: key) != nil
-    }
-
-    /// Inset an element for a given key into the set in O(1).
-    ///
-    /// Elements at previously set keys will be replaced.
-    ///
-    /// - Parameters:
-    ///   - element: The element.
-    ///   - key: The key.
-    /// - Returns: `true` if new, `false` if replaced.
-    @discardableResult
-    public func insert(_ element: Element, at key: Key) -> Bool {
-        storage.insert(element, at: key)
-    }
-
-    /// Get the element for the given key in O(1).
-    ///
-    /// - Parameter key: The key.
-    /// - Returns: the element or `nil` if the key wasn't found.
-    @inlinable
-    public func get(at key: Key) -> Element? {
-        storage.findElement(at: key)
-    }
-
-    /// Unsafely gets the element for the given key,
-    /// - Parameter key: The key.
-    /// - Returns: The element.
-    @inlinable
-    public func get(unsafeAt key: Key) -> Element {
-        storage.findElement(at: key).unsafelyUnwrapped
-    }
-
-    /// Removes the element entry for given key in O(1).
-    ///
-    /// - Parameter key: the key
-    /// - Returns: removed value or nil if key not found.
-    @discardableResult
-    public func remove(at key: Key) -> Element? {
-        storage.remove(at: key)?.element
-    }
-
-    /// Removes all keys and elements from the set.
-    /// - Parameter keepingCapacity: A Boolean value that indicates whether the set should maintain it's capacity.
-    @inlinable
-    public func removeAll(keepingCapacity: Bool = false) {
-        storage.removeAll(keepingCapacity: keepingCapacity)
-    }
-
-    /// The first element of the set.
-    @inlinable public var first: Element? {
-        storage.first
     }
 }
 

@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 22.07.20.
 //
 
-private struct FamilyMemberContainer<R> where R: FamilyRequirementsManaging {
+private struct FamilyMemberContainer<R: FamilyRequirementsManaging> {
     let components: [R.Components]
 }
 
@@ -30,7 +30,7 @@ public protocol TopLevelEncoder {
     /// Encodes an instance of the indicated type.
     ///
     /// - Parameter value: The instance to encode.
-    func encode<T>(_ value: T) throws -> Self.Output where T: Encodable
+    func encode<T: Encodable>(_ value: T) throws -> Self.Output
 
     /// Contextual user-provided information for use during decoding.
     var userInfo: [CodingUserInfoKey: any Sendable] { get set }
@@ -42,7 +42,7 @@ extension Family where R: FamilyEncoding {
     /// The encoded members will *NOT* be removed from the nexus and will also stay present in this family.
     /// - Parameter encoder: The data encoder. Data encoder respects the coding strategy set at `nexus.codingStrategy`.
     /// - Returns: The encoded data.
-    public func encodeMembers<Encoder>(using encoder: inout Encoder) throws -> Encoder.Output where Encoder: TopLevelEncoder {
+    public func encodeMembers<Encoder: TopLevelEncoder>(using encoder: inout Encoder) throws -> Encoder.Output {
         encoder.userInfo[.nexusCodingStrategy] = nexus.codingStrategy
         let components = [R.Components](self)
         let container = FamilyMemberContainer<R>(components: components)
@@ -65,7 +65,7 @@ public protocol TopLevelDecoder {
     associatedtype Input
 
     /// Decodes an instance of the indicated type.
-    func decode<T>(_ type: T.Type, from: Self.Input) throws -> T where T: Decodable
+    func decode<T: Decodable>(_ type: T.Type, from: Self.Input) throws -> T
 
     /// Contextual user-provided information for use during decoding.
     var userInfo: [CodingUserInfoKey: any Sendable] { get set }
@@ -80,7 +80,7 @@ extension Family where R: FamilyDecoding {
     ///   - decoder: The decoder to use for decoding family member data. Decoder respects the coding strategy set at `nexus.codingStrategy`.
     /// - Returns: returns the newly added entities.
     @discardableResult
-    public func decodeMembers<Decoder>(from data: Decoder.Input, using decoder: inout Decoder) throws -> [Entity] where Decoder: TopLevelDecoder {
+    public func decodeMembers<Decoder: TopLevelDecoder>(from data: Decoder.Input, using decoder: inout Decoder) throws -> [Entity] {
         decoder.userInfo[.nexusCodingStrategy] = nexus.codingStrategy
         let familyMembers = try decoder.decode(FamilyMemberContainer<R>.self, from: data)
         return familyMembers.components

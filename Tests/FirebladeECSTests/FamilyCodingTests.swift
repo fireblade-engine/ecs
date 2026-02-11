@@ -348,4 +348,20 @@ import Foundation
             try family.decodeMembers(from: jsonData, using: &jsonDecoder)
         }
     }
+
+    @Test func codingStrategyFallback() throws {
+        let component = MyComponent(name: "A", flag: true)
+        let container = FamilyMemberContainer<Requires1<MyComponent>>(components: [component])
+
+        let encoder = JSONEncoder()
+        // No user info set, so it should fallback to DefaultCodingStrategy
+        let data = try encoder.encode(container)
+
+        let decoder = JSONDecoder()
+        // No user info set, so it should fallback to DefaultCodingStrategy
+        let decoded = try decoder.decode(FamilyMemberContainer<Requires1<MyComponent>>.self, from: data)
+
+        #expect(decoded.components.count == 1)
+        #expect(decoded.components[0].name == "A")
+    }
 }

@@ -51,4 +51,12 @@ import Testing
         let single = nexus.single(SingleGameState.self)
         #expect(singleGame === single.component)
     }
+
+    @Test func singleEntityAccess() {
+        let nexus = Nexus()
+        let single = nexus.single(SingleGameState.self)
+        let entity = single.entity
+        #expect(entity.nexus === nexus)
+        #expect(entity.identifier == single.entityId)
+    }
 }

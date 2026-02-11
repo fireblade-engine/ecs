@@ -15,7 +15,6 @@ extension Nexus {
             // test if component is already assigned
             guard !has(componentId: componentId, entityId: entityId) else {
                 delegate?.nexusNonFatalError("ComponentAdd collision: \(entityId) already has a component \(component)")
-                assertionFailure("ComponentAdd collision: \(entityId) already has a component \(component)")
                 return false
             }
 
@@ -38,7 +37,6 @@ extension Nexus {
         // test if component is already assigned
         guard !has(componentId: componentId, entityId: entityId) else {
             delegate?.nexusNonFatalError("ComponentAdd collision: \(entityId) already has a component \(component)")
-            assertionFailure("ComponentAdd collision: \(entityId) already has a component \(component)")
             return false
         }
 

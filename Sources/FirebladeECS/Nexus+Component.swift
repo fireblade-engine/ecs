@@ -28,11 +28,6 @@ extension Nexus {
     }
 
     @discardableResult
-    public final func assign(component: some Component, to entity: Entity) -> Bool {
-        assign(component: component, to: entity)
-    }
-
-    @discardableResult
     public final func assign(components: some Collection<Component>, to entity: Entity) -> Bool {
         assign(components: components, to: entity.identifier)
     }

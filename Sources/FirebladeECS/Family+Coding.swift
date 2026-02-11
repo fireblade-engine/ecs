@@ -5,8 +5,12 @@
 //  Created by Christian Treffs on 22.07.20.
 //
 
-private struct FamilyMemberContainer<R: FamilyRequirementsManaging> {
-    let components: [R.Components]
+public struct FamilyMemberContainer<R: FamilyRequirementsManaging> {
+    public let components: [R.Components]
+
+    public init(components: [R.Components]) {
+        self.components = components
+    }
 }
 
 extension CodingUserInfoKey {
@@ -16,7 +20,7 @@ extension CodingUserInfoKey {
 // MARK: - encoding
 
 extension FamilyMemberContainer: Encodable where R: FamilyEncoding {
-    func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         let strategy = encoder.userInfo[.nexusCodingStrategy] as? CodingStrategy ?? DefaultCodingStrategy()
         var familyContainer = encoder.unkeyedContainer()
         try R.encode(componentsArray: components, into: &familyContainer, using: strategy)
@@ -53,7 +57,7 @@ extension Family where R: FamilyEncoding {
 // MARK: - decoding
 
 extension FamilyMemberContainer: Decodable where R: FamilyDecoding {
-    init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         var familyContainer = try decoder.unkeyedContainer()
         let strategy = decoder.userInfo[.nexusCodingStrategy] as? CodingStrategy ?? DefaultCodingStrategy()
         components = try R.decode(componentsIn: &familyContainer, using: strategy)

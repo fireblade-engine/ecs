@@ -12,7 +12,6 @@ extension Nexus {
 
     public func canBecomeMember(_ entity: Entity, in traits: FamilyTraitSet) -> Bool {
         guard let componentIds = componentIdsByEntity[entity.identifier] else {
-            assertionFailure("no component set defined for entity: \(entity)")
             return false
         }
         return traits.isMatch(components: componentIds)

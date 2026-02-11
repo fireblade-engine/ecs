@@ -26,7 +26,7 @@ This document outlines the technology stack, libraries, and tools used in the pr
     -   **Pre-Commit:** `make pre-commit` (runs lint-fix + tests)
 
 ## Testing
--   **Framework:** XCTest / Swift Testing (Migration in progress)
+-   **Framework:** Swift Testing
 -   **Execution:** `make test`
 -   **Coverage:** `make test-coverage` (llvm-cov)
 

@@ -36,7 +36,7 @@ To provide the Swift ecosystem with a robust, industry-standard ECS that enables
 ## Strategic Priorities (Next Phase)
 
 -   **Modernization:** Update the codebase to Swift 6.1+, adopting new language features for safety and performance.
--   **Quality & Stability:** Increase unit and performance test coverage to >95% across all supported platforms.
+-   **Quality & Stability:** Maintain >95% unit test coverage.
 -   **Documentation:** Expand DocC documentation, adding tutorials and deep-dives into data-oriented design.
 -   **Architectural Refinement:**
     -   Refactor to support struct-based Components for better memory layout and reduced reference counting overhead.

@@ -271,5 +271,4 @@ extension UnorderedSparseSet: Codable where Element: Codable {}
 
 extension UnorderedSparseSet: Sendable where Element: Sendable {}
 
-extension UnorderedSparseSet.Storage: Sendable where Element: Sendable {}
 extension UnorderedSparseSet.Storage.Entry: Sendable where Element: Sendable {}

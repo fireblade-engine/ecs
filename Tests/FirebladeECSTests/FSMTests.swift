@@ -497,6 +497,10 @@ import Testing
         nexus.destroy(entity: entity!)
         entity = nexus.createEntity()
         markerComponent = .init(fsm: .init(entity: entity!))
+        
+        withExtendedLifetime(weakMarker) { _ in }
+        withExtendedLifetime(weakFsm) { _ in }
+        
         #expect(weakMarker == nil)
         #expect(weakFsm == nil)
     }

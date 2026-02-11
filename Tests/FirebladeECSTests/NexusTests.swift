@@ -27,7 +27,7 @@ import Testing
 
     @Test func entityDestroy() {
         let nexus = Nexus()
-        let e0 = nexus.createEntity()
+        _ = nexus.createEntity()
         let e1 = nexus.createEntity(with: Name(name: "Entity 1"))
         #expect(nexus.numEntities == 2)
 

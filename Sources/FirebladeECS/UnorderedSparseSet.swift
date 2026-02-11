@@ -94,7 +94,6 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable & Sendable> {
     }
 }
 
-
 extension UnorderedSparseSet {
     @usableFromInline
     final class Storage: @unchecked Sendable {

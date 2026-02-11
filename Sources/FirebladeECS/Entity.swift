@@ -75,14 +75,6 @@ public struct Entity {
         return self
     }
 
-    /// Add a typed component to this entity.
-    /// - Parameter component: the typed component.
-    @discardableResult
-    public func assign(_ component: some Component) -> Entity {
-        assign(component)
-        return self
-    }
-
     @discardableResult
     public func assign(_ components: some Collection<Component>) -> Entity {
         nexus.assign(components: components, to: self)

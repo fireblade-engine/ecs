@@ -25,7 +25,9 @@ To ensure rigorous quality control, the following protocol must be executed at t
 
 1.  **Verify Tests:** Run the full test suite. All tests must pass.
 2.  **Verify Coverage:** Check that code coverage meets the >95% threshold.
-3.  **Mandatory Checks:** Run `make pre-push` to execute code generation, formatting, and linting.
+3.  **Mandatory Checks:** Run `make pre-commit` to execute code generation, formatting, linting, and tests.
+    *   Ensure all tests pass.
+    *   Verify that `swiftlint` and `swiftformat` have run without errors.
 4.  **Documentation:** verify that all new public APIs are documented using DocC.
 5.  **Checkpoint:**
     -   **Commit:** Create a commit for the completed phase.
@@ -45,7 +47,7 @@ To ensure rigorous quality control, the following protocol must be executed at t
 
 3.  **Completion:**
     -   Verify tests pass.
-    -   Run `make pre-push` to ensure code quality and generation.
+    -   Run `make pre-commit` to ensure code quality and generation.
     -   Check coverage.
     -   **Git Notes:** Append a note to the commit using `git notes append -m "Task: <Task Name> - <Summary>"`.
 

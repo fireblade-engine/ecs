@@ -1,49 +1,50 @@
 # Technology Stack
 
-The Fireblade ECS project leverages a modern, performance-oriented technology stack focused on Swift's native capabilities and data-oriented design.
+This document outlines the technology stack, libraries, and tools used in the project.
 
-## Core Language & Tools
+## Core Language & Runtime
+-   **Language:** Swift 6.0+
+-   **Runtime:** macOS (primary development), Linux, Windows, WASM (supported via CI)
 
--   **Primary Language:** **Swift**
-    -   Targeting **Swift 6.1+** to leverage modern safety features and structured concurrency.
-    -   Current minimum support for **Swift 5.8**.
--   **Dependency Management:** **Swift Package Manager (SPM)**.
-    -   The core library maintains **zero external dependencies**.
--   **Build System:** 
-    -   Native **Swift Build** (SPM).
-    -   **Makefile** for automation of setup, testing, and documentation tasks.
+## Dependencies & Package Management
+-   **Package Manager:** Swift Package Manager (SPM)
+-   **Dependency Installer:** `make setup` (installs Homebrew, Mint, bootstraps environment)
+-   **Tool Management:** Mint (`Mintfile`)
 
-## Build & Automation
+## Build System & Automation
+-   **Build Tool:** `swift build` (via `Makefile` wrappers)
+-   **Task Runner:** `make`
+    -   **Debug Build:** `make build-debug`
+    -   **Release Build:** `make build-release`
 
-The project uses a `Makefile` to standardize development tasks. All developers should use these commands for consistency.
+## Code Quality & Standards
+-   **Linter:** SwiftLint (`.swiftlint.yml`)
+-   **Formatter:** SwiftFormat (`.swiftformat`)
+-   **Enforcement:**
+    -   **Linting:** `make lint`
+    -   **Fix/Format:** `make lint-fix`
+    -   **Pre-Commit:** `make pre-commit` (runs lint-fix + tests)
 
--   **Code Generation:** `make generate-code` (Sourcery)
--   **Linting & Formatting:** `make lint-fix` (SwiftLint + SwiftFormat)
--   **Documentation:** `make preview-docs` (DocC)
--   **Pre-Push/Commit:** `make pre-push` (Mandatory before committing)
+## Testing
+-   **Framework:** XCTest / Swift Testing (Migration in progress)
+-   **Execution:** `make test`
+-   **Coverage:** `make test-coverage` (llvm-cov)
 
-See [Commands Reference](./commands.md) for a full list.
+## Documentation
+-   **Generator:** DocC
+-   **Preview:** `make docs-preview`
+-   **Static Site Generation:** `make docs-generate` / `make generate-docs-githubpages`
 
-## Quality & Standards
+## Code Generation
+-   **Tool:** Sourcery
+-   **Command:** `make generate-code`
+-   **Config:** `.sourcery.yml`, `.sourceryTests.yml`
 
--   **Testing Frameworks:**
-    -   **Swift Testing:** The primary framework for all new tests, utilizing modern macros like `#expect`.
-    -   **XCTest:** Legacy framework being actively migrated to Swift Testing.
--   **Formatting & Linting:**
-    -   **swift-format:** Enforced via `make swiftformat`.
-    -   **SwiftLint:** Enforced via `make swiftlint`.
-    -   **Automated Fixes:** Run `make lint-fix` to automatically correct style violations.
--   **Performance Monitoring:** Custom benchmarks integrated via SPM targets (e.g., `FirebladeECSPerformanceTests`).
-
-## Documentation & Platforms
-
--   **Documentation:** **DocC** (Swift Documentation Compiler) for generating rich, integrated documentation.
--   **Target Platforms:** 
-    -   Desktop: **macOS, Windows, Linux**
-    -   Mobile: **iOS, Android**
-    -   Web: **WASM**
-
-## Architectural Patterns
-
--   **Data-Oriented Design (DOD):** Focus on memory layout, cache locality, and efficient data processing.
--   **Entity-Component System (ECS):** Decoupled architecture for high-performance entity management.
+## Continuous Integration (CI)
+-   **Platform:** GitHub Actions
+-   **Workflows:**
+    -   `ci-macos.yml`
+    -   `ci-linux.yml`
+    -   `ci-windows.yml`
+    -   `ci-wasm.yml`
+    -   `documentation.yml`

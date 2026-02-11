@@ -30,7 +30,9 @@ extension EntityIdentifier: Sendable {}
 extension EntityIdentifier: RawRepresentable {
     /// The entity identifier represented as a raw value.
     @inline(__always)
-    public var rawValue: Identifier { id }
+    public var rawValue: Identifier {
+        id
+    }
 
     @inlinable
     public init(rawValue: Identifier) {
@@ -58,5 +60,7 @@ extension EntityIdentifier {
     ///
     /// Use `id` or `rawValue` instead.
     @inline(__always)
-    public var index: Int { Int(id) }
+    public var index: Int {
+        Int(id)
+    }
 }

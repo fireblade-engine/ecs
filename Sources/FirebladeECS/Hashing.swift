@@ -31,12 +31,12 @@ public typealias ComponentTypeHash = Int
 ///   - value: value to be combined with seed hash.
 /// - Returns: combined hash value.
 public func hash(combine seed: Int, _ value: Int) -> Int {
-    /// http://www.boost.org/doc/libs/1_65_1/doc/html/hash/combine.html
-    /// http://www.boost.org/doc/libs/1_65_1/doc/html/hash/reference.html#boost.hash_combine
-    /// http://www.boost.org/doc/libs/1_65_1/boost/functional/hash/hash.hpp
-    /// http://book.huihoo.com/data-structures-and-algorithms-with-object-oriented-design-patterns-in-c++/html/page214.html
-    /// https://stackoverflow.com/a/35991300
-    /// https://stackoverflow.com/a/4948967
+    // http://www.boost.org/doc/libs/1_65_1/doc/html/hash/combine.html
+    // http://www.boost.org/doc/libs/1_65_1/doc/html/hash/reference.html#boost.hash_combine
+    // http://www.boost.org/doc/libs/1_65_1/boost/functional/hash/hash.hpp
+    // http://book.huihoo.com/data-structures-and-algorithms-with-object-oriented-design-patterns-in-c++/html/page214.html
+    // https://stackoverflow.com/a/35991300
+    // https://stackoverflow.com/a/4948967
     /*
      let phi = (1.0 + sqrt(5.0)) / 2 // golden ratio
      let a32 = pow(2.0,32.0) / phi
@@ -55,7 +55,7 @@ public func hash(combine seed: Int, _ value: Int) -> Int {
 /// - Parameter hashValues: sequence of hash values to combine.
 /// - Returns: combined hash value.
 public func hash<H: Sequence>(combine hashValues: H) -> Int where H.Element: Hashable {
-    /// http://www.boost.org/doc/libs/1_65_1/doc/html/hash/reference.html#boost.hash_range_idp517643120
+    // http://www.boost.org/doc/libs/1_65_1/doc/html/hash/reference.html#boost.hash_range_idp517643120
     hashValues.reduce(0) { hash(combine: $0, $1.hashValue) }
 }
 

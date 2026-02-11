@@ -45,7 +45,9 @@ public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
     @usableFromInline
     final class Storage: @unchecked Sendable {
         @usableFromInline var stack: [EntityIdentifier.Identifier]
-        @usableFromInline var count: Int { stack.count }
+        @usableFromInline var count: Int {
+            stack.count
+        }
 
         @usableFromInline
         init<EntityIds>(startProviding initialEntityIds: EntityIds) where EntityIds: BidirectionalCollection, EntityIds.Element == EntityIdentifier {
@@ -79,7 +81,9 @@ public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
     }
 
     @usableFromInline let storage: Storage
-    @usableFromInline var count: Int { storage.count }
+    @usableFromInline var count: Int {
+        storage.count
+    }
 
     @inlinable
     public init<EntityIds>(startProviding initialEntityIds: EntityIds) where EntityIds: BidirectionalCollection, EntityIds.Element == EntityIdentifier {

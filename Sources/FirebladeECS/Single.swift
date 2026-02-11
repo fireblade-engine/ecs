@@ -9,7 +9,7 @@ public protocol SingleComponent: Component {
     init()
 }
 
-public struct Single<A> where A: SingleComponent {
+public struct Single<A: SingleComponent> {
     public let nexus: Nexus
     public let traits: FamilyTraitSet
     public let entityId: EntityIdentifier
@@ -37,7 +37,7 @@ extension Single where A: SingleComponent {
 }
 
 extension Nexus {
-    public func single<S>(_ component: S.Type) -> Single<S> where S: SingleComponent {
+    public func single<S: SingleComponent>(_ component: S.Type) -> Single<S> {
         let family = family(requires: S.self)
         precondition(family.count <= 1, "Singleton count of \(S.self) must be 0 or 1: \(family.count)")
         let entityId: EntityIdentifier = if family.isEmpty {

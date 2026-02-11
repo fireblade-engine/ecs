@@ -80,7 +80,7 @@ extension Nexus: CustomDebugStringConvertible {
 public struct DefaultCodingStrategy: CodingStrategy {
     public init() {}
 
-    public func codingKey<C>(for componentType: C.Type) -> DynamicCodingKey where C: Component {
+    public func codingKey<C: Component>(for componentType: C.Type) -> DynamicCodingKey {
         DynamicCodingKey(stringValue: "\(C.self)").unsafelyUnwrapped
     }
 }

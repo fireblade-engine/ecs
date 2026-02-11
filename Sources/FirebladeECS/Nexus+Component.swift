@@ -52,17 +52,17 @@ extension Nexus {
     }
 
     @inlinable
-    public final func get<C>(safe componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> C? where C: Component {
+    public final func get<C: Component>(safe componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> C? {
         get(safe: componentId, for: entityId) as? C
     }
 
     @inlinable
-    public final func get<C>(safe entityId: EntityIdentifier) -> C? where C: Component {
+    public final func get<C: Component>(safe entityId: EntityIdentifier) -> C? {
         get(safe: C.identifier, for: entityId)
     }
 
     @inlinable
-    public final func get<C>(unsafe entityId: EntityIdentifier) -> C where C: Component {
+    public final func get<C: Component>(unsafe entityId: EntityIdentifier) -> C {
         let component: Component = get(unsafe: C.identifier, for: entityId)
         // components are guaranteed to be reference types so unsafeDowncast is applicable here
         return unsafeDowncast(component, to: C.self)

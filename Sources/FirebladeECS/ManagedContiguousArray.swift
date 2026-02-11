@@ -1,9 +1,9 @@
-//
-//  ManagedContiguousArray.swift
-//  FirebladeECS
-//
-//  Created by Christian Treffs on 28.10.17.
-//
+///
+///  ManagedContiguousArray.swift
+///  FirebladeECS
+///
+///  Created by Christian Treffs on 28.10.17.
+///
 /// A type that provides a managed contiguous array of elements that you provide.
 public struct ManagedContiguousArray<Element> {
     public typealias Index = Int

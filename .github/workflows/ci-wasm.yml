@@ -21,9 +21,11 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - version: 6.1.3
-            checksum: 7a741da46ce64cdbd6dd504a2617b211b88e7f66a9ada7ea4e55bcc9c06ff2b2
+          - version: 6.1
+            url: https://github.com/swiftwasm/swift/releases/download/swift-wasm-6.1-RELEASE/swift-wasm-6.1-RELEASE-wasm32-unknown-wasi.artifactbundle.zip
+            checksum: 7550b4c77a55f4b637c376f5d192f297fe185607003a6212ad608276928db992
           - version: 6.2.1
+            url: https://download.swift.org/swift-6.2.1-release/wasm-sdk/swift-6.2.1-RELEASE/swift-6.2.1-RELEASE_wasm.artifactbundle.tar.gz
             checksum: 482b9f95462b87bedfafca94a092cf9ec4496671ca13b43745097122d20f18af
         build:
           - release
@@ -32,10 +34,10 @@ jobs:
       - uses: actions/checkout@v6
       - uses: swift-actions/setup-swift@v2
         with:
-          swift-version: ${{ matrix.config.version }} # 6.2.1
+          swift-version: ${{ matrix.config.version }}
       - uses: bytecodealliance/actions/wasmtime/setup@v1
       - name: Install Swift SDK
-        run: swift sdk install https://download.swift.org/swift-${{ matrix.config.version }}-release/wasm-sdk/swift-${{ matrix.config.version }}-RELEASE/swift-${{ matrix.config.version }}-RELEASE_wasm.artifactbundle.tar.gz --checksum ${{ matrix.config.checksum }}
+        run: swift sdk install ${{ matrix.config.url }} --checksum ${{ matrix.config.checksum }}
       - name: Test
         # working-directory: tests/swift/Wasm.tests
         run: |

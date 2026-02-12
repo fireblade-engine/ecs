@@ -1,0 +1,8 @@
+{
+  "track_id": "modernize-workflows_20260212",
+  "type": "chore",
+  "status": "new",
+  "created_at": "2026-02-12T16:00:00Z",
+  "updated_at": "2026-02-12T16:00:00Z",
+  "description": "Modernize github workflows. Use @/Users/ctreffs/Developer/personal/game-dev/fireblade/fireblade-2026/Dependencies/Math/.github/workflows as a reference to update all github workflows of this repo."
+}

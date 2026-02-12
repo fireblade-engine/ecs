@@ -42,7 +42,6 @@ jobs:
       - name: Install Swift SDK
         run: swift sdk install ${{ matrix.config.url }} --checksum ${{ matrix.config.checksum }}
       - name: Test
-        # working-directory: tests/swift/Wasm.tests
         run: |
-          swift build --build-tests -c ${{ matrix.build }} --swift-sdk ${{ matrix.config.sdk }}
+          swift build --build-tests -c ${{ matrix.build }} --swift-sdk ${{ matrix.config.sdk }} -Xswiftc -enable-testing
           wasmtime --dir . .build/wasm32-unknown-wasip1/${{ matrix.build }}/FirebladeECSPackageTests.xctest --testing-library swift-testing

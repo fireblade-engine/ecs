@@ -86,10 +86,12 @@ docs-generate:
 	--fallback-bundle-identifier com.github.fireblade-engine.FirebladeECS \
 	--target FirebladeECS
 
+DOCS_COVERAGE_THRESHOLD ?= 95
+
 docs-coverage: docs-check-coverage
 
 docs-check-coverage:
-	swift package --disable-sandbox generate-documentation --target FirebladeECS --experimental-documentation-coverage --coverage-summary-level brief
+	swift package --disable-sandbox generate-documentation --target FirebladeECS --experimental-documentation-coverage --coverage-summary-level brief | python3 scripts/check_doc_coverage.py $(DOCS_COVERAGE_THRESHOLD)
 
 docs-check-links:
 	swift package --disable-sandbox generate-documentation --target FirebladeECS --analyze --warnings-as-errors

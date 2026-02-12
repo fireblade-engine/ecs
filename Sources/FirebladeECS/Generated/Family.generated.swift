@@ -28,12 +28,20 @@ public struct Requires1<Comp1>: FamilyRequirementsManaging where Comp1: Componen
     }
 
     /// Retrieves components for an entity.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: The components of the entity.
     public static func components(nexus: Nexus, entityId: EntityIdentifier) -> (Comp1) {
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         return (comp1)
     }
 
     /// Retrieves entity and components.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: The entity and its components.
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1) {
         let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
@@ -41,6 +49,10 @@ public struct Requires1<Comp1>: FamilyRequirementsManaging where Comp1: Componen
     }
 
     /// Creates a member entity.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - components: The components to assign.
+    /// - Returns: The created entity.
     public static func createMember(nexus: Nexus, components: (Comp1)) -> Entity {
         nexus.createEntity(with: components)
     }
@@ -56,12 +68,24 @@ extension FamilyMemberBuilder where R: RequiringComponents1  {
 }
 
 extension Requires1: FamilyEncoding where Comp1: Encodable {
+    /// Encodes the components.
+    /// - Parameters:
+    ///   - components: The components to encode.
+    ///   - container: The encoding container.
+    ///   - strategy: The coding strategy.
+    /// - Throws: An error if encoding fails.
     public static func encode(components: (Comp1), into container: inout KeyedEncodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws {
         try container.encode(components, forKey: strategy.codingKey(for: Comp1.self))
     }
 }
 
 extension Requires1: FamilyDecoding where Comp1: Decodable {
+    /// Decodes the components.
+    /// - Parameters:
+    ///   - container: The decoding container.
+    ///   - strategy: The coding strategy.
+    /// - Returns: The decoded components.
+    /// - Throws: An error if decoding fails.
     public static func decode(componentsIn container: KeyedDecodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws -> (Comp1) {
         let comp1 = try container.decode(Comp1.self, forKey: strategy.codingKey(for: Comp1.self))
         return comp1
@@ -133,6 +157,10 @@ public struct Requires2<Comp1, Comp2>: FamilyRequirementsManaging where Comp1: C
     }
 
     /// Retrieves components for an entity.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: The components of the entity.
     public static func components(nexus: Nexus, entityId: EntityIdentifier) -> (Comp1, Comp2) {
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
@@ -140,6 +168,10 @@ public struct Requires2<Comp1, Comp2>: FamilyRequirementsManaging where Comp1: C
     }
 
     /// Retrieves entity and components.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: The entity and its components.
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2) {
         let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
@@ -148,6 +180,10 @@ public struct Requires2<Comp1, Comp2>: FamilyRequirementsManaging where Comp1: C
     }
 
     /// Creates a member entity.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - components: The components to assign.
+    /// - Returns: The created entity.
     public static func createMember(nexus: Nexus, components: (Comp1, Comp2)) -> Entity {
         nexus.createEntity(with: components.0, components.1)
     }
@@ -163,6 +199,12 @@ extension FamilyMemberBuilder where R: RequiringComponents2  {
 }
 
 extension Requires2: FamilyEncoding where Comp1: Encodable, Comp2: Encodable {
+    /// Encodes the components.
+    /// - Parameters:
+    ///   - components: The components to encode.
+    ///   - container: The encoding container.
+    ///   - strategy: The coding strategy.
+    /// - Throws: An error if encoding fails.
     public static func encode(components: (Comp1, Comp2), into container: inout KeyedEncodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws {
         try container.encode(components.0, forKey: strategy.codingKey(for: Comp1.self))
         try container.encode(components.1, forKey: strategy.codingKey(for: Comp2.self))
@@ -170,6 +212,12 @@ extension Requires2: FamilyEncoding where Comp1: Encodable, Comp2: Encodable {
 }
 
 extension Requires2: FamilyDecoding where Comp1: Decodable, Comp2: Decodable {
+    /// Decodes the components.
+    /// - Parameters:
+    ///   - container: The decoding container.
+    ///   - strategy: The coding strategy.
+    /// - Returns: The decoded components.
+    /// - Throws: An error if decoding fails.
     public static func decode(componentsIn container: KeyedDecodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws -> (Comp1, Comp2) {
         let comp1 = try container.decode(Comp1.self, forKey: strategy.codingKey(for: Comp1.self))
         let comp2 = try container.decode(Comp2.self, forKey: strategy.codingKey(for: Comp2.self))
@@ -245,6 +293,10 @@ public struct Requires3<Comp1, Comp2, Comp3>: FamilyRequirementsManaging where C
     }
 
     /// Retrieves components for an entity.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: The components of the entity.
     public static func components(nexus: Nexus, entityId: EntityIdentifier) -> (Comp1, Comp2, Comp3) {
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
@@ -253,6 +305,10 @@ public struct Requires3<Comp1, Comp2, Comp3>: FamilyRequirementsManaging where C
     }
 
     /// Retrieves entity and components.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: The entity and its components.
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3) {
         let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
@@ -262,6 +318,10 @@ public struct Requires3<Comp1, Comp2, Comp3>: FamilyRequirementsManaging where C
     }
 
     /// Creates a member entity.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - components: The components to assign.
+    /// - Returns: The created entity.
     public static func createMember(nexus: Nexus, components: (Comp1, Comp2, Comp3)) -> Entity {
         nexus.createEntity(with: components.0, components.1, components.2)
     }
@@ -277,6 +337,12 @@ extension FamilyMemberBuilder where R: RequiringComponents3  {
 }
 
 extension Requires3: FamilyEncoding where Comp1: Encodable, Comp2: Encodable, Comp3: Encodable {
+    /// Encodes the components.
+    /// - Parameters:
+    ///   - components: The components to encode.
+    ///   - container: The encoding container.
+    ///   - strategy: The coding strategy.
+    /// - Throws: An error if encoding fails.
     public static func encode(components: (Comp1, Comp2, Comp3), into container: inout KeyedEncodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws {
         try container.encode(components.0, forKey: strategy.codingKey(for: Comp1.self))
         try container.encode(components.1, forKey: strategy.codingKey(for: Comp2.self))
@@ -285,6 +351,12 @@ extension Requires3: FamilyEncoding where Comp1: Encodable, Comp2: Encodable, Co
 }
 
 extension Requires3: FamilyDecoding where Comp1: Decodable, Comp2: Decodable, Comp3: Decodable {
+    /// Decodes the components.
+    /// - Parameters:
+    ///   - container: The decoding container.
+    ///   - strategy: The coding strategy.
+    /// - Returns: The decoded components.
+    /// - Throws: An error if decoding fails.
     public static func decode(componentsIn container: KeyedDecodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws -> (Comp1, Comp2, Comp3) {
         let comp1 = try container.decode(Comp1.self, forKey: strategy.codingKey(for: Comp1.self))
         let comp2 = try container.decode(Comp2.self, forKey: strategy.codingKey(for: Comp2.self))
@@ -364,6 +436,10 @@ public struct Requires4<Comp1, Comp2, Comp3, Comp4>: FamilyRequirementsManaging 
     }
 
     /// Retrieves components for an entity.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: The components of the entity.
     public static func components(nexus: Nexus, entityId: EntityIdentifier) -> (Comp1, Comp2, Comp3, Comp4) {
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
@@ -373,6 +449,10 @@ public struct Requires4<Comp1, Comp2, Comp3, Comp4>: FamilyRequirementsManaging 
     }
 
     /// Retrieves entity and components.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: The entity and its components.
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4) {
         let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
@@ -383,6 +463,10 @@ public struct Requires4<Comp1, Comp2, Comp3, Comp4>: FamilyRequirementsManaging 
     }
 
     /// Creates a member entity.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - components: The components to assign.
+    /// - Returns: The created entity.
     public static func createMember(nexus: Nexus, components: (Comp1, Comp2, Comp3, Comp4)) -> Entity {
         nexus.createEntity(with: components.0, components.1, components.2, components.3)
     }
@@ -398,6 +482,12 @@ extension FamilyMemberBuilder where R: RequiringComponents4  {
 }
 
 extension Requires4: FamilyEncoding where Comp1: Encodable, Comp2: Encodable, Comp3: Encodable, Comp4: Encodable {
+    /// Encodes the components.
+    /// - Parameters:
+    ///   - components: The components to encode.
+    ///   - container: The encoding container.
+    ///   - strategy: The coding strategy.
+    /// - Throws: An error if encoding fails.
     public static func encode(components: (Comp1, Comp2, Comp3, Comp4), into container: inout KeyedEncodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws {
         try container.encode(components.0, forKey: strategy.codingKey(for: Comp1.self))
         try container.encode(components.1, forKey: strategy.codingKey(for: Comp2.self))
@@ -407,6 +497,12 @@ extension Requires4: FamilyEncoding where Comp1: Encodable, Comp2: Encodable, Co
 }
 
 extension Requires4: FamilyDecoding where Comp1: Decodable, Comp2: Decodable, Comp3: Decodable, Comp4: Decodable {
+    /// Decodes the components.
+    /// - Parameters:
+    ///   - container: The decoding container.
+    ///   - strategy: The coding strategy.
+    /// - Returns: The decoded components.
+    /// - Throws: An error if decoding fails.
     public static func decode(componentsIn container: KeyedDecodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws -> (Comp1, Comp2, Comp3, Comp4) {
         let comp1 = try container.decode(Comp1.self, forKey: strategy.codingKey(for: Comp1.self))
         let comp2 = try container.decode(Comp2.self, forKey: strategy.codingKey(for: Comp2.self))
@@ -490,6 +586,10 @@ public struct Requires5<Comp1, Comp2, Comp3, Comp4, Comp5>: FamilyRequirementsMa
     }
 
     /// Retrieves components for an entity.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: The components of the entity.
     public static func components(nexus: Nexus, entityId: EntityIdentifier) -> (Comp1, Comp2, Comp3, Comp4, Comp5) {
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
@@ -500,6 +600,10 @@ public struct Requires5<Comp1, Comp2, Comp3, Comp4, Comp5>: FamilyRequirementsMa
     }
 
     /// Retrieves entity and components.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: The entity and its components.
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5) {
         let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
@@ -511,6 +615,10 @@ public struct Requires5<Comp1, Comp2, Comp3, Comp4, Comp5>: FamilyRequirementsMa
     }
 
     /// Creates a member entity.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - components: The components to assign.
+    /// - Returns: The created entity.
     public static func createMember(nexus: Nexus, components: (Comp1, Comp2, Comp3, Comp4, Comp5)) -> Entity {
         nexus.createEntity(with: components.0, components.1, components.2, components.3, components.4)
     }
@@ -526,6 +634,12 @@ extension FamilyMemberBuilder where R: RequiringComponents5  {
 }
 
 extension Requires5: FamilyEncoding where Comp1: Encodable, Comp2: Encodable, Comp3: Encodable, Comp4: Encodable, Comp5: Encodable {
+    /// Encodes the components.
+    /// - Parameters:
+    ///   - components: The components to encode.
+    ///   - container: The encoding container.
+    ///   - strategy: The coding strategy.
+    /// - Throws: An error if encoding fails.
     public static func encode(components: (Comp1, Comp2, Comp3, Comp4, Comp5), into container: inout KeyedEncodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws {
         try container.encode(components.0, forKey: strategy.codingKey(for: Comp1.self))
         try container.encode(components.1, forKey: strategy.codingKey(for: Comp2.self))
@@ -536,6 +650,12 @@ extension Requires5: FamilyEncoding where Comp1: Encodable, Comp2: Encodable, Co
 }
 
 extension Requires5: FamilyDecoding where Comp1: Decodable, Comp2: Decodable, Comp3: Decodable, Comp4: Decodable, Comp5: Decodable {
+    /// Decodes the components.
+    /// - Parameters:
+    ///   - container: The decoding container.
+    ///   - strategy: The coding strategy.
+    /// - Returns: The decoded components.
+    /// - Throws: An error if decoding fails.
     public static func decode(componentsIn container: KeyedDecodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws -> (Comp1, Comp2, Comp3, Comp4, Comp5) {
         let comp1 = try container.decode(Comp1.self, forKey: strategy.codingKey(for: Comp1.self))
         let comp2 = try container.decode(Comp2.self, forKey: strategy.codingKey(for: Comp2.self))
@@ -623,6 +743,10 @@ public struct Requires6<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6>: FamilyRequire
     }
 
     /// Retrieves components for an entity.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: The components of the entity.
     public static func components(nexus: Nexus, entityId: EntityIdentifier) -> (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6) {
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
@@ -634,6 +758,10 @@ public struct Requires6<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6>: FamilyRequire
     }
 
     /// Retrieves entity and components.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: The entity and its components.
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5, Comp6) {
         let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
@@ -646,6 +774,10 @@ public struct Requires6<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6>: FamilyRequire
     }
 
     /// Creates a member entity.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - components: The components to assign.
+    /// - Returns: The created entity.
     public static func createMember(nexus: Nexus, components: (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6)) -> Entity {
         nexus.createEntity(with: components.0, components.1, components.2, components.3, components.4, components.5)
     }
@@ -661,6 +793,12 @@ extension FamilyMemberBuilder where R: RequiringComponents6  {
 }
 
 extension Requires6: FamilyEncoding where Comp1: Encodable, Comp2: Encodable, Comp3: Encodable, Comp4: Encodable, Comp5: Encodable, Comp6: Encodable {
+    /// Encodes the components.
+    /// - Parameters:
+    ///   - components: The components to encode.
+    ///   - container: The encoding container.
+    ///   - strategy: The coding strategy.
+    /// - Throws: An error if encoding fails.
     public static func encode(components: (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6), into container: inout KeyedEncodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws {
         try container.encode(components.0, forKey: strategy.codingKey(for: Comp1.self))
         try container.encode(components.1, forKey: strategy.codingKey(for: Comp2.self))
@@ -672,6 +810,12 @@ extension Requires6: FamilyEncoding where Comp1: Encodable, Comp2: Encodable, Co
 }
 
 extension Requires6: FamilyDecoding where Comp1: Decodable, Comp2: Decodable, Comp3: Decodable, Comp4: Decodable, Comp5: Decodable, Comp6: Decodable {
+    /// Decodes the components.
+    /// - Parameters:
+    ///   - container: The decoding container.
+    ///   - strategy: The coding strategy.
+    /// - Returns: The decoded components.
+    /// - Throws: An error if decoding fails.
     public static func decode(componentsIn container: KeyedDecodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws -> (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6) {
         let comp1 = try container.decode(Comp1.self, forKey: strategy.codingKey(for: Comp1.self))
         let comp2 = try container.decode(Comp2.self, forKey: strategy.codingKey(for: Comp2.self))
@@ -763,6 +907,10 @@ public struct Requires7<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7>: Family
     }
 
     /// Retrieves components for an entity.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: The components of the entity.
     public static func components(nexus: Nexus, entityId: EntityIdentifier) -> (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7) {
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
@@ -775,6 +923,10 @@ public struct Requires7<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7>: Family
     }
 
     /// Retrieves entity and components.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: The entity and its components.
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7) {
         let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
@@ -788,6 +940,10 @@ public struct Requires7<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7>: Family
     }
 
     /// Creates a member entity.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - components: The components to assign.
+    /// - Returns: The created entity.
     public static func createMember(nexus: Nexus, components: (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7)) -> Entity {
         nexus.createEntity(with: components.0, components.1, components.2, components.3, components.4, components.5, components.6)
     }
@@ -803,6 +959,12 @@ extension FamilyMemberBuilder where R: RequiringComponents7  {
 }
 
 extension Requires7: FamilyEncoding where Comp1: Encodable, Comp2: Encodable, Comp3: Encodable, Comp4: Encodable, Comp5: Encodable, Comp6: Encodable, Comp7: Encodable {
+    /// Encodes the components.
+    /// - Parameters:
+    ///   - components: The components to encode.
+    ///   - container: The encoding container.
+    ///   - strategy: The coding strategy.
+    /// - Throws: An error if encoding fails.
     public static func encode(components: (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7), into container: inout KeyedEncodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws {
         try container.encode(components.0, forKey: strategy.codingKey(for: Comp1.self))
         try container.encode(components.1, forKey: strategy.codingKey(for: Comp2.self))
@@ -815,6 +977,12 @@ extension Requires7: FamilyEncoding where Comp1: Encodable, Comp2: Encodable, Co
 }
 
 extension Requires7: FamilyDecoding where Comp1: Decodable, Comp2: Decodable, Comp3: Decodable, Comp4: Decodable, Comp5: Decodable, Comp6: Decodable, Comp7: Decodable {
+    /// Decodes the components.
+    /// - Parameters:
+    ///   - container: The decoding container.
+    ///   - strategy: The coding strategy.
+    /// - Returns: The decoded components.
+    /// - Throws: An error if decoding fails.
     public static func decode(componentsIn container: KeyedDecodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws -> (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7) {
         let comp1 = try container.decode(Comp1.self, forKey: strategy.codingKey(for: Comp1.self))
         let comp2 = try container.decode(Comp2.self, forKey: strategy.codingKey(for: Comp2.self))
@@ -910,6 +1078,10 @@ public struct Requires8<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8>:
     }
 
     /// Retrieves components for an entity.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: The components of the entity.
     public static func components(nexus: Nexus, entityId: EntityIdentifier) -> (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8) {
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
@@ -923,6 +1095,10 @@ public struct Requires8<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8>:
     }
 
     /// Retrieves entity and components.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: The entity and its components.
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8) {
         let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
@@ -937,6 +1113,10 @@ public struct Requires8<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8>:
     }
 
     /// Creates a member entity.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - components: The components to assign.
+    /// - Returns: The created entity.
     public static func createMember(nexus: Nexus, components: (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8)) -> Entity {
         nexus.createEntity(with: components.0, components.1, components.2, components.3, components.4, components.5, components.6, components.7)
     }
@@ -952,6 +1132,12 @@ extension FamilyMemberBuilder where R: RequiringComponents8  {
 }
 
 extension Requires8: FamilyEncoding where Comp1: Encodable, Comp2: Encodable, Comp3: Encodable, Comp4: Encodable, Comp5: Encodable, Comp6: Encodable, Comp7: Encodable, Comp8: Encodable {
+    /// Encodes the components.
+    /// - Parameters:
+    ///   - components: The components to encode.
+    ///   - container: The encoding container.
+    ///   - strategy: The coding strategy.
+    /// - Throws: An error if encoding fails.
     public static func encode(components: (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8), into container: inout KeyedEncodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws {
         try container.encode(components.0, forKey: strategy.codingKey(for: Comp1.self))
         try container.encode(components.1, forKey: strategy.codingKey(for: Comp2.self))
@@ -965,6 +1151,12 @@ extension Requires8: FamilyEncoding where Comp1: Encodable, Comp2: Encodable, Co
 }
 
 extension Requires8: FamilyDecoding where Comp1: Decodable, Comp2: Decodable, Comp3: Decodable, Comp4: Decodable, Comp5: Decodable, Comp6: Decodable, Comp7: Decodable, Comp8: Decodable {
+    /// Decodes the components.
+    /// - Parameters:
+    ///   - container: The decoding container.
+    ///   - strategy: The coding strategy.
+    /// - Returns: The decoded components.
+    /// - Throws: An error if decoding fails.
     public static func decode(componentsIn container: KeyedDecodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws -> (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8) {
         let comp1 = try container.decode(Comp1.self, forKey: strategy.codingKey(for: Comp1.self))
         let comp2 = try container.decode(Comp2.self, forKey: strategy.codingKey(for: Comp2.self))

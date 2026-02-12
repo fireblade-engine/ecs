@@ -50,6 +50,10 @@ public struct Requires{{ idx }}<{{ CompParams }}>: FamilyRequirementsManaging wh
     }
 
     /// Retrieves components for an entity.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: The components of the entity.
     public static func components(nexus: Nexus, entityId: EntityIdentifier) -> ({{ CompParams }}) {
         {% for comp in components %}
         let {{ comp|lowercase }}: {{ comp }} = nexus.get(unsafe: entityId)
@@ -58,6 +62,10 @@ public struct Requires{{ idx }}<{{ CompParams }}>: FamilyRequirementsManaging wh
     }
 
     /// Retrieves entity and components.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: The entity and its components.
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, {{ CompParams }}) {
         let entity = Entity(nexus: nexus, id: entityId)
         {% for comp in components %}
@@ -67,6 +75,10 @@ public struct Requires{{ idx }}<{{ CompParams }}>: FamilyRequirementsManaging wh
     }
 
     /// Creates a member entity.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - components: The components to assign.
+    /// - Returns: The created entity.
     public static func createMember(nexus: Nexus, components: ({{ CompParams }})) -> Entity {
         {% if compEncodable.count == 1 %}nexus.createEntity(with: components){% else %}nexus.createEntity(with: {{ CompsTuple }}){% endif %}
     }
@@ -82,6 +94,12 @@ extension FamilyMemberBuilder where R: RequiringComponents{{ idx }}  {
 }
 
 extension Requires{{ idx }}: FamilyEncoding where {{ CompsWhereEncodable }} {
+    /// Encodes the components.
+    /// - Parameters:
+    ///   - components: The components to encode.
+    ///   - container: The encoding container.
+    ///   - strategy: The coding strategy.
+    /// - Throws: An error if encoding fails.
     public static func encode(components: ({{ CompParams }}), into container: inout KeyedEncodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws {
         {% if compEncodable.count == 1 %}
         try container.encode(components, forKey: strategy.codingKey(for: {{ CompsSelf }}))
@@ -94,6 +112,12 @@ extension Requires{{ idx }}: FamilyEncoding where {{ CompsWhereEncodable }} {
 }
 
 extension Requires{{ idx }}: FamilyDecoding where {{ CompsWhereDecodable }} {
+    /// Decodes the components.
+    /// - Parameters:
+    ///   - container: The decoding container.
+    ///   - strategy: The coding strategy.
+    /// - Returns: The decoded components.
+    /// - Throws: An error if decoding fails.
     public static func decode(componentsIn container: KeyedDecodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws -> ({{ CompParams }}) {
         {% for comp in components %}
         let {{ comp|lowercase }} = try container.decode({{ comp }}.self, forKey: strategy.codingKey(for: {{ comp }}.self))

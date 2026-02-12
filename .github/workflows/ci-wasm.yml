@@ -53,8 +53,7 @@ jobs:
       - name: Build dir structure
         run: |
           ls -la .build/
-          ls -la .build/${{ steps.setup-swiftwasm.outputs.swift-sdk-id }}/
-          ls -la .build/${{ steps.setup-swiftwasm.outputs.swift-sdk-id }}/release/
+          find .build -name "*.wasm"
       - name: Run Tests
         run: |
-          wasmtime --dir . .build/${{ steps.setup-swiftwasm.outputs.swift-sdk-id }}/release/FirebladeECSPackageTests.wasm
+          wasmtime --dir . .build/release/FirebladeECSPackageTests.wasm

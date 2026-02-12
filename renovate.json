@@ -65,11 +65,11 @@
     {
       "customType": "regex",
       "description": "Update swift-tools-version in Package.swift",
-      "fileMatch": [
-        "Package\\.swift"
+      "managerFilePatterns": [
+        "/Package\\.swift/"
       ],
       "matchStrings": [
-        "^\/\/(\\s)?swift-tools-version:[\\s]?(?<currentValue>[0-9.]+)"
+        "^//(\\s)?swift-tools-version:[\\s]?(?<currentValue>[0-9.]+)"
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "swiftlang/swift",
@@ -78,7 +78,9 @@
     {
       "customType": "regex",
       "description": "Update .swift-version",
-      "fileMatch": ".swift-version",
+      "managerFilePatterns": [
+        "/.swift-version/"
+      ],
       "matchStrings": [
         "(?<currentValue>[0-9.]+)"
       ],

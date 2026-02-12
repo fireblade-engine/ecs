@@ -10,3 +10,8 @@
 
 - [x] **Track: Document the entire library - documentation coverage should be checked with make doc-coverage. Ist should be almost 100%**
 *Link: [./tracks/comprehensive_documentation_20260212/](./tracks/comprehensive_documentation_20260212/)*
+
+---
+
+- [~] **Track: Document the entire project until all three metrics (Globals, Members, Types) reach at least 95%**
+*Link: [./tracks/docs_coverage_95_20260212/](./tracks/docs_coverage_95_20260212/)*

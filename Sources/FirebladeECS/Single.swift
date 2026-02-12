@@ -30,6 +30,7 @@ extension Single: Equatable {
     /// - Parameters:
     ///   - lhs: A single component accessor to compare.
     ///   - rhs: Another single component accessor to compare.
+    /// - Complexity: O(1)
     public static func == (lhs: Single<A>, rhs: Single<A>) -> Bool {
         lhs.traits == rhs.traits &&
             lhs.entityId == rhs.entityId &&
@@ -41,6 +42,7 @@ extension Single where A: SingleComponent {
     /// The singleton component instance.
     ///
     /// - Note: This property unsafely unwraps the component for performance, assuming the component always exists.
+    /// - Complexity: O(1)
     @inlinable public var component: A {
         // Since we guarantee that the component will always be present by managing the complete lifecycle of the entity
         // and component assignment we may unsafelyUnwrap here.
@@ -49,6 +51,7 @@ extension Single where A: SingleComponent {
     }
 
     /// The entity associated with this singleton component.
+    /// - Complexity: O(1)
     public var entity: Entity {
         Entity(nexus: nexus, id: entityId)
     }

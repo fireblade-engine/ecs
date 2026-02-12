@@ -17,11 +17,13 @@ public protocol Component: AnyObject, Sendable {
 
 extension Component {
     /// The unique identifier for this component type.
+    /// - Complexity: O(1)
     public static var identifier: ComponentIdentifier {
         ComponentIdentifier(Self.self)
     }
 
     /// The unique identifier for this component instance.
+    /// - Complexity: O(1)
     @inline(__always)
     public var identifier: ComponentIdentifier {
         Self.identifier

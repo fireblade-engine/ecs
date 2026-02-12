@@ -60,6 +60,7 @@ extension Family where R: FamilyEncoding {
     /// The encoded members will *NOT* be removed from the nexus and will also stay present in this family.
     /// - Parameter encoder: The data encoder. Data encoder respects the coding strategy set at `nexus.codingStrategy`.
     /// - Returns: The encoded data.
+    /// - Complexity: O(N) where N is the number of family members.
     public func encodeMembers<Encoder: TopLevelEncoder>(using encoder: inout Encoder) throws -> Encoder.Output {
         encoder.userInfo[.nexusCodingStrategy] = nexus.codingStrategy
         let components = [R.Components](self)
@@ -74,6 +75,7 @@ extension FamilyMemberContainer: Decodable where R: FamilyDecoding {
     /// Creates a new family member container by decoding from the given decoder.
     /// - Parameter decoder: The decoder to read data from.
     /// - Throws: An error if decoding fails.
+    /// - Complexity: O(N) where N is the number of components in the container.
     public init(from decoder: Decoder) throws {
         var familyContainer = try decoder.unkeyedContainer()
         let strategy = decoder.userInfo[.nexusCodingStrategy] as? CodingStrategy ?? DefaultCodingStrategy()
@@ -106,6 +108,7 @@ extension Family where R: FamilyDecoding {
     ///   - data: The data decoded by decoder. An unkeyed container of family members (keyed component containers) is expected.
     ///   - decoder: The decoder to use for decoding family member data. Decoder respects the coding strategy set at `nexus.codingStrategy`.
     /// - Returns: returns the newly added entities.
+    /// - Complexity: O(N) where N is the number of family members in the data.
     @discardableResult
     public func decodeMembers<Decoder: TopLevelDecoder>(from data: Decoder.Input, using decoder: inout Decoder) throws -> [Entity] {
         decoder.userInfo[.nexusCodingStrategy] = nexus.codingStrategy

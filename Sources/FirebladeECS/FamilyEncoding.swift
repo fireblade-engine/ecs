@@ -34,6 +34,7 @@ extension FamilyEncoding {
     ///   - container: The unkeyed encoding container to write to.
     ///   - strategy: The coding strategy to use for determining coding keys.
     /// - Throws: An error if encoding fails.
+    /// - Complexity: O(N) where N is the number of elements in the array.
     public static func encode(componentsArray: [Components], into container: inout UnkeyedEncodingContainer, using strategy: CodingStrategy) throws {
         for comps in componentsArray {
             var container = container.nestedContainer(keyedBy: DynamicCodingKey.self)

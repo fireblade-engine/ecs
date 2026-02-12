@@ -40,6 +40,7 @@ extension Nexus {
     }
 
     /// The total number of entities managed by the Nexus.
+    /// - Complexity: O(1)
     public var numEntities: Int {
         componentIdsByEntity.keys.count
     }
@@ -48,6 +49,7 @@ extension Nexus {
     ///
     /// Entity order is not guaranteed to stay the same over iterations.
     /// - Returns: An `EntitiesIterator`.
+    /// - Complexity: O(1)
     public func makeEntitiesIterator() -> EntitiesIterator {
         EntitiesIterator(nexus: self)
     }
@@ -55,6 +57,7 @@ extension Nexus {
     /// Checks if an entity exists in the Nexus.
     /// - Parameter entityId: The identifier of the entity to check.
     /// - Returns: `true` if the entity exists; otherwise, `false`.
+    /// - Complexity: O(1)
     public func exists(entity entityId: EntityIdentifier) -> Bool {
         componentIdsByEntity.keys.contains(entityId)
     }
@@ -63,6 +66,7 @@ extension Nexus {
     ///
     /// - Parameter entityId: The entity identifier.
     /// - Returns: An `Entity` instance associated with the identifier.
+    /// - Complexity: O(1)
     public func entity(from entityId: EntityIdentifier) -> Entity {
         Entity(nexus: self, id: entityId)
     }
@@ -71,6 +75,7 @@ extension Nexus {
     ///
     /// - Parameter entity: The entity to destroy.
     /// - Returns: `true` if the entity was successfully destroyed; otherwise, `false`.
+    /// - Complexity: O(C * M) where C is the number of components and M is the number of families.
     @discardableResult
     public func destroy(entity: Entity) -> Bool {
         destroy(entityId: entity.identifier)
@@ -81,6 +86,7 @@ extension Nexus {
     /// This removes all components associated with the entity and releases its identifier for reuse.
     /// - Parameter entityId: The identifier of the entity to destroy.
     /// - Returns: `true` if the entity was found and destroyed; otherwise, `false`.
+    /// - Complexity: O(C * M) where C is the number of components and M is the number of families.
     @discardableResult
     public func destroy(entityId: EntityIdentifier) -> Bool {
         guard componentIdsByEntity.keys.contains(entityId) else {

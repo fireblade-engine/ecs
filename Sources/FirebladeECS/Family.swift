@@ -21,6 +21,7 @@ public struct Family<R: FamilyRequirementsManaging> {
     ///   - nexus: The nexus instance.
     ///   - requiresAll: A closure returning the required component types.
     ///   - excludesAll: A list of excluded component types.
+    /// - Complexity: O(R + E) where R is the number of required components and E is the number of excluded components.
     public init(nexus: Nexus, requiresAll: @autoclosure () -> R.ComponentTypes, excludesAll: [Component.Type]) {
         let required = R(requiresAll())
         self.nexus = nexus
@@ -94,6 +95,7 @@ extension Family: Equatable {
 
 extension Family: Sequence {
     /// Creates an iterator over the components of the family members.
+    /// - Complexity: O(1)
     public func makeIterator() -> ComponentsIterator {
         ComponentsIterator(family: self)
     }
@@ -111,6 +113,7 @@ extension Family {
 
         /// Creates a new iterator for the given family.
         /// - Parameter family: The family to iterate over.
+        /// - Complexity: O(1)
         public init(family: Family<R>) {
             nexus = family.nexus
             memberIdsIterator = family.memberIds.makeIterator()
@@ -118,6 +121,7 @@ extension Family {
 
         /// Advances to the next component collection and returns it, or `nil` if no next element exists.
         /// - Returns: The next component collection in the sequence, or `nil`.
+        /// - Complexity: O(R) where R is the number of required components.
         public mutating func next() -> R.Components? {
             guard let entityId: EntityIdentifier = memberIdsIterator.next() else {
                 return nil
@@ -135,6 +139,7 @@ extension Family.ComponentsIterator: Sequence {}
 
 extension Family {
     /// A collection of all entities in this family.
+    /// - Complexity: O(1)
     @inlinable public var entities: EntityIterator {
         EntityIterator(family: self)
     }
@@ -146,6 +151,7 @@ extension Family {
 
         /// Creates a new iterator for the given family.
         /// - Parameter family: The family to iterate over.
+        /// - Complexity: O(1)
         public init(family: Family<R>) {
             nexus = family.nexus
             memberIdsIterator = family.memberIds.makeIterator()
@@ -153,6 +159,7 @@ extension Family {
 
         /// Advances to the next entity and returns it, or `nil` if no next element exists.
         /// - Returns: The next entity in the sequence, or `nil`.
+        /// - Complexity: O(1)
         public mutating func next() -> Entity? {
             guard let entityId = memberIdsIterator.next() else {
                 return nil
@@ -169,6 +176,7 @@ extension Family.EntityIterator: Sequence {}
 
 extension Family {
     /// A collection of entities and their components in this family.
+    /// - Complexity: O(1)
     @inlinable public var entityAndComponents: EntityComponentIterator {
         EntityComponentIterator(family: self)
     }
@@ -180,6 +188,7 @@ extension Family {
 
         /// Creates a new iterator for the given family.
         /// - Parameter family: The family to iterate over.
+        /// - Complexity: O(1)
         public init(family: Family<R>) {
             nexus = family.nexus
             memberIdsIterator = family.memberIds.makeIterator()
@@ -187,6 +196,7 @@ extension Family {
 
         /// Advances to the next entity and components pair and returns it, or `nil` if no next element exists.
         /// - Returns: The next entity and components pair in the sequence, or `nil`.
+        /// - Complexity: O(R) where R is the number of required components.
         public mutating func next() -> R.EntityAndComponents? {
             guard let entityId = memberIdsIterator.next() else {
                 return nil

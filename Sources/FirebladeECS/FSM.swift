@@ -179,6 +179,7 @@ public class EntityState: @unchecked Sendable {
     /// map a component type to the provider that provides the component.
     /// - Parameter type: The type of component to be mapped
     /// - Returns: The component mapping to use when setting the provider for the component
+    /// - Complexity: O(1)
     @discardableResult
     public func addMapping(for type: ComponentInitializable.Type) -> StateComponentMapping {
         StateComponentMapping(creatingState: self, type: type)
@@ -187,6 +188,7 @@ public class EntityState: @unchecked Sendable {
     /// Get the ComponentProvider for a particular component type.
     /// - Parameter type: The type of component to get the provider for
     /// - Returns: The ComponentProvider
+    /// - Complexity: O(1)
     public func provider(for type: ComponentInitializable.Type) -> ComponentProvider? {
         providers[type.identifier]
     }
@@ -194,6 +196,7 @@ public class EntityState: @unchecked Sendable {
     /// To determine whether this state has a provider for a specific component type.
     /// - Parameter type: The type of component to look for a provider for
     /// - Returns: true if there is a provider for the given type, false otherwise
+    /// - Complexity: O(1)
     public func hasProvider(for type: ComponentInitializable.Type) -> Bool {
         providers[type.identifier] != nil
     }
@@ -206,6 +209,7 @@ extension EntityState {
     /// ComponentInstanceProvider is used for the mapping.
     /// - Parameter component: The component instance to use for the mapping
     /// - Returns: This EntityState, so more modifications can be applied
+    /// - Complexity: O(1)
     @discardableResult
     @inline(__always)
     public func addInstance<C: ComponentInitializable>(_ component: C) -> Self {
@@ -217,6 +221,7 @@ extension EntityState {
     /// A ComponentTypeProvider is used for the mapping.
     /// - Parameter type: The type of components to be created by this mapping
     /// - Returns: This EntityState, so more modifications can be applied
+    /// - Complexity: O(1)
     @inline(__always)
     @discardableResult
     public func addType(_ type: ComponentInitializable.Type) -> Self {
@@ -229,6 +234,7 @@ extension EntityState {
     /// A ComponentSingletonProvider is used for the mapping.
     /// - Parameter type: The type of the single instance to be created.
     /// - Returns: This EntityState, so more modifications can be applied
+    /// - Complexity: O(1)
     @inline(__always)
     @discardableResult
     public func addSingleton(_ type: ComponentInitializable.Type) -> Self {
@@ -240,6 +246,7 @@ extension EntityState {
     /// A DynamicComponentProvider is used for the mapping.
     /// - Parameter closure: The Closure instance to return the component instance
     /// - Returns: This EntityState, so more modifications can be applied
+    /// - Complexity: O(1)
     @inline(__always)
     @discardableResult
     public func addMethod<C: ComponentInitializable>(closure: DynamicComponentProvider<C>.Closure) -> Self {
@@ -251,6 +258,7 @@ extension EntityState {
     /// - Parameter type: The type of component to be mapped
     /// - Parameter provider: The component provider to use.
     /// - Returns: This EntityState, so more modifications can be applied.
+    /// - Complexity: O(1)
     @inline(__always)
     @discardableResult
     public func addProvider(type: (some ComponentInitializable).Type, provider: ComponentProvider) -> Self {
@@ -283,6 +291,7 @@ public class StateComponentMapping: @unchecked Sendable {
     /// ComponentInstanceProvider is used for the mapping.
     /// - Parameter component: The component instance to use for the mapping
     /// - Returns: This ComponentMapping, so more modifications can be applied
+    /// - Complexity: O(1)
     @discardableResult
     public func withInstance(_ component: Component) -> StateComponentMapping {
         setProvider(ComponentInstanceProvider(instance: component))
@@ -294,6 +303,7 @@ public class StateComponentMapping: @unchecked Sendable {
     /// is used for the mapping.
     /// - Parameter type: The type of components to be created by this mapping
     /// - Returns: This ComponentMapping, so more modifications can be applied
+    /// - Complexity: O(1)
     @discardableResult
     public func withType(_ type: ComponentInitializable.Type) -> Self {
         setProvider(ComponentTypeProvider(type: type))
@@ -307,6 +317,7 @@ public class StateComponentMapping: @unchecked Sendable {
     /// - Parameter type: The type of the single instance to be created. If omitted, the type of the
     /// mapping is used.
     /// - Returns: This ComponentMapping, so more modifications can be applied
+    /// - Complexity: O(1)
     @discardableResult
     public func withSingleton(_ type: ComponentInitializable.Type?) -> Self {
         setProvider(ComponentSingletonProvider(type: type ?? componentType))
@@ -317,6 +328,7 @@ public class StateComponentMapping: @unchecked Sendable {
     /// DynamicComponentProvider is used for the mapping.
     /// - Parameter closure: The Closure instance to return the component instance
     /// - Returns: This ComponentMapping, so more modifications can be applied
+    /// - Complexity: O(1)
     @discardableResult
     public func withMethod(_ closure: DynamicComponentProvider<some Component>.Closure) -> Self {
         setProvider(DynamicComponentProvider(closure: closure))
@@ -326,6 +338,7 @@ public class StateComponentMapping: @unchecked Sendable {
     /// Creates a mapping for the component type to any ComponentProvider.
     /// - Parameter provider: The component provider to use.
     /// - Returns: This ComponentMapping, so more modifications can be applied.
+    /// - Complexity: O(1)
     @discardableResult
     public func withProvider(_ provider: ComponentProvider) -> Self {
         setProvider(provider)
@@ -336,6 +349,7 @@ public class StateComponentMapping: @unchecked Sendable {
     /// so that a fluent interface can be used when configuring entity states.
     /// - Parameter type: The type of component to add a mapping to the state for
     /// - Returns: The new ComponentMapping for that type
+    /// - Complexity: O(1)
     @discardableResult
     public func add(_ type: ComponentInitializable.Type) -> StateComponentMapping {
         creatingState.addMapping(for: type)
@@ -373,6 +387,7 @@ public class EntityStateMachine<StateIdentifier: Hashable>: @unchecked Sendable 
     /// - Parameter name: The name of this state - used to identify it later in the changeState method call.
     /// - Parameter state: The state.
     /// - Returns: This state machine, so methods can be chained.
+    /// - Complexity: O(1)
     @discardableResult
     public func addState(name: StateIdentifier, state: EntityState) -> Self {
         states[name] = state
@@ -383,6 +398,7 @@ public class EntityStateMachine<StateIdentifier: Hashable>: @unchecked Sendable 
     /// - Parameter name: The name of the new state - used to identify it later in the changeState method call.
     /// - Returns: The new EntityState object that is the state. This will need to be configured with
     /// the appropriate component providers.
+    /// - Complexity: O(1)
     public func createState(name: StateIdentifier) -> EntityState {
         let state = EntityState()
         states[name] = state
@@ -392,6 +408,7 @@ public class EntityStateMachine<StateIdentifier: Hashable>: @unchecked Sendable 
     /// Change to a new state. The components from the old state will be removed and the components
     /// for the new state will be added.
     /// - Parameter name: The name of the state to change to.
+    /// - Complexity: O(C * M) where C is the number of components changed and M is the number of families.
     public func changeState(name: StateIdentifier) {
         guard let newState = states[name] else {
             assertionFailure("Entity state '\(name)' doesn't exist")

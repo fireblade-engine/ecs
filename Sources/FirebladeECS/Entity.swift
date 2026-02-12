@@ -31,12 +31,14 @@ public struct Entity {
     }
 
     /// Returns the number of components for this entity.
+    /// - Complexity: O(1)
     public var numComponents: Int {
         nexus.count(components: identifier)
     }
 
     /// Creates a new entity.
     /// - Returns: The created entity.
+    /// - Complexity: O(1)
     @discardableResult
     public func createEntity() -> Entity {
         nexus.createEntity()
@@ -45,6 +47,7 @@ public struct Entity {
     /// Creates a new entity with the provided components.
     /// - Parameter components: The components to assign to the new entity.
     /// - Returns: The created entity.
+    /// - Complexity: O(C + M) where C is the number of components and M is the number of families.
     @discardableResult
     public func createEntity(with components: Component...) -> Entity {
         createEntity(with: components)
@@ -53,6 +56,7 @@ public struct Entity {
     /// Creates a new entity with the provided components.
     /// - Parameter components: The components to assign to the new entity.
     /// - Returns: The created entity.
+    /// - Complexity: O(C + M) where C is the number of components and M is the number of families.
     @discardableResult
     public func createEntity(with components: some Collection<Component>) -> Entity {
         nexus.createEntity(with: components)
@@ -60,17 +64,20 @@ public struct Entity {
 
     /// Checks if a component with given type is assigned to this entity.
     /// - Parameter type: the component type.
+    /// - Complexity: O(1)
     public func has(_ type: (some Component).Type) -> Bool {
         has(type.identifier)
     }
 
     /// Checks if a component with a given component identifier is assigned to this entity.
     /// - Parameter compId: the component identifier.
+    /// - Complexity: O(1)
     public func has(_ compId: ComponentIdentifier) -> Bool {
         nexus.has(componentId: compId, entityId: identifier)
     }
 
     /// Checks if this entity has any components.
+    /// - Complexity: O(1)
     public var hasComponents: Bool {
         nexus.count(components: identifier) > 0
     }
@@ -135,11 +142,13 @@ public struct Entity {
     }
 
     /// Destroy this entity.
+    /// - Complexity: O(C * M) where C is the number of components and M is the number of families.
     public func destroy() {
         nexus.destroy(entity: self)
     }
 
     /// Returns an iterator over all components of this entity.
+    /// - Complexity: O(1)
     @inlinable
     public func makeComponentsIterator() -> ComponentsIterator {
         ComponentsIterator(nexus: nexus, entityIdentifier: identifier)
@@ -155,6 +164,7 @@ extension Entity {
         /// - Parameters:
         ///   - nexus: The nexus instance.
         ///   - entityIdentifier: The entity identifier.
+        /// - Complexity: O(C) where C is the number of components.
         @usableFromInline
         init(nexus: Nexus, entityIdentifier: EntityIdentifier) {
             iterator = nexus.get(components: entityIdentifier)?
@@ -164,6 +174,7 @@ extension Entity {
 
         /// Advances to the next component and returns it, or `nil` if no next element exists.
         /// - Returns: The next component in the sequence, or `nil`.
+        /// - Complexity: O(1)
         public mutating func next() -> Component? {
             iterator?.next()
         }
@@ -180,6 +191,7 @@ extension Entity: Equatable {
     /// - Parameters:
     ///   - lhs: An entity to compare.
     ///   - rhs: Another entity to compare.
+    /// - Complexity: O(1)
     public static func == (lhs: Entity, rhs: Entity) -> Bool {
         lhs.nexus === rhs.nexus && lhs.identifier == rhs.identifier
     }

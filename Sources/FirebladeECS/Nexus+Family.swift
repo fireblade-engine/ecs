@@ -7,6 +7,7 @@
 
 extension Nexus {
     /// The total number of families managed by the Nexus.
+    /// - Complexity: O(1)
     public final var numFamilies: Int {
         familyMembersByTraits.keys.count
     }

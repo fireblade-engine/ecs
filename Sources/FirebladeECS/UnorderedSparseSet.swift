@@ -29,11 +29,13 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable & Sendable> {
     @usableFromInline let storage: Storage
 
     /// The size of the set.
+    /// - Complexity: O(1)
     public var count: Int {
         storage.count
     }
 
     /// A Boolean value that indicates whether the set is empty.
+    /// - Complexity: O(1)
     public var isEmpty: Bool {
         storage.isEmpty
     }
@@ -98,6 +100,7 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable & Sendable> {
     }
 
     /// The first element of the set.
+    /// - Complexity: O(1)
     @inlinable public var first: Element? {
         storage.first
     }
@@ -265,6 +268,7 @@ extension UnorderedSparseSet {
 
 extension UnorderedSparseSet where Key == Int {
     /// Retrieve or set an element using the key.
+    /// - Complexity: O(1)
     @inlinable
     public subscript(key: Key) -> Element {
         get {
@@ -282,6 +286,7 @@ extension UnorderedSparseSet where Key == Int {
 extension UnorderedSparseSet: Sequence {
     /// Returns an iterator over the elements of this sequence.
     /// - Returns: An `ElementIterator` for the sparse set.
+    /// - Complexity: O(1)
     public func makeIterator() -> ElementIterator {
         ElementIterator(self)
     }
@@ -294,12 +299,14 @@ extension UnorderedSparseSet: Sequence {
 
         /// Creates an iterator for the given sparse set.
         /// - Parameter sparseSet: The sparse set to iterate over.
+        /// - Complexity: O(1)
         public init(_ sparseSet: UnorderedSparseSet<Element, Key>) {
             iterator = sparseSet.storage.makeIterator()
         }
 
         /// Advances to the next element and returns it, or `nil` if no next element exists.
         /// - Returns: The next element in the sequence, or `nil`.
+        /// - Complexity: O(1)
         public mutating func next() -> Element? {
             iterator.next()?.element
         }

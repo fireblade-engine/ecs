@@ -60,6 +60,7 @@ extension Entity {
     /// - If `Comp` is already assinged to this entity nothing happens.
     /// - If `Comp` is set to `nil` and an instance of `Comp` is assigned to this entity,
     ///   `Comp` will be removed from this entity.
+    /// - Complexity: O(1) for get, O(M) for set where M is the number of families.
     @inlinable
     public subscript<Comp>(_ componentType: Comp.Type) -> Comp? where Comp: Component {
         get { self.get(component: componentType) }
@@ -98,12 +99,14 @@ extension Entity {
     }
 
     /// Get the value of a component using the key Path to the property in the component.
+    /// - Complexity: O(1)
     @inlinable
     public subscript<Comp, Value>(_ componentKeyPath: KeyPath<Comp, Value>) -> Value where Comp: Component {
         self.get(valueAt: componentKeyPath)
     }
 
     /// Get the value of a component using the key Path to the property in the component.
+    /// - Complexity: O(1)
     @inlinable
     public subscript<Comp, Value>(_ componentKeyPath: KeyPath<Comp, Value?>) -> Value? where Comp: Component {
         self.get(valueAt: componentKeyPath)
@@ -119,6 +122,7 @@ extension Entity {
     ///   - newValue: The value to set.
     ///   - componentKeyPath: The `ReferenceWritableKeyPath` to the property of the given component.
     /// - Returns: Returns true if an action was performed, false otherwise.
+    /// - Complexity: O(1) if component exists, O(M) otherwise where M is the number of families.
     @inlinable
     @discardableResult
     public func set<Comp, Value>(value newValue: Value, for componentKeyPath: ReferenceWritableKeyPath<Comp, Value>) -> Bool where Comp: Component & DefaultInitializable {
@@ -142,6 +146,7 @@ extension Entity {
     ///   - newValue: The value to set.
     ///   - componentKeyPath: The `ReferenceWritableKeyPath` to the property of the given component.
     /// - Returns: Returns true if an action was performed, false otherwise.
+    /// - Complexity: O(1) if component exists, O(M) otherwise where M is the number of families.
     @inlinable
     @discardableResult
     public func set<Comp, Value>(value newValue: Value?, for componentKeyPath: ReferenceWritableKeyPath<Comp, Value?>) -> Bool where Comp: Component & DefaultInitializable {
@@ -160,6 +165,7 @@ extension Entity {
     /// **Behavior:**
     /// - If `Comp` is a component type that is currently *not* assigned to this entity,
     ///   a new instance of `Comp` will be default initialized and `newValue` will be set at the given keyPath.
+    /// - Complexity: O(1) for get. O(1) for set if component exists, O(M) otherwise.
     @inlinable
     public subscript<Comp, Value>(_ componentKeyPath: ReferenceWritableKeyPath<Comp, Value>) -> Value where Comp: Component & DefaultInitializable {
         get { self.get(valueAt: componentKeyPath) }
@@ -171,6 +177,7 @@ extension Entity {
     /// **Behavior:**
     /// - If `Comp` is a component type that is currently *not* assigned to this entity,
     ///   a new instance of `Comp` will be default initialized and `newValue` will be set at the given keyPath.
+    /// - Complexity: O(1) for get. O(1) for set if component exists, O(M) otherwise.
     @inlinable
     public subscript<Comp, Value>(_ componentKeyPath: ReferenceWritableKeyPath<Comp, Value?>) -> Value? where Comp: Component & DefaultInitializable {
         get { self.get(valueAt: componentKeyPath) }

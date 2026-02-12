@@ -65,6 +65,7 @@ public struct FamilyTraitSet {
     ///   - requiresAll: The required components.
     ///   - excludesAll: The excluded components.
     /// - Returns: `true` if the trait set is valid (non-empty requirements and disjoint exclusion).
+    /// - Complexity: O(min(R, E)) where R is the number of required components and E is the number of excluded components.
     @inlinable
     public static func isValid(requiresAll: Set<ComponentIdentifier>, excludesAll: Set<ComponentIdentifier>) -> Bool {
         !requiresAll.isEmpty &&

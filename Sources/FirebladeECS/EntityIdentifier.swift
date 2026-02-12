@@ -58,6 +58,7 @@ extension EntityIdentifier {
     /// Invalid entity identifier
     ///
     /// Used to represent an invalid entity identifier.
+    /// - Complexity: O(1)
     public static let invalid = EntityIdentifier(.max)
 }
 
@@ -67,6 +68,7 @@ extension EntityIdentifier {
     /// This is a convenience property for collection indexing and does not represent the raw identifier.
     ///
     /// Use `id` or `rawValue` instead.
+    /// - Complexity: O(1)
     @inline(__always)
     public var index: Int {
         Int(id)

@@ -34,6 +34,7 @@ extension FamilyDecoding {
     ///   - strategy: The coding strategy to use for determining coding keys.
     /// - Returns: An array of decoded component collections.
     /// - Throws: An error if decoding fails.
+    /// - Complexity: O(N) where N is the number of elements in the container.
     public static func decode(componentsIn unkeyedContainer: inout UnkeyedDecodingContainer, using strategy: CodingStrategy) throws -> [Components] {
         var components = [Components]()
         if let count = unkeyedContainer.count {

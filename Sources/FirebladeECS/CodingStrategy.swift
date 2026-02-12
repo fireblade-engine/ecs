@@ -24,12 +24,14 @@ public struct DynamicCodingKey: CodingKey, Sendable {
 
     /// Creates a new coding key from an integer value.
     /// - Parameter intValue: The integer value.
+    /// - Complexity: O(1)
     public init?(intValue: Int) {
         self.intValue = intValue; stringValue = "\(intValue)"
     }
 
     /// Creates a new coding key from a string value.
     /// - Parameter stringValue: The string value.
+    /// - Complexity: O(1)
     public init?(stringValue: String) {
         self.stringValue = stringValue
     }

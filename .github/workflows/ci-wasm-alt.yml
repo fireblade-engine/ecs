@@ -24,7 +24,7 @@ jobs:
       - name: Install Swift SDK
         run: swift sdk install https://download.swift.org/swift-6.2.1-release/wasm-sdk/swift-6.2.1-RELEASE/swift-6.2.1-RELEASE_wasm.artifactbundle.tar.gz --checksum 482b9f95462b87bedfafca94a092cf9ec4496671ca13b43745097122d20f18af
       - name: Test
-        working-directory: tests/swift/Wasm.tests
+        # working-directory: tests/swift/Wasm.tests
         run: |
           swift sdk list
           swift build --build-tests --swift-sdk swift-6.2.1-RELEASE_wasm

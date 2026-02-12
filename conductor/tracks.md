@@ -15,3 +15,4 @@
 
 - [~] **Track: Document the entire project until all three metrics (Globals, Members, Types) reach at least 95%**
 *Link: [./tracks/docs_coverage_95_20260212/](./tracks/docs_coverage_95_20260212/)*
+\n---\n\n- [x] **Track: Modernize GitHub Workflows**\n*Link: [./tracks/modernize-workflows_20260212/](./tracks/modernize-workflows_20260212/)*

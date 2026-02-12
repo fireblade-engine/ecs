@@ -33,6 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: swift-actions/setup-swift@v2
+        id: setup-swiftwasm
         with:
           swift-version: ${{ matrix.config.version }}
       - uses: bytecodealliance/actions/wasmtime/setup@v1
@@ -42,5 +43,7 @@ jobs:
         # working-directory: tests/swift/Wasm.tests
         run: |
           swift sdk list
-          swift build --build-tests -c ${{ matrix.build }} --swift-sdk swift-${{ matrix.config.version }}-RELEASE_wasm
+          echo ${{ steps.setup-swiftwasm.outputs.swift-sdk-id }}
+          echo "---"
+          swift build --build-tests -c ${{ matrix.build }} --swift-sdk ${{ steps.setup-swiftwasm.outputs.swift-sdk-id }}
           wasmtime --dir . .build/wasm32-unknown-wasip1/${{ matrix.build }}/FirebladeECSPackageTests.xctest --testing-library swift-testing

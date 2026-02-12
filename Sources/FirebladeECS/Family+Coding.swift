@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 22.07.20.
 //
 
-#if canImport(Darwin)
+#if canImport(Darwin) || swift(>=6.2)
 public typealias UserInfoValue = any Sendable
 #else
 public typealias UserInfoValue = Any

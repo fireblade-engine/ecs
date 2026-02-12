@@ -28,21 +28,28 @@
 
 // MARK: - Family {{ idx }}
 
+/// A family of entities with {{ idx }} components.
 public typealias Family{{ idx }}<{{ CompParams }}> = Family<Requires{{ idx }}<{{ CompParams }}>> where {{ CompsWhere }}
 
+/// A protocol defining requirements for a family with {{ idx }} components.
 public protocol RequiringComponents{{ idx }}: FamilyRequirementsManaging where Components == ({{ CompParams }}) {
     {% for comp in components %}
+    /// Component type {{ forloop.counter }}.
     associatedtype {{ comp }}: Component
     {% endfor %} 
 }
 
+/// A requirements manager for a family with {{ idx }} components.
 public struct Requires{{ idx }}<{{ CompParams }}>: FamilyRequirementsManaging where {{ CompsWhere }} {
+    /// The component types.
     public let componentTypes: [Component.Type]
 
+    /// Initializes with component types.
     public init(_ components: ({{ CompsTypes }})) {
         componentTypes = [{{ CompsSelf}}]
     }
 
+    /// Retrieves components for an entity.
     public static func components(nexus: Nexus, entityId: EntityIdentifier) -> ({{ CompParams }}) {
         {% for comp in components %}
         let {{ comp|lowercase }}: {{ comp }} = nexus.get(unsafe: entityId)
@@ -50,6 +57,7 @@ public struct Requires{{ idx }}<{{ CompParams }}>: FamilyRequirementsManaging wh
         return ({{ CompsLowercased }})
     }
 
+    /// Retrieves entity and components.
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, {{ CompParams }}) {
         let entity = Entity(nexus: nexus, id: entityId)
         {% for comp in components %}
@@ -58,6 +66,7 @@ public struct Requires{{ idx }}<{{ CompParams }}>: FamilyRequirementsManaging wh
         return (entity, {{ CompsLowercased }})
     }
 
+    /// Creates a member entity.
     public static func createMember(nexus: Nexus, components: ({{ CompParams }})) -> Entity {
         {% if compEncodable.count == 1 %}nexus.createEntity(with: components){% else %}nexus.createEntity(with: {{ CompsTuple }}){% endif %}
     }
@@ -66,6 +75,7 @@ public struct Requires{{ idx }}<{{ CompParams }}>: FamilyRequirementsManaging wh
 extension Requires{{ idx }}: RequiringComponents{{ idx }} { }
 
 extension FamilyMemberBuilder where R: RequiringComponents{{ idx }}  {
+    /// Builds a block of components for a family member.
     public static func buildBlock({{ CompsNamedRParams }}) -> (R.Components) {
         return ({{ CompsLowercased }})
     }

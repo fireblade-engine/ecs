@@ -42,6 +42,7 @@ public typealias DefaultEntityIdGenerator = LinearIncrementingEntityIdGenerator
 /// Furthermore it respects order of entity ids on initialization, meaning the provided ids on initialization will be provided in order
 /// until all are in use. After that the free entities start at the lowest available id increasing linearly skipping already in-use entity ids.
 public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
+    /// Internal storage for entity identifiers.
     @usableFromInline
     final class Storage: @unchecked Sendable {
         @usableFromInline var stack: [EntityIdentifier.Identifier]
@@ -49,6 +50,8 @@ public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
             stack.count
         }
 
+        /// Initializes the storage with initial identifiers.
+        /// - Parameter initialEntityIds: Identifiers to start with.
         @usableFromInline
         init<EntityIds>(startProviding initialEntityIds: EntityIds) where EntityIds: BidirectionalCollection, EntityIds.Element == EntityIdentifier {
             let initialInUse: [EntityIdentifier.Identifier] = initialEntityIds.map(\.id)
@@ -60,11 +63,14 @@ public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
             stack = initialFree + initialInUse
         }
 
+        /// Initializes the storage with a default identifier.
         @usableFromInline
         init() {
             stack = [0]
         }
 
+        /// Returns the next available identifier.
+        /// - Returns: A unique entity identifier.
         @usableFromInline
         func nextId() -> EntityIdentifier {
             guard stack.count == 1 else {
@@ -74,6 +80,8 @@ public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
             return EntityIdentifier(stack[0])
         }
 
+        /// Marks an identifier as unused.
+        /// - Parameter entityId: The identifier to recycle.
         @usableFromInline
         func markUnused(entityId: EntityIdentifier) {
             stack.append(entityId.id)

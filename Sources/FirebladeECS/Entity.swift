@@ -12,6 +12,7 @@
 ///  Components can be assigned to an entity to give it behavior or functionality.
 ///  An entity creates the relationship between all it's assigned components.
 public struct Entity {
+    /// The Nexus managing this entity.
     @usableFromInline unowned let nexus: Nexus
 
     /// The unique entity identifier.
@@ -27,16 +28,24 @@ public struct Entity {
         nexus.count(components: identifier)
     }
 
+    /// Creates a new entity.
+    /// - Returns: The created entity.
     @discardableResult
     public func createEntity() -> Entity {
         nexus.createEntity()
     }
 
+    /// Creates a new entity with the provided components.
+    /// - Parameter components: The components to assign to the new entity.
+    /// - Returns: The created entity.
     @discardableResult
     public func createEntity(with components: Component...) -> Entity {
         createEntity(with: components)
     }
 
+    /// Creates a new entity with the provided components.
+    /// - Parameter components: The components to assign to the new entity.
+    /// - Returns: The created entity.
     @discardableResult
     public func createEntity(with components: some Collection<Component>) -> Entity {
         nexus.createEntity(with: components)
@@ -75,6 +84,9 @@ public struct Entity {
         return self
     }
 
+    /// Assigns a collection of components to this entity.
+    /// - Parameter components: The components to assign.
+    /// - Returns: This entity (for chaining).
     @discardableResult
     public func assign(_ components: some Collection<Component>) -> Entity {
         nexus.assign(components: components, to: self)
@@ -121,6 +133,7 @@ public struct Entity {
 }
 
 extension Entity {
+    /// An iterator over the components of an entity.
     public struct ComponentsIterator: IteratorProtocol {
         private var iterator: IndexingIterator<[Component]>?
 

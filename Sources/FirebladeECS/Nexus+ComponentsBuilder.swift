@@ -6,11 +6,11 @@
 //
 
 #if swift(<5.4)
-    @_functionBuilder
-    public enum ComponentsBuilder {}
+@_functionBuilder
+public enum ComponentsBuilder {}
 #else
-    @resultBuilder
-    public enum ComponentsBuilder {}
+@resultBuilder
+public enum ComponentsBuilder {}
 #endif
 
 extension ComponentsBuilder {

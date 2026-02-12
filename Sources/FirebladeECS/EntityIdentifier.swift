@@ -17,6 +17,8 @@ public struct EntityIdentifier {
     /// The entity identifier.
     public let id: Identifier
 
+    /// Initializes a new entity identifier.
+    /// - Parameter id: The unique raw identifier.
     @inlinable
     public init(_ id: Identifier) {
         self.init(rawValue: id)

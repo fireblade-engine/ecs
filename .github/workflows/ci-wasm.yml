@@ -50,6 +50,11 @@ jobs:
         run: |
           SWIFTPM_ENABLE_PLUGINS=0 SWIFTPM_ENABLE_MACROS=0 swift build -c release --build-tests -Xswiftc -enable-testing --swift-sdk ${{ steps.setup-swiftwasm.outputs.swift-sdk-id }} --static-swift-stdlib
 
+      - name: Build dir structure
+        run: |
+          ls -la .build/
+          ls -la .build/${{ steps.setup-swiftwasm.outputs.swift-sdk-id }}/
+          ls -la .build/${{ steps.setup-swiftwasm.outputs.swift-sdk-id }}/release/
       - name: Run Tests
         run: |
-          wasmtime --dir . .build/wasm32-unknown-wasi/release/FirebladeECSPackageTests.wasm
+          wasmtime --dir . .build/${{ steps.setup-swiftwasm.outputs.swift-sdk-id }}/release/FirebladeECSPackageTests.wasm

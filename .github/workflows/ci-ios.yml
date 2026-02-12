@@ -52,6 +52,7 @@ jobs:
       - name: Run Tests (iOS)
         run: |
           xcodebuild test \
+            -project FirebladeECS.xcodeproj \
             -scheme FirebladeECS \
             -destination "${{ steps.select_sim.outputs.destination }}" \
             -configuration Release \

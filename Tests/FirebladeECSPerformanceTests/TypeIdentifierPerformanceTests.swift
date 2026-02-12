@@ -93,5 +93,5 @@ final class TypeIdentifierPerformanceTests: XCTestCase {
     }
 }
 #else
-#warning("Skipping TypeIdentifierPerformanceTests tests")
+// #warning("Skipping TypeIdentifierPerformanceTests tests")
 #endif

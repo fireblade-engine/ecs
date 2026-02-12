@@ -99,5 +99,5 @@ class HashingPerformanceTests: XCTestCase {
     }
 }
 #else
-    #warning("Skipping HashingPerformanceTests")
+    // #warning("Skipping HashingPerformanceTests")
 #endif

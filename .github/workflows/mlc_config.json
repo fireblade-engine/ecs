@@ -5,6 +5,9 @@
         },
         {
             "pattern": "^https://swiftpackageindex.com"
+        },
+        {
+            "pattern": "^\\./tracks/"
         }
     ],
     "replacementPatterns": [

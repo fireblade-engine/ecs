@@ -13,20 +13,23 @@ concurrency:
 
 jobs:
   wasm:
-    name: WASM (Swift ${{ matrix.swift }})
+    name: WASM
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        swift: ["6.0"]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
       
-      - name: Setup SwiftWASM
-        uses: swiftwasm/setup-swiftwasm@v2
-        with:
-          swift-version: ${{ matrix.swift }}
-        
-      - name: Build WASM
-        run: swift build --swift-sdk wasm32-unknown-wasi
+      - name: Install SwiftWASM
+        run: |
+          # Install dependencies
+          sudo apt-get update && sudo apt-get install -y curl libncurses5
+          
+          # Download SwiftWASM 6.0
+          curl -L https://github.com/swiftwasm/swift/releases/download/swift-wasm-6.0.0-RELEASE/swift-wasm-6.0.0-RELEASE-ubuntu22.04_x86_64.tar.gz -o swift-wasm.tar.gz
+          tar -xzf swift-wasm.tar.gz
+          
+          # Add to PATH
+          export PATH=$PWD/swift-wasm-6.0.0-RELEASE-ubuntu22.04_x86_64/usr/bin:$PATH
+          
+          # Build
+          swift build --swift-sdk wasm32-unknown-wasi

@@ -49,6 +49,7 @@ This document serves as a comprehensive reference for all `make` commands availa
 | `make docs-preview` | Builds and previews the DocC documentation locally. |
 | `make docs-generate` | Generates a static DocC archive in the `.build` directory. |
 | `make docs-coverage` | Checks documentation coverage. |
+| `make docs-coverage-detailed` | Checks documentation coverage with detailed summary level. |
 | `make docs-check-links` | Checks documentation for broken links. |
 | `make preview-analysis-docs` | Previews DocC documentation with analysis, warnings, and coverage overview. |
 | `make generate-docs-githubpages` | Generates static HTML documentation suitable for GitHub Pages in the `./docs` directory. |

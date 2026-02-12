@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        swift: ["6.1"]
+        swift: ["6.2"]
 
     steps:
       - name: Checkout

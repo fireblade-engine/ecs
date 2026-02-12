@@ -5,7 +5,7 @@ This document outlines the standard development workflow for the Fireblade ECS p
 ## Core Principles
 
 1.  **Branching Strategy:**
-    -   **Protect Main/Master:** NEVER commit or push directly to `main` or `master`. All changes must go through a Pull Request (PR) or merge from a feature/track branch.
+    -   **Protect Main/Master:** NEVER commit, push, or merge directly to `main` or `master`. All changes must go through a Pull Request (PR). Direct action on `main` or `master` by the agent is strictly prohibited.
     -   **Stay on Branch:** Always work on a dedicated branch for the current task or track. If you are on `main` or `master`, immediately create a new branch named `track/<track-id>`.
     -   **Track-Based Branching:** Create a new branch for each new track using the format `track/<track-id>`.
 

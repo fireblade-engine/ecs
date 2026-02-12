@@ -2,9 +2,9 @@ name: WASM
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [master, main]
   pull_request:
-    branches: [ master, main ]
+    branches: [master, main]
   workflow_dispatch:
 
 concurrency:
@@ -29,7 +29,7 @@ jobs:
         id: setup-wasm
         uses: swiftwasm/setup-swiftwasm@v2
         with:
-          tag: "swift-wasm-${{ matrix.swift }}-RELEASE"
+          tag: swift-${{ matrix.swift }}-RELEASE
 
       - name: Build
         run: swift build --swift-sdk ${{ steps.setup-wasm.outputs.swift-sdk-id }}

@@ -19,8 +19,6 @@ jobs:
     name: WASM (Swift ${{ matrix.swift }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # container:
-    #  image: swift:${{ matrix.swift }}
     strategy:
       fail-fast: false
       matrix:
@@ -38,16 +36,21 @@ jobs:
           tag: swift-${{ matrix.swift }}-RELEASE
           target: wasm32-unknown-wasi
 
-     # - name: Install dependencies
-     #   run: |
-     #     apt-get update && apt-get install --yes xz-utils --no-install-recommends
       - name: Setup wasmtime
         uses: bytecodealliance/actions/wasmtime/setup@v1
         with:
           version: 41.0.3
+      - name: Setup Wasm Runtime
+        uses: wasmerio/setup-wasmer@v3
+        with:
+          version: "v7.0.1"
+
+      - name: Build
+        run: |
+          swift build -c ${{ matrix.config }} --swift-sdk "${{ steps.setup-swiftwasm.outputs.swift-sdk-id }}" --static-swift-stdlib
 
       - name: Build & Run Tests
         run: |
           # <https://github.com/swiftlang/swift-testing/blob/main/Documentation/WASI.md>
-          swift build -c ${{ matrix.config }} --swift-sdk wasm32-unknown-wasi --build-tests -Xswiftc -enable-testing
-          wasmtime .build/${{ matrix.config }}/FirebladeECSPackageTests.wasm --testing-library swift-testing
+          swift build -c ${{ matrix.config }} --build-tests -Xswiftc -enable-testing --experimental-swift-sdk ${{ steps.setup-swiftwasm.outputs.swift-sdk-id }} --static-swift-stdlib
+          wasmtime --dir . .build/${{ matrix.config }}/FirebladeECSPackageTests.wasm --testing-library swift-testing

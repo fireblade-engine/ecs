@@ -13,60 +13,32 @@ concurrency:
 
 jobs:
   wasm:
-    name: WASM (Swift ${{ matrix.swift }})
+    name: WASM (Swift ${{ matrix.config.version }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    container:
-      image: swift:${{ matrix.swift }}
 
     strategy:
       fail-fast: false
       matrix:
-        swift: ["6.1"]
-        config: ["debug"]
+        config:
+          - version: 6.1.3
+            checksum: 7a741da46ce64cdbd6dd504a2617b211b88e7f66a9ada7ea4e55bcc9c06ff2b2
+          - version: 6.2.3
+            checksum: 394040ecd5260e68bb02f6c20aeede733b9b90702c2204e178f3e42413edad2a
+        build:
+          - release
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: Install dependencies
-        run: |
-          apt-get update 
-          apt-get install -y xz-utils npm
-
-      - name: Setup Swift ${{ matrix.swift }} WASM SDK
-        id: setup-swiftwasm
-        uses: swiftwasm/setup-swiftwasm@v2
+      - uses: actions/checkout@v6
+      - uses: swift-actions/setup-swift@v2
         with:
-          tag: swift-${{ matrix.swift }}-RELEASE
-          target: wasm32-unknown-wasi
-
-      - name: Swift Version
+          swift-version: ${{ matrix.config.version }} # 6.2.1
+      - uses: bytecodealliance/actions/wasmtime/setup@v1
+      - name: Install Swift SDK
+        run: swift sdk install https://download.swift.org/swift-${{ matrix.config.version }}-release/wasm-sdk/swift-${{ matrix.config.version }}-RELEASE/swift-${{ matrix.config.version }}-RELEASE_wasm.artifactbundle.tar.gz --checksum ${{ matrix.config.checksum }}
+      - name: Test
+        # working-directory: tests/swift/Wasm.tests
         run: |
-          which -a swift 
-          swift --version
-
-      - name: Swift SDK List
-        run: swift sdk list
-      - name: Setup wasmtime
-        uses: bytecodealliance/actions/wasmtime/setup@v1
-        with:
-          version: 41.0.3
-      - name: Setup Wasm Runtime
-        uses: wasmerio/setup-wasmer@v3
-        with:
-          version: "v7.0.1"
-
-      - name: Build
-        run: |
-          swift build -c ${{ matrix.config }} --swift-sdk ${{ steps.setup-swiftwasm.outputs.swift-sdk-id }} --static-swift-stdlib
-
-      - name: Install wasmKit
-        run: |
-          npm i -g @arufa/wasmkit
-          wasmkit help
-      - name: Build & Run Tests
-        run: |
-          # <https://github.com/swiftlang/swift-testing/blob/main/Documentation/WASI.md>
-          swift build -c ${{ matrix.config }} --swift-sdk ${{ steps.setup-swiftwasm.outputs.swift-sdk-id }} --build-tests --static-swift-stdlib -Xswiftc -enable-testing 
-          # wasmtime .build/${{ matrix.config }}/FirebladeECSPackageTests.xctest --testing-library swift-testing
-          wasmkit run .build/${{ matrix.config }}/FirebladeECSPackageTests.xctest -- --testing-library swift-testing
+          swift sdk list
+          swift build --build-tests -c ${{ matrix.build }} --swift-sdk swift-${{ matrix.config.version }}-RELEASE_wasm
+          wasmtime --dir . .build/wasm32-unknown-wasip1/${{ matrix.build }}/FirebladeECSPackageTests.xctest --testing-library swift-testing

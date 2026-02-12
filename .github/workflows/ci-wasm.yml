@@ -44,6 +44,9 @@ jobs:
       - name: Swift SDK List
         run: swift sdk list
 
+      - name: Install build deps
+        run: sudo apt-get update && sudo apt-get install -y curl xz-utils git pkg-config
+
       - name: Setup wasmtime
         uses: bytecodealliance/actions/wasmtime/setup@v1
         with:

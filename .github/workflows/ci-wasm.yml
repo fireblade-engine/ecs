@@ -23,8 +23,8 @@ jobs:
         config:
           - version: 6.1.3
             checksum: 7a741da46ce64cdbd6dd504a2617b211b88e7f66a9ada7ea4e55bcc9c06ff2b2
-          - version: 6.2.3
-            checksum: 394040ecd5260e68bb02f6c20aeede733b9b90702c2204e178f3e42413edad2a
+          - version: 6.2.1
+            checksum: 482b9f95462b87bedfafca94a092cf9ec4496671ca13b43745097122d20f18af
         build:
           - release
 

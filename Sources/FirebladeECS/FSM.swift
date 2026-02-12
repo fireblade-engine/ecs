@@ -363,6 +363,7 @@ public class EntityStateMachine<StateIdentifier: Hashable>: @unchecked Sendable 
     public var entity: Entity
 
     /// Initializer. Creates an EntityStateMachine.
+    /// - Parameter entity: The entity to manage state for.
     public init(entity: Entity) {
         self.entity = entity
         states = [:]

@@ -99,7 +99,7 @@ extension Family where R: FamilyDecoding {
     ///
     /// The decoded members will be added to the nexus and will be present in this family.
     /// - Parameters:
-    ///   - data: The data decoded by decoder. An unkeyed container of family members (keyed component containers) is expected.
+    ///   - from: The data decoded by decoder. An unkeyed container of family members (keyed component containers) is expected.
     ///   - decoder: The decoder to use for decoding family member data. Decoder respects the coding strategy set at `nexus.codingStrategy`.
     /// - Returns: returns the newly added entities.
     @discardableResult

@@ -11,25 +11,40 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  RUN_TESTS: true
+
 jobs:
   wasm:
     name: WASM (Swift ${{ matrix.swift }})
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         swift: ["6.1"]
-    container:
-      image: swift:${{ matrix.swift }}
+        build_config: ["release"]
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
-      - name: Setup SwiftWasm
-        id: setup-wasm
+      - name: Setup Swift ${{ matrix.swift }} WASM SDK
+        id: setup-swiftwasm
         uses: swiftwasm/setup-swiftwasm@v2
         with:
           tag: swift-${{ matrix.swift }}-RELEASE
+          target: wasm32-unknown-wasi
 
-      - name: Run Tests (Release)
-        run: swift test -c release --swift-sdk ${{ steps.setup-wasm.outputs.swift-sdk-id }}
+      - name: Setup wasmtime
+        uses: bytecodealliance/actions/wasmtime/setup@v1
+        with:
+          version: "41.0.3"
+
+      - name: Build Tests
+        run: |
+          swift build -c ${{ matrix.build_config }} --build-tests -Xswiftc -enable-testing --swift-sdk ${{ steps.setup-swiftwasm.outputs.swift-sdk-id }} --static-swift-stdlib
+
+      - name: Run Tests
+        run: |
+          wasmtime --dir . .build/wasm32-unknown-wasi/${{ matrix.build_config }}/FirebladeECSPackageTests.wasm

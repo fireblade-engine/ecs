@@ -1,0 +1,17 @@
+{
+    "ignorePatterns": [
+        {
+            "pattern": "^http://localhost"
+        }
+    ],
+    "httpHeaders": [
+        {
+            "urls": [
+                "https://github.com"
+            ],
+            "headers": {
+                "Authorization": "Bearer GITHUB_TOKEN"
+            }
+        }
+    ]
+}

@@ -2,60 +2,28 @@ name: macOS
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, main ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, main ]
   workflow_dispatch:
-
-env:
-  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-  CODECOV_XCODE_VERSION: "16.2"  # Xcode version used to generate code coverage
 
 jobs:
   macos:
-    runs-on: ${{ matrix.config.os }}
+    name: macOS (Swift ${{ matrix.swift }})
+    runs-on: macos-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
-        config:
-        - { os: "macos-15", xcode: "16.2" }
+        swift: ["6.1", "6.2"]
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: Select Xcode ${{ matrix.config.xcode }}
-        run: sudo xcode-select -s /Applications/Xcode_${{ matrix.config.xcode }}.app
-
-      - name: Test
-        run: swift test -c release --parallel --xunit-output .build/xUnit-output.xml --enable-code-coverage
-        env:
-          DEVELOPER_DIR: /Applications/Xcode_${{ matrix.config.xcode }}.app/Contents/Developer
-
-      - name: Upload test artifacts
-        if: failure()
-        uses: actions/upload-artifact@v4
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v2
         with:
-          name: test-artifacts-${{ matrix.config.xcode }}-${{ github.run_id }}
-          path: |
-            .build/*.yaml
-            .build/*.xml
-            .build/*.json
-            .build/*.txt
-            .build/**/*.xctest
-            .build/**/*.json
-            .build/**/*.txt
-          if-no-files-found: warn
-          include-hidden-files: true
+          swift-version: ${{ matrix.swift }}
 
-      # Only run coverage steps if the CODECOV_TOKEN is available and the matrix.xcode matches CODECOV_XCODE_VERSION
-      - name: Generate coverage report
-        if: env.CODECOV_TOKEN != '' && matrix.config.xcode == env.CODECOV_XCODE_VERSION
-        run: xcrun llvm-cov export -format="lcov" .build/**/*PackageTests.xctest/Contents/MacOS/*PackageTests -instr-profile .build/**/codecov/default.profdata > coverage.lcov
-
-      - name: Upload code coverage report
-        if: env.CODECOV_TOKEN != '' && matrix.config.xcode == env.CODECOV_XCODE_VERSION
-        uses: codecov/codecov-action@v5.4.0
-        with:
-          token: ${{ env.CODECOV_TOKEN }}
-          files: coverage.lcov
-          fail_ci_if_error: true
+      - name: Run Tests (Release)
+        run: swift test -c release --parallel -Xswiftc -warnings-as-errors

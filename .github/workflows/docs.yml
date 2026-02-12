@@ -1,0 +1,128 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-docs:
+    name: Build Documentation
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: "6.1"
+
+      - name: Build Documentation
+        run: make docs-generate REPO_NAME=ecs DOCS_VERSION_PATH=main
+
+      - name: Setup Redirects
+        run: |
+          # Function to create a redirect file
+          create_redirect() {
+            local FILE_PATH=$1
+            local TARGET_URL=$2
+            local TITLE=$3
+            
+            mkdir -p "$(dirname "$FILE_PATH")"
+            
+            cat <<EOF > "$FILE_PATH"
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <meta charset="utf-8">
+              <title>$TITLE</title>
+              <link rel="canonical" href="$TARGET_URL">
+              <script>
+                  window.location.href = "$TARGET_URL" + window.location.hash;
+              </script>
+              <meta http-equiv="refresh" content="0;url=$TARGET_URL">
+          </head>
+          <body>
+              <p>Redirecting to <a href="$TARGET_URL">$TITLE</a>...</p>
+          </body>
+          </html>
+          EOF
+          }
+
+          # 1. Root -> latest/documentation/firebladeecs/
+          create_redirect ".build/documentation/index.html" 
+                          "latest/documentation/firebladeecs/" 
+                          "Redirecting to Latest Docs"
+
+          # 2. latest/ -> main/documentation/firebladeecs/
+          create_redirect ".build/documentation/latest/index.html" 
+                          "../main/documentation/firebladeecs/" 
+                          "Redirecting to Main Docs"
+
+          # 3. latest/documentation/firebladeecs/ -> main/documentation/firebladeecs/
+          create_redirect ".build/documentation/latest/documentation/firebladeecs/index.html" 
+                          "../../../main/documentation/firebladeecs/" 
+                          "Redirecting to Main Docs"
+
+          # 4. documentation/firebladeecs/ -> main/documentation/firebladeecs/
+          create_redirect ".build/documentation/documentation/firebladeecs/index.html" 
+                          "../../main/documentation/firebladeecs/" 
+                          "Redirecting to Main Docs"
+
+      - name: Check Documentation Quality
+        run: |
+          make docs-check-coverage
+          make docs-check-links
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: .build/documentation
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build-docs
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  smoke-test:
+    name: Post-Deployment Smoke Test
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Documentation URL
+        run: |
+          # Wait a few seconds for CDN propagation
+          sleep 10
+          # Verify the versioned documentation path exists
+          curl --fail -sL https://fireblade-engine.github.io/ecs/main/documentation/firebladeecs/ | grep -q "Documentation"
+          echo "Documentation is live at /ecs/main/"
+      
+      - name: Check Root Redirect
+        run: |
+          # Verify that the root URL redirects correctly
+          RESPONSE=$(curl -sI https://fireblade-engine.github.io/ecs/ | head -n 1)
+          # Note: GitHub Pages might return 200 with the redirect meta tag, or a 301/302 if configured at the DNS level.
+          # Since we use a meta/JS redirect, we check for a 200 OK and then the content.
+          curl -s https://fireblade-engine.github.io/ecs/ | grep -q "Redirecting to Latest Docs"
+          echo "Root redirect is live at /ecs/ and points to latest docs"

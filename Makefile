@@ -80,11 +80,14 @@ docs-preview:
 	swift package --disable-sandbox preview-documentation --target FirebladeECS
 
 docs-generate:
-	DOCC_JSON_PRETTYPRINT=YES \
-	swift package \
-	generate-documentation \
-	--fallback-bundle-identifier com.github.fireblade-engine.FirebladeECS \
-	--target FirebladeECS
+	mkdir -p .build/documentation/$(DOCS_VERSION_PATH)
+	swift package --disable-sandbox \
+		--allow-writing-to-directory .build/documentation \
+		generate-documentation --target FirebladeECS \
+		--disable-indexing \
+		--transform-for-static-hosting \
+		--hosting-base-path $(HOSTING_BASE_PATH) \
+		--output-path .build/documentation/$(DOCS_VERSION_PATH)
 
 DOCS_COVERAGE_THRESHOLD ?= 95
 

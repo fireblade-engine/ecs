@@ -2,15 +2,30 @@ name: WASM
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, main ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   wasm:
+    name: WASM (Swift ${{ matrix.swift }})
     runs-on: ubuntu-latest
-    container: swift:6.1
+    strategy:
+      fail-fast: false
+      matrix:
+        swift: ["6.1"]
+    container: swift:${{ matrix.swift }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: swiftwasm/setup-swiftwasm@v2
-      - run: swift build --swift-sdk wasm32-unknown-wasi
+      - name: Checkout
+        uses: actions/checkout@v6
+      
+      - name: Setup SwiftWASM
+        uses: swiftwasm/setup-swiftwasm@v2
+        
+      - name: Build WASM
+        run: swift build --swift-sdk wasm32-unknown-wasi

@@ -1,0 +1,56 @@
+name: iOS
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+jobs:
+  ios:
+    name: iOS (Swift ${{ matrix.swift }})
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        swift: ["6.1", "6.2"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: ${{ matrix.swift }}
+
+      - name: Select Latest Simulator
+        id: select_sim
+        run: |
+          AVAILABLE_DEVICES=$(xcrun simctl list devices available)
+          # Try to find an iPhone
+          DEVICE_ID=$(echo "$AVAILABLE_DEVICES" | grep "iPhone" | tail -n 1 | grep -oE '[0-9A-F-]{36}')
+          
+          if [ -z "$DEVICE_ID" ]; then
+            # Fallback to any available device (e.g. iPad)
+            DEVICE_ID=$(echo "$AVAILABLE_DEVICES" | grep -v "Devices" | grep -v "\-\-" | tail -n 1 | grep -oE '[0-9A-F-]{36}')
+          fi
+          
+          if [ -n "$DEVICE_ID" ]; then
+            echo "Selected device ID: $DEVICE_ID"
+            echo "destination=platform=iOS Simulator,id=$DEVICE_ID" >> "$GITHUB_OUTPUT"
+          else
+            echo "No device found. Defaulting to generic latest iOS Simulator."
+            echo "destination=platform=iOS Simulator,OS=latest" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run Tests (iOS)
+        run: |
+          xcodebuild test 
+            -scheme FirebladeECS 
+            -destination "${{ steps.select_sim.outputs.destination }}" 
+            -configuration Release 
+            -skipPackagePluginValidation 
+            ENABLE_TESTABILITY=YES 
+            OTHER_SWIFT_FLAGS='-warnings-as-errors'

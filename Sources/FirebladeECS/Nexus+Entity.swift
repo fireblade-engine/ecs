@@ -39,7 +39,7 @@ extension Nexus {
         return entity
     }
 
-    /// Number of entities in nexus.
+    /// The total number of entities managed by the Nexus.
     public var numEntities: Int {
         componentIdsByEntity.keys.count
     }
@@ -47,6 +47,7 @@ extension Nexus {
     /// Creates an iterator over all entities in the nexus.
     ///
     /// Entity order is not guaranteed to stay the same over iterations.
+    /// - Returns: An `EntitiesIterator`.
     public func makeEntitiesIterator() -> EntitiesIterator {
         EntitiesIterator(nexus: self)
     }

@@ -185,6 +185,7 @@ extension Entity: CustomStringConvertible {
 }
 
 extension Entity: CustomDebugStringConvertible {
+    /// A textual representation of the entity, suitable for debugging.
     public var debugDescription: String {
         "<Entity id:\(identifier.id) numComponents:\(numComponents)>"
     }

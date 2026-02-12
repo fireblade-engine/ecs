@@ -83,6 +83,7 @@ extension Nexus: @unchecked Sendable {}
 // MARK: - CustomDebugStringConvertible
 
 extension Nexus: CustomDebugStringConvertible {
+    /// A textual representation of the Nexus, suitable for debugging.
     public var debugDescription: String {
         "<Nexus entities:\(numEntities) components:\(numComponents) families:\(numFamilies)>"
     }

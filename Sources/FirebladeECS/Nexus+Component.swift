@@ -6,7 +6,7 @@
 //
 
 extension Nexus {
-    /// The total number of components managed by the Nexus.
+    /// The total number of component instances managed by the Nexus.
     public final var numComponents: Int {
         componentsByType.reduce(0) { $0 + $1.value.count }
     }

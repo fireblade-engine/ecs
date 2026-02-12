@@ -90,9 +90,16 @@ extension Nexus: CustomDebugStringConvertible {
 
 // MARK: - default coding strategy
 
+/// The default coding strategy used by `Nexus`.
+///
+/// This strategy uses the component type name as the string key.
 public struct DefaultCodingStrategy: CodingStrategy {
+    /// Creates a new default coding strategy.
     public init() {}
 
+    /// Returns a coding key based on the component type name.
+    /// - Parameter componentType: The component type.
+    /// - Returns: A `DynamicCodingKey` initialized with the component type name.
     public func codingKey<C: Component>(for componentType: C.Type) -> DynamicCodingKey {
         DynamicCodingKey(stringValue: "\(C.self)").unsafelyUnwrapped
     }

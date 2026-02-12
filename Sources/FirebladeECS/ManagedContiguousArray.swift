@@ -130,6 +130,10 @@ public struct ManagedContiguousArray<Element> {
 // MARK: - Equatable
 
 extension ManagedContiguousArray: Equatable where Element: Equatable {
+    /// Returns a Boolean value indicating whether two managed arrays are equal.
+    /// - Parameters:
+    ///   - lhs: A managed array to compare.
+    ///   - rhs: Another managed array to compare.
     public static func == (lhs: ManagedContiguousArray<Element>, rhs: ManagedContiguousArray<Element>) -> Bool {
         lhs.store == rhs.store
     }

@@ -274,6 +274,8 @@ extension UnorderedSparseSet where Key == Int {
 // MARK: - Sequence
 
 extension UnorderedSparseSet: Sequence {
+    /// Returns an iterator over the elements of this sequence.
+    /// - Returns: An `ElementIterator` for the sparse set.
     public func makeIterator() -> ElementIterator {
         ElementIterator(self)
     }
@@ -315,6 +317,10 @@ extension UnorderedSparseSet.Storage: Equatable where Element: Equatable {
 }
 
 extension UnorderedSparseSet: Equatable where Element: Equatable {
+    /// Returns a Boolean value indicating whether two sparse sets are equal.
+    /// - Parameters:
+    ///   - lhs: A sparse set to compare.
+    ///   - rhs: Another sparse set to compare.
     public static func == (lhs: UnorderedSparseSet<Element, Key>, rhs: UnorderedSparseSet<Element, Key>) -> Bool {
         lhs.storage == rhs.storage
     }

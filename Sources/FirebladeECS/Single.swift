@@ -26,6 +26,10 @@ public struct Single<A: SingleComponent> {
 }
 
 extension Single: Equatable {
+    /// Returns a Boolean value indicating whether two single component accessors are equal.
+    /// - Parameters:
+    ///   - lhs: A single component accessor to compare.
+    ///   - rhs: Another single component accessor to compare.
     public static func == (lhs: Single<A>, rhs: Single<A>) -> Bool {
         lhs.traits == rhs.traits &&
             lhs.entityId == rhs.entityId &&

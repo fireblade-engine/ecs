@@ -22,6 +22,7 @@ extension ComponentsBuilder {
         component
     }
 
+    /// Contextual information provided during bulk entity creation.
     public struct Context {
         /// The index of the newly created entity.
         ///

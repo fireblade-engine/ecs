@@ -78,6 +78,7 @@ extension Nexus {
 // MARK: - entities iterator
 
 extension Nexus {
+    /// An iterator over the entities managed by the Nexus.
     public struct EntitiesIterator: IteratorProtocol {
         private var iterator: AnyIterator<Entity>
 

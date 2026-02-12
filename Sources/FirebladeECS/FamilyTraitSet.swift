@@ -70,6 +70,10 @@ public struct FamilyTraitSet {
 }
 
 extension FamilyTraitSet: Equatable {
+    /// Returns a Boolean value indicating whether two family trait sets are equal.
+    /// - Parameters:
+    ///   - lhs: A family trait set to compare.
+    ///   - rhs: Another family trait set to compare.
     public static func == (lhs: FamilyTraitSet, rhs: FamilyTraitSet) -> Bool {
         lhs.setHash == rhs.setHash
     }

@@ -154,6 +154,12 @@ extension Entity.ComponentsIterator: LazySequenceProtocol {}
 extension Entity.ComponentsIterator: Sequence {}
 
 extension Entity: Equatable {
+    /// Returns a Boolean value indicating whether two entities are equal.
+    ///
+    /// Entities are considered equal if they belong to the same Nexus and have the same identifier.
+    /// - Parameters:
+    ///   - lhs: An entity to compare.
+    ///   - rhs: Another entity to compare.
     public static func == (lhs: Entity, rhs: Entity) -> Bool {
         lhs.nexus === rhs.nexus && lhs.identifier == rhs.identifier
     }

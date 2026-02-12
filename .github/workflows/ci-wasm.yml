@@ -23,7 +23,6 @@ jobs:
       fail-fast: false
       matrix:
         swift: ["6.1"]
-        build_config: ["release"]
 
     steps:
       - name: Checkout
@@ -43,8 +42,8 @@ jobs:
 
       - name: Build Tests
         run: |
-          swift build -c ${{ matrix.build_config }} --build-tests -Xswiftc -enable-testing --swift-sdk ${{ steps.setup-swiftwasm.outputs.swift-sdk-id }} --static-swift-stdlib
+          swift build -c release --build-tests -Xswiftc -enable-testing --swift-sdk ${{ steps.setup-swiftwasm.outputs.swift-sdk-id }} --static-swift-stdlib
 
       - name: Run Tests
         run: |
-          wasmtime --dir . .build/wasm32-unknown-wasi/${{ matrix.build_config }}/FirebladeECSPackageTests.wasm
+          wasmtime --dir . .build/wasm32-unknown-wasi/release/FirebladeECSPackageTests.wasm

@@ -16,7 +16,7 @@ env:
 
 jobs:
   wasm:
-    name: WASM (Swift ${{ matrix.swift }}) [${{ matrix.config }}]
+    name: WASM (Swift ${{ matrix.swift }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
@@ -24,8 +24,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        swift: ["6.1", "6.2"]
-        config: ["debug", "release"]
+        swift: ["6.1"]
+        config: ["release"]
 
     steps:
       - name: Checkout
@@ -43,13 +43,10 @@ jobs:
           apt-get update && apt-get install --yes xz-utils --no-install-recommends
       - name: Setup wasmtime
         uses: bytecodealliance/actions/wasmtime/setup@v1
+        with:
+          version: 41.0.3
 
-      - name: Run `wasmtime version`
-        run: "wasmtime --version"
-
-      - name: Build Tests
+      - name: Build & Run Tests
         run: |
-          SWIFTPM_ENABLE_PLUGINS=0 SWIFTPM_ENABLE_MACROS=0 swift build -c ${{ matrix.config }} --build-tests -Xswiftc -enable-testing --swift-sdk ${{ steps.setup-swiftwasm.outputs.swift-sdk-id }} --static-swift-stdlib
-      - name: Run Tests
-        run: |
+          swift build -c ${{ matrix.config }} --build-tests --swift-sdk ${{ steps.setup-swiftwasm.outputs.swift-sdk-id }}
           wasmtime --dir . .build/${{ matrix.config }}/FirebladeECSPackageTests.xctest

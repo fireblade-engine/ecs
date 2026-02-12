@@ -56,6 +56,10 @@ jobs:
         with:
           version: "v7.0.1"
 
+      - name: Install wasmKit
+        run: | 
+          npm i -g @arufa/wasmkit
+          wasmkit help
       - name: Build
         run: |
           swift build -c ${{ matrix.config }} --swift-sdk ${{ steps.setup-swiftwasm.outputs.swift-sdk-id }} --static-swift-stdlib

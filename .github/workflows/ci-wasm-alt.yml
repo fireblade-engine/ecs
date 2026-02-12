@@ -31,4 +31,4 @@ jobs:
           echo "---"
           ls -la .build/wasm32-unknown-wasip1/debug/*.xctest
           echo "---"
-          wasmtime --dir . .build/wasm32-unknown-wasip1/debug/.build/wasm32-unknown-wasip1/debug/.xctest
+          wasmtime --dir . .build/wasm32-unknown-wasip1/debug/FirebladeECSPackageTests.xctest --testing-library swift-testing

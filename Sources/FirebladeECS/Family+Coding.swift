@@ -18,6 +18,10 @@ public struct FamilyMemberContainer<R: FamilyRequirementsManaging> {
 }
 
 extension CodingUserInfoKey {
+    /// A user info key for accessing the nexus coding strategy during encoding and decoding.
+    ///
+    /// This key is used to pass the `CodingStrategy` from the `Nexus` to the `FamilyMemberContainer`
+    /// so that it knows how to encode or decode component types.
     static let nexusCodingStrategy = CodingUserInfoKey(rawValue: "nexusCodingStrategy").unsafelyUnwrapped
 }
 

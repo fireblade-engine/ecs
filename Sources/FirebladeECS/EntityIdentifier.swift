@@ -36,6 +36,9 @@ extension EntityIdentifier: RawRepresentable {
         id
     }
 
+    /// Initializes an entity identifier from a raw value.
+    /// - Parameter rawValue: The raw identifier value.
+    /// - Complexity: O(1)
     @inlinable
     public init(rawValue: Identifier) {
         id = rawValue
@@ -43,6 +46,9 @@ extension EntityIdentifier: RawRepresentable {
 }
 
 extension EntityIdentifier: ExpressibleByIntegerLiteral {
+    /// Initializes an entity identifier from an integer literal.
+    /// - Parameter value: The integer literal value.
+    /// - Complexity: O(1)
     public init(integerLiteral value: Identifier) {
         self.init(value)
     }

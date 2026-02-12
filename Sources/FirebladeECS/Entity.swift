@@ -18,6 +18,13 @@ public struct Entity {
     /// The unique entity identifier.
     public private(set) var identifier: EntityIdentifier
 
+    /// Initializes a new entity instance.
+    ///
+    /// Entities are value types that act as a handle to the data stored in the `Nexus`.
+    /// - Parameters:
+    ///   - nexus: The nexus managing this entity's components.
+    ///   - id: The unique identifier for this entity.
+    /// - Complexity: O(1)
     init(nexus: Nexus, id: EntityIdentifier) {
         self.nexus = nexus
         identifier = id
@@ -179,6 +186,8 @@ extension Entity: Equatable {
 }
 
 extension Entity: CustomStringConvertible {
+    /// A textual representation of the entity.
+    /// - Complexity: O(1)
     public var description: String {
         "<Entity id:\(identifier.id)>"
     }

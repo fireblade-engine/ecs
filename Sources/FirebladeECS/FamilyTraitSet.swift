@@ -83,6 +83,9 @@ extension FamilyTraitSet: Equatable {
 }
 
 extension FamilyTraitSet: Hashable {
+    /// Hashes the essential components of this value by feeding them into the given hasher.
+    /// - Parameter hasher: The hasher to use when combining the components of this instance.
+    /// - Complexity: O(1)
     public func hash(into hasher: inout Hasher) {
         hasher.combine(setHash)
     }
@@ -91,12 +94,16 @@ extension FamilyTraitSet: Hashable {
 extension FamilyTraitSet: Sendable {}
 
 extension FamilyTraitSet: CustomStringConvertible {
+    /// A textual representation of the family trait set.
+    /// - Complexity: O(R + E) where R is the number of required components and E is the number of excluded components.
     @inlinable public var description: String {
         "<FamilyTraitSet [requiresAll:\(requiresAll.description) excludesAll:\(excludesAll.description)]>"
     }
 }
 
 extension FamilyTraitSet: CustomDebugStringConvertible {
+    /// A textual representation of the family trait set, suitable for debugging.
+    /// - Complexity: O(R + E) where R is the number of required components and E is the number of excluded components.
     @inlinable public var debugDescription: String {
         "<FamilyTraitSet [requiresAll:\(requiresAll.debugDescription) excludesAll: \(excludesAll.debugDescription)]>"
     }

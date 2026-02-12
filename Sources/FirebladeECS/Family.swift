@@ -29,6 +29,10 @@ public struct Family<R: FamilyRequirementsManaging> {
         nexus.onFamilyInit(traits: traits)
     }
 
+    /// The set of entity identifiers that are members of this family.
+    ///
+    /// This property provides access to the underlying storage of family members managed by the `Nexus`.
+    /// - Complexity: O(1)
     @inlinable var memberIds: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier> {
         nexus.members(withFamilyTraits: traits)
     }

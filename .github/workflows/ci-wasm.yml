@@ -53,7 +53,14 @@ jobs:
 
       - name: Build dir structure
         run: |
-          find .build/ -name "*.wasm"
+          ls -R .build/ > build-dir-structure.txt
+
+      - name: Upload build dir structure
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-dir-structure
+          path: build-dir-structure.txt
 
       - name: Run Tests
         run: |

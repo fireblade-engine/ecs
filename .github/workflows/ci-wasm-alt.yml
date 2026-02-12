@@ -13,22 +13,33 @@ concurrency:
 
 jobs:
   wasm:
-    name: WASM ALT (Swift 6.2)
+    name: WASM ALT (Swift ${{ matrix.config.version }})
     runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          [
+            {
+              "version": "6.2.1",
+              "checksum": "482b9f95462b87bedfafca94a092cf9ec4496671ca13b43745097122d20f18af",
+            },
+            { "version": "6.1", "checksum": "..." },
+          ]
+        build: ["debug", "release"]
+
     steps:
       - uses: actions/checkout@v6
       - uses: swift-actions/setup-swift@v2
         with:
-          swift-version: 6.2.1
+          swift-version: ${{ matrix.config.version }} # 6.2.1
       - uses: bytecodealliance/actions/wasmtime/setup@v1
       - name: Install Swift SDK
-        run: swift sdk install https://download.swift.org/swift-6.2.1-release/wasm-sdk/swift-6.2.1-RELEASE/swift-6.2.1-RELEASE_wasm.artifactbundle.tar.gz --checksum 482b9f95462b87bedfafca94a092cf9ec4496671ca13b43745097122d20f18af
+        run: swift sdk install https://download.swift.org/swift-${{ matrix.config.version }}-release/wasm-sdk/swift-${{ matrix.config.version }}-RELEASE/swift-${{ matrix.config.version }}-RELEASE_wasm.artifactbundle.tar.gz --checksum ${{ matrix.config.checksum }}
       - name: Test
         # working-directory: tests/swift/Wasm.tests
         run: |
           swift sdk list
-          swift build --build-tests --swift-sdk swift-6.2.1-RELEASE_wasm
-          echo "---"
-          ls -la .build/wasm32-unknown-wasip1/debug/*.xctest
-          echo "---"
-          wasmtime --dir . .build/wasm32-unknown-wasip1/debug/FirebladeECSPackageTests.xctest --testing-library swift-testing
+          swift build --build-tests -c ${{ matrix.build }}--swift-sdk swift-${{ matrix.config.version }}-RELEASE_wasm
+          wasmtime --dir . .build/wasm32-unknown-wasip1/${{ matrix.build }}/FirebladeECSPackageTests.xctest --testing-library swift-testing

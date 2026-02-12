@@ -41,7 +41,13 @@ jobs:
       - uses: bytecodealliance/actions/wasmtime/setup@v1
       - name: Install Swift SDK
         run: swift sdk install ${{ matrix.config.url }} --checksum ${{ matrix.config.checksum }}
-      - name: Test
+      - name: Build for testing
         run: |
           swift build --build-tests -c ${{ matrix.build }} --swift-sdk ${{ matrix.config.sdk }} -Xswiftc -enable-testing
+
+      - name: Inspect build folder
+        run: ls -R .build | grep FirebladeECSPackageTests
+
+      - name: Test
+        run: |
           wasmtime --dir . .build/wasm32-unknown-wasip1/${{ matrix.build }}/FirebladeECSPackageTests.xctest --testing-library swift-testing

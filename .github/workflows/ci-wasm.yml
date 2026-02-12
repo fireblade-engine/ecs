@@ -52,8 +52,8 @@ jobs:
 
       - name: Build dir structure
         run: |
-          ls -la .build/
-          find .build -name "*.wasm"
+          find .build/ -name "*.wasm"
+
       - name: Run Tests
         run: |
           wasmtime --dir . .build/release/FirebladeECSPackageTests.wasm

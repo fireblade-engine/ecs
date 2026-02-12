@@ -3,12 +3,12 @@ import PackageDescription
 
 let package = Package(
     name: "FirebladeECS",
-    traits: [
-        .trait(name: "include-benchmarks", description: "Enable performance tests")
-    ],
     products: [
         .library(name: "FirebladeECS",
                  targets: ["FirebladeECS"])
+    ],
+    traits: [
+        .trait(name: "benchmarks", description: "Enable performance tests")
     ],
     targets: [
         .target(name: "FirebladeECS",
@@ -22,7 +22,7 @@ let package = Package(
                     dependencies: ["FirebladeECS"],
                     swiftSettings: [
                         .enableUpcomingFeature("StrictConcurrency"),
-                        .define("FRB_ENABLE_BENCHMARKS", .when(traits: ["include-benchmarks"]))
+                        .define("FRB_ENABLE_BENCHMARKS", .when(traits: ["benchmarks"]))
                     ])
     ]
 )

@@ -16,7 +16,7 @@ env:
 
 jobs:
   wasm:
-    name: WASM (Swift ${{ matrix.swift }})
+    name: WASM (Swift ${{ matrix.swift }}) [${{ matrix.config }}]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
@@ -50,18 +50,6 @@ jobs:
       - name: Build Tests
         run: |
           SWIFTPM_ENABLE_PLUGINS=0 SWIFTPM_ENABLE_MACROS=0 swift build -c ${{ matrix.config }} --build-tests -Xswiftc -enable-testing --swift-sdk ${{ steps.setup-swiftwasm.outputs.swift-sdk-id }} --static-swift-stdlib
-
-      - name: Build dir structure
-        run: |
-          ls -R .build/ > build-dir-structure.txt
-
-      - name: Upload build dir structure
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: build-dir-structure
-          path: build-dir-structure.txt
-
       - name: Run Tests
         run: |
-          wasmtime --dir . .build/${{ matrix.config }}/FirebladeECSPackageTests.wasm
+          wasmtime --dir . .build/${{ matrix.config }}/FirebladeECSPackageTests.xctest

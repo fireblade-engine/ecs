@@ -25,6 +25,7 @@ jobs:
       fail-fast: false
       matrix:
         swift: ["6.1", "6.2"]
+        config: ["debug", "release"]
 
     steps:
       - name: Checkout
@@ -48,7 +49,7 @@ jobs:
 
       - name: Build Tests
         run: |
-          SWIFTPM_ENABLE_PLUGINS=0 SWIFTPM_ENABLE_MACROS=0 swift build -c release --build-tests -Xswiftc -enable-testing --swift-sdk ${{ steps.setup-swiftwasm.outputs.swift-sdk-id }} --static-swift-stdlib
+          SWIFTPM_ENABLE_PLUGINS=0 SWIFTPM_ENABLE_MACROS=0 swift build -c ${{ matrix.config }} --build-tests -Xswiftc -enable-testing --swift-sdk ${{ steps.setup-swiftwasm.outputs.swift-sdk-id }} --static-swift-stdlib
 
       - name: Build dir structure
         run: |
@@ -56,4 +57,4 @@ jobs:
 
       - name: Run Tests
         run: |
-          wasmtime --dir . .build/release/FirebladeECSPackageTests.wasm
+          wasmtime --dir . .build/${{ matrix.config }}/FirebladeECSPackageTests.wasm

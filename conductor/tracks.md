@@ -13,5 +13,5 @@
 
 ---
 
-- [x] **Track: Document the entire project until all three metrics (Globals, Members, Types) reach at least 95%**
+- [~] **Track: Document the entire project until all three metrics (Globals, Members, Types) reach at least 95%**
 *Link: [./tracks/docs_coverage_95_20260212/](./tracks/docs_coverage_95_20260212/)*

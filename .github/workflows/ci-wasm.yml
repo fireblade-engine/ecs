@@ -18,14 +18,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        swift: ["6.1"]
-    container: swift:${{ matrix.swift }}
+        swift: ["6.0"]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
       
       - name: Setup SwiftWASM
         uses: swiftwasm/setup-swiftwasm@v2
+        with:
+          swift-version: ${{ matrix.swift }}
         
       - name: Build WASM
         run: swift build --swift-sdk wasm32-unknown-wasi

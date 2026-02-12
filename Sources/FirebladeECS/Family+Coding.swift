@@ -51,7 +51,7 @@ public protocol TopLevelEncoder {
     func encode<T: Encodable>(_ value: T) throws -> Self.Output
 
     /// Contextual user-provided information for use during decoding.
-    var userInfo: [CodingUserInfoKey: any Sendable] { get set }
+    var userInfo: [CodingUserInfoKey: Any] { get set }
 }
 
 extension Family where R: FamilyEncoding {
@@ -97,7 +97,7 @@ public protocol TopLevelDecoder {
     func decode<T: Decodable>(_ type: T.Type, from: Self.Input) throws -> T
 
     /// Contextual user-provided information for use during decoding.
-    var userInfo: [CodingUserInfoKey: any Sendable] { get set }
+    var userInfo: [CodingUserInfoKey: Any] { get set }
 }
 
 extension Family where R: FamilyDecoding {

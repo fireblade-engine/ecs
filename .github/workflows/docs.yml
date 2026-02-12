@@ -63,24 +63,16 @@ jobs:
           }
 
           # 1. Root -> latest/documentation/firebladeecs/
-          create_redirect ".build/documentation/index.html" 
-                          "latest/documentation/firebladeecs/" 
-                          "Redirecting to Latest Docs"
+          create_redirect ".build/documentation/index.html" "latest/documentation/firebladeecs/" "Redirecting to Latest Docs"
 
           # 2. latest/ -> main/documentation/firebladeecs/
-          create_redirect ".build/documentation/latest/index.html" 
-                          "../main/documentation/firebladeecs/" 
-                          "Redirecting to Main Docs"
+          create_redirect ".build/documentation/latest/index.html" "../main/documentation/firebladeecs/" "Redirecting to Main Docs"
 
           # 3. latest/documentation/firebladeecs/ -> main/documentation/firebladeecs/
-          create_redirect ".build/documentation/latest/documentation/firebladeecs/index.html" 
-                          "../../../main/documentation/firebladeecs/" 
-                          "Redirecting to Main Docs"
+          create_redirect ".build/documentation/latest/documentation/firebladeecs/index.html" "../../../main/documentation/firebladeecs/" "Redirecting to Main Docs"
 
           # 4. documentation/firebladeecs/ -> main/documentation/firebladeecs/
-          create_redirect ".build/documentation/documentation/firebladeecs/index.html" 
-                          "../../main/documentation/firebladeecs/" 
-                          "Redirecting to Main Docs"
+          create_redirect ".build/documentation/documentation/firebladeecs/index.html" "../../main/documentation/firebladeecs/" "Redirecting to Main Docs"
 
       - name: Check Documentation Quality
         run: |

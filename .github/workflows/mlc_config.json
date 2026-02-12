@@ -2,6 +2,19 @@
     "ignorePatterns": [
         {
             "pattern": "^http://localhost"
+        },
+        {
+            "pattern": "^https://swiftpackageindex.com"
+        }
+    ],
+    "replacementPatterns": [
+        {
+            "pattern": "^\\./",
+            "replacement": "https://github.com/fireblade-engine/ecs/tree/master/"
+        },
+        {
+            "pattern": "^\\.\\./",
+            "replacement": "https://github.com/fireblade-engine/ecs/tree/master/"
         }
     ],
     "httpHeaders": [

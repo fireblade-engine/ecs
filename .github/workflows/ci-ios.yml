@@ -24,6 +24,10 @@ jobs:
         uses: swift-actions/setup-swift@v2
         with:
           swift-version: ${{ matrix.swift }}
+      
+      # Generate xcodeproj to assist xcodebuild in finding the scheme
+      - name: Generate Xcode Project
+        run: swift package generate-xcodeproj
 
       - name: Select Latest Simulator
         id: select_sim
@@ -47,10 +51,10 @@ jobs:
 
       - name: Run Tests (iOS)
         run: |
-          xcodebuild test 
-            -scheme FirebladeECS 
-            -destination "${{ steps.select_sim.outputs.destination }}" 
-            -configuration Release 
-            -skipPackagePluginValidation 
-            ENABLE_TESTABILITY=YES 
+          xcodebuild test \
+            -scheme FirebladeECS \
+            -destination "${{ steps.select_sim.outputs.destination }}" \
+            -configuration Release \
+            -skipPackagePluginValidation \
+            ENABLE_TESTABILITY=YES \
             OTHER_SWIFT_FLAGS='-warnings-as-errors'

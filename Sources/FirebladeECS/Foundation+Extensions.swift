@@ -6,8 +6,10 @@
 //
 
 #if canImport(Foundation)
-    import Foundation
+import Foundation
 
-    extension JSONEncoder: TopLevelEncoder {}
-    extension JSONDecoder: TopLevelDecoder {}
+/// Conformance of `JSONEncoder` to `TopLevelEncoder` to support JSON encoding in ECS serialization.
+extension JSONEncoder: TopLevelEncoder {}
+/// Conformance of `JSONDecoder` to `TopLevelDecoder` to support JSON decoding in ECS serialization.
+extension JSONDecoder: TopLevelDecoder {}
 #endif

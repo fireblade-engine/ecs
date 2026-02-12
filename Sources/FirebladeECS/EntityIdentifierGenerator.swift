@@ -11,7 +11,7 @@
 /// It also allows entity ids to be marked as unused (to be re-usable).
 ///
 /// You should strive to keep entity ids tightly packed around `EntityIdentifier.Identifier.min` since it has an influence on the underlying memory layout.
-public protocol EntityIdentifierGenerator {
+public protocol EntityIdentifierGenerator: Sendable {
     /// Initialize the generator providing entity ids to begin with when creating new entities.
     ///
     /// Entity ids provided should be passed to `nextId()` in last out order up until the collection is empty.
@@ -42,11 +42,16 @@ public typealias DefaultEntityIdGenerator = LinearIncrementingEntityIdGenerator
 /// Furthermore it respects order of entity ids on initialization, meaning the provided ids on initialization will be provided in order
 /// until all are in use. After that the free entities start at the lowest available id increasing linearly skipping already in-use entity ids.
 public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
+    /// Internal storage for entity identifiers.
     @usableFromInline
-    final class Storage {
+    final class Storage: @unchecked Sendable {
         @usableFromInline var stack: [EntityIdentifier.Identifier]
-        @usableFromInline var count: Int { stack.count }
+        @usableFromInline var count: Int {
+            stack.count
+        }
 
+        /// Initializes the storage with initial identifiers.
+        /// - Parameter initialEntityIds: Identifiers to start with.
         @usableFromInline
         init<EntityIds>(startProviding initialEntityIds: EntityIds) where EntityIds: BidirectionalCollection, EntityIds.Element == EntityIdentifier {
             let initialInUse: [EntityIdentifier.Identifier] = initialEntityIds.map(\.id)
@@ -58,11 +63,14 @@ public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
             stack = initialFree + initialInUse
         }
 
+        /// Initializes the storage with a default identifier.
         @usableFromInline
         init() {
             stack = [0]
         }
 
+        /// Returns the next available identifier.
+        /// - Returns: A unique entity identifier.
         @usableFromInline
         func nextId() -> EntityIdentifier {
             guard stack.count == 1 else {
@@ -72,6 +80,8 @@ public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
             return EntityIdentifier(stack[0])
         }
 
+        /// Marks an identifier as unused.
+        /// - Parameter entityId: The identifier to recycle.
         @usableFromInline
         func markUnused(entityId: EntityIdentifier) {
             stack.append(entityId.id)
@@ -79,25 +89,43 @@ public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
     }
 
     @usableFromInline let storage: Storage
-    @usableFromInline var count: Int { storage.count }
+    @usableFromInline var count: Int {
+        storage.count
+    }
 
+    /// Initializes a new linear incrementing generator with a collection of initial entity IDs.
+    ///
+    /// - Parameter initialEntityIds: A bidirectional collection of `EntityIdentifier`s to be used first.
+    /// - Complexity: O(N log N) where N is the number of initial entity IDs.
     @inlinable
     public init<EntityIds>(startProviding initialEntityIds: EntityIds) where EntityIds: BidirectionalCollection, EntityIds.Element == EntityIdentifier {
         storage = Storage(startProviding: initialEntityIds)
     }
 
+    /// Initializes a new linear incrementing generator starting from 0.
+    /// - Complexity: O(1)
     @inlinable
     public init() {
         storage = Storage()
     }
 
+    /// Provides the next unused entity identifier.
+    ///
+    /// - Returns: A unique `EntityIdentifier`.
+    /// - Complexity: O(1)
     @inline(__always)
     public func nextId() -> EntityIdentifier {
         storage.nextId()
     }
 
+    /// Marks an entity identifier as unused, allowing it to be reused.
+    ///
+    /// - Parameter entityId: The `EntityIdentifier` to recycle.
+    /// - Complexity: O(1)
     @inline(__always)
     public func markUnused(entityId: EntityIdentifier) {
         storage.markUnused(entityId: entityId)
     }
 }
+
+extension LinearIncrementingEntityIdGenerator: Sendable {}

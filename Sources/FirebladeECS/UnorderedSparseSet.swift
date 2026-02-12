@@ -12,10 +12,104 @@
 ///          an element from the sparse set.
 ///
 /// See <https://github.com/bombela/sparseset/blob/master/src/lib.rs> for a reference implementation.
-public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
-    // swiftlint:disable nesting
+public struct UnorderedSparseSet<Element, Key: Hashable & Codable & Sendable> {
+    /// Creates a new sparse set.
+    public init() {
+        self.init(storage: Storage())
+    }
+
+    /// Creates a new sparse set with the given storage.
+    /// - Parameter storage: The underlying storage to use.
     @usableFromInline
-    final class Storage {
+    init(storage: Storage) {
+        self.storage = storage
+    }
+
+    /// The underlying storage for the sparse set.
+    @usableFromInline let storage: Storage
+
+    /// The size of the set.
+    /// - Complexity: O(1)
+    public var count: Int {
+        storage.count
+    }
+
+    /// A Boolean value that indicates whether the set is empty.
+    /// - Complexity: O(1)
+    public var isEmpty: Bool {
+        storage.isEmpty
+    }
+
+    /// Returns a Boolean value that indicates whether the key is included in the set.
+    /// - Parameter key: The key to inspect.
+    /// - Complexity: O(1)
+    @inlinable
+    public func contains(_ key: Key) -> Bool {
+        storage.findIndex(at: key) != nil
+    }
+
+    /// Insert an element for a given key into the set.
+    ///
+    /// Elements at previously set keys will be replaced.
+    ///
+    /// - Parameters:
+    ///   - element: The element.
+    ///   - key: The key.
+    /// - Returns: `true` if new, `false` if replaced.
+    /// - Complexity: O(1)
+    @discardableResult
+    public func insert(_ element: Element, at key: Key) -> Bool {
+        storage.insert(element, at: key)
+    }
+
+    /// Get the element for the given key.
+    ///
+    /// - Parameter key: The key.
+    /// - Returns: the element or `nil` if the key wasn't found.
+    /// - Complexity: O(1)
+    @inlinable
+    public func get(at key: Key) -> Element? {
+        storage.findElement(at: key)
+    }
+
+    /// Unsafely gets the element for the given key.
+    /// - Parameter key: The key.
+    /// - Returns: The element.
+    /// - Complexity: O(1)
+    @inlinable
+    public func get(unsafeAt key: Key) -> Element {
+        storage.findElement(at: key).unsafelyUnwrapped
+    }
+
+    /// Removes the element entry for given key.
+    ///
+    /// - Parameter key: the key
+    /// - Returns: removed value or nil if key not found.
+    /// - Complexity: O(1)
+    @discardableResult
+    public func remove(at key: Key) -> Element? {
+        storage.remove(at: key)?.element
+    }
+
+    /// Removes all keys and elements from the set.
+    /// - Parameter keepingCapacity: A Boolean value that indicates whether the set should maintain it's capacity.
+    /// - Complexity: O(N) where N is the number of elements.
+    @inlinable
+    public func removeAll(keepingCapacity: Bool = false) {
+        storage.removeAll(keepingCapacity: keepingCapacity)
+    }
+
+    /// The first element of the set.
+    /// - Complexity: O(1)
+    @inlinable public var first: Element? {
+        storage.first
+    }
+}
+
+extension UnorderedSparseSet {
+    /// The underlying storage for the unordered sparse set.
+    @usableFromInline
+    final class Storage: @unchecked Sendable {
         /// An index into the dense store.
         @usableFromInline
         typealias DenseIndex = Int
@@ -28,11 +122,18 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
         @usableFromInline
         typealias DenseStore = ContiguousArray<Entry>
 
+        /// An entry in the dense store, holding the key and the element.
         @usableFromInline
         struct Entry {
+            /// The key associated with the element.
             @usableFromInline let key: Key
+            /// The element stored.
             @usableFromInline let element: Element
 
+            /// Creates a new entry.
+            /// - Parameters:
+            ///   - key: The key.
+            ///   - element: The element.
             @usableFromInline
             init(key: Key, element: Element) {
                 self.key = key
@@ -40,27 +141,46 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
             }
         }
 
+        /// The dense storage of entries.
         @usableFromInline var dense: DenseStore
+        /// The sparse storage mapping keys to dense indices.
         @usableFromInline var sparse: SparseStore
 
+        /// Creates a new storage with existing dense and sparse stores.
+        /// - Parameters:
+        ///   - sparse: The sparse store.
+        ///   - dense: The dense store.
         @usableFromInline
         init(sparse: SparseStore, dense: DenseStore) {
             self.sparse = sparse
             self.dense = dense
         }
 
+        /// Creates a new empty storage.
         @usableFromInline
         convenience init() {
             self.init(sparse: [:], dense: [])
         }
 
-        @usableFromInline var count: Int { dense.count }
-        @usableFromInline var isEmpty: Bool { dense.isEmpty }
+        /// The number of elements in the storage.
+        /// The number of elements in the storage.
+        @usableFromInline var count: Int {
+            dense.count
+        }
 
+        /// A Boolean value indicating whether the storage is empty.
+        @usableFromInline var isEmpty: Bool {
+            dense.isEmpty
+        }
+
+        /// The first element in the storage, or `nil` if empty.
         @inlinable var first: Element? {
             dense.first?.element
         }
 
+        /// Finds the dense index for a given key.
+        /// - Parameter key: The key to look for.
+        /// - Returns: The index in the dense store, or `nil` if not found.
         @inlinable
         func findIndex(at key: Key) -> Int? {
             guard let denseIndex = sparse[key], denseIndex < count else {
@@ -69,6 +189,9 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
             return denseIndex
         }
 
+        /// Finds the element associated with a given key.
+        /// - Parameter key: The key to look for.
+        /// - Returns: The element associated with the key, or `nil` if not found.
         @inlinable
         func findElement(at key: Key) -> Element? {
             guard let denseIndex = findIndex(at: key) else {
@@ -79,6 +202,11 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
             return entry.element
         }
 
+        /// Inserts an element into the storage.
+        /// - Parameters:
+        ///   - element: The element to insert.
+        ///   - key: The key associated with the element.
+        /// - Returns: `true` if the element was inserted as a new entry; `false` if it replaced an existing entry.
         @inlinable
         func insert(_ element: Element, at key: Key) -> Bool {
             if let denseIndex = findIndex(at: key) {
@@ -92,6 +220,9 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
             return true
         }
 
+        /// Removes an element associated with a key.
+        /// - Parameter key: The key of the element to remove.
+        /// - Returns: The removed entry, or `nil` if the key was not found.
         @inlinable
         func remove(at key: Key) -> Entry? {
             guard let denseIndex = findIndex(at: key) else {
@@ -118,96 +249,26 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable> {
             return dense.removeLast()
         }
 
+        /// Removes all elements from the storage.
+        /// - Parameter keepingCapacity: A Boolean value indicating whether to keep the capacity of the storage.
         @inlinable
         func removeAll(keepingCapacity: Bool = false) {
             sparse.removeAll(keepingCapacity: keepingCapacity)
             dense.removeAll(keepingCapacity: keepingCapacity)
         }
 
+        /// Returns an iterator over the elements of the storage.
+        /// - Returns: An iterator over the `Storage.Entry` elements.
         @inlinable
         func makeIterator() -> IndexingIterator<ContiguousArray<Storage.Entry>> {
             dense.makeIterator()
         }
     }
-
-    /// Creates a new sparse set.
-    public init() {
-        self.init(storage: Storage())
-    }
-
-    @usableFromInline
-    init(storage: Storage) {
-        self.storage = storage
-    }
-
-    @usableFromInline let storage: Storage
-
-    /// The size of the set.
-    public var count: Int { storage.count }
-    /// A Boolean value that indicates whether the set is empty.
-    public var isEmpty: Bool { storage.isEmpty }
-
-    /// Returns a Boolean value that indicates whether the key is included in the set.
-    /// - Parameter key: The key to inspect.
-    @inlinable
-    public func contains(_ key: Key) -> Bool {
-        storage.findIndex(at: key) != nil
-    }
-
-    /// Inset an element for a given key into the set in O(1).
-    ///
-    /// Elements at previously set keys will be replaced.
-    ///
-    /// - Parameters:
-    ///   - element: The element.
-    ///   - key: The key.
-    /// - Returns: `true` if new, `false` if replaced.
-    @discardableResult
-    public func insert(_ element: Element, at key: Key) -> Bool {
-        storage.insert(element, at: key)
-    }
-
-    /// Get the element for the given key in O(1).
-    ///
-    /// - Parameter key: The key.
-    /// - Returns: the element or `nil` if the key wasn't found.
-    @inlinable
-    public func get(at key: Key) -> Element? {
-        storage.findElement(at: key)
-    }
-
-    /// Unsafely gets the element for the given key,
-    /// - Parameter key: The key.
-    /// - Returns: The element.
-    @inlinable
-    public func get(unsafeAt key: Key) -> Element {
-        storage.findElement(at: key).unsafelyUnwrapped
-    }
-
-    /// Removes the element entry for given key in O(1).
-    ///
-    /// - Parameter key: the key
-    /// - Returns: removed value or nil if key not found.
-    @discardableResult
-    public func remove(at key: Key) -> Element? {
-        storage.remove(at: key)?.element
-    }
-
-    /// Removes all keys and elements from the set.
-    /// - Parameter keepingCapacity: A Boolean value that indicates whether the set should maintain it's capacity.
-    @inlinable
-    public func removeAll(keepingCapacity: Bool = false) {
-        storage.removeAll(keepingCapacity: keepingCapacity)
-    }
-
-    /// The first element of the set.
-    @inlinable public var first: Element? {
-        storage.first
-    }
 }
 
 extension UnorderedSparseSet where Key == Int {
     /// Retrieve or set an element using the key.
+    /// - Complexity: O(1)
     @inlinable
     public subscript(key: Key) -> Element {
         get {
@@ -223,24 +284,36 @@ extension UnorderedSparseSet where Key == Int {
 // MARK: - Sequence
 
 extension UnorderedSparseSet: Sequence {
+    /// Returns an iterator over the elements of this sequence.
+    /// - Returns: An `ElementIterator` for the sparse set.
+    /// - Complexity: O(1)
     public func makeIterator() -> ElementIterator {
         ElementIterator(self)
     }
 
     // MARK: - UnorderedSparseSetIterator
 
+    /// An iterator over the elements of an `UnorderedSparseSet`.
     public struct ElementIterator: IteratorProtocol {
         var iterator: IndexingIterator<ContiguousArray<Storage.Entry>>
 
+        /// Creates an iterator for the given sparse set.
+        /// - Parameter sparseSet: The sparse set to iterate over.
+        /// - Complexity: O(1)
         public init(_ sparseSet: UnorderedSparseSet<Element, Key>) {
             iterator = sparseSet.storage.makeIterator()
         }
 
+        /// Advances to the next element and returns it, or `nil` if no next element exists.
+        /// - Returns: The next element in the sequence, or `nil`.
+        /// - Complexity: O(1)
         public mutating func next() -> Element? {
             iterator.next()?.element
         }
     }
 }
+
+extension UnorderedSparseSet.ElementIterator: Sendable where Element: Sendable {}
 
 extension UnorderedSparseSet.ElementIterator: LazySequenceProtocol {}
 extension UnorderedSparseSet.ElementIterator: Sequence {}
@@ -256,6 +329,10 @@ extension UnorderedSparseSet.Storage: Equatable where Element: Equatable {
 }
 
 extension UnorderedSparseSet: Equatable where Element: Equatable {
+    /// Returns a Boolean value indicating whether two sparse sets are equal.
+    /// - Parameters:
+    ///   - lhs: A sparse set to compare.
+    ///   - rhs: Another sparse set to compare.
     public static func == (lhs: UnorderedSparseSet<Element, Key>, rhs: UnorderedSparseSet<Element, Key>) -> Bool {
         lhs.storage == rhs.storage
     }
@@ -266,3 +343,7 @@ extension UnorderedSparseSet: Equatable where Element: Equatable {
 extension UnorderedSparseSet.Storage.Entry: Codable where Element: Codable {}
 extension UnorderedSparseSet.Storage: Codable where Element: Codable {}
 extension UnorderedSparseSet: Codable where Element: Codable {}
+
+extension UnorderedSparseSet: Sendable where Element: Sendable {}
+
+extension UnorderedSparseSet.Storage.Entry: Sendable where Element: Sendable {}

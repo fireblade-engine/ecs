@@ -18,8 +18,7 @@
 {% set CompsSelf %}{{compSelf|join: ", "}}{% endset %} 
 {% map components into compsLowercased using comp %}{{ comp|lowercase }}{% endmap %}
 {% set CompsLowercased %}{{compsLowercased|join: ", "}}{% endset %} 
-{% map components into compsTuple using comp %}components.{{ maploop.counter }}{% endmap %}
-{% set CompsTuple %}{{compsTuple|join: ", "}}{% endset %} 
+{% set CompsTuple %}{% for comp in components %}components.{{ forloop.counter0 }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endset %}
 {% map components into compsTypeParams using comp %}{% if not maploop.first %}_ {% endif %}{{ comp|lowercase }}: {{ comp }}.Type{% endmap %}
 {% set CompsTypeParams %}{{compsTypeParams|join: ", "}}{% endset %} 
 {% map components into compsNamedParams using comp %}{% if not maploop.first %}_ {% endif %}{{ comp|lowercase }}: {{ comp }}{% endmap %}
@@ -29,21 +28,32 @@
 
 // MARK: - Family {{ idx }}
 
+/// A family of entities with {{ idx }} components.
 public typealias Family{{ idx }}<{{ CompParams }}> = Family<Requires{{ idx }}<{{ CompParams }}>> where {{ CompsWhere }}
 
+/// A protocol defining requirements for a family with {{ idx }} components.
 public protocol RequiringComponents{{ idx }}: FamilyRequirementsManaging where Components == ({{ CompParams }}) {
     {% for comp in components %}
+    /// Component type {{ forloop.counter }}.
     associatedtype {{ comp }}: Component
     {% endfor %} 
 }
 
+/// A requirements manager for a family with {{ idx }} components.
 public struct Requires{{ idx }}<{{ CompParams }}>: FamilyRequirementsManaging where {{ CompsWhere }} {
+    /// The component types.
     public let componentTypes: [Component.Type]
 
+    /// Initializes with component types.
     public init(_ components: ({{ CompsTypes }})) {
         componentTypes = [{{ CompsSelf}}]
     }
 
+    /// Retrieves components for an entity.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: The components of the entity.
     public static func components(nexus: Nexus, entityId: EntityIdentifier) -> ({{ CompParams }}) {
         {% for comp in components %}
         let {{ comp|lowercase }}: {{ comp }} = nexus.get(unsafe: entityId)
@@ -51,14 +61,24 @@ public struct Requires{{ idx }}<{{ CompParams }}>: FamilyRequirementsManaging wh
         return ({{ CompsLowercased }})
     }
 
+    /// Retrieves entity and components.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: The entity and its components.
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, {{ CompParams }}) {
-        let entity: Entity = Entity(nexus: nexus, id: entityId)
+        let entity = Entity(nexus: nexus, id: entityId)
         {% for comp in components %}
         let {{ comp|lowercase }}: {{ comp }} = nexus.get(unsafe: entityId)
         {% endfor %} 
         return (entity, {{ CompsLowercased }})
     }
 
+    /// Creates a member entity.
+    /// - Parameters:
+    ///   - nexus: The nexus instance.
+    ///   - components: The components to assign.
+    /// - Returns: The created entity.
     public static func createMember(nexus: Nexus, components: ({{ CompParams }})) -> Entity {
         {% if compEncodable.count == 1 %}nexus.createEntity(with: components){% else %}nexus.createEntity(with: {{ CompsTuple }}){% endif %}
     }
@@ -67,12 +87,19 @@ public struct Requires{{ idx }}<{{ CompParams }}>: FamilyRequirementsManaging wh
 extension Requires{{ idx }}: RequiringComponents{{ idx }} { }
 
 extension FamilyMemberBuilder where R: RequiringComponents{{ idx }}  {
+    /// Builds a block of components for a family member.
     public static func buildBlock({{ CompsNamedRParams }}) -> (R.Components) {
         return ({{ CompsLowercased }})
     }
 }
 
 extension Requires{{ idx }}: FamilyEncoding where {{ CompsWhereEncodable }} {
+    /// Encodes the components.
+    /// - Parameters:
+    ///   - components: The components to encode.
+    ///   - container: The encoding container.
+    ///   - strategy: The coding strategy.
+    /// - Throws: An error if encoding fails.
     public static func encode(components: ({{ CompParams }}), into container: inout KeyedEncodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws {
         {% if compEncodable.count == 1 %}
         try container.encode(components, forKey: strategy.codingKey(for: {{ CompsSelf }}))
@@ -85,6 +112,12 @@ extension Requires{{ idx }}: FamilyEncoding where {{ CompsWhereEncodable }} {
 }
 
 extension Requires{{ idx }}: FamilyDecoding where {{ CompsWhereDecodable }} {
+    /// Decodes the components.
+    /// - Parameters:
+    ///   - container: The decoding container.
+    ///   - strategy: The coding strategy.
+    /// - Returns: The decoded components.
+    /// - Throws: An error if decoding fails.
     public static func decode(componentsIn container: KeyedDecodingContainer<DynamicCodingKey>, using strategy: CodingStrategy) throws -> ({{ CompParams }}) {
         {% for comp in components %}
         let {{ comp|lowercase }} = try container.decode({{ comp }}.self, forKey: strategy.codingKey(for: {{ comp }}.self))
@@ -126,6 +159,7 @@ extension Nexus {
     ///   - {{ comp }}: Component type {{ forloop.counter }} required by members of this family.
     {% endfor %}
     ///   - excludedComponents: All component types that must not be assigned to an entity in this family.
+    /// - Complexity: O(1) for existing families, O(N) where N is the number of entities for new families.
     /// - Returns: The family of entities having {{ components.count }} required components each.
     public func family<{{ CompParams }}>(
         {% if components.count == 1 %}requires{% else %}requiresAll{%endif%} {{ CompsTypeParams }},

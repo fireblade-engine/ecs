@@ -2,38 +2,28 @@ name: Linux
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, main ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, main ]
+  workflow_dispatch:
 
 jobs:
   linux:
+    name: Linux (Swift ${{ matrix.swift }})
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        swift: ["latest"]
-    container:
-      image: swift:${{ matrix.swift }}
+        swift: ["6.1", "6.2"]
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: Test
-        run: swift test -c release --enable-xctest --parallel --xunit-output .build/xUnit-output.xml
-
-      - name: Upload test artifacts
-        if: failure()
-        uses: actions/upload-artifact@v4
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v2
         with:
-          name: test-artifacts-linux-${{ matrix.swift }}-${{ github.run_id }}
-          path: |
-            .build/*.yaml
-            .build/*.xml
-            .build/*.json
-            .build/*.txt
-            .build/**/*.xctest
-            .build/**/*.json
-            .build/**/*.txt
-          if-no-files-found: warn
-          include-hidden-files: true
+          swift-version: ${{ matrix.swift }}
 
+      - name: Run Tests (Release)
+        run: swift test -c release --parallel -Xswiftc -warnings-as-errors

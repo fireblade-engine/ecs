@@ -5,10 +5,9 @@
 //  Created by Christian Treffs on 07.08.20.
 //
 
-#if swift(<5.4)
-    @_functionBuilder
-    public enum FamilyMemberBuilder<R> where R: FamilyRequirementsManaging {}
-#else
-    @resultBuilder
-    public enum FamilyMemberBuilder<R> where R: FamilyRequirementsManaging {}
-#endif
+/// A result builder for constructing family member component collections.
+///
+/// This builder is used to provide a DSL-like syntax for creating family members
+/// with the required components in a type-safe manner.
+@resultBuilder
+public enum FamilyMemberBuilder<R: FamilyRequirementsManaging>: Sendable {}

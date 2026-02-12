@@ -6,6 +6,12 @@
 //
 
 extension Nexus {
+    /// Assigns a collection of components to an entity.
+    ///
+    /// - Parameters:
+    ///   - components: The components to assign.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: `true` if all assignments were successful, `false` otherwise (e.g., if a component of the same type is already assigned).
     @usableFromInline
     @discardableResult
     func assign(components: some Collection<Component>, to entityId: EntityIdentifier) -> Bool {
@@ -15,7 +21,6 @@ extension Nexus {
             // test if component is already assigned
             guard !has(componentId: componentId, entityId: entityId) else {
                 delegate?.nexusNonFatalError("ComponentAdd collision: \(entityId) already has a component \(component)")
-                assertionFailure("ComponentAdd collision: \(entityId) already has a component \(component)")
                 return false
             }
 
@@ -31,6 +36,12 @@ extension Nexus {
         return true
     }
 
+    /// Assigns a single component to an entity.
+    ///
+    /// - Parameters:
+    ///   - component: The component to assign.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: `true` if the assignment was successful, `false` otherwise.
     @usableFromInline
     func assign(component: Component, entityId: EntityIdentifier) -> Bool {
         let componentId = component.identifier
@@ -38,7 +49,6 @@ extension Nexus {
         // test if component is already assigned
         guard !has(componentId: componentId, entityId: entityId) else {
             delegate?.nexusNonFatalError("ComponentAdd collision: \(entityId) already has a component \(component)")
-            assertionFailure("ComponentAdd collision: \(entityId) already has a component \(component)")
             return false
         }
 
@@ -53,6 +63,12 @@ extension Nexus {
         return true
     }
 
+    /// Inserts a component instance into the internal storage.
+    ///
+    /// - Parameters:
+    ///   - component: The component instance.
+    ///   - componentId: The identifier of the component type.
+    ///   - entityId: The identifier of the entity.
     @usableFromInline
     func insertComponentInstance(_ component: Component, _ componentId: ComponentIdentifier, _ entityId: EntityIdentifier) {
         if componentsByType[componentId] == nil {
@@ -61,6 +77,11 @@ extension Nexus {
         componentsByType[componentId]?.insert(component, at: entityId.index)
     }
 
+    /// Associates a component type with an entity.
+    ///
+    /// - Parameters:
+    ///   - componentId: The identifier of the component type.
+    ///   - entityId: The identifier of the entity.
     @usableFromInline
     func assign(_ componentId: ComponentIdentifier, _ entityId: EntityIdentifier) {
         let (inserted, _) = componentIdsByEntity[entityId]!.insert(componentId)
@@ -69,6 +90,9 @@ extension Nexus {
         }
     }
 
+    /// Updates family membership for a specific entity across all families.
+    ///
+    /// - Parameter entityId: The identifier of the entity to update.
     @usableFromInline
     func update(familyMembership entityId: EntityIdentifier) {
         // FIXME: iterating all families is costly for many families
@@ -79,7 +103,9 @@ extension Nexus {
         }
     }
 
-    /// will be called on family init
+    /// Called when a family is initialized to populate it with existing matching entities.
+    ///
+    /// - Parameter traits: The traits defining the family.
     func onFamilyInit(traits: FamilyTraitSet) {
         guard familyMembersByTraits[traits] == nil else {
             return
@@ -89,6 +115,9 @@ extension Nexus {
         update(familyMembership: traits)
     }
 
+    /// Updates membership for a specific family across all entities.
+    ///
+    /// - Parameter traits: The traits defining the family.
     func update(familyMembership traits: FamilyTraitSet) {
         // FIXME: iterating all entities is costly for many entities
         var iter = componentIdsByEntity.keys.makeIterator()
@@ -97,6 +126,13 @@ extension Nexus {
         }
     }
 
+    /// Updates membership for a specific family and entity.
+    ///
+    /// Checks if the entity matches the family traits and adds/removes it accordingly.
+    ///
+    /// - Parameters:
+    ///   - traits: The traits defining the family.
+    ///   - entityId: The identifier of the entity.
     func update(membership traits: FamilyTraitSet, for entityId: EntityIdentifier) {
         guard let componentIds = componentIdsByEntity[entityId] else {
             // no components - so skip
@@ -125,10 +161,20 @@ extension Nexus {
         }
     }
 
+    /// Adds an entity to a family.
+    ///
+    /// - Parameters:
+    ///   - entityId: The identifier of the entity.
+    ///   - traits: The traits defining the family.
     func add(entityWithId entityId: EntityIdentifier, toFamilyWithTraits traits: FamilyTraitSet) {
         familyMembersByTraits[traits].unsafelyUnwrapped.insert(entityId, at: entityId.id)
     }
 
+    /// Removes an entity from a family.
+    ///
+    /// - Parameters:
+    ///   - entityId: The identifier of the entity.
+    ///   - traits: The traits defining the family.
     func remove(entityWithId entityId: EntityIdentifier, fromFamilyWithTraits traits: FamilyTraitSet) {
         familyMembersByTraits[traits].unsafelyUnwrapped.remove(at: entityId.id)
     }

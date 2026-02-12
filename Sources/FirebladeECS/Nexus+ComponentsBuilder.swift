@@ -5,19 +5,31 @@
 //  Created by Christian Treffs on 30.07.20.
 //
 
-#if swift(<5.4)
-    @_functionBuilder
-    public enum ComponentsBuilder {}
-#else
-    @resultBuilder
-    public enum ComponentsBuilder {}
-#endif
+/// A result builder for constructing collections of components.
+///
+/// This builder provides a DSL for assigning multiple components to an entity
+/// in a single block.
+@resultBuilder
+public enum ComponentsBuilder {}
 
 extension ComponentsBuilder {
+    /// Combines multiple components into an array.
+    /// - Parameter components: The components to combine.
+    /// - Returns: An array of components.
+    /// - Complexity: O(N) where N is the number of components.
     public static func buildBlock(_ components: Component...) -> [Component] {
         components
     }
 
+    /// Returns a single component as-is.
+    /// - Parameter component: The component.
+    /// - Returns: The same component.
+    /// - Complexity: O(1)
+    public static func buildBlock(_ component: Component) -> Component {
+        component
+    }
+
+    /// Contextual information provided during bulk entity creation.
     public struct Context {
         /// The index of the newly created entity.
         ///

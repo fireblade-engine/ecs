@@ -1,4 +1,4 @@
-// swift-tools-version:5.8
+// swift-tools-version: 6.1
 import PackageDescription
 
 let package = Package(
@@ -7,17 +7,28 @@ let package = Package(
         .library(name: "FirebladeECS",
                  targets: ["FirebladeECS"])
     ],
-    dependencies: [
-        .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.4.3")
+    traits: [
+        .trait(name: "benchmarks", description: "Enable performance tests")
     ],
     targets: [
         .target(name: "FirebladeECS",
-                exclude: ["Stencils/Family.stencil"]),
+                exclude: ["Stencils/Family.stencil"],
+                swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
         .testTarget(name: "FirebladeECSTests",
                     dependencies: ["FirebladeECS"],
-                    exclude: ["Stencils/FamilyTests.stencil"]),
+                    exclude: ["Stencils/FamilyTests.stencil"],
+                    swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
         .testTarget(name: "FirebladeECSPerformanceTests",
-                    dependencies: ["FirebladeECS"])
-    ],
-    swiftLanguageVersions: [.v5]
+                    dependencies: ["FirebladeECS"],
+                    swiftSettings: [
+                        .enableUpcomingFeature("StrictConcurrency"),
+                        .define("FRB_ENABLE_BENCHMARKS", .when(traits: ["benchmarks"]))
+                    ])
+    ]
 )
+
+#if os(macOS)
+package.dependencies.append(
+    .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.4.6")
+)
+#endif

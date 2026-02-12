@@ -1,13 +1,21 @@
 name: Check markdown links
 
-on: push
+on:
+  push:
+    branches: [ master, main, track/* ]
+  pull_request:
+    branches: [ master, main ]
+  workflow_dispatch:
 
 jobs:
   markdown-link-check:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
+    - name: Inject GH token into config
+      run: sed -i 's/GITHUB_TOKEN/${{ secrets.GITHUB_TOKEN }}/g' .github/workflows/mlc_config.json
     - name: markdown-link-check
-      uses: gaurav-nelson/github-action-markdown-link-check@1.0.16
-
+      uses: gaurav-nelson/github-action-markdown-link-check@v1
+      with:
+        config-file: '.github/workflows/mlc_config.json'

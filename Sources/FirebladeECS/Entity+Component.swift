@@ -6,16 +6,29 @@
 //
 
 extension Entity {
+    /// Retrieves a component of the specified type assigned to this entity.
+    /// - Returns: The component instance if found; otherwise, `nil`.
+    /// - Complexity: O(1)
     @inlinable
     public func get<C>() -> C? where C: Component {
         nexus.get(safe: identifier)
     }
 
+    /// Retrieves a component of the specified type assigned to this entity.
+    /// - Parameter compType: The type of the component to retrieve. Defaults to the inferred type.
+    /// - Returns: The component instance if found; otherwise, `nil`.
+    /// - Complexity: O(1)
     @inlinable
     public func get<A>(component compType: A.Type = A.self) -> A? where A: Component {
         nexus.get(safe: identifier)
     }
 
+    /// Retrieves two components of the specified types assigned to this entity.
+    /// - Parameters:
+    ///   - _: The first component type.
+    ///   - _: The second component type.
+    /// - Returns: A tuple containing the component instances (or `nil` if not found).
+    /// - Complexity: O(1)
     @inlinable
     public func get<A, B>(components _: A.Type, _: B.Type) -> (A?, B?) where A: Component, B: Component {
         let compA: A? = get(component: A.self)
@@ -24,6 +37,13 @@ extension Entity {
     }
 
     // swiftlint:disable large_tuple
+    /// Retrieves three components of the specified types assigned to this entity.
+    /// - Parameters:
+    ///   - _: The first component type.
+    ///   - _: The second component type.
+    ///   - _: The third component type.
+    /// - Returns: A tuple containing the component instances (or `nil` if not found).
+    /// - Complexity: O(1)
     @inlinable
     public func get<A, B, C>(components _: A.Type, _: B.Type, _: C.Type) -> (A?, B?, C?) where A: Component, B: Component, C: Component {
         let compA: A? = get(component: A.self)
@@ -40,6 +60,7 @@ extension Entity {
     /// - If `Comp` is already assinged to this entity nothing happens.
     /// - If `Comp` is set to `nil` and an instance of `Comp` is assigned to this entity,
     ///   `Comp` will be removed from this entity.
+    /// - Complexity: O(1) for get, O(M) for set where M is the number of families.
     @inlinable
     public subscript<Comp>(_ componentType: Comp.Type) -> Comp? where Comp: Component {
         get { self.get(component: componentType) }
@@ -59,6 +80,8 @@ extension Entity {
     ///
     /// A `Comp` instance must be assigned to this entity!
     /// - Parameter componentKeyPath: The `KeyPath` to the property of the given component.
+    /// - Returns: The value at the specified key path.
+    /// - Complexity: O(1)
     @inlinable
     public func get<Comp, Value>(valueAt componentKeyPath: KeyPath<Comp, Value>) -> Value where Comp: Component {
         self.get(component: Comp.self)![keyPath: componentKeyPath]
@@ -68,18 +91,22 @@ extension Entity {
     ///
     /// A `Comp` instance must be assigned to this entity!
     /// - Parameter componentKeyPath: The `KeyPath` to the property of the given component.
+    /// - Returns: The optional value at the specified key path.
+    /// - Complexity: O(1)
     @inlinable
     public func get<Comp, Value>(valueAt componentKeyPath: KeyPath<Comp, Value?>) -> Value? where Comp: Component {
         self.get(component: Comp.self)![keyPath: componentKeyPath]
     }
 
     /// Get the value of a component using the key Path to the property in the component.
+    /// - Complexity: O(1)
     @inlinable
     public subscript<Comp, Value>(_ componentKeyPath: KeyPath<Comp, Value>) -> Value where Comp: Component {
         self.get(valueAt: componentKeyPath)
     }
 
     /// Get the value of a component using the key Path to the property in the component.
+    /// - Complexity: O(1)
     @inlinable
     public subscript<Comp, Value>(_ componentKeyPath: KeyPath<Comp, Value?>) -> Value? where Comp: Component {
         self.get(valueAt: componentKeyPath)
@@ -95,6 +122,7 @@ extension Entity {
     ///   - newValue: The value to set.
     ///   - componentKeyPath: The `ReferenceWritableKeyPath` to the property of the given component.
     /// - Returns: Returns true if an action was performed, false otherwise.
+    /// - Complexity: O(1) if component exists, O(M) otherwise where M is the number of families.
     @inlinable
     @discardableResult
     public func set<Comp, Value>(value newValue: Value, for componentKeyPath: ReferenceWritableKeyPath<Comp, Value>) -> Bool where Comp: Component & DefaultInitializable {
@@ -118,6 +146,7 @@ extension Entity {
     ///   - newValue: The value to set.
     ///   - componentKeyPath: The `ReferenceWritableKeyPath` to the property of the given component.
     /// - Returns: Returns true if an action was performed, false otherwise.
+    /// - Complexity: O(1) if component exists, O(M) otherwise where M is the number of families.
     @inlinable
     @discardableResult
     public func set<Comp, Value>(value newValue: Value?, for componentKeyPath: ReferenceWritableKeyPath<Comp, Value?>) -> Bool where Comp: Component & DefaultInitializable {
@@ -136,6 +165,7 @@ extension Entity {
     /// **Behavior:**
     /// - If `Comp` is a component type that is currently *not* assigned to this entity,
     ///   a new instance of `Comp` will be default initialized and `newValue` will be set at the given keyPath.
+    /// - Complexity: O(1) for get. O(1) for set if component exists, O(M) otherwise.
     @inlinable
     public subscript<Comp, Value>(_ componentKeyPath: ReferenceWritableKeyPath<Comp, Value>) -> Value where Comp: Component & DefaultInitializable {
         get { self.get(valueAt: componentKeyPath) }
@@ -147,6 +177,7 @@ extension Entity {
     /// **Behavior:**
     /// - If `Comp` is a component type that is currently *not* assigned to this entity,
     ///   a new instance of `Comp` will be default initialized and `newValue` will be set at the given keyPath.
+    /// - Complexity: O(1) for get. O(1) for set if component exists, O(M) otherwise.
     @inlinable
     public subscript<Comp, Value>(_ componentKeyPath: ReferenceWritableKeyPath<Comp, Value?>) -> Value? where Comp: Component & DefaultInitializable {
         get { self.get(valueAt: componentKeyPath) }

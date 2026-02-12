@@ -6,59 +6,57 @@
 //
 
 @testable import FirebladeECS
-import XCTest
+import Testing
 
-class SingleTests: XCTestCase {
-    var nexus: Nexus!
-
-    override func setUp() {
-        super.setUp()
-        nexus = Nexus()
-    }
-
-    override func tearDown() {
-        nexus = nil
-        super.tearDown()
-    }
-
-    func testSingleCreation() {
+@Suite struct SingleTests {
+    @Test func singleCreation() {
+        let nexus = Nexus()
         let single = nexus.single(SingleGameState.self)
-        XCTAssertTrue(single.nexus === self.nexus)
-        XCTAssertEqual(single.traits.requiresAll.count, 1)
-        XCTAssertEqual(single.traits.excludesAll.count, 0)
+        #expect(single.nexus === nexus)
+        #expect(single.traits.requiresAll.count == 1)
+        #expect(single.traits.excludesAll.count == 0)
 
-        XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
-        XCTAssertEqual(nexus.familyMembersByTraits.values.count, 1)
+        #expect(nexus.familyMembersByTraits.keys.count == 1)
+        #expect(nexus.familyMembersByTraits.values.count == 1)
 
         let traits = FamilyTraitSet(requiresAll: [SingleGameState.self], excludesAll: [])
-        XCTAssertEqual(single.traits, traits)
+        #expect(single.traits == traits)
     }
 
-    func testSingleReuse() {
+    @Test func singleReuse() {
+        let nexus = Nexus()
         let singleA = nexus.single(SingleGameState.self)
 
         let singleB = nexus.single(SingleGameState.self)
 
-        XCTAssertEqual(nexus.familyMembersByTraits.keys.count, 1)
-        XCTAssertEqual(nexus.familyMembersByTraits.values.count, 1)
+        #expect(nexus.familyMembersByTraits.keys.count == 1)
+        #expect(nexus.familyMembersByTraits.values.count == 1)
 
-        XCTAssertEqual(singleA, singleB)
+        #expect(singleA == singleB)
     }
 
-    func testSingleEntityAndComponentCreation() {
+    @Test func singleEntityAndComponentCreation() {
+        let nexus = Nexus()
         let single = nexus.single(SingleGameState.self)
         let gameState = SingleGameState()
-        XCTAssertNotNil(single.entity)
-        XCTAssertNotNil(single.component)
-        XCTAssertEqual(single.component.shouldQuit, gameState.shouldQuit)
-        XCTAssertEqual(single.component.playerHealth, gameState.playerHealth)
+        #expect(single.component.shouldQuit == gameState.shouldQuit)
+        #expect(single.component.playerHealth == gameState.playerHealth)
     }
 
-    func testSingleCreationOnExistingFamilyMember() {
+    @Test func singleCreationOnExistingFamilyMember() {
+        let nexus = Nexus()
         _ = nexus.createEntity(with: Position(x: 1, y: 2))
         let singleGame = SingleGameState()
         _ = nexus.createEntity(with: singleGame)
         let single = nexus.single(SingleGameState.self)
-        XCTAssertTrue(singleGame === single.component)
+        #expect(singleGame === single.component)
+    }
+
+    @Test func singleEntityAccess() {
+        let nexus = Nexus()
+        let single = nexus.single(SingleGameState.self)
+        let entity = single.entity
+        #expect(entity.nexus === nexus)
+        #expect(entity.identifier == single.entityId)
     }
 }

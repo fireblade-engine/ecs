@@ -8,16 +8,24 @@
 /// **Component**
 ///
 /// A component represents the raw data for one aspect of an entity.
-public protocol Component: AnyObject {
-    /// Unique, immutable identifier of this component type.
-    static var identifier: ComponentIdentifier { get }
+public protocol Component: AnyObject, Sendable {
+    // Unique, immutable identifier of this component type.    static var identifier: ComponentIdentifier { get }
 
     /// Unique, immutable identifier of this component type.
     var identifier: ComponentIdentifier { get }
 }
 
 extension Component {
-    public static var identifier: ComponentIdentifier { ComponentIdentifier(Self.self) }
+    /// The unique identifier for this component type.
+    /// - Complexity: O(1)
+    public static var identifier: ComponentIdentifier {
+        ComponentIdentifier(Self.self)
+    }
+
+    /// The unique identifier for this component instance.
+    /// - Complexity: O(1)
     @inline(__always)
-    public var identifier: ComponentIdentifier { Self.identifier }
+    public var identifier: ComponentIdentifier {
+        Self.identifier
+    }
 }

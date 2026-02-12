@@ -5,19 +5,20 @@
 //  Created by Christian Treffs on 09.10.17.
 //
 
+#if FRB_ENABLE_BENCHMARKS
 import FirebladeECS
 
-class EmptyComponent: Component {
+class EmptyComponent: Component, @unchecked Sendable {
 }
 
-class Name: Component {
+class Name: Component, @unchecked Sendable {
     var name: String
     init(name: String) {
         self.name = name
     }
 }
 
-class Position: Component {
+class Position: Component, @unchecked Sendable {
     var x: Int
     var y: Int
     init(x: Int, y: Int) {
@@ -26,21 +27,21 @@ class Position: Component {
     }
 }
 
-class Velocity: Component {
+class Velocity: Component, @unchecked Sendable {
     var a: Float
     init(a: Float) {
         self.a = a
     }
 }
 
-class Party: Component {
+class Party: Component, @unchecked Sendable {
     var partying: Bool
     init(partying: Bool) {
         self.partying = partying
     }
 }
 
-class Color: Component {
+class Color: Component, @unchecked Sendable {
     var r: UInt8 = 0
     var g: UInt8 = 0
     var b: UInt8 = 0
@@ -61,7 +62,8 @@ class ExampleSystem {
     }
 }
 
-final class SingleGameState: SingleComponent {
+final class SingleGameState: SingleComponent, @unchecked Sendable {
     var shouldQuit: Bool = false
     var playerHealth: Int = 67
 }
+#endif

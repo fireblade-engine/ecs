@@ -6,101 +6,94 @@
 //
 
 @testable import FirebladeECS
-import XCTest
+import Testing
 
-class FamilyTests: XCTestCase {
-    var nexus: Nexus!
-
-    override func setUp() {
-        super.setUp()
-        nexus = Nexus()
-    }
-
-    override func tearDown() {
-        nexus = nil
-        super.tearDown()
-    }
-
-    func createDefaultEntity() {
+@Suite struct FamilyTests {
+    private func createDefaultEntity(in nexus: Nexus) {
         let e = nexus.createEntity()
         e.assign(Position(x: 1, y: 2))
         e.assign(Color())
     }
 
-    func testFamilyCreation() {
+    @Test func familyCreation() {
+        let nexus = Nexus()
         let family = nexus.family(requires: Position.self,
                                   excludesAll: Name.self)
 
-        XCTAssertTrue(family.nexus === self.nexus)
-        XCTAssertEqual(nexus.numFamilies, 1)
-        XCTAssertEqual(nexus.numComponents, 0)
-        XCTAssertEqual(nexus.numEntities, 0)
-        XCTAssertFalse(family.traits.description.isEmpty)
-        XCTAssertFalse(family.traits.debugDescription.isEmpty)
+        #expect(family.nexus === nexus)
+        #expect(nexus.numFamilies == 1)
+        #expect(nexus.numComponents == 0)
+        #expect(nexus.numEntities == 0)
+        #expect(!family.traits.description.isEmpty)
+        #expect(!family.traits.debugDescription.isEmpty)
 
         let traits = FamilyTraitSet(requiresAll: [Position.self], excludesAll: [Name.self])
-        XCTAssertEqual(family.traits, traits)
+        #expect(family.traits == traits)
     }
 
-    func testFamilyReuse() {
+    @Test func familyReuse() {
+        let nexus = Nexus()
         let familyA = nexus.family(requires: Position.self,
                                    excludesAll: Name.self)
 
         let familyB = nexus.family(requires: Position.self,
                                    excludesAll: Name.self)
 
-        XCTAssertEqual(nexus.numFamilies, 1)
-        XCTAssertEqual(nexus.numComponents, 0)
+        #expect(nexus.numFamilies == 1)
+        #expect(nexus.numComponents == 0)
 
-        XCTAssertEqual(familyA, familyB)
+        #expect(familyA == familyB)
     }
 
-    func testFamilyAbandoned() {
-        XCTAssertEqual(nexus.numFamilies, 0)
-        XCTAssertEqual(nexus.numComponents, 0)
-        XCTAssertEqual(nexus.numEntities, 0)
+    @Test func familyAbandoned() {
+        let nexus = Nexus()
+        #expect(nexus.numFamilies == 0)
+        #expect(nexus.numComponents == 0)
+        #expect(nexus.numEntities == 0)
         _ = nexus.family(requires: Position.self)
-        XCTAssertEqual(nexus.numFamilies, 1)
-        XCTAssertEqual(nexus.numComponents, 0)
-        XCTAssertEqual(nexus.numEntities, 0)
+        #expect(nexus.numFamilies == 1)
+        #expect(nexus.numComponents == 0)
+        #expect(nexus.numEntities == 0)
         let entity = nexus.createEntity()
-        XCTAssertFalse(entity.has(Position.self))
-        XCTAssertEqual(nexus.numFamilies, 1)
-        XCTAssertEqual(nexus.numComponents, 0)
-        XCTAssertEqual(nexus.numEntities, 1)
+        #expect(!entity.has(Position.self))
+        #expect(nexus.numFamilies == 1)
+        #expect(nexus.numComponents == 0)
+        #expect(nexus.numEntities == 1)
         entity.assign(Position(x: 1, y: 1))
-        XCTAssertTrue(entity.has(Position.self))
-        XCTAssertEqual(nexus.numFamilies, 1)
-        XCTAssertEqual(nexus.numComponents, 1)
-        XCTAssertEqual(nexus.numEntities, 1)
+        #expect(entity.has(Position.self))
+        #expect(nexus.numFamilies == 1)
+        #expect(nexus.numComponents == 1)
+        #expect(nexus.numEntities == 1)
         entity.remove(Position.self)
-        XCTAssertEqual(nexus.numFamilies, 1)
-        XCTAssertEqual(nexus.numComponents, 0)
-        XCTAssertEqual(nexus.numEntities, 1)
+        #expect(nexus.numFamilies == 1)
+        #expect(nexus.numComponents == 0)
+        #expect(nexus.numEntities == 1)
         nexus.destroy(entity: entity)
-        XCTAssertEqual(nexus.numFamilies, 1)
-        XCTAssertEqual(nexus.numComponents, 0)
-        XCTAssertEqual(nexus.numEntities, 0)
+        #expect(nexus.numFamilies == 1)
+        #expect(nexus.numComponents == 0)
+        #expect(nexus.numEntities == 0)
     }
 
-    func testFamilyLateMember() {
+    @Test func familyLateMember() {
+        let nexus = Nexus()
         let eEarly = nexus.createEntity(with: Position(x: 1, y: 2))
-        XCTAssertEqual(nexus.numFamilies, 0)
-        XCTAssertEqual(nexus.numComponents, 1)
-        XCTAssertEqual(nexus.numEntities, 1)
+        #expect(nexus.numFamilies == 0)
+        #expect(nexus.numComponents == 1)
+        #expect(nexus.numEntities == 1)
         let family = nexus.family(requires: Position.self)
-        XCTAssertEqual(nexus.numFamilies, 1)
-        XCTAssertEqual(nexus.numComponents, 1)
-        XCTAssertEqual(nexus.numEntities, 1)
+        #expect(nexus.numFamilies == 1)
+        #expect(nexus.numComponents == 1)
+        #expect(nexus.numEntities == 1)
         let eLate = nexus.createEntity(with: Position(x: 1, y: 2))
-        XCTAssertEqual(nexus.numFamilies, 1)
-        XCTAssertEqual(nexus.numComponents, 2)
-        XCTAssertEqual(nexus.numEntities, 2)
-        XCTAssertTrue(family.isMember(eEarly))
-        XCTAssertTrue(family.isMember(eLate))
+        #expect(nexus.numFamilies == 1)
+        #expect(nexus.numComponents == 2)
+        #expect(nexus.numEntities == 2)
+        #expect(family.isMember(eEarly))
+        #expect(family.isMember(eLate))
     }
 
-    func testFamilyExchange() {
+    @Test func familyExchange() {
+        let nexus = Nexus()
         let number: Int = 10
 
         for i in 0..<number {
@@ -113,8 +106,8 @@ class FamilyTests: XCTestCase {
         let familyB = nexus.family(requires: Velocity.self,
                                    excludesAll: Position.self)
 
-        XCTAssertEqual(familyA.count, 10)
-        XCTAssertEqual(familyB.count, 0)
+        #expect(familyA.count == 10)
+        #expect(familyB.count == 0)
 
         familyA
             .entityAndComponents
@@ -123,8 +116,8 @@ class FamilyTests: XCTestCase {
                 entity.remove(Position.self)
             }
 
-        XCTAssertEqual(familyA.count, 0)
-        XCTAssertEqual(familyB.count, 10)
+        #expect(familyA.count == 0)
+        #expect(familyB.count == 10)
 
         familyB
             .entityAndComponents
@@ -133,11 +126,12 @@ class FamilyTests: XCTestCase {
                 entity.remove(velocity)
             }
 
-        XCTAssertEqual(familyA.count, 10)
-        XCTAssertEqual(familyB.count, 0)
+        #expect(familyA.count == 10)
+        #expect(familyB.count == 0)
     }
 
-    func testFamilyMemberBasicIteration() {
+    @Test func familyMemberBasicIteration() {
+        let nexus = Nexus()
         for i in 0..<1000 {
             nexus.createEntity(with: Position(x: i + 1, y: i + 2))
             nexus.createEntity(with: Velocity(a: Float(i)))
@@ -150,24 +144,25 @@ class FamilyTests: XCTestCase {
                                    excludesAll: Position.self)
 
         familyA.forEach { (pos: Position?) in
-            XCTAssertNotNil(pos)
+            #expect(pos != nil)
         }
 
         familyB.forEach { (vel: Velocity?) in
-            XCTAssertNotNil(vel)
+            #expect(vel != nil)
         }
     }
 
-    func testFamilyBulkDestroy() {
+    @Test func familyBulkDestroy() {
+        let nexus = Nexus()
         let count = 10_000
 
         for _ in 0..<count {
-            createDefaultEntity()
+            createDefaultEntity(in: nexus)
         }
 
         let family = nexus.family(requires: Position.self)
 
-        XCTAssertEqual(family.memberIds.count, count)
+        #expect(family.memberIds.count == count)
 
         let currentCount: Int = (count / 2)
 
@@ -178,43 +173,45 @@ class FamilyTests: XCTestCase {
                 entity.destroy()
             }
 
-        XCTAssertEqual(family.memberIds.count, (count / 2))
+        #expect(family.memberIds.count == (count / 2))
 
         for _ in 0..<count {
-            createDefaultEntity()
+            createDefaultEntity(in: nexus)
         }
 
-        XCTAssertEqual(family.memberIds.count, count + (count / 2))
+        #expect(family.memberIds.count == count + (count / 2))
     }
 
-    func testFamilyDestroyMembers() {
+    @Test func familyDestroyMembers() {
+        let nexus = Nexus()
         let family = nexus.family(requiresAll: Position.self, Color.self)
 
         family.createMember(with: (Position(x: 1, y: 2), Color(r: 1, g: 2, b: 3)))
         family.createMember(with: (Position(x: 3, y: 4), Color(r: 4, g: 5, b: 6)))
         nexus.createEntity(with: Name(name: "anotherEntity"))
 
-        XCTAssertEqual(nexus.numFamilies, 1)
-        XCTAssertEqual(nexus.numComponents, 5)
-        XCTAssertEqual(nexus.numEntities, 3)
-        XCTAssertEqual(family.count, 2)
+        #expect(nexus.numFamilies == 1)
+        #expect(nexus.numComponents == 5)
+        #expect(nexus.numEntities == 3)
+        #expect(family.count == 2)
 
-        XCTAssertTrue(family.destroyMembers())
+        #expect(family.destroyMembers())
 
-        XCTAssertEqual(nexus.numFamilies, 1)
-        XCTAssertEqual(nexus.numComponents, 1)
-        XCTAssertEqual(nexus.numEntities, 1)
-        XCTAssertEqual(family.count, 0)
+        #expect(nexus.numFamilies == 1)
+        #expect(nexus.numComponents == 1)
+        #expect(nexus.numEntities == 1)
+        #expect(family.count == 0)
 
-        XCTAssertFalse(family.destroyMembers())
+        #expect(!family.destroyMembers())
 
-        XCTAssertEqual(nexus.numFamilies, 1)
-        XCTAssertEqual(nexus.numComponents, 1)
-        XCTAssertEqual(nexus.numEntities, 1)
-        XCTAssertEqual(family.count, 0)
+        #expect(nexus.numFamilies == 1)
+        #expect(nexus.numComponents == 1)
+        #expect(nexus.numEntities == 1)
+        #expect(family.count == 0)
     }
 
-    func testFamilyCreateMembers() {
+    @Test func familyCreateMembers() {
+        let nexus = Nexus()
         let position = Position(x: 0, y: 1)
         let name = Name(name: "SomeName")
         let velocity = Velocity(a: 123)
@@ -222,28 +219,28 @@ class FamilyTests: XCTestCase {
         let color = Color()
 
         let family1 = nexus.family(requires: Position.self, excludesAll: Name.self)
-        XCTAssertTrue(family1.isEmpty)
+        #expect(family1.isEmpty)
         family1.createMember(with: position)
-        XCTAssertEqual(family1.count, 1)
+        #expect(family1.count == 1)
 
         let family2 = nexus.family(requiresAll: Position.self, Name.self)
-        XCTAssertTrue(family2.isEmpty)
+        #expect(family2.isEmpty)
         family2.createMember(with: (position, name))
-        XCTAssertEqual(family2.count, 1)
+        #expect(family2.count == 1)
 
         let family3 = nexus.family(requiresAll: Position.self, Name.self, Velocity.self)
-        XCTAssertTrue(family3.isEmpty)
+        #expect(family3.isEmpty)
         family3.createMember(with: (position, name, velocity))
-        XCTAssertEqual(family3.count, 1)
+        #expect(family3.count == 1)
 
         let family4 = nexus.family(requiresAll: Position.self, Name.self, Velocity.self, Party.self)
-        XCTAssertTrue(family4.isEmpty)
+        #expect(family4.isEmpty)
         family4.createMember(with: (position, name, velocity, party))
-        XCTAssertEqual(family4.count, 1)
+        #expect(family4.count == 1)
 
         let family5 = nexus.family(requiresAll: Position.self, Name.self, Velocity.self, Party.self, Color.self)
-        XCTAssertTrue(family5.isEmpty)
+        #expect(family5.isEmpty)
         family5.createMember(with: (position, name, velocity, party, color))
-        XCTAssertEqual(family5.count, 1)
+        #expect(family5.count == 1)
     }
 }

@@ -11,14 +11,14 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  RUN_TESTS: true
-
 jobs:
   wasm:
     name: WASM (Swift ${{ matrix.swift }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    container:
+      image: swift:${{ matrix.swift }}
+
     strategy:
       fail-fast: false
       matrix:

@@ -169,8 +169,10 @@ extension DynamicComponentProvider: ComponentProvider {
 /// Represents a state for an EntityStateMachine. The state contains any number of ComponentProviders which
 /// are used to add components to the entity when this state is entered.
 public class EntityState: @unchecked Sendable {
+    /// A dictionary mapping component identifiers to their providers.
     var providers = [ComponentIdentifier: ComponentProvider]()
 
+    /// Creates a new, empty entity state.
     public init() {}
 
     /// Add a new StateComponentMapping to this state. The mapping is a utility class that is used to

@@ -62,6 +62,11 @@ public func hash<H: Sequence>(combine hashValues: H) -> Int where H.Element: Has
 // MARK: - entity component hash
 
 extension EntityComponentHash {
+    /// Composes a unique hash from an entity identifier and a component type hash.
+    /// - Parameters:
+    ///   - entityId: The entity identifier.
+    ///   - componentTypeHash: The component type hash.
+    /// - Returns: A combined hash value.
     static func compose(entityId: EntityIdentifier, componentTypeHash: ComponentTypeHash) -> EntityComponentHash {
         let entityIdSwapped = UInt(entityId.id).byteSwapped // needs to be 64 bit
         let componentTypeHashUInt = UInt(bitPattern: componentTypeHash)
@@ -69,12 +74,22 @@ extension EntityComponentHash {
         return Int(bitPattern: hashUInt)
     }
 
+    /// Decomposes a component type hash from an entity component hash, given the entity identifier.
+    /// - Parameters:
+    ///   - hash: The combined entity component hash.
+    ///   - entityId: The entity identifier.
+    /// - Returns: The extracted component type hash.
     static func decompose(_ hash: EntityComponentHash, with entityId: EntityIdentifier) -> ComponentTypeHash {
         let entityIdSwapped = UInt(entityId.id).byteSwapped
         let entityIdSwappedInt = Int(bitPattern: entityIdSwapped)
         return hash ^ entityIdSwappedInt
     }
 
+    /// Decomposes an entity identifier from an entity component hash, given the component type hash.
+    /// - Parameters:
+    ///   - hash: The combined entity component hash.
+    ///   - componentTypeHash: The component type hash.
+    /// - Returns: The extracted entity identifier.
     static func decompose(_ hash: EntityComponentHash, with componentTypeHash: ComponentTypeHash) -> EntityIdentifier {
         let entityId: Int = (hash ^ componentTypeHash).byteSwapped
         return EntityIdentifier(UInt32(truncatingIfNeeded: entityId))

@@ -18,11 +18,14 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable & Sendable> {
         self.init(storage: Storage())
     }
 
+    /// Creates a new sparse set with the given storage.
+    /// - Parameter storage: The underlying storage to use.
     @usableFromInline
     init(storage: Storage) {
         self.storage = storage
     }
 
+    /// The underlying storage for the sparse set.
     @usableFromInline let storage: Storage
 
     /// The size of the set.
@@ -95,6 +98,7 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable & Sendable> {
 }
 
 extension UnorderedSparseSet {
+    /// The underlying storage for the unordered sparse set.
     @usableFromInline
     final class Storage: @unchecked Sendable {
         /// An index into the dense store.
@@ -109,11 +113,18 @@ extension UnorderedSparseSet {
         @usableFromInline
         typealias DenseStore = ContiguousArray<Entry>
 
+        /// An entry in the dense store, holding the key and the element.
         @usableFromInline
         struct Entry {
+            /// The key associated with the element.
             @usableFromInline let key: Key
+            /// The element stored.
             @usableFromInline let element: Element
 
+            /// Creates a new entry.
+            /// - Parameters:
+            ///   - key: The key.
+            ///   - element: The element.
             @usableFromInline
             init(key: Key, element: Element) {
                 self.key = key
@@ -121,32 +132,46 @@ extension UnorderedSparseSet {
             }
         }
 
+        /// The dense storage of entries.
         @usableFromInline var dense: DenseStore
+        /// The sparse storage mapping keys to dense indices.
         @usableFromInline var sparse: SparseStore
 
+        /// Creates a new storage with existing dense and sparse stores.
+        /// - Parameters:
+        ///   - sparse: The sparse store.
+        ///   - dense: The dense store.
         @usableFromInline
         init(sparse: SparseStore, dense: DenseStore) {
             self.sparse = sparse
             self.dense = dense
         }
 
+        /// Creates a new empty storage.
         @usableFromInline
         convenience init() {
             self.init(sparse: [:], dense: [])
         }
 
+        /// The number of elements in the storage.
+        /// The number of elements in the storage.
         @usableFromInline var count: Int {
             dense.count
         }
 
+        /// A Boolean value indicating whether the storage is empty.
         @usableFromInline var isEmpty: Bool {
             dense.isEmpty
         }
 
+        /// The first element in the storage, or `nil` if empty.
         @inlinable var first: Element? {
             dense.first?.element
         }
 
+        /// Finds the dense index for a given key.
+        /// - Parameter key: The key to look for.
+        /// - Returns: The index in the dense store, or `nil` if not found.
         @inlinable
         func findIndex(at key: Key) -> Int? {
             guard let denseIndex = sparse[key], denseIndex < count else {
@@ -155,6 +180,9 @@ extension UnorderedSparseSet {
             return denseIndex
         }
 
+        /// Finds the element associated with a given key.
+        /// - Parameter key: The key to look for.
+        /// - Returns: The element associated with the key, or `nil` if not found.
         @inlinable
         func findElement(at key: Key) -> Element? {
             guard let denseIndex = findIndex(at: key) else {
@@ -165,6 +193,11 @@ extension UnorderedSparseSet {
             return entry.element
         }
 
+        /// Inserts an element into the storage.
+        /// - Parameters:
+        ///   - element: The element to insert.
+        ///   - key: The key associated with the element.
+        /// - Returns: `true` if the element was inserted as a new entry; `false` if it replaced an existing entry.
         @inlinable
         func insert(_ element: Element, at key: Key) -> Bool {
             if let denseIndex = findIndex(at: key) {
@@ -178,6 +211,9 @@ extension UnorderedSparseSet {
             return true
         }
 
+        /// Removes an element associated with a key.
+        /// - Parameter key: The key of the element to remove.
+        /// - Returns: The removed entry, or `nil` if the key was not found.
         @inlinable
         func remove(at key: Key) -> Entry? {
             guard let denseIndex = findIndex(at: key) else {
@@ -204,12 +240,16 @@ extension UnorderedSparseSet {
             return dense.removeLast()
         }
 
+        /// Removes all elements from the storage.
+        /// - Parameter keepingCapacity: A Boolean value indicating whether to keep the capacity of the storage.
         @inlinable
         func removeAll(keepingCapacity: Bool = false) {
             sparse.removeAll(keepingCapacity: keepingCapacity)
             dense.removeAll(keepingCapacity: keepingCapacity)
         }
 
+        /// Returns an iterator over the elements of the storage.
+        /// - Returns: An iterator over the `Storage.Entry` elements.
         @inlinable
         func makeIterator() -> IndexingIterator<ContiguousArray<Storage.Entry>> {
             dense.makeIterator()
@@ -240,13 +280,19 @@ extension UnorderedSparseSet: Sequence {
 
     // MARK: - UnorderedSparseSetIterator
 
+    /// An iterator over the elements of an `UnorderedSparseSet`.
     public struct ElementIterator: IteratorProtocol {
+        /// The underlying iterator over the storage entries.
         var iterator: IndexingIterator<ContiguousArray<Storage.Entry>>
 
+        /// Creates an iterator for the given sparse set.
+        /// - Parameter sparseSet: The sparse set to iterate over.
         public init(_ sparseSet: UnorderedSparseSet<Element, Key>) {
             iterator = sparseSet.storage.makeIterator()
         }
 
+        /// Advances to the next element and returns it, or `nil` if no next element exists.
+        /// - Returns: The next element in the sequence, or `nil` if the iterator has reached the end.
         public mutating func next() -> Element? {
             iterator.next()?.element
         }

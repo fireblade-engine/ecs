@@ -38,9 +38,9 @@ jobs:
           tag: swift-${{ matrix.swift }}-RELEASE
           target: wasm32-unknown-wasi
 
-      - name: Install dependencies
-        run: |
-          apt-get update && apt-get install --yes xz-utils --no-install-recommends
+     # - name: Install dependencies
+     #   run: |
+     #     apt-get update && apt-get install --yes xz-utils --no-install-recommends
       - name: Setup wasmtime
         uses: bytecodealliance/actions/wasmtime/setup@v1
         with:

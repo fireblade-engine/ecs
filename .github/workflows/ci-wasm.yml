@@ -36,6 +36,11 @@ jobs:
           tag: swift-${{ matrix.swift }}-RELEASE
           target: wasm32-unknown-wasi
 
+      - name: Swift Version
+        run: swift --version
+
+      - name: Swift SDK List
+        run: swift sdk list
       - name: Setup wasmtime
         uses: bytecodealliance/actions/wasmtime/setup@v1
         with:

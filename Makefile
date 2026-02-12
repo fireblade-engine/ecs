@@ -125,8 +125,8 @@ pre-commit: lint-fix test
 
 clean: clean-sourcery
 	swift package clean
-	rm -rf .build
-	rm -rf .swiftpm
+	rm -rdf .build
+	rm -rdf .swiftpm
 
 clean-sourcery:
 	rm -rdf ${HOME}/Library/Caches/Sourcery

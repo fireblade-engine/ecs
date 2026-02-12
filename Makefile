@@ -2,6 +2,10 @@ UNAME_S := $(shell uname -s)
 SWIFT_FLAGS ?= --disable-sandbox
 SWIFT_PACKAGE_VERSION := $(shell swift package tools-version)
 
+ifdef GEMINI_CLI
+XCS_FORMATTER = 2>&1 | mint run xcsift -w -W -c -f toon
+endif
+
 # Repository name on GitHub Pages
 REPO_NAME ?= ecs
 # Subdirectory for versioned documentation (e.g., main, 1.0.0)
@@ -40,7 +44,7 @@ lint-fix:
 
 # Run tests
 test:
-	swift test $(SWIFT_FLAGS) --parallel --enable-code-coverage -Xswiftc -warnings-as-errors
+	swift test $(SWIFT_FLAGS) --parallel --enable-code-coverage -Xswiftc -warnings-as-errors $(XCS_FORMATTER)
 
 test-coverage:
 	$(MAKE) test
@@ -67,10 +71,10 @@ testReadme:
 # --- Build ---
 
 build-debug:
-	swift build -c debug
+	swift build -c debug $(XCS_FORMATTER)
 
 build-release:
-	swift build -c release --skip-update
+	swift build -c release --skip-update $(XCS_FORMATTER)
 
 # --- Documentation ---
 
@@ -87,20 +91,20 @@ docs-generate:
 		--disable-indexing \
 		--transform-for-static-hosting \
 		--hosting-base-path $(HOSTING_BASE_PATH) \
-		--output-path .build/documentation/$(DOCS_VERSION_PATH)
+		--output-path .build/documentation/$(DOCS_VERSION_PATH) $(XCS_FORMATTER)
 
 DOCS_COVERAGE_THRESHOLD ?= 95
 
 docs-coverage: docs-check-coverage
 
 docs-check-coverage:
-	swift package --disable-sandbox generate-documentation --target FirebladeECS --experimental-documentation-coverage --coverage-summary-level brief
+	swift package --disable-sandbox generate-documentation --target FirebladeECS --experimental-documentation-coverage --coverage-summary-level brief $(XCS_FORMATTER)
 
 docs-coverage-detailed:
-	swift package --disable-sandbox generate-documentation --target FirebladeECS --experimental-documentation-coverage --coverage-summary-level detailed
+	swift package --disable-sandbox generate-documentation --target FirebladeECS --experimental-documentation-coverage --coverage-summary-level detailed $(XCS_FORMATTER)
 
 docs-check-links:
-	swift package --disable-sandbox generate-documentation --target FirebladeECS --analyze --warnings-as-errors
+	swift package --disable-sandbox generate-documentation --target FirebladeECS --analyze --warnings-as-errors $(XCS_FORMATTER)
 
 # Preview DocC documentation with analysis/warnings and overview of coverage
 preview-analysis-docs:

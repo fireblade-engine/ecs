@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        swift: ["6.1", "6.2"]
+        swift: ["6.1"]
     container:
       image: swift:${{ matrix.swift }}
     steps:
@@ -31,5 +31,5 @@ jobs:
         with:
           tag: swift-${{ matrix.swift }}-RELEASE
 
-      - name: Build
-        run: swift build --swift-sdk ${{ steps.setup-wasm.outputs.swift-sdk-id }}
+      - name: Run Tests (Release)
+        run: swift test -c release --swift-sdk ${{ steps.setup-wasm.outputs.swift-sdk-id }}

@@ -16,9 +16,6 @@ jobs:
     name: WASM (Swift ${{ matrix.swift }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    container:
-      image: swift:${{ matrix.swift }}
-
     strategy:
       fail-fast: false
       matrix:
@@ -37,7 +34,9 @@ jobs:
           target: wasm32-unknown-wasi
 
       - name: Swift Version
-        run: swift --version
+        run: |
+          which -a swift 
+          swift --version
 
       - name: Swift SDK List
         run: swift sdk list

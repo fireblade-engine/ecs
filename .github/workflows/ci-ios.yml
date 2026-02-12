@@ -25,9 +25,8 @@ jobs:
         with:
           swift-version: ${{ matrix.swift }}
       
-      # Generate xcodeproj to assist xcodebuild in finding the scheme
-      - name: Generate Xcode Project
-        run: swift package generate-xcodeproj
+      - name: Resolve Package Dependencies
+        run: swift package resolve
 
       - name: Select Latest Simulator
         id: select_sim
@@ -52,7 +51,6 @@ jobs:
       - name: Run Tests (iOS)
         run: |
           xcodebuild test \
-            -project FirebladeECS.xcodeproj \
             -scheme FirebladeECS \
             -destination "${{ steps.select_sim.outputs.destination }}" \
             -configuration Release \

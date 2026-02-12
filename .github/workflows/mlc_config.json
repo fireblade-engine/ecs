@@ -4,20 +4,10 @@
             "pattern": "^http://localhost"
         },
         {
-            "pattern": "^https://swiftpackageindex.com"
+            "pattern": "swiftpackageindex.com"
         },
         {
             "pattern": "^\\./tracks/"
-        }
-    ],
-    "replacementPatterns": [
-        {
-            "pattern": "^\\./",
-            "replacement": "https://github.com/fireblade-engine/ecs/tree/master/"
-        },
-        {
-            "pattern": "^\\.\\./",
-            "replacement": "https://github.com/fireblade-engine/ecs/tree/master/"
         }
     ],
     "httpHeaders": [

@@ -5,6 +5,12 @@
 //  Created by Christian Treffs on 22.07.20.
 //
 
+#if canImport(Darwin)
+public typealias UserInfoValue = any Sendable
+#else
+public typealias UserInfoValue = Any
+#endif
+
 /// A container for family members (components) used for encoding and decoding.
 public struct FamilyMemberContainer<R: FamilyRequirementsManaging> {
     /// The components of the family members.
@@ -51,11 +57,7 @@ public protocol TopLevelEncoder {
     func encode<T: Encodable>(_ value: T) throws -> Self.Output
 
     /// Contextual user-provided information for use during decoding.
-    #if canImport(Darwin)
-    var userInfo: [CodingUserInfoKey: any Sendable] { get set }
-    #else
-    var userInfo: [CodingUserInfoKey: Any] { get set }
-    #endif
+    var userInfo: [CodingUserInfoKey: UserInfoValue] { get set }
 }
 
 extension Family where R: FamilyEncoding {
@@ -101,11 +103,7 @@ public protocol TopLevelDecoder {
     func decode<T: Decodable>(_ type: T.Type, from: Self.Input) throws -> T
 
     /// Contextual user-provided information for use during decoding.
-    #if canImport(Darwin)
-    var userInfo: [CodingUserInfoKey: any Sendable] { get set }
-    #else
-    var userInfo: [CodingUserInfoKey: Any] { get set }
-    #endif
+    var userInfo: [CodingUserInfoKey: UserInfoValue] { get set }
 }
 
 extension Family where R: FamilyDecoding {

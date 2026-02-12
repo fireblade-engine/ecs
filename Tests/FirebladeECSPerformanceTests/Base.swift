@@ -5,6 +5,7 @@
 //  Created by Christian Treffs on 09.10.17.
 //
 
+#if FRB_ENABLE_BENCHMARKS
 import FirebladeECS
 
 class EmptyComponent: Component, @unchecked Sendable {
@@ -65,3 +66,4 @@ final class SingleGameState: SingleComponent, @unchecked Sendable {
     var shouldQuit: Bool = false
     var playerHealth: Int = 67
 }
+#endif

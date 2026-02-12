@@ -40,12 +40,13 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable & Sendable> {
 
     /// Returns a Boolean value that indicates whether the key is included in the set.
     /// - Parameter key: The key to inspect.
+    /// - Complexity: O(1)
     @inlinable
     public func contains(_ key: Key) -> Bool {
         storage.findIndex(at: key) != nil
     }
 
-    /// Inset an element for a given key into the set in O(1).
+    /// Insert an element for a given key into the set.
     ///
     /// Elements at previously set keys will be replaced.
     ///
@@ -53,32 +54,36 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable & Sendable> {
     ///   - element: The element.
     ///   - key: The key.
     /// - Returns: `true` if new, `false` if replaced.
+    /// - Complexity: O(1)
     @discardableResult
     public func insert(_ element: Element, at key: Key) -> Bool {
         storage.insert(element, at: key)
     }
 
-    /// Get the element for the given key in O(1).
+    /// Get the element for the given key.
     ///
     /// - Parameter key: The key.
     /// - Returns: the element or `nil` if the key wasn't found.
+    /// - Complexity: O(1)
     @inlinable
     public func get(at key: Key) -> Element? {
         storage.findElement(at: key)
     }
 
-    /// Unsafely gets the element for the given key,
+    /// Unsafely gets the element for the given key.
     /// - Parameter key: The key.
     /// - Returns: The element.
+    /// - Complexity: O(1)
     @inlinable
     public func get(unsafeAt key: Key) -> Element {
         storage.findElement(at: key).unsafelyUnwrapped
     }
 
-    /// Removes the element entry for given key in O(1).
+    /// Removes the element entry for given key.
     ///
     /// - Parameter key: the key
     /// - Returns: removed value or nil if key not found.
+    /// - Complexity: O(1)
     @discardableResult
     public func remove(at key: Key) -> Element? {
         storage.remove(at: key)?.element
@@ -86,6 +91,7 @@ public struct UnorderedSparseSet<Element, Key: Hashable & Codable & Sendable> {
 
     /// Removes all keys and elements from the set.
     /// - Parameter keepingCapacity: A Boolean value that indicates whether the set should maintain it's capacity.
+    /// - Complexity: O(N) where N is the number of elements.
     @inlinable
     public func removeAll(keepingCapacity: Bool = false) {
         storage.removeAll(keepingCapacity: keepingCapacity)

@@ -46,5 +46,6 @@ This document outlines the technology stack, libraries, and tools used in the pr
     -   `ci-macos.yml`
     -   `ci-linux.yml`
     -   `ci-windows.yml`
+    -   `ci-ios.yml`
     -   `ci-wasm.yml`
-    -   `documentation.yml`
+    -   `docs.yml`

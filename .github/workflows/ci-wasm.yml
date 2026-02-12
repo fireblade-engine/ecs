@@ -23,7 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         swift: ["6.1"]
-        config: ["release"]
+        config: ["debug"]
 
     steps:
       - name: Checkout
@@ -64,7 +64,5 @@ jobs:
         run: |
           # <https://github.com/swiftlang/swift-testing/blob/main/Documentation/WASI.md>
           swift build -c ${{ matrix.config }} --swift-sdk ${{ steps.setup-swiftwasm.outputs.swift-sdk-id }} --build-tests -Xswiftc -enable-testing 
-          echo "---"
-          ls -la .build/${{ matrix.config }}/FirebladeECSPackageTests*
-          echo "---"
-          wasmtime .build/${{ matrix.config }}/FirebladeECSPackageTests.xctest --testing-library swift-testing
+          # wasmtime .build/${{ matrix.config }}/FirebladeECSPackageTests.xctest --testing-library swift-testing
+          wasmkit run .build/${{ matrix.config }}/FirebladeECSPackageTests.xctest -- --testing-library swift-testing

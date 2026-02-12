@@ -25,10 +25,12 @@ jobs:
             url: https://github.com/swiftwasm/swift/releases/download/swift-wasm-6.1-RELEASE/swift-wasm-6.1-RELEASE-wasm32-unknown-wasi.artifactbundle.zip
             checksum: 7550b4c77a55f4b637c376f5d192f297fe185607003a6212ad608276928db992
             sdk: 6.1-RELEASE-wasm32-unknown-wasi
+            platform: wasm32-unknown-wasi
           - version: 6.2.1
             url: https://download.swift.org/swift-6.2.1-release/wasm-sdk/swift-6.2.1-RELEASE/swift-6.2.1-RELEASE_wasm.artifactbundle.tar.gz
             checksum: 482b9f95462b87bedfafca94a092cf9ec4496671ca13b43745097122d20f18af
             sdk: swift-6.2.1-RELEASE_wasm
+            platform: wasm32-unknown-wasip1
         build:
           - release
 
@@ -46,8 +48,8 @@ jobs:
           swift build --build-tests -c ${{ matrix.build }} --swift-sdk ${{ matrix.config.sdk }} -Xswiftc -enable-testing
 
       - name: Inspect build folder
-        run: ls -R .build | grep FirebladeECSPackageTests
+        run: ls -R .build | grep -f FirebladeECSPackageTests.xctest
 
       - name: Test
         run: |
-          wasmtime --dir . .build/wasm32-unknown-wasip1/${{ matrix.build }}/FirebladeECSPackageTests.xctest --testing-library swift-testing
+          wasmtime --dir . .build/${{ matrix.config.platform }}/${{ matrix.build }}/FirebladeECSPackageTests.xctest --testing-library swift-testing

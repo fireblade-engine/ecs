@@ -48,5 +48,5 @@ jobs:
 
       - name: Build & Run Tests
         run: |
-          swift build -c ${{ matrix.config }} --build-tests --swift-sdk ${{ steps.setup-swiftwasm.outputs.swift-sdk-id }}
+          swift build -c ${{ matrix.config }} --build-tests --swift-sdk ${{ steps.setup-swiftwasm.outputs.swift-sdk-id }} -Xswiftc -enable-testing
           wasmtime --dir . .build/${{ matrix.config }}/FirebladeECSPackageTests.xctest

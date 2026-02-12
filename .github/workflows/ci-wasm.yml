@@ -38,7 +38,9 @@ jobs:
           target: wasm32-unknown-wasi
 
       - name: Setup wasmtime
-        uses: bytecodealliance/actions/wasmtime/setup@v1
+        uses: bytecodealliance/actions/wasmtime/setup@v1.1.2
+        with:
+          version: v32.0.0
 
       - name: Run `wasmtime version`
         run: "wasmtime --version"

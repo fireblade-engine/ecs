@@ -137,6 +137,10 @@ extension Entity {
     public struct ComponentsIterator: IteratorProtocol {
         private var iterator: IndexingIterator<[Component]>?
 
+        /// Creates a new iterator for the given entity.
+        /// - Parameters:
+        ///   - nexus: The nexus instance.
+        ///   - entityIdentifier: The entity identifier.
         @usableFromInline
         init(nexus: Nexus, entityIdentifier: EntityIdentifier) {
             iterator = nexus.get(components: entityIdentifier)?
@@ -144,6 +148,8 @@ extension Entity {
                 .makeIterator()
         }
 
+        /// Advances to the next component and returns it, or `nil` if no next element exists.
+        /// - Returns: The next component in the sequence, or `nil`.
         public mutating func next() -> Component? {
             iterator?.next()
         }

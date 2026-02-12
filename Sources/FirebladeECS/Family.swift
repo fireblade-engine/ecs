@@ -99,11 +99,15 @@ extension Family {
         @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>.ElementIterator
         @usableFromInline unowned let nexus: Nexus
 
+        /// Creates a new iterator for the given family.
+        /// - Parameter family: The family to iterate over.
         public init(family: Family<R>) {
             nexus = family.nexus
             memberIdsIterator = family.memberIds.makeIterator()
         }
 
+        /// Advances to the next component collection and returns it, or `nil` if no next element exists.
+        /// - Returns: The next component collection in the sequence, or `nil`.
         public mutating func next() -> R.Components? {
             guard let entityId: EntityIdentifier = memberIdsIterator.next() else {
                 return nil
@@ -130,11 +134,15 @@ extension Family {
         @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>.ElementIterator
         @usableFromInline unowned let nexus: Nexus
 
+        /// Creates a new iterator for the given family.
+        /// - Parameter family: The family to iterate over.
         public init(family: Family<R>) {
             nexus = family.nexus
             memberIdsIterator = family.memberIds.makeIterator()
         }
 
+        /// Advances to the next entity and returns it, or `nil` if no next element exists.
+        /// - Returns: The next entity in the sequence, or `nil`.
         public mutating func next() -> Entity? {
             guard let entityId = memberIdsIterator.next() else {
                 return nil
@@ -160,11 +168,15 @@ extension Family {
         @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>.ElementIterator
         @usableFromInline unowned let nexus: Nexus
 
+        /// Creates a new iterator for the given family.
+        /// - Parameter family: The family to iterate over.
         public init(family: Family<R>) {
             nexus = family.nexus
             memberIdsIterator = family.memberIds.makeIterator()
         }
 
+        /// Advances to the next entity and components pair and returns it, or `nil` if no next element exists.
+        /// - Returns: The next entity and components pair in the sequence, or `nil`.
         public mutating func next() -> R.EntityAndComponents? {
             guard let entityId = memberIdsIterator.next() else {
                 return nil

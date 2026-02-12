@@ -5,9 +5,13 @@
 //  Created by Christian Treffs on 22.07.20.
 //
 
+/// A container for family members (components) used for encoding and decoding.
 public struct FamilyMemberContainer<R: FamilyRequirementsManaging> {
+    /// The components of the family members.
     public let components: [R.Components]
 
+    /// Creates a new family member container.
+    /// - Parameter components: The components to contain.
     public init(components: [R.Components]) {
         self.components = components
     }
@@ -20,6 +24,9 @@ extension CodingUserInfoKey {
 // MARK: - encoding
 
 extension FamilyMemberContainer: Encodable where R: FamilyEncoding {
+    /// Encodes the family members into the given encoder.
+    /// - Parameter encoder: The encoder to write data to.
+    /// - Throws: An error if encoding fails.
     public func encode(to encoder: Encoder) throws {
         let strategy = encoder.userInfo[.nexusCodingStrategy] as? CodingStrategy ?? DefaultCodingStrategy()
         var familyContainer = encoder.unkeyedContainer()
@@ -27,6 +34,7 @@ extension FamilyMemberContainer: Encodable where R: FamilyEncoding {
     }
 }
 
+/// A type that can encode values into a native format.
 public protocol TopLevelEncoder {
     /// The type this encoder produces.
     associatedtype Output
@@ -34,6 +42,8 @@ public protocol TopLevelEncoder {
     /// Encodes an instance of the indicated type.
     ///
     /// - Parameter value: The instance to encode.
+    /// - Returns: The encoded data.
+    /// - Throws: An error if encoding fails.
     func encode<T: Encodable>(_ value: T) throws -> Self.Output
 
     /// Contextual user-provided information for use during decoding.
@@ -57,6 +67,9 @@ extension Family where R: FamilyEncoding {
 // MARK: - decoding
 
 extension FamilyMemberContainer: Decodable where R: FamilyDecoding {
+    /// Creates a new family member container by decoding from the given decoder.
+    /// - Parameter decoder: The decoder to read data from.
+    /// - Throws: An error if decoding fails.
     public init(from decoder: Decoder) throws {
         var familyContainer = try decoder.unkeyedContainer()
         let strategy = decoder.userInfo[.nexusCodingStrategy] as? CodingStrategy ?? DefaultCodingStrategy()
@@ -64,11 +77,17 @@ extension FamilyMemberContainer: Decodable where R: FamilyDecoding {
     }
 }
 
+/// A type that can decode values from a native format.
 public protocol TopLevelDecoder {
     /// The type this decoder accepts.
     associatedtype Input
 
     /// Decodes an instance of the indicated type.
+    /// - Parameters:
+    ///   - type: The type of the value to decode.
+    ///   - data: The data to decode from.
+    /// - Returns: The decoded value.
+    /// - Throws: An error if decoding fails.
     func decode<T: Decodable>(_ type: T.Type, from: Self.Input) throws -> T
 
     /// Contextual user-provided information for use during decoding.

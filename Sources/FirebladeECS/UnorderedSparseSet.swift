@@ -284,7 +284,6 @@ extension UnorderedSparseSet: Sequence {
 
     /// An iterator over the elements of an `UnorderedSparseSet`.
     public struct ElementIterator: IteratorProtocol {
-        /// The underlying iterator over the storage entries.
         var iterator: IndexingIterator<ContiguousArray<Storage.Entry>>
 
         /// Creates an iterator for the given sparse set.
@@ -294,7 +293,7 @@ extension UnorderedSparseSet: Sequence {
         }
 
         /// Advances to the next element and returns it, or `nil` if no next element exists.
-        /// - Returns: The next element in the sequence, or `nil` if the iterator has reached the end.
+        /// - Returns: The next element in the sequence, or `nil`.
         public mutating func next() -> Element? {
             iterator.next()?.element
         }

@@ -93,21 +93,31 @@ public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
         storage.count
     }
 
+    /// Initializes a new linear incrementing generator with a collection of initial entity IDs.
+    ///
+    /// - Parameter initialEntityIds: A bidirectional collection of `EntityIdentifier`s to be used first.
     @inlinable
     public init<EntityIds>(startProviding initialEntityIds: EntityIds) where EntityIds: BidirectionalCollection, EntityIds.Element == EntityIdentifier {
         storage = Storage(startProviding: initialEntityIds)
     }
 
+    /// Initializes a new linear incrementing generator starting from 0.
     @inlinable
     public init() {
         storage = Storage()
     }
 
+    /// Provides the next unused entity identifier.
+    ///
+    /// - Returns: A unique `EntityIdentifier`.
     @inline(__always)
     public func nextId() -> EntityIdentifier {
         storage.nextId()
     }
 
+    /// Marks an entity identifier as unused, allowing it to be reused.
+    ///
+    /// - Parameter entityId: The `EntityIdentifier` to recycle.
     @inline(__always)
     public func markUnused(entityId: EntityIdentifier) {
         storage.markUnused(entityId: entityId)

@@ -34,11 +34,13 @@ public struct Family<R: FamilyRequirementsManaging> {
     }
 
     /// Returns the number of family member entities.
+    /// - Complexity: O(1)
     @inlinable public var count: Int {
         memberIds.count
     }
 
     /// True if this family has no members; false otherwise.
+    /// - Complexity: O(1)
     @inlinable public var isEmpty: Bool {
         memberIds.isEmpty
     }
@@ -46,6 +48,7 @@ public struct Family<R: FamilyRequirementsManaging> {
     /// Checks if an entity can become a member of this family.
     /// - Parameter entity: The entity to check.
     /// - Returns: `true` if the entity matches the family traits.
+    /// - Complexity: O(T) where T is the total number of required and excluded components.
     @inlinable
     public func canBecomeMember(_ entity: Entity) -> Bool {
         nexus.canBecomeMember(entity, in: traits)
@@ -54,6 +57,7 @@ public struct Family<R: FamilyRequirementsManaging> {
     /// Checks if an entity is currently a member of this family.
     /// - Parameter entity: The entity to check.
     /// - Returns: `true` if the entity is a member.
+    /// - Complexity: O(1)
     @inlinable
     public func isMember(_ entity: Entity) -> Bool {
         nexus.isMember(entity, in: traits)
@@ -61,6 +65,7 @@ public struct Family<R: FamilyRequirementsManaging> {
 
     /// Destroy all member entities of this family.
     /// - Returns: True if entities where destroyed, false otherwise.
+    /// - Complexity: O(N * M) where N is the number of members and M is the number of families.
     @discardableResult
     public func destroyMembers() -> Bool {
         entities.reduce(!isEmpty) { $0 && nexus.destroy(entity: $1) }
@@ -69,6 +74,7 @@ public struct Family<R: FamilyRequirementsManaging> {
     /// Create a member entity with the given components assigned.
     /// - Parameter builder: The family member builder.
     /// - Returns: The newly created member entity.
+    /// - Complexity: O(M) where M is the number of families.
     @discardableResult
     public func createMember(@FamilyMemberBuilder<R> using builder: () -> R.Components) -> Entity {
         createMember(with: builder())

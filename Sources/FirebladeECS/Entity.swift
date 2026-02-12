@@ -70,6 +70,7 @@ public struct Entity {
 
     /// Add one or more components to this entity.
     /// - Parameter components: one or more components.
+    /// - Complexity: O(M) where M is the number of families.
     @discardableResult
     public func assign(_ components: Component...) -> Entity {
         assign(components)
@@ -78,6 +79,7 @@ public struct Entity {
 
     /// Add a component to this entity.
     /// - Parameter component: a component.
+    /// - Complexity: O(M) where M is the number of families.
     @discardableResult
     public func assign(_ component: Component) -> Entity {
         nexus.assign(component: component, to: self)
@@ -87,6 +89,7 @@ public struct Entity {
     /// Assigns a collection of components to this entity.
     /// - Parameter components: The components to assign.
     /// - Returns: This entity (for chaining).
+    /// - Complexity: O(C + M) where C is the number of components and M is the number of families.
     @discardableResult
     public func assign(_ components: some Collection<Component>) -> Entity {
         nexus.assign(components: components, to: self)
@@ -95,6 +98,7 @@ public struct Entity {
 
     /// Remove a component from this entity.
     /// - Parameter component: the component.
+    /// - Complexity: O(M) where M is the number of families.
     @discardableResult
     public func remove(_ component: some Component) -> Entity {
         remove(component.identifier)
@@ -102,6 +106,7 @@ public struct Entity {
 
     /// Remove a component by type from this entity.
     /// - Parameter compType: the component type.
+    /// - Complexity: O(M) where M is the number of families.
     @discardableResult
     public func remove(_ compType: (some Component).Type) -> Entity {
         remove(compType.identifier)
@@ -109,6 +114,7 @@ public struct Entity {
 
     /// Remove a component by id from this entity.
     /// - Parameter compId: the component id.
+    /// - Complexity: O(M) where M is the number of families.
     @discardableResult
     public func remove(_ compId: ComponentIdentifier) -> Entity {
         nexus.remove(component: compId, from: identifier)
@@ -116,6 +122,7 @@ public struct Entity {
     }
 
     /// Remove all components from this entity.
+    /// - Complexity: O(C * M) where C is the number of components and M is the number of families.
     public func removeAll() {
         nexus.removeAll(components: identifier)
     }

@@ -95,6 +95,7 @@ extension Nexus {
     /// - Parameters:
     ///   - comp1: Component type 1 required by members of this family.
     ///   - excludedComponents: All component types that must not be assigned to an entity in this family.
+    /// - Complexity: O(1) for existing families, O(N) where N is the number of entities for new families.
     /// - Returns: The family of entities having 1 required components each.
     public func family<Comp1>(
         requires comp1: Comp1.Type,
@@ -204,6 +205,7 @@ extension Nexus {
     ///   - comp1: Component type 1 required by members of this family.
     ///   - comp2: Component type 2 required by members of this family.
     ///   - excludedComponents: All component types that must not be assigned to an entity in this family.
+    /// - Complexity: O(1) for existing families, O(N) where N is the number of entities for new families.
     /// - Returns: The family of entities having 2 required components each.
     public func family<Comp1, Comp2>(
         requiresAll comp1: Comp1.Type, _ comp2: Comp2.Type,
@@ -320,6 +322,7 @@ extension Nexus {
     ///   - comp2: Component type 2 required by members of this family.
     ///   - comp3: Component type 3 required by members of this family.
     ///   - excludedComponents: All component types that must not be assigned to an entity in this family.
+    /// - Complexity: O(1) for existing families, O(N) where N is the number of entities for new families.
     /// - Returns: The family of entities having 3 required components each.
     public func family<Comp1, Comp2, Comp3>(
         requiresAll comp1: Comp1.Type, _ comp2: Comp2.Type, _ comp3: Comp3.Type,
@@ -443,6 +446,7 @@ extension Nexus {
     ///   - comp3: Component type 3 required by members of this family.
     ///   - comp4: Component type 4 required by members of this family.
     ///   - excludedComponents: All component types that must not be assigned to an entity in this family.
+    /// - Complexity: O(1) for existing families, O(N) where N is the number of entities for new families.
     /// - Returns: The family of entities having 4 required components each.
     public func family<Comp1, Comp2, Comp3, Comp4>(
         requiresAll comp1: Comp1.Type, _ comp2: Comp2.Type, _ comp3: Comp3.Type, _ comp4: Comp4.Type,
@@ -573,6 +577,7 @@ extension Nexus {
     ///   - comp4: Component type 4 required by members of this family.
     ///   - comp5: Component type 5 required by members of this family.
     ///   - excludedComponents: All component types that must not be assigned to an entity in this family.
+    /// - Complexity: O(1) for existing families, O(N) where N is the number of entities for new families.
     /// - Returns: The family of entities having 5 required components each.
     public func family<Comp1, Comp2, Comp3, Comp4, Comp5>(
         requiresAll comp1: Comp1.Type, _ comp2: Comp2.Type, _ comp3: Comp3.Type, _ comp4: Comp4.Type, _ comp5: Comp5.Type,
@@ -710,6 +715,7 @@ extension Nexus {
     ///   - comp5: Component type 5 required by members of this family.
     ///   - comp6: Component type 6 required by members of this family.
     ///   - excludedComponents: All component types that must not be assigned to an entity in this family.
+    /// - Complexity: O(1) for existing families, O(N) where N is the number of entities for new families.
     /// - Returns: The family of entities having 6 required components each.
     public func family<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6>(
         requiresAll comp1: Comp1.Type, _ comp2: Comp2.Type, _ comp3: Comp3.Type, _ comp4: Comp4.Type, _ comp5: Comp5.Type, _ comp6: Comp6.Type,
@@ -854,6 +860,7 @@ extension Nexus {
     ///   - comp6: Component type 6 required by members of this family.
     ///   - comp7: Component type 7 required by members of this family.
     ///   - excludedComponents: All component types that must not be assigned to an entity in this family.
+    /// - Complexity: O(1) for existing families, O(N) where N is the number of entities for new families.
     /// - Returns: The family of entities having 7 required components each.
     public func family<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7>(
         requiresAll comp1: Comp1.Type, _ comp2: Comp2.Type, _ comp3: Comp3.Type, _ comp4: Comp4.Type, _ comp5: Comp5.Type, _ comp6: Comp6.Type, _ comp7: Comp7.Type,
@@ -1005,6 +1012,7 @@ extension Nexus {
     ///   - comp7: Component type 7 required by members of this family.
     ///   - comp8: Component type 8 required by members of this family.
     ///   - excludedComponents: All component types that must not be assigned to an entity in this family.
+    /// - Complexity: O(1) for existing families, O(N) where N is the number of entities for new families.
     /// - Returns: The family of entities having 8 required components each.
     public func family<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8>(
         requiresAll comp1: Comp1.Type, _ comp2: Comp2.Type, _ comp3: Comp3.Type, _ comp4: Comp4.Type, _ comp5: Comp5.Type, _ comp6: Comp6.Type, _ comp7: Comp7.Type, _ comp8: Comp8.Type,

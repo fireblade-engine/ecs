@@ -60,13 +60,15 @@ extension Nexus {
     /// - Parameter component: The type of the single component.
     /// - Returns: A `Single` accessor for the component.
     /// - Precondition: The count of entities with this component must be 0 or 1.
+    /// - Complexity: O(M) where M is the number of families.
     public func single<S: SingleComponent>(_ component: S.Type) -> Single<S> {
         let family = family(requires: S.self)
         precondition(family.count <= 1, "Singleton count of \(S.self) must be 0 or 1: \(family.count)")
-        let entityId: EntityIdentifier = if family.isEmpty {
-            createEntity(with: S()).identifier
+        let entityId: EntityIdentifier
+        if family.isEmpty {
+            entityId = createEntity(with: S()).identifier
         } else {
-            family.memberIds.first.unsafelyUnwrapped
+            entityId = family.memberIds.first.unsafelyUnwrapped
         }
         return Single<S>(nexus: self, traits: family.traits, entityId: entityId)
     }

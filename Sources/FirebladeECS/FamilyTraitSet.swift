@@ -36,6 +36,7 @@ public struct FamilyTraitSet {
     /// Checks if a set of components matches the family traits.
     /// - Parameter components: The set of component identifiers to check.
     /// - Returns: `true` if the components match the requirements, `false` otherwise.
+    /// - Complexity: O(T) where T is the total number of required and excluded components.
     @inlinable
     public func isMatch(components: Set<ComponentIdentifier>) -> Bool {
         hasAll(components) && hasNone(components)
@@ -44,6 +45,7 @@ public struct FamilyTraitSet {
     /// Checks if the provided components satisfy the `requiresAll` condition.
     /// - Parameter components: The set of component identifiers.
     /// - Returns: `true` if all required components are present.
+    /// - Complexity: O(R) where R is the number of required components.
     @inlinable
     public func hasAll(_ components: Set<ComponentIdentifier>) -> Bool {
         requiresAll.isSubset(of: components)
@@ -52,6 +54,7 @@ public struct FamilyTraitSet {
     /// Checks if the provided components satisfy the `excludesAll` condition.
     /// - Parameter components: The set of component identifiers.
     /// - Returns: `true` if none of the excluded components are present.
+    /// - Complexity: O(E) where E is the number of excluded components.
     @inlinable
     public func hasNone(_ components: Set<ComponentIdentifier>) -> Bool {
         excludesAll.isDisjoint(with: components)

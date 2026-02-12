@@ -135,6 +135,7 @@ extension Nexus {
     ///   - {{ comp }}: Component type {{ forloop.counter }} required by members of this family.
     {% endfor %}
     ///   - excludedComponents: All component types that must not be assigned to an entity in this family.
+    /// - Complexity: O(1) for existing families, O(N) where N is the number of entities for new families.
     /// - Returns: The family of entities having {{ components.count }} required components each.
     public func family<{{ CompParams }}>(
         {% if components.count == 1 %}requires{% else %}requiresAll{%endif%} {{ CompsTypeParams }},

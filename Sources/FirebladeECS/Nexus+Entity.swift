@@ -8,6 +8,7 @@
 extension Nexus {
     /// Creates a new entity with a unique identifier.
     /// - Returns: The newly created entity.
+    /// - Complexity: O(1)
     @discardableResult
     public func createEntity() -> Entity {
         let entityId: EntityIdentifier = entityIdGenerator.nextId()
@@ -19,6 +20,7 @@ extension Nexus {
     /// Creates a new entity with the provided components.
     /// - Parameter components: The components to assign to the new entity.
     /// - Returns: The newly created entity.
+    /// - Complexity: O(M) where M is the number of families.
     @discardableResult
     public func createEntity(with components: Component...) -> Entity {
         let newEntity = createEntity()
@@ -29,6 +31,7 @@ extension Nexus {
     /// Creates a new entity with a collection of components.
     /// - Parameter components: The components to assign to the new entity.
     /// - Returns: The newly created entity.
+    /// - Complexity: O(M) where M is the number of families.
     @discardableResult
     public func createEntity(with components: some Collection<Component>) -> Entity {
         let entity = createEntity()

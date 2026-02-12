@@ -63,6 +63,8 @@ jobs:
       - name: Build & Run Tests
         run: |
           # <https://github.com/swiftlang/swift-testing/blob/main/Documentation/WASI.md>
-          swift build -c ${{ matrix.config }} --build-tests -Xswiftc -enable-testing --swift-sdk ${{ steps.setup-swiftwasm.outputs.swift-sdk-id }} --static-swift-stdlib
+          swift build -c ${{ matrix.config }} --swift-sdk wasm32-unknown-wasi --build-tests -Xswiftc -enable-testing 
+          echo "---"
           ls -la .build/${{ matrix.config }}/FirebladeECSPackageTests*
+          echo "---"
           wasmtime --dir . .build/${{ matrix.config }}/FirebladeECSPackageTests.wasm --testing-library swift-testing

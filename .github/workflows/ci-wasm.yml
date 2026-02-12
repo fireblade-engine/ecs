@@ -31,7 +31,7 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get update 
-          apt-get install -y curl xz-utils git pkg-config
+          apt-get install -y xz-utils
 
       - name: Setup Swift ${{ matrix.swift }} WASM SDK
         id: setup-swiftwasm
@@ -63,5 +63,6 @@ jobs:
       - name: Build & Run Tests
         run: |
           # <https://github.com/swiftlang/swift-testing/blob/main/Documentation/WASI.md>
-          swift build -c ${{ matrix.config }} --build-tests -Xswiftc -enable-testing --experimental-swift-sdk ${{ steps.setup-swiftwasm.outputs.swift-sdk-id }} --static-swift-stdlib
+          swift build -c ${{ matrix.config }} --build-tests -Xswiftc -enable-testing --swift-sdk ${{ steps.setup-swiftwasm.outputs.swift-sdk-id }} --static-swift-stdlib
+          ls -la .build/${{ matrix.config }}/FirebladeECSPackageTests*
           wasmtime --dir . .build/${{ matrix.config }}/FirebladeECSPackageTests.wasm --testing-library swift-testing

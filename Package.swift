@@ -7,9 +7,6 @@ let package = Package(
         .library(name: "FirebladeECS",
                  targets: ["FirebladeECS"])
     ],
-    dependencies: [
-        .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.4.3")
-    ],
     targets: [
         .target(name: "FirebladeECS",
                 exclude: ["Stencils/Family.stencil"],
@@ -21,6 +18,11 @@ let package = Package(
         .testTarget(name: "FirebladeECSPerformanceTests",
                     dependencies: ["FirebladeECS"],
                     swiftSettings: [.enableUpcomingFeature("StrictConcurrency")])
-    ],
-    swiftLanguageModes: [.v6]
+    ]
 )
+
+#if os(macOS)
+package.dependencies.append(
+    .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.4.6")
+)
+#endif

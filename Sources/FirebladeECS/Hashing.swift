@@ -8,11 +8,11 @@
 #if arch(x86_64) || arch(arm64) || arch(powerpc64) || arch(powerpc64le) || arch(s390x) // 64 bit
 /// Fibonacci Hash constant for 64-bit architectures.
 /// Value for 2^64; calculate by: 2^64 / (golden ratio).
-private let kFibA: UInt = 0x9E37_79B9_7F4A_7C15 // = 11400714819323198485 aka Fibonacci Hash a value for 2^64; calculate by: 2^64 / (golden ratio)
+private let kFibA: UInt = 0x9E37_79B9_7F4A_7C15 // = 11400714819323198485
 #elseif arch(i386) || arch(arm) || os(watchOS) || arch(wasm32) // 32 bit
 /// Fibonacci Hash constant for 32-bit architectures.
 /// Value for 2^32; calculate by: 2^32 / (golden ratio).
-private let kFibA: UInt = 0x9E37_79B9 // = 2654435769 aka Fibonacci Hash a value for 2^32; calculate by: 2^32 / (golden ratio)
+private let kFibA: UInt = 0x9E37_79B9 // = 2654435769
 #else
 #error("unsupported architecture")
 #endif

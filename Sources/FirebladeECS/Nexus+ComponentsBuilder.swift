@@ -5,13 +5,8 @@
 //  Created by Christian Treffs on 30.07.20.
 //
 
-#if swift(<5.4)
-@_functionBuilder
-public enum ComponentsBuilder {}
-#else
 @resultBuilder
 public enum ComponentsBuilder {}
-#endif
 
 extension ComponentsBuilder {
     public static func buildBlock(_ components: Component...) -> [Component] {

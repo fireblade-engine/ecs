@@ -28,6 +28,8 @@ jobs:
       - name: Setup SwiftWasm
         id: setup-wasm
         uses: swiftwasm/setup-swiftwasm@v2
+        with:
+          tag: "swift-wasm-${{ matrix.swift }}-RELEASE"
 
       - name: Build
         run: swift build --swift-sdk ${{ steps.setup-wasm.outputs.swift-sdk-id }}

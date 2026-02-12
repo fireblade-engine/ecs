@@ -8,30 +8,39 @@
 
 // MARK: - Family 1
 
+/// A family of entities with 1 components.
 public typealias Family1<Comp1> = Family<Requires1<Comp1>> where Comp1: Component
 
+/// A protocol defining requirements for a family with 1 components.
 public protocol RequiringComponents1: FamilyRequirementsManaging where Components == (Comp1) {
+    /// Component type 1.
     associatedtype Comp1: Component
 }
 
+/// A requirements manager for a family with 1 components.
 public struct Requires1<Comp1>: FamilyRequirementsManaging where Comp1: Component {
+    /// The component types.
     public let componentTypes: [Component.Type]
 
+    /// Initializes with component types.
     public init(_ components: (Comp1.Type)) {
         componentTypes = [Comp1.self]
     }
 
+    /// Retrieves components for an entity.
     public static func components(nexus: Nexus, entityId: EntityIdentifier) -> (Comp1) {
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         return (comp1)
     }
 
+    /// Retrieves entity and components.
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1) {
         let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         return (entity, comp1)
     }
 
+    /// Creates a member entity.
     public static func createMember(nexus: Nexus, components: (Comp1)) -> Entity {
         nexus.createEntity(with: components)
     }
@@ -39,9 +48,10 @@ public struct Requires1<Comp1>: FamilyRequirementsManaging where Comp1: Componen
 
 extension Requires1: RequiringComponents1 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents1 {
+extension FamilyMemberBuilder where R: RequiringComponents1  {
+    /// Builds a block of components for a family member.
     public static func buildBlock(_ comp1: R.Comp1) -> (R.Components) {
-        (comp1)
+        return (comp1)
     }
 }
 
@@ -100,26 +110,35 @@ extension Nexus {
 
 // MARK: - Family 2
 
+/// A family of entities with 2 components.
 public typealias Family2<Comp1, Comp2> = Family<Requires2<Comp1, Comp2>> where Comp1: Component, Comp2: Component
 
+/// A protocol defining requirements for a family with 2 components.
 public protocol RequiringComponents2: FamilyRequirementsManaging where Components == (Comp1, Comp2) {
+    /// Component type 1.
     associatedtype Comp1: Component
+    /// Component type 2.
     associatedtype Comp2: Component
 }
 
+/// A requirements manager for a family with 2 components.
 public struct Requires2<Comp1, Comp2>: FamilyRequirementsManaging where Comp1: Component, Comp2: Component {
+    /// The component types.
     public let componentTypes: [Component.Type]
 
+    /// Initializes with component types.
     public init(_ components: (Comp1.Type, Comp2.Type)) {
         componentTypes = [Comp1.self, Comp2.self]
     }
 
+    /// Retrieves components for an entity.
     public static func components(nexus: Nexus, entityId: EntityIdentifier) -> (Comp1, Comp2) {
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
         return (comp1, comp2)
     }
 
+    /// Retrieves entity and components.
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2) {
         let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
@@ -127,6 +146,7 @@ public struct Requires2<Comp1, Comp2>: FamilyRequirementsManaging where Comp1: C
         return (entity, comp1, comp2)
     }
 
+    /// Creates a member entity.
     public static func createMember(nexus: Nexus, components: (Comp1, Comp2)) -> Entity {
         nexus.createEntity(with: components.0, components.1)
     }
@@ -134,9 +154,10 @@ public struct Requires2<Comp1, Comp2>: FamilyRequirementsManaging where Comp1: C
 
 extension Requires2: RequiringComponents2 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents2 {
+extension FamilyMemberBuilder where R: RequiringComponents2  {
+    /// Builds a block of components for a family member.
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2) -> (R.Components) {
-        (comp1, comp2)
+        return (comp1, comp2)
     }
 }
 
@@ -198,21 +219,30 @@ extension Nexus {
 
 // MARK: - Family 3
 
+/// A family of entities with 3 components.
 public typealias Family3<Comp1, Comp2, Comp3> = Family<Requires3<Comp1, Comp2, Comp3>> where Comp1: Component, Comp2: Component, Comp3: Component
 
+/// A protocol defining requirements for a family with 3 components.
 public protocol RequiringComponents3: FamilyRequirementsManaging where Components == (Comp1, Comp2, Comp3) {
+    /// Component type 1.
     associatedtype Comp1: Component
+    /// Component type 2.
     associatedtype Comp2: Component
+    /// Component type 3.
     associatedtype Comp3: Component
 }
 
+/// A requirements manager for a family with 3 components.
 public struct Requires3<Comp1, Comp2, Comp3>: FamilyRequirementsManaging where Comp1: Component, Comp2: Component, Comp3: Component {
+    /// The component types.
     public let componentTypes: [Component.Type]
 
+    /// Initializes with component types.
     public init(_ components: (Comp1.Type, Comp2.Type, Comp3.Type)) {
         componentTypes = [Comp1.self, Comp2.self, Comp3.self]
     }
 
+    /// Retrieves components for an entity.
     public static func components(nexus: Nexus, entityId: EntityIdentifier) -> (Comp1, Comp2, Comp3) {
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
@@ -220,6 +250,7 @@ public struct Requires3<Comp1, Comp2, Comp3>: FamilyRequirementsManaging where C
         return (comp1, comp2, comp3)
     }
 
+    /// Retrieves entity and components.
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3) {
         let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
@@ -228,6 +259,7 @@ public struct Requires3<Comp1, Comp2, Comp3>: FamilyRequirementsManaging where C
         return (entity, comp1, comp2, comp3)
     }
 
+    /// Creates a member entity.
     public static func createMember(nexus: Nexus, components: (Comp1, Comp2, Comp3)) -> Entity {
         nexus.createEntity(with: components.0, components.1, components.2)
     }
@@ -235,9 +267,10 @@ public struct Requires3<Comp1, Comp2, Comp3>: FamilyRequirementsManaging where C
 
 extension Requires3: RequiringComponents3 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents3 {
+extension FamilyMemberBuilder where R: RequiringComponents3  {
+    /// Builds a block of components for a family member.
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3) -> (R.Components) {
-        (comp1, comp2, comp3)
+        return (comp1, comp2, comp3)
     }
 }
 
@@ -302,22 +335,32 @@ extension Nexus {
 
 // MARK: - Family 4
 
+/// A family of entities with 4 components.
 public typealias Family4<Comp1, Comp2, Comp3, Comp4> = Family<Requires4<Comp1, Comp2, Comp3, Comp4>> where Comp1: Component, Comp2: Component, Comp3: Component, Comp4: Component
 
+/// A protocol defining requirements for a family with 4 components.
 public protocol RequiringComponents4: FamilyRequirementsManaging where Components == (Comp1, Comp2, Comp3, Comp4) {
+    /// Component type 1.
     associatedtype Comp1: Component
+    /// Component type 2.
     associatedtype Comp2: Component
+    /// Component type 3.
     associatedtype Comp3: Component
+    /// Component type 4.
     associatedtype Comp4: Component
 }
 
+/// A requirements manager for a family with 4 components.
 public struct Requires4<Comp1, Comp2, Comp3, Comp4>: FamilyRequirementsManaging where Comp1: Component, Comp2: Component, Comp3: Component, Comp4: Component {
+    /// The component types.
     public let componentTypes: [Component.Type]
 
+    /// Initializes with component types.
     public init(_ components: (Comp1.Type, Comp2.Type, Comp3.Type, Comp4.Type)) {
         componentTypes = [Comp1.self, Comp2.self, Comp3.self, Comp4.self]
     }
 
+    /// Retrieves components for an entity.
     public static func components(nexus: Nexus, entityId: EntityIdentifier) -> (Comp1, Comp2, Comp3, Comp4) {
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
@@ -326,6 +369,7 @@ public struct Requires4<Comp1, Comp2, Comp3, Comp4>: FamilyRequirementsManaging 
         return (comp1, comp2, comp3, comp4)
     }
 
+    /// Retrieves entity and components.
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4) {
         let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
@@ -335,6 +379,7 @@ public struct Requires4<Comp1, Comp2, Comp3, Comp4>: FamilyRequirementsManaging 
         return (entity, comp1, comp2, comp3, comp4)
     }
 
+    /// Creates a member entity.
     public static func createMember(nexus: Nexus, components: (Comp1, Comp2, Comp3, Comp4)) -> Entity {
         nexus.createEntity(with: components.0, components.1, components.2, components.3)
     }
@@ -342,9 +387,10 @@ public struct Requires4<Comp1, Comp2, Comp3, Comp4>: FamilyRequirementsManaging 
 
 extension Requires4: RequiringComponents4 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents4 {
+extension FamilyMemberBuilder where R: RequiringComponents4  {
+    /// Builds a block of components for a family member.
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3, _ comp4: R.Comp4) -> (R.Components) {
-        (comp1, comp2, comp3, comp4)
+        return (comp1, comp2, comp3, comp4)
     }
 }
 
@@ -412,23 +458,34 @@ extension Nexus {
 
 // MARK: - Family 5
 
+/// A family of entities with 5 components.
 public typealias Family5<Comp1, Comp2, Comp3, Comp4, Comp5> = Family<Requires5<Comp1, Comp2, Comp3, Comp4, Comp5>> where Comp1: Component, Comp2: Component, Comp3: Component, Comp4: Component, Comp5: Component
 
+/// A protocol defining requirements for a family with 5 components.
 public protocol RequiringComponents5: FamilyRequirementsManaging where Components == (Comp1, Comp2, Comp3, Comp4, Comp5) {
+    /// Component type 1.
     associatedtype Comp1: Component
+    /// Component type 2.
     associatedtype Comp2: Component
+    /// Component type 3.
     associatedtype Comp3: Component
+    /// Component type 4.
     associatedtype Comp4: Component
+    /// Component type 5.
     associatedtype Comp5: Component
 }
 
+/// A requirements manager for a family with 5 components.
 public struct Requires5<Comp1, Comp2, Comp3, Comp4, Comp5>: FamilyRequirementsManaging where Comp1: Component, Comp2: Component, Comp3: Component, Comp4: Component, Comp5: Component {
+    /// The component types.
     public let componentTypes: [Component.Type]
 
+    /// Initializes with component types.
     public init(_ components: (Comp1.Type, Comp2.Type, Comp3.Type, Comp4.Type, Comp5.Type)) {
         componentTypes = [Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self]
     }
 
+    /// Retrieves components for an entity.
     public static func components(nexus: Nexus, entityId: EntityIdentifier) -> (Comp1, Comp2, Comp3, Comp4, Comp5) {
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
@@ -438,6 +495,7 @@ public struct Requires5<Comp1, Comp2, Comp3, Comp4, Comp5>: FamilyRequirementsMa
         return (comp1, comp2, comp3, comp4, comp5)
     }
 
+    /// Retrieves entity and components.
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5) {
         let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
@@ -448,6 +506,7 @@ public struct Requires5<Comp1, Comp2, Comp3, Comp4, Comp5>: FamilyRequirementsMa
         return (entity, comp1, comp2, comp3, comp4, comp5)
     }
 
+    /// Creates a member entity.
     public static func createMember(nexus: Nexus, components: (Comp1, Comp2, Comp3, Comp4, Comp5)) -> Entity {
         nexus.createEntity(with: components.0, components.1, components.2, components.3, components.4)
     }
@@ -455,9 +514,10 @@ public struct Requires5<Comp1, Comp2, Comp3, Comp4, Comp5>: FamilyRequirementsMa
 
 extension Requires5: RequiringComponents5 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents5 {
+extension FamilyMemberBuilder where R: RequiringComponents5  {
+    /// Builds a block of components for a family member.
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3, _ comp4: R.Comp4, _ comp5: R.Comp5) -> (R.Components) {
-        (comp1, comp2, comp3, comp4, comp5)
+        return (comp1, comp2, comp3, comp4, comp5)
     }
 }
 
@@ -528,24 +588,36 @@ extension Nexus {
 
 // MARK: - Family 6
 
+/// A family of entities with 6 components.
 public typealias Family6<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6> = Family<Requires6<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6>> where Comp1: Component, Comp2: Component, Comp3: Component, Comp4: Component, Comp5: Component, Comp6: Component
 
+/// A protocol defining requirements for a family with 6 components.
 public protocol RequiringComponents6: FamilyRequirementsManaging where Components == (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6) {
+    /// Component type 1.
     associatedtype Comp1: Component
+    /// Component type 2.
     associatedtype Comp2: Component
+    /// Component type 3.
     associatedtype Comp3: Component
+    /// Component type 4.
     associatedtype Comp4: Component
+    /// Component type 5.
     associatedtype Comp5: Component
+    /// Component type 6.
     associatedtype Comp6: Component
 }
 
+/// A requirements manager for a family with 6 components.
 public struct Requires6<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6>: FamilyRequirementsManaging where Comp1: Component, Comp2: Component, Comp3: Component, Comp4: Component, Comp5: Component, Comp6: Component {
+    /// The component types.
     public let componentTypes: [Component.Type]
 
+    /// Initializes with component types.
     public init(_ components: (Comp1.Type, Comp2.Type, Comp3.Type, Comp4.Type, Comp5.Type, Comp6.Type)) {
         componentTypes = [Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self, Comp6.self]
     }
 
+    /// Retrieves components for an entity.
     public static func components(nexus: Nexus, entityId: EntityIdentifier) -> (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6) {
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
@@ -556,6 +628,7 @@ public struct Requires6<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6>: FamilyRequire
         return (comp1, comp2, comp3, comp4, comp5, comp6)
     }
 
+    /// Retrieves entity and components.
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5, Comp6) {
         let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
@@ -567,6 +640,7 @@ public struct Requires6<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6>: FamilyRequire
         return (entity, comp1, comp2, comp3, comp4, comp5, comp6)
     }
 
+    /// Creates a member entity.
     public static func createMember(nexus: Nexus, components: (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6)) -> Entity {
         nexus.createEntity(with: components.0, components.1, components.2, components.3, components.4, components.5)
     }
@@ -574,9 +648,10 @@ public struct Requires6<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6>: FamilyRequire
 
 extension Requires6: RequiringComponents6 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents6 {
+extension FamilyMemberBuilder where R: RequiringComponents6  {
+    /// Builds a block of components for a family member.
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3, _ comp4: R.Comp4, _ comp5: R.Comp5, _ comp6: R.Comp6) -> (R.Components) {
-        (comp1, comp2, comp3, comp4, comp5, comp6)
+        return (comp1, comp2, comp3, comp4, comp5, comp6)
     }
 }
 
@@ -650,25 +725,38 @@ extension Nexus {
 
 // MARK: - Family 7
 
+/// A family of entities with 7 components.
 public typealias Family7<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7> = Family<Requires7<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7>> where Comp1: Component, Comp2: Component, Comp3: Component, Comp4: Component, Comp5: Component, Comp6: Component, Comp7: Component
 
+/// A protocol defining requirements for a family with 7 components.
 public protocol RequiringComponents7: FamilyRequirementsManaging where Components == (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7) {
+    /// Component type 1.
     associatedtype Comp1: Component
+    /// Component type 2.
     associatedtype Comp2: Component
+    /// Component type 3.
     associatedtype Comp3: Component
+    /// Component type 4.
     associatedtype Comp4: Component
+    /// Component type 5.
     associatedtype Comp5: Component
+    /// Component type 6.
     associatedtype Comp6: Component
+    /// Component type 7.
     associatedtype Comp7: Component
 }
 
+/// A requirements manager for a family with 7 components.
 public struct Requires7<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7>: FamilyRequirementsManaging where Comp1: Component, Comp2: Component, Comp3: Component, Comp4: Component, Comp5: Component, Comp6: Component, Comp7: Component {
+    /// The component types.
     public let componentTypes: [Component.Type]
 
+    /// Initializes with component types.
     public init(_ components: (Comp1.Type, Comp2.Type, Comp3.Type, Comp4.Type, Comp5.Type, Comp6.Type, Comp7.Type)) {
         componentTypes = [Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self, Comp6.self, Comp7.self]
     }
 
+    /// Retrieves components for an entity.
     public static func components(nexus: Nexus, entityId: EntityIdentifier) -> (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7) {
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
@@ -680,6 +768,7 @@ public struct Requires7<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7>: Family
         return (comp1, comp2, comp3, comp4, comp5, comp6, comp7)
     }
 
+    /// Retrieves entity and components.
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7) {
         let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
@@ -692,6 +781,7 @@ public struct Requires7<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7>: Family
         return (entity, comp1, comp2, comp3, comp4, comp5, comp6, comp7)
     }
 
+    /// Creates a member entity.
     public static func createMember(nexus: Nexus, components: (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7)) -> Entity {
         nexus.createEntity(with: components.0, components.1, components.2, components.3, components.4, components.5, components.6)
     }
@@ -699,9 +789,10 @@ public struct Requires7<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7>: Family
 
 extension Requires7: RequiringComponents7 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents7 {
+extension FamilyMemberBuilder where R: RequiringComponents7  {
+    /// Builds a block of components for a family member.
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3, _ comp4: R.Comp4, _ comp5: R.Comp5, _ comp6: R.Comp6, _ comp7: R.Comp7) -> (R.Components) {
-        (comp1, comp2, comp3, comp4, comp5, comp6, comp7)
+        return (comp1, comp2, comp3, comp4, comp5, comp6, comp7)
     }
 }
 
@@ -778,26 +869,40 @@ extension Nexus {
 
 // MARK: - Family 8
 
+/// A family of entities with 8 components.
 public typealias Family8<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8> = Family<Requires8<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8>> where Comp1: Component, Comp2: Component, Comp3: Component, Comp4: Component, Comp5: Component, Comp6: Component, Comp7: Component, Comp8: Component
 
+/// A protocol defining requirements for a family with 8 components.
 public protocol RequiringComponents8: FamilyRequirementsManaging where Components == (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8) {
+    /// Component type 1.
     associatedtype Comp1: Component
+    /// Component type 2.
     associatedtype Comp2: Component
+    /// Component type 3.
     associatedtype Comp3: Component
+    /// Component type 4.
     associatedtype Comp4: Component
+    /// Component type 5.
     associatedtype Comp5: Component
+    /// Component type 6.
     associatedtype Comp6: Component
+    /// Component type 7.
     associatedtype Comp7: Component
+    /// Component type 8.
     associatedtype Comp8: Component
 }
 
+/// A requirements manager for a family with 8 components.
 public struct Requires8<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8>: FamilyRequirementsManaging where Comp1: Component, Comp2: Component, Comp3: Component, Comp4: Component, Comp5: Component, Comp6: Component, Comp7: Component, Comp8: Component {
+    /// The component types.
     public let componentTypes: [Component.Type]
 
+    /// Initializes with component types.
     public init(_ components: (Comp1.Type, Comp2.Type, Comp3.Type, Comp4.Type, Comp5.Type, Comp6.Type, Comp7.Type, Comp8.Type)) {
         componentTypes = [Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self, Comp6.self, Comp7.self, Comp8.self]
     }
 
+    /// Retrieves components for an entity.
     public static func components(nexus: Nexus, entityId: EntityIdentifier) -> (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8) {
         let comp1: Comp1 = nexus.get(unsafe: entityId)
         let comp2: Comp2 = nexus.get(unsafe: entityId)
@@ -810,6 +915,7 @@ public struct Requires8<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8>:
         return (comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8)
     }
 
+    /// Retrieves entity and components.
     public static func entityAndComponents(nexus: Nexus, entityId: EntityIdentifier) -> (Entity, Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8) {
         let entity = Entity(nexus: nexus, id: entityId)
         let comp1: Comp1 = nexus.get(unsafe: entityId)
@@ -823,6 +929,7 @@ public struct Requires8<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8>:
         return (entity, comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8)
     }
 
+    /// Creates a member entity.
     public static func createMember(nexus: Nexus, components: (Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8)) -> Entity {
         nexus.createEntity(with: components.0, components.1, components.2, components.3, components.4, components.5, components.6, components.7)
     }
@@ -830,9 +937,10 @@ public struct Requires8<Comp1, Comp2, Comp3, Comp4, Comp5, Comp6, Comp7, Comp8>:
 
 extension Requires8: RequiringComponents8 { }
 
-extension FamilyMemberBuilder where R: RequiringComponents8 {
+extension FamilyMemberBuilder where R: RequiringComponents8  {
+    /// Builds a block of components for a family member.
     public static func buildBlock(_ comp1: R.Comp1, _ comp2: R.Comp2, _ comp3: R.Comp3, _ comp4: R.Comp4, _ comp5: R.Comp5, _ comp6: R.Comp6, _ comp7: R.Comp7, _ comp8: R.Comp8) -> (R.Components) {
-        (comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8)
+        return (comp1, comp2, comp3, comp4, comp5, comp6, comp7, comp8)
     }
 }
 

@@ -14,7 +14,7 @@ public typealias UserInfoValue = any Sendable
 public typealias UserInfoValue = Any
 #endif
 
-extension CodingUserInfoKey {
+public extension CodingUserInfoKey {
     /// A user info key for accessing the nexus coding strategy during encoding and decoding.
     static let nexusCodingStrategy = CodingUserInfoKey(rawValue: "nexusCodingStrategy").unsafelyUnwrapped
 }

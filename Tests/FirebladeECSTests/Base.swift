@@ -135,7 +135,7 @@ class Index: Component, @unchecked Sendable {
     }
 }
 
-final class MyComponent: Component, @unchecked Sendable {
+final class MyComponent: Component, Codable, @unchecked Sendable {
     var name: String
     var flag: Bool
 
@@ -144,8 +144,6 @@ final class MyComponent: Component, @unchecked Sendable {
         self.flag = flag
     }
 }
-extension MyComponent: Decodable { }
-extension MyComponent: Encodable { }
 
 final class YourComponent: Component, @unchecked Sendable {
     var number: Float

@@ -16,10 +16,14 @@ public struct FamilyMemberContainer<each C: Component> {
         self.components = components
     }
 
+    /// Creates a new family member container from a sequence of components.
+    /// - Parameter component: A sequence of component tuples.
     public init<S>(component: S) where S: Sequence, S.Element == (repeat each C) {
-        self.components = Array(component)
+        components = Array(component)
     }
 
+    /// Creates a new family member container from a family components iterator.
+    /// - Parameter components: The iterator providing component tuples.
     public init(components: Family<repeat each C>.ComponentsIterator) {
         self.components = Array(components)
     }

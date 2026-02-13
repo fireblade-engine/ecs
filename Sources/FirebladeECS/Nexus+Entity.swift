@@ -28,6 +28,17 @@ extension Nexus {
         return newEntity
     }
 
+    /// Creates a new entity with the provided components.
+    /// - Parameter components: The components to assign to the new entity.
+    /// - Returns: The newly created entity.
+    /// - Complexity: O(C + M) where C is the number of components and M is the number of families.
+    @discardableResult
+    public func createEntity<each C: Component>(with components: repeat each C) -> Entity {
+        let newEntity = createEntity()
+        assign(components: repeat each components, to: newEntity)
+        return newEntity
+    }
+
     /// Creates a new entity with a collection of components.
     /// - Parameter components: The components to assign to the new entity.
     /// - Returns: The newly created entity.

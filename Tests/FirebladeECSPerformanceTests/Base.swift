@@ -48,7 +48,7 @@ class Color: Component, @unchecked Sendable {
 }
 
 class ExampleSystem {
-    private let family: Family2<Position, Velocity>
+    private let family: Family<Position, Velocity>
 
     init(nexus: Nexus) {
         family = nexus.family(requiresAll: Position.self, Velocity.self, excludesAll: EmptyComponent.self)

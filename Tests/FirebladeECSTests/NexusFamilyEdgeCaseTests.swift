@@ -18,7 +18,7 @@ import Testing
 
         // Check if entity1 can become member in nexus2
         // It should return false because nexus2 doesn't know about entity1
-        let family2 = nexus2.family(requires: Position.self)
+        let family2 = nexus2.family(requiresAll: Position.self)
 
         #expect(nexus2.canBecomeMember(entity1, in: family2.traits) == false)
     }

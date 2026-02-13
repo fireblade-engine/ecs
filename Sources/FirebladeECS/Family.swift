@@ -9,7 +9,7 @@
 ///
 /// Families are the primary way to iterate over entities in the ECS.
 /// They are defined by a set of required components (`requiresAll`) and optionally excluded components (`excludesAll`).
-public struct Family<R: FamilyRequirementsManaging> {
+public struct Family<each C: Component> {
     /// The Nexus managing this family.
     @usableFromInline unowned let nexus: Nexus
 
@@ -19,14 +19,18 @@ public struct Family<R: FamilyRequirementsManaging> {
     /// Initializes a new family.
     /// - Parameters:
     ///   - nexus: The nexus instance.
-    ///   - requiresAll: A closure returning the required component types.
+    ///   - requiresAll: The required component types.
     ///   - excludesAll: A list of excluded component types.
-    /// - Complexity: O(R + E) where R is the number of required components and E is the number of excluded components.
-    public init(nexus: Nexus, requiresAll: @autoclosure () -> R.ComponentTypes, excludesAll: [Component.Type]) {
-        let required = R(requiresAll())
+    public init(nexus: Nexus, requiresAll: repeat (each C).Type, excludesAll: [Component.Type]) {
         self.nexus = nexus
-        let traits = FamilyTraitSet(requiresAll: required.componentTypes, excludesAll: excludesAll)
-        self.traits = traits
+
+        var requiredIdentifiers: [ComponentIdentifier] = []
+        // We iterate the pack to extract identifiers
+        _ = (repeat requiredIdentifiers.append((each C).identifier))
+
+        let excludedIdentifiers = excludesAll.map { $0.identifier }
+
+        traits = FamilyTraitSet(requiresAll: Set(requiredIdentifiers), excludesAll: Set(excludedIdentifiers))
         nexus.onFamilyInit(traits: traits)
     }
 
@@ -75,19 +79,10 @@ public struct Family<R: FamilyRequirementsManaging> {
     public func destroyMembers() -> Bool {
         entities.reduce(!isEmpty) { $0 && nexus.destroy(entity: $1) }
     }
-
-    /// Create a member entity with the given components assigned.
-    /// - Parameter builder: The family member builder.
-    /// - Returns: The newly created member entity.
-    /// - Complexity: O(M) where M is the number of families.
-    @discardableResult
-    public func createMember(@FamilyMemberBuilder<R> using builder: () -> R.Components) -> Entity {
-        createMember(with: builder())
-    }
 }
 
 extension Family: Equatable {
-    public static func == (lhs: Family<R>, rhs: Family<R>) -> Bool {
+    public static func == (lhs: Family<repeat each C>, rhs: Family<repeat each C>) -> Bool {
         lhs.nexus === rhs.nexus &&
             lhs.traits == rhs.traits
     }
@@ -114,7 +109,7 @@ extension Family {
         /// Creates a new iterator for the given family.
         /// - Parameter family: The family to iterate over.
         /// - Complexity: O(1)
-        public init(family: Family<R>) {
+        public init(family: Family<repeat each C>) {
             nexus = family.nexus
             memberIdsIterator = family.memberIds.makeIterator()
         }
@@ -122,12 +117,11 @@ extension Family {
         /// Advances to the next component collection and returns it, or `nil` if no next element exists.
         /// - Returns: The next component collection in the sequence, or `nil`.
         /// - Complexity: O(R) where R is the number of required components.
-        public mutating func next() -> R.Components? {
+        public mutating func next() -> (repeat each C)? {
             guard let entityId: EntityIdentifier = memberIdsIterator.next() else {
                 return nil
             }
-
-            return R.components(nexus: nexus, entityId: entityId)
+            return (repeat nexus.get(unsafe: entityId) as (each C))
         }
     }
 }
@@ -152,7 +146,7 @@ extension Family {
         /// Creates a new iterator for the given family.
         /// - Parameter family: The family to iterate over.
         /// - Complexity: O(1)
-        public init(family: Family<R>) {
+        public init(family: Family<repeat each C>) {
             nexus = family.nexus
             memberIdsIterator = family.memberIds.makeIterator()
         }
@@ -189,7 +183,7 @@ extension Family {
         /// Creates a new iterator for the given family.
         /// - Parameter family: The family to iterate over.
         /// - Complexity: O(1)
-        public init(family: Family<R>) {
+        public init(family: Family<repeat each C>) {
             nexus = family.nexus
             memberIdsIterator = family.memberIds.makeIterator()
         }
@@ -197,11 +191,13 @@ extension Family {
         /// Advances to the next entity and components pair and returns it, or `nil` if no next element exists.
         /// - Returns: The next entity and components pair in the sequence, or `nil`.
         /// - Complexity: O(R) where R is the number of required components.
-        public mutating func next() -> R.EntityAndComponents? {
+        public mutating func next() -> (Entity, repeat each C)? {
             guard let entityId = memberIdsIterator.next() else {
                 return nil
             }
-            return R.entityAndComponents(nexus: nexus, entityId: entityId)
+            let entity = Entity(nexus: nexus, id: entityId)
+            let components = (repeat nexus.get(unsafe: entityId) as (each C))
+            return (entity, repeat each components)
         }
     }
 }
@@ -219,8 +215,8 @@ extension Family {
     /// - Parameter components: The components required by this family.
     /// - Returns: The newly created entity.
     @discardableResult
-    public func createMember(with components: R.Components) -> Entity {
-        R.createMember(nexus: nexus, components: components)
+    public func createMember(with components: repeat each C) -> Entity {
+        nexus.createEntity(with: repeat each components)
     }
 }
 

@@ -25,7 +25,14 @@ public struct FamilyTraitSet {
     public init(requiresAll: [Component.Type], excludesAll: [Component.Type]) {
         let requiresAll = Set<ComponentIdentifier>(requiresAll.map { $0.identifier })
         let excludesAll = Set<ComponentIdentifier>(excludesAll.map { $0.identifier })
+        self.init(requiresAll: requiresAll, excludesAll: excludesAll)
+    }
 
+    /// Initializes a new family trait set.
+    /// - Parameters:
+    ///   - requiresAll: The component identifiers required for membership.
+    ///   - excludesAll: The component identifiers excluded from membership.
+    public init(requiresAll: Set<ComponentIdentifier>, excludesAll: Set<ComponentIdentifier>) {
         assert(FamilyTraitSet.isValid(requiresAll: requiresAll, excludesAll: excludesAll), "invalid family trait created - requiresAll: \(requiresAll), excludesAll: \(excludesAll)")
 
         self.requiresAll = requiresAll

@@ -55,8 +55,8 @@ import Foundation
         let nexus = Nexus()
 
         let family = nexus.family(requiresAll: MyComponent.self, YourComponent.self)
-        family.createMember(with: (MyComponent(name: "My Name", flag: true), YourComponent(number: 1.23)))
-        family.createMember(with: (MyComponent(name: "Your Name", flag: false), YourComponent(number: 3.45)))
+        family.createMember(with: MyComponent(name: "My Name", flag: true), YourComponent(number: 1.23))
+        family.createMember(with: MyComponent(name: "Your Name", flag: false), YourComponent(number: 3.45))
         #expect(family.count == 2)
 
         var jsonEncoder = JSONEncoder()
@@ -104,8 +104,8 @@ import Foundation
         let nexus = Nexus()
 
         let family = nexus.family(requiresAll: MyComponent.self, YourComponent.self, Position.self)
-        family.createMember(with: (MyComponent(name: "My Name", flag: true), YourComponent(number: 1.23), Position(x: 1, y: 2)))
-        family.createMember(with: (MyComponent(name: "Your Name", flag: false), YourComponent(number: 3.45), Position(x: 3, y: 4)))
+        family.createMember(with: MyComponent(name: "My Name", flag: true), YourComponent(number: 1.23), Position(x: 1, y: 2))
+        family.createMember(with: MyComponent(name: "Your Name", flag: false), YourComponent(number: 3.45), Position(x: 3, y: 4))
         #expect(family.count == 2)
 
         var jsonEncoder = JSONEncoder()
@@ -163,8 +163,8 @@ import Foundation
         let nexus = Nexus()
 
         let family = nexus.family(requiresAll: MyComponent.self, YourComponent.self, Position.self, Color.self)
-        family.createMember(with: (MyComponent(name: "My Name", flag: true), YourComponent(number: 1.23), Position(x: 1, y: 2), Color(r: 1, g: 2, b: 3)))
-        family.createMember(with: (MyComponent(name: "Your Name", flag: false), YourComponent(number: 3.45), Position(x: 3, y: 4), Color(r: 4, g: 5, b: 6)))
+        family.createMember(with: MyComponent(name: "My Name", flag: true), YourComponent(number: 1.23), Position(x: 1, y: 2), Color(r: 1, g: 2, b: 3))
+        family.createMember(with: MyComponent(name: "Your Name", flag: false), YourComponent(number: 3.45), Position(x: 3, y: 4), Color(r: 4, g: 5, b: 6))
         #expect(family.count == 2)
 
         var jsonEncoder = JSONEncoder()
@@ -230,8 +230,8 @@ import Foundation
         let nexus = Nexus()
 
         let family = nexus.family(requiresAll: MyComponent.self, YourComponent.self, Position.self, Color.self, Party.self)
-        family.createMember(with: (MyComponent(name: "My Name", flag: true), YourComponent(number: 1.23), Position(x: 1, y: 2), Color(r: 1, g: 2, b: 3), Party(partying: true)))
-        family.createMember(with: (MyComponent(name: "Your Name", flag: false), YourComponent(number: 3.45), Position(x: 3, y: 4), Color(r: 4, g: 5, b: 6), Party(partying: false)))
+        family.createMember(with: MyComponent(name: "My Name", flag: true), YourComponent(number: 1.23), Position(x: 1, y: 2), Color(r: 1, g: 2, b: 3), Party(partying: true))
+        family.createMember(with: MyComponent(name: "Your Name", flag: false), YourComponent(number: 3.45), Position(x: 3, y: 4), Color(r: 4, g: 5, b: 6), Party(partying: false))
         #expect(family.count == 2)
 
         var jsonEncoder = JSONEncoder()
@@ -350,8 +350,9 @@ import Foundation
     }
 
     @Test func codingStrategyFallback() throws {
-        let component = MyComponent(name: "A", flag: true)
-        let container = FamilyMemberContainer<Requires1<MyComponent>>(components: [component])
+        let component1 = MyComponent(name: "A", flag: true)
+        // Use two different components to avoid key collision
+        let container = FamilyMemberContainer<MyComponent>(components: component1)
 
         let encoder = JSONEncoder()
         // No user info set, so it should fallback to DefaultCodingStrategy
@@ -359,7 +360,7 @@ import Foundation
 
         let decoder = JSONDecoder()
         // No user info set, so it should fallback to DefaultCodingStrategy
-        let decoded = try decoder.decode(FamilyMemberContainer<Requires1<MyComponent>>.self, from: data)
+        let decoded = try decoder.decode(FamilyMemberContainer<MyComponent>.self, from: data)
 
         #expect(decoded.components.count == 1)
         #expect(decoded.components[0].name == "A")

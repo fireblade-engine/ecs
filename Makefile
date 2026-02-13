@@ -14,7 +14,7 @@ DOCS_VERSION_PATH ?= main
 # The full base path for hosting
 HOSTING_BASE_PATH ?= $(REPO_NAME)/$(DOCS_VERSION_PATH)
 
-.PHONY: setup generate-code lint lint-fix test test-coverage testReadme build-debug build-release docs docs-preview docs-generate docs-coverage docs-check-coverage docs-check-links preview-analysis-docs generate-docs-githubpages pre-commit clean clean-sourcery
+.PHONY: setup lint lint-fix test test-coverage testReadme build-debug build-release docs docs-preview docs-generate docs-coverage docs-check-coverage docs-check-links preview-analysis-docs generate-docs-githubpages pre-commit clean
 
 # --- Setup ---
 
@@ -25,12 +25,6 @@ setup:
 	@which mint > /dev/null || (echo "Mint not found. Installing via Homebrew..." && brew install mint)
 	mint bootstrap
 	swift package resolve $(SWIFT_FLAGS)
-
-# --- Codegen ---
-
-generate-code:
-	mint run sourcery --quiet --config ./.sourcery.yml
-	mint run sourcery --quiet --config ./.sourceryTests.yml
 
 # --- Quality Assurance ---
 
@@ -130,10 +124,7 @@ pre-commit: lint-fix test
 
 # --- Cleanup ---
 
-clean: clean-sourcery
+clean:
 	swift package clean
 	rm -rdf .build
 	rm -rdf .swiftpm
-
-clean-sourcery:
-	rm -rdf ${HOME}/Library/Caches/Sourcery

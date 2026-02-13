@@ -43,6 +43,40 @@ final class Name: Component, DefaultInitializable, @unchecked Sendable {
         self.init(name: "")
     }
 }
+extension Name: Codable { }
+
+final class Comp1: Component, @unchecked Sendable, Codable {
+    var value: Int
+    init(_ value: Int) { self.value = value }
+}
+final class Comp2: Component, @unchecked Sendable, Codable {
+    var value: Int
+    init(_ value: Int) { self.value = value }
+}
+final class Comp3: Component, @unchecked Sendable, Codable {
+    var value: Int
+    init(_ value: Int) { self.value = value }
+}
+final class Comp4: Component, @unchecked Sendable, Codable {
+    var value: Int
+    init(_ value: Int) { self.value = value }
+}
+final class Comp5: Component, @unchecked Sendable, Codable {
+    var value: Int
+    init(_ value: Int) { self.value = value }
+}
+final class Comp6: Component, @unchecked Sendable, Codable {
+    var value: Int
+    init(_ value: Int) { self.value = value }
+}
+final class Comp7: Component, @unchecked Sendable, Codable {
+    var value: Int
+    init(_ value: Int) { self.value = value }
+}
+final class Comp8: Component, @unchecked Sendable, Codable {
+    var value: Int
+    init(_ value: Int) { self.value = value }
+}
 
 final class Position: Component, DefaultInitializable, @unchecked Sendable {
     var x: Int
@@ -129,7 +163,7 @@ final class SingleGameState: SingleComponent, @unchecked Sendable {
 }
 
 class ExampleSystem {
-    private let family: Family2<Position, Velocity>
+    private let family: Family<Position, Velocity>
 
     init(nexus: Nexus) {
         family = nexus.family(requiresAll: Position.self, Velocity.self, excludesAll: EmptyComponent.self)
@@ -145,7 +179,7 @@ class ExampleSystem {
 
 class ColorSystem {
     let nexus: Nexus
-    lazy var colors = nexus.family(requires: Color.self)
+    lazy var colors = nexus.family(requiresAll: Color.self)
 
     init(nexus: Nexus) {
         self.nexus = nexus
@@ -162,12 +196,12 @@ class ColorSystem {
 }
 
 class PositionSystem {
-    let positions: Family1<Position>
+    let positions: Family<Position>
 
     var velocity: Double = 4.0
 
     init(nexus: Nexus) {
-        positions = nexus.family(requires: Position.self)
+        positions = nexus.family(requiresAll: Position.self)
     }
 
     func randNorm() -> Double {

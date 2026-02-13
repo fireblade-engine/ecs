@@ -49,8 +49,8 @@ public struct Entity {
     /// - Returns: The created entity.
     /// - Complexity: O(C + M) where C is the number of components and M is the number of families.
     @discardableResult
-    public func createEntity(with components: Component...) -> Entity {
-        createEntity(with: components)
+    public func createEntity<each C: Component>(with components: repeat each C) -> Entity {
+        nexus.createEntity(with: repeat each components)
     }
 
     /// Creates a new entity with the provided components.
@@ -86,12 +86,12 @@ public struct Entity {
     /// - Parameter components: one or more components.
     /// - Complexity: O(M) where M is the number of families.
     @discardableResult
-    public func assign(_ components: Component...) -> Entity {
-        assign(components)
+    public func assign<each C: Component>(_ components: repeat each C) -> Entity {
+        nexus.assign(components: repeat each components, to: self)
         return self
     }
 
-    /// Add a component to this entity.
+    /// Add a single component to this entity.
     /// - Parameter component: a component.
     /// - Complexity: O(M) where M is the number of families.
     @discardableResult

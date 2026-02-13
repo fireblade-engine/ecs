@@ -149,9 +149,9 @@ import Testing
         let family = nexus.family(requiresAll: MyComponent.self, YourComponent.self)
         nexus.delegate = delegateTester
         
-        family.createMember(with: (MyComponent(name: "Bla", flag: true), YourComponent(number: 85)))
-        family.createMember(with: (MyComponent(name: "Hello", flag: false), YourComponent(number: 05050)))
-        family.createMember(with: (MyComponent(name: "asdasd", flag: true), YourComponent(number: 9494949)))
+        family.createMember(with: MyComponent(name: "Bla", flag: true), YourComponent(number: 85))
+        family.createMember(with: MyComponent(name: "Hello", flag: false), YourComponent(number: 05050))
+        family.createMember(with: MyComponent(name: "asdasd", flag: true), YourComponent(number: 9494949))
      
         #expect(eventsFamilyMemberRemoved.count == 0)
         #expect(eventsComponentRemoved.count == 0)
@@ -193,14 +193,14 @@ import Testing
         #expect(eventsComponentAdded.count == 0)
         #expect(eventsEntityCreated.count == 0)
         
-        family.createMember(with: (MyComponent(name: "Bla", flag: true), YourComponent(number: 85)))
+        family.createMember(with: MyComponent(name: "Bla", flag: true), YourComponent(number: 85))
         #expect(family.count == 1)
         #expect(eventsMemberAdded.count == 1)
         #expect(eventsComponentAdded.count == 2)
         #expect(eventsEntityCreated.count == 1)
         
         
-        family.createMember(with: (MyComponent(name: "Hello", flag: false), YourComponent(number: 05050)))
+        family.createMember(with: MyComponent(name: "Hello", flag: false), YourComponent(number: 05050))
         #expect(family.count == 2)
         #expect(eventsMemberAdded.count == 2)
         #expect(eventsComponentAdded.count == 4)

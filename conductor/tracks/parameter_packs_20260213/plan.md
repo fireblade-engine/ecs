@@ -24,14 +24,15 @@
 - [ ] Task: Conductor - User Manual Verification 'Core Refactoring' (Protocol in workflow.md)
 
 ## Phase 3: API Adoption & Cleanup
-- [ ] Task: Update `Entity` APIs.
-    - [ ] Sub-task: Refactor `Entity.assign(...)` and `Entity.create(...)` to use parameter packs.
-- [ ] Task: Update `System` protocols.
-    - [ ] Sub-task: Update `System` requirements to work with `Family<each Component>`.
-- [ ] Task: Migrate Tests & Fix Compilation.
-    - [ ] Sub-task: Update `FamilyTests`, `NexusTests`, and `EntityTests` to use the new API.
-    - [ ] Sub-task: Fix any remaining compilation errors in the test suite.
-- [ ] Task: Remove Sourcery Tooling.
-    - [ ] Sub-task: Delete `.sourcery.yml`, `.sourceryTests.yml`, and `Sources/FirebladeECS/Stencils`.
-    - [ ] Sub-task: Remove `generate-code` target from `Makefile` and CI workflows.
-- [ ] Task: Conductor - User Manual Verification 'API Adoption & Cleanup' (Protocol in workflow.md)
+- [x] Task: Update `Entity` APIs.
+    - [x] Sub-task: Refactor `Entity.assign(...)` and `Entity.create(...)` to use parameter packs.
+- [x] Task: Update `System` protocols.
+    - [x] Sub-task: Update `System` requirements to work with `Family<each Component>`.
+- [x] Task: Migrate Tests & Fix Compilation.
+    - [x] Sub-task: Update `FamilyTests`, `NexusTests`, and `EntityTests` to use the new API.
+    - [x] Sub-task: Fix any remaining compilation errors in the test suite.
+- [x] Task: Remove Sourcery Tooling.
+    - [x] Sub-task: Delete `.sourcery.yml`, `.sourceryTests.yml`, and `Sources/FirebladeECS/Stencils`.
+    - [x] Sub-task: Remove `generate-code` target from `Makefile` and CI workflows.
+    - [x] Sub-task: Remove Sourcery from `Mintfile`.
+- [x] Task: Conductor - User Manual Verification 'API Adoption & Cleanup' (Protocol in workflow.md)

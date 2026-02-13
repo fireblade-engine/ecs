@@ -23,33 +23,14 @@ extension Entity {
         nexus.get(safe: identifier)
     }
 
-    /// Retrieves two components of the specified types assigned to this entity.
+    /// Retrieves components of the specified types assigned to this entity.
     /// - Parameters:
-    ///   - _: The first component type.
-    ///   - _: The second component type.
-    /// - Returns: A tuple containing the component instances (or `nil` if not found).
+    ///   - _: The component types to retrieve.
+    /// - Returns: A tuple containing the optional component instances.
     /// - Complexity: O(1)
     @inlinable
-    public func get<A, B>(components _: A.Type, _: B.Type) -> (A?, B?) where A: Component, B: Component {
-        let compA: A? = get(component: A.self)
-        let compB: B? = get(component: B.self)
-        return (compA, compB)
-    }
-
-    // swiftlint:disable large_tuple
-    /// Retrieves three components of the specified types assigned to this entity.
-    /// - Parameters:
-    ///   - _: The first component type.
-    ///   - _: The second component type.
-    ///   - _: The third component type.
-    /// - Returns: A tuple containing the component instances (or `nil` if not found).
-    /// - Complexity: O(1)
-    @inlinable
-    public func get<A, B, C>(components _: A.Type, _: B.Type, _: C.Type) -> (A?, B?, C?) where A: Component, B: Component, C: Component {
-        let compA: A? = get(component: A.self)
-        let compB: B? = get(component: B.self)
-        let compC: C? = get(component: C.self)
-        return (compA, compB, compC)
+    public func get<each C: Component>(components _: repeat (each C).Type) -> (repeat (each C)?) {
+        (repeat get(component: (each C).self))
     }
 
     /// Get or set component instance by type via subscript.

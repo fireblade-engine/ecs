@@ -83,7 +83,7 @@ Please consult the [README][ref-readme] for installation instructions.
 
 [ref-code-of-conduct]: https://github.com/fireblade-engine/ecs/blob/master/CODE_OF_CONDUCT.md
 [ref-contributors]: https://github.com/fireblade-engine/ecs/graphs/contributors
-[ref-documentation]: https://github.com/fireblade-engine/ecs/wiki
+[ref-documentation]: https://fireblade-engine.github.io/ecs
 [ref-gh-actions]: https://github.com/fireblade-engine/ecs/actions
 [ref-issues-first]: https://github.com/fireblade-engine/ecs/issues?q=is%3Aopen+is%3Aissue+label%3A"good+first+issue"
 [ref-issues-help]: https://github.com/fireblade-engine/ecs/issues?q=is%3Aopen+is%3Aissue+label%3A"help+wanted"

@@ -14,6 +14,7 @@ Refactor the Fireblade ECS to exclusively use Swift Parameter Packs (SE-0393), r
 -   **Replace:** `Family2`, `Family3`, etc., with a single `Family<each Component>` type.
 -   **Update:** `Nexus.family(requires:)` to accept a parameter pack of component types.
 -   **Breaking Change:** Existing `FamilyN` type aliases will be removed.
+-   **Codable Support:** The new `Family` must support encoding and decoding of components (where `each Component: Codable`) to maintain feature parity.
 
 ### 3.2 System & Entity API
 -   **Update:** `System` protocols to support variadic generic constraints for family requirements.

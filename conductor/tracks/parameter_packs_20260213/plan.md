@@ -8,16 +8,19 @@
 - [ ] Task: Conductor - User Manual Verification 'API Design & Prototyping' (Protocol in workflow.md)
 
 ## Phase 2: Core Refactoring (Family & Nexus)
-- [ ] Task: Implement `Family<each Component>`.
-    - [ ] Sub-task: Create `Family+ParameterPacks.swift` with the new variadic struct.
-    - [ ] Sub-task: Implement trait matching and component storage access using pack iteration.
-- [ ] Task: Refactor `Nexus` to support variadic Families.
-    - [ ] Sub-task: Update `Nexus.family(requires:)` to accept `each Component`.
-    - [ ] Sub-task: Update internal family storage to handle the new generic type (may require type erasure updates).
-- [ ] Task: Remove Legacy Code.
-    - [ ] Sub-task: Delete `Family.generated.swift`.
-    - [ ] Sub-task: Remove `Family1`, `Family2`, ... type aliases.
-- [ ] Task: Fix immediate compilation errors in Core files (`Nexus`, `Family`, `Component`).
+- [x] Task: Implement `Family<each Component>`.
+    - [x] Sub-task: Create `Family+ParameterPacks.swift` with the new variadic struct.
+    - [x] Sub-task: Implement trait matching and component storage access using pack iteration.
+- [x] Task: Refactor `Nexus` to support variadic Families.
+    - [x] Sub-task: Update `Nexus.family(requires:)` to accept `each Component`.
+    - [x] Sub-task: Update internal family storage to handle the new generic type (may require type erasure updates).
+- [x] Task: Implement Codable support for `Family<each Component>`.
+    - [x] Sub-task: Create `Family+Coding.swift` to handle encoding/decoding of family components using parameter packs.
+    - [x] Sub-task: Verify Codable conformance with unit tests.
+- [x] Task: Remove Legacy Code.
+    - [x] Sub-task: Delete `Family.generated.swift`.
+    - [x] Sub-task: Remove `Family1`, `Family2`, ... type aliases.
+- [x] Task: Fix immediate compilation errors in Core files (`Nexus`, `Family`, `Component`).
 - [ ] Task: Conductor - User Manual Verification 'Core Refactoring' (Protocol in workflow.md)
 
 ## Phase 3: API Adoption & Cleanup

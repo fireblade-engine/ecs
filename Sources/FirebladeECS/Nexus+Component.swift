@@ -45,6 +45,19 @@ extension Nexus {
         return assign(component: component, entityId: entityId)
     }
 
+    /// Assigns multiple components to an entity.
+    /// - Parameters:
+    ///   - components: The components to assign.
+    ///   - entity: The entity to assign the components to.
+    /// - Returns: `true` if all assignments were successful.
+    /// - Complexity: O(C * M) where C is the number of components and M is the number of families.
+    @discardableResult
+    public final func assign<each C: Component>(components: repeat each C, to entity: Entity) -> Bool {
+        var success = true
+        _ = (repeat (success = success && assign(component: each components, to: entity)))
+        return success
+    }
+
     /// Assigns a collection of components to an entity.
     /// - Parameters:
     ///   - components: The collection of components to assign.

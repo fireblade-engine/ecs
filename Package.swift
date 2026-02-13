@@ -18,11 +18,9 @@ let package = Package(
     ],
     targets: [
         .target(name: "FirebladeECS",
-                exclude: ["Stencils/Family.stencil"],
                 swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
         .testTarget(name: "FirebladeECSTests",
                     dependencies: ["FirebladeECS"],
-                    exclude: ["Stencils/FamilyTests.stencil"],
                     swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
         .testTarget(name: "FirebladeECSPerformanceTests",
                     dependencies: ["FirebladeECS"],

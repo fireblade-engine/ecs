@@ -10,14 +10,14 @@ An ECS comprises entities composed from components of data, with systems which o
 Extend the following lines in your `Package.swift` file or use it to create a new project.
 
 ```swift
-// swift-tools-version:5.8
+// swift-tools-version:6.1
 
 import PackageDescription
 
 let package = Package(
     name: "YourPackageName",
     dependencies: [
-        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.17.5")
+        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.17.7")
     ],
     targets: [
         .target(
@@ -33,7 +33,7 @@ For a more detailed example, see the [Fireblade ECS Demo App](https://github.com
 
 ### 🏛️ Nexus
 
-The core element in the Fireblade-ECS is the [Nexus](https://en.wiktionary.org/wiki/nexus#Noun). 
+The core element in the Fireblade ECS is the [Nexus](https://en.wiktionary.org/wiki/nexus#Noun). 
 It acts as a centralized way to store, access and manage entities and their components. 
 A single `Nexus` may (theoretically) hold up to 4294967295 `Entities` at a time.   
 You may use more than one `Nexus` at a time.

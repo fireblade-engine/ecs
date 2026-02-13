@@ -112,7 +112,7 @@ preview-analysis-docs:
 
 # Generates documentation pages suitable to push/host on github pages (or another static site)
 # Expected location, if set up, would be:
-#   https://fireblade-engine.github.io/FirebladeECS/documentation/FirebladeECS/
+#   https://fireblade-engine.github.io/ecs/ -> https://fireblade-engine.github.io/ecs/main/documentation/firebladeecs/
 generate-docs-githubpages:
 	DOCC_JSON_PRETTYPRINT=YES \
 	swift package \
@@ -122,7 +122,7 @@ generate-docs-githubpages:
 	--target FirebladeECS \
 	--output-path ./docs \
 	--transform-for-static-hosting \
-	--hosting-base-path 'FirebladeECS'
+	--hosting-base-path '$(REPO_NAME)'
 
 # --- Workflows ---
 

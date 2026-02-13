@@ -22,7 +22,7 @@ import Testing
     }
 
     private func batchDestroyEntities(in nexus: Nexus, count: Int) {
-        let family = nexus.family(requiresAll: Position.self)
+        let family = nexus.family(requires: Position.self)
 
         family
             .entities

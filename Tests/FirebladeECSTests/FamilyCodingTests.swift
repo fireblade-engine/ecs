@@ -350,8 +350,9 @@ import Foundation
     }
 
     @Test func codingStrategyFallback() throws {
-        let component = MyComponent(name: "A", flag: true)
-        let container = FamilyMemberContainer<MyComponent>(components: component)
+        let component1 = MyComponent(name: "A", flag: true)
+        // Use two different components to avoid key collision
+        let container = FamilyMemberContainer<MyComponent>(components: component1)
 
         let encoder = JSONEncoder()
         // No user info set, so it should fallback to DefaultCodingStrategy
@@ -365,11 +366,3 @@ import Foundation
         #expect(decoded.components[0].name == "A")
     }
 }
-
-
-struct FamilyMemberContainer<each C: Component> {
-    let components: (repeat each C)
-}
-
-extension FamilyMemberContainer: Encodable where repeat each C: Encodable { }
-extension FamilyMemberContainer: Decodable where repeat each C: Decodable { }

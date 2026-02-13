@@ -17,11 +17,7 @@ extension Family where repeat each C: Encodable {
     /// - Complexity: O(N) where N is the number of family members.
     public func encodeMembers(using encoder: inout JSONEncoder) throws -> Data {
         encoder.userInfo[CodingUserInfoKey.nexusCodingStrategy] = nexus.codingStrategy
-        var componentsList = [(repeat each C)]()
-        for components in self {
-            componentsList.append(components)
-        }
-        let container = FamilyMemberContainer<repeat each C>(components: componentsList)
+        let container = FamilyMemberContainer<repeat each C>(components: self.makeIterator())
         return try encoder.encode(container)
     }
 }

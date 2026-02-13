@@ -36,7 +36,7 @@ extension FamilyMemberContainer: Encodable where repeat each C: Encodable {
         var familyContainer = encoder.unkeyedContainer()
         for memberComponents in components {
             var container = familyContainer.nestedContainer(keyedBy: DynamicCodingKey.self)
-            _ = (repeat try container.encode(each memberComponents, forKey: strategy.codingKey(for: (each C).self)))
+            _ = try (repeat container.encode(each memberComponents, forKey: strategy.codingKey(for: (each C).self)))
         }
     }
 }
@@ -48,27 +48,27 @@ extension Family where repeat each C: Encodable {
         into container: inout KeyedEncodingContainer<DynamicCodingKey>,
         using strategy: CodingStrategy
     ) throws {
-        _ = (repeat try container.encode(each components, forKey: strategy.codingKey(for: (each C).self)))
+        _ = try (repeat container.encode(each components, forKey: strategy.codingKey(for: (each C).self)))
     }
 }
 
 // MARK: - decoding
 
 extension FamilyMemberContainer: Decodable where repeat each C: Decodable {
-    /// Decodes the family members from the given decoder.
-    /// - Parameter decoder: The decoder to read data from.
-    /// - Throws: An error if decoding fails.
-    /// - Complexity: O(N) where N is the number of components in the container.
+    // Decodes the family members from the given decoder.
+    // - Parameter decoder: The decoder to read data from.
+    // - Throws: An error if decoding fails.
+    // - Complexity: O(N) where N is the number of components in the container.
     public init(from decoder: Decoder) throws {
         let strategy = decoder.userInfo[CodingUserInfoKey.nexusCodingStrategy] as? CodingStrategy ?? DefaultCodingStrategy()
         var familyContainer = try decoder.unkeyedContainer()
         var componentsList: [(repeat each C)] = []
         while !familyContainer.isAtEnd {
             let container = try familyContainer.nestedContainer(keyedBy: DynamicCodingKey.self)
-            let memberComponents = (repeat try container.decode((each C).self, forKey: strategy.codingKey(for: (each C).self)))
+            let memberComponents = try (repeat container.decode((each C).self, forKey: strategy.codingKey(for: (each C).self)))
             componentsList.append(memberComponents)
         }
-        self.components = componentsList
+        components = componentsList
     }
 }
 
@@ -78,6 +78,6 @@ extension Family where repeat each C: Decodable {
         from container: KeyedDecodingContainer<DynamicCodingKey>,
         using strategy: CodingStrategy
     ) throws -> (repeat each C) {
-        return (repeat try container.decode((each C).self, forKey: strategy.codingKey(for: (each C).self)))
+        try (repeat container.decode((each C).self, forKey: strategy.codingKey(for: (each C).self)))
     }
 }

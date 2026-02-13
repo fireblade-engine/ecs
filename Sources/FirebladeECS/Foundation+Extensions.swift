@@ -35,7 +35,6 @@ public protocol TopLevelEncoder {
     var userInfo: [CodingUserInfoKey: UserInfoValue] { get set }
 }
 
-
 /// A type that can decode values from a native format.
 public protocol TopLevelDecoder {
     /// The type this decoder accepts.

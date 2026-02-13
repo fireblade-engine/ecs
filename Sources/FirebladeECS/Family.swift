@@ -23,14 +23,14 @@ public struct Family<each C: Component> {
     ///   - excludesAll: A list of excluded component types.
     public init(nexus: Nexus, requiresAll: repeat (each C).Type, excludesAll: [Component.Type]) {
         self.nexus = nexus
-        
+
         var requiredIdentifiers: [ComponentIdentifier] = []
         // We iterate the pack to extract identifiers
         _ = (repeat requiredIdentifiers.append((each C).identifier))
-        
+
         let excludedIdentifiers = excludesAll.map { $0.identifier }
-        
-        self.traits = FamilyTraitSet(requiresAll: Set(requiredIdentifiers), excludesAll: Set(excludedIdentifiers))
+
+        traits = FamilyTraitSet(requiresAll: Set(requiredIdentifiers), excludesAll: Set(excludedIdentifiers))
         nexus.onFamilyInit(traits: traits)
     }
 

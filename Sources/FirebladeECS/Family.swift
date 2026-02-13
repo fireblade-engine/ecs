@@ -91,8 +91,8 @@ extension Family: Equatable {
 extension Family: Sequence {
     /// Creates an iterator over the components of the family members.
     /// - Complexity: O(1)
-    public func makeIterator() -> FamilyIterator {
-        FamilyIterator(nexus: nexus, memberIdsIterator: memberIds.makeIterator())
+    public func makeIterator() -> ComponentsIterator {
+        ComponentsIterator(family: self)
     }
 }
 

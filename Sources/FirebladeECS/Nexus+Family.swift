@@ -63,20 +63,41 @@ extension Nexus {
         members(withFamilyTraits: traits).contains(entityId.id)
     }
 
-    /// Create a family of entities (aka members) having the required components.
+    /// Create a family of entities (aka members) having 1 required components.
+    ///
+    /// A family is a collection of entities with uniform component types per entity.
+    /// Entities that are be part of this family will have at least the 1 required components,
+    /// but may have more components assigned.
+    ///
+    /// A family is just a view on (component) data, creating them is cheap.
+    /// Use them to iterate efficiently over entities with the same components assigned.
+    /// Families with the same requirements provide a view on the same collection of entities (aka members).
+    /// A family conforms to the `LazySequenceProtocol` and therefore can be accessed like any other (lazy) sequence.
+    ///
+    /// **General usage**
+    /// ```swift
+    /// let family = nexus.family(requires: Comp1.self)
+    /// // iterate each entity's components
+    /// family.forEach { (comp1) in
+    ///   ...
+    /// }
+    /// ```
+    /// **Caveats**
+    /// - Component types must be unique per family
+    /// - Component type order is arbitrary
     ///
     /// - Parameters:
-    ///   - componentType: Component type required by members of this family.
+    ///   - comp: Component type required by members of this family.
     ///   - excludedComponents: All component types that must not be assigned to an entity in this family.
     /// - Complexity: O(1) for existing families, O(N) where N is the number of entities for new families.
-    /// - Returns: The family of entities having the required component.
-    public func family<C: Component>(
-        requires componentType: C.Type,
+    /// - Returns: The family of entities having 1 required components each.
+    public func family<Comp>(
+        requires comp: Comp.Type,
         excludesAll excludedComponents: Component.Type...
-    ) -> Family<C> {
-        Family(
+    ) -> Family<Comp> where Comp: Component {
+        Family<Comp>(
             nexus: self,
-            requiresAll: componentType,
+            requiresAll: (comp),
             excludesAll: excludedComponents
         )
     }

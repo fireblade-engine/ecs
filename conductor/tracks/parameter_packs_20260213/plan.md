@@ -40,4 +40,8 @@
     - [x] Sub-task: Fix Codable strategy and implementation.
     - [x] Sub-task: Update documentation comments.
     - [x] Sub-task: Add comprehensive Family tests (1-8 components).
+- [x] Task: Restore Coding Feature Parity.
+    - [x] Sub-task: Restore FamilyCodingTests.swift.
+    - [x] Sub-task: Implement FamilyMemberContainer logic in Family+Coding.swift.
+    - [x] Sub-task: Verify with tests.
 - [x] Task: Conductor - User Manual Verification 'API Adoption & Cleanup' (Protocol in workflow.md)

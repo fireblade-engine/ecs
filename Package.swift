@@ -3,6 +3,12 @@ import PackageDescription
 
 let package = Package(
     name: "FirebladeECS",
+    platforms: [
+        .macOS(.v14),
+        .iOS(.v17),
+        .tvOS(.v17),
+        .watchOS(.v10)
+    ],
     products: [
         .library(name: "FirebladeECS",
                  targets: ["FirebladeECS"])

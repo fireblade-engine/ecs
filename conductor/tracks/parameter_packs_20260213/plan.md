@@ -1,10 +1,10 @@
 # Implementation Plan - Parameter Pack Refactoring
 
 ## Phase 1: API Design & Prototyping
-- [ ] Task: Analyze current `Family` and `Component` architecture to identify all affected types.
-- [ ] Task: Create `API_PROPOSAL.md` outlining the new `Family<each T>` signature, `Nexus` updates, and `System` protocol changes.
-- [ ] Task: Create a temporary test file to verify Swift 6.0 Parameter Pack syntax and feasibility for the specific ECS requirements (traits, storage).
-- [ ] Task: Review and approve `API_PROPOSAL.md` with the user.
+- [x] Task: Analyze current `Family` and `Component` architecture to identify all affected types.
+- [x] Task: Create `API_PROPOSAL.md` outlining the new `Family<each T>` signature, `Nexus` updates, and `System` protocol changes.
+- [x] Task: Create a temporary test file to verify Swift 6.0 Parameter Pack syntax and feasibility for the specific ECS requirements (traits, storage).
+- [x] Task: Review and approve `API_PROPOSAL.md` with the user.
 - [ ] Task: Conductor - User Manual Verification 'API Design & Prototyping' (Protocol in workflow.md)
 
 ## Phase 2: Core Refactoring (Family & Nexus)

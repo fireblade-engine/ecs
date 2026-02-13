@@ -53,7 +53,7 @@ class ExampleSystem {
     }
 
     func update(deltaT _: Double) {
-        family.forEach { (position: Position, velocity: Velocity) in
+        for (position, velocity) in family {
             position.x *= 2
             velocity.a *= 2
         }

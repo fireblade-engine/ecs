@@ -23,10 +23,14 @@ public struct Family<each C: Component> {
     ///   - excludesAll: A list of excluded component types.
     public init(nexus: Nexus, requiresAll: repeat (each C).Type, excludesAll: [Component.Type]) {
         self.nexus = nexus
-        var requiredIdentifiers = [ComponentIdentifier]()
+        
+        var requiredIdentifiers: [ComponentIdentifier] = []
+        // We iterate the pack to extract identifiers
         _ = (repeat requiredIdentifiers.append((each C).identifier))
+        
         let excludedIdentifiers = excludesAll.map { $0.identifier }
-        traits = FamilyTraitSet(requiresAll: Set(requiredIdentifiers), excludesAll: Set(excludedIdentifiers))
+        
+        self.traits = FamilyTraitSet(requiresAll: Set(requiredIdentifiers), excludesAll: Set(excludedIdentifiers))
         nexus.onFamilyInit(traits: traits)
     }
 
@@ -85,13 +89,26 @@ extension Family: Equatable {
 }
 
 // MARK: - Iteration
-
-extension Family {
+extension Family: Sequence {
     /// Iterates over the components of the family members.
     /// - Parameter body: A closure that takes the required components as arguments.
     public func forEach(_ body: (repeat each C) -> Void) {
         for entityId in memberIds {
             body(repeat nexus.get(unsafe: entityId) as (each C))
+        }
+    }
+    
+    public func makeIterator() -> FamilyIterator {
+        FamilyIterator(nexus: nexus, memberIdsIterator: memberIds.makeIterator())
+    }
+    
+    public struct FamilyIterator: IteratorProtocol {
+        let nexus: Nexus
+        var memberIdsIterator: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>.ElementIterator
+        
+        public mutating func next() -> (repeat each C)? {
+            guard let entityId = memberIdsIterator.next() else { return nil }
+            return (repeat nexus.get(unsafe: entityId) as (each C))
         }
     }
 }
@@ -128,10 +145,44 @@ extension Family {
             return Entity(nexus: nexus, id: entityId)
         }
     }
+    
+    /// A collection of entities and their components in this family.
+    /// - Complexity: O(1)
+    @inlinable public var entityAndComponents: EntityComponentIterator {
+        EntityComponentIterator(family: self)
+    }
+
+    /// An iterator over both the entities and their components in the family.
+    public struct EntityComponentIterator: IteratorProtocol {
+        @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>.ElementIterator
+        @usableFromInline unowned let nexus: Nexus
+
+        /// Creates a new iterator for the given family.
+        /// - Parameter family: The family to iterate over.
+        /// - Complexity: O(1)
+        public init(family: Family<repeat each C>) {
+            nexus = family.nexus
+            memberIdsIterator = family.memberIds.makeIterator()
+        }
+
+        /// Advances to the next entity and components pair and returns it, or `nil` if no next element exists.
+        /// - Returns: The next entity and components pair in the sequence, or `nil`.
+        /// - Complexity: O(R) where R is the number of required components.
+        public mutating func next() -> (Entity, repeat each C)? {
+            guard let entityId = memberIdsIterator.next() else {
+                return nil
+            }
+            let entity = Entity(nexus: nexus, id: entityId)
+            let components = (repeat nexus.get(unsafe: entityId) as (each C))
+            return (entity, repeat each components)
+        }
+    }
 }
 
 extension Family.EntityIterator: LazySequenceProtocol {}
 extension Family.EntityIterator: Sequence {}
+extension Family.EntityComponentIterator: LazySequenceProtocol {}
+extension Family.EntityComponentIterator: Sequence {}
 
 // MARK: - member creation
 
@@ -150,3 +201,4 @@ extension Family {
 
 extension Family: Sendable {}
 extension Family.EntityIterator: Sendable {}
+extension Family.EntityComponentIterator: Sendable {}

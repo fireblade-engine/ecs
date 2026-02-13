@@ -65,6 +65,24 @@ extension Nexus {
 
     /// Create a family of entities (aka members) having the required components.
     ///
+    /// - Parameters:
+    ///   - requires: Component type required by members of this family.
+    ///   - excludesAll: All component types that must not be assigned to an entity in this family.
+    /// - Complexity: O(1) for existing families, O(N) where N is the number of entities for new families.
+    /// - Returns: The family of entities having the required component.
+    public func family<C: Component>(
+        requires componentType: C.Type,
+        excludesAll excludedComponents: Component.Type...
+    ) -> Family<C> {
+        Family(
+            nexus: self,
+            requiresAll: componentType,
+            excludesAll: excludedComponents
+        )
+    }
+
+    /// Create a family of entities (aka members) having the required components.
+    ///
     /// A family is a collection of entities with uniform component types per entity.
     /// Entities that are be part of this family will have at least the required components,
     /// but may have more components assigned.

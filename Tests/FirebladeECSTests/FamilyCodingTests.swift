@@ -350,41 +350,26 @@ import Foundation
     }
 
     @Test func codingStrategyFallback() throws {
-        let component = TestComponent(value: 42)
-        let container = FamilyMemberContainer<TestComponent>(components: component)
+        let component = MyComponent(name: "A", flag: true)
+        let container = FamilyMemberContainer<MyComponent>(components: component)
 
         let encoder = JSONEncoder()
+        // No user info set, so it should fallback to DefaultCodingStrategy
         let data = try encoder.encode(container)
 
         let decoder = JSONDecoder()
-        let decoded = try decoder.decode(FamilyMemberContainer<TestComponent>.self, from: data)
+        // No user info set, so it should fallback to DefaultCodingStrategy
+        let decoded = try decoder.decode(FamilyMemberContainer<MyComponent>.self, from: data)
 
-        // decoded.components is (TestComponent)
-        // Accessing via pattern matching or direct if it unwraps?
-        // Let's try .value if it unwraps, or .0.value if tuple.
-        // I suspect it's a tuple.
-        #expect(decoded.components.value == 42) 
+        #expect(decoded.components.count == 1)
+        #expect(decoded.components[0].name == "A")
     }
 }
 
-final class TestComponent: Component, Codable, @unchecked Sendable {
-    var value: Int
-    init(value: Int) { self.value = value }
+
+struct FamilyMemberContainer<each C: Component> {
+    let components: (repeat each C)
 }
 
-// Workaround for conformance visibility
-extension FamilyMemberContainer: Encodable where repeat each C: Encodable {
-    func encode(to encoder: Encoder) throws {
-        let strategy = encoder.userInfo[.nexusCodingStrategy] as? CodingStrategy ?? DefaultCodingStrategy()
-        var container = encoder.container(keyedBy: DynamicCodingKey.self)
-        _ = (repeat try container.encode(each components, forKey: strategy.codingKey(for: (each C).self)))
-    }
-}
-
-extension FamilyMemberContainer: Decodable where repeat each C: Decodable {
-    init(from decoder: Decoder) throws {
-        let strategy = decoder.userInfo[.nexusCodingStrategy] as? CodingStrategy ?? DefaultCodingStrategy()
-        let container = try decoder.container(keyedBy: DynamicCodingKey.self)
-        self.components = (repeat try container.decode((each C).self, forKey: strategy.codingKey(for: (each C).self)))
-    }
-}
+extension FamilyMemberContainer: Encodable where repeat each C: Encodable { }
+extension FamilyMemberContainer: Decodable where repeat each C: Decodable { }

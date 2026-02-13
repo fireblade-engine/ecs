@@ -72,8 +72,3 @@ import Foundation
         #expect(data.count > 0)
     }
 }
-
-// Helper container for testing
-struct FamilyMemberContainer<each C: Component> {
-    let components: (repeat each C)
-}

@@ -91,13 +91,13 @@ extension Nexus {
     ///   - excludedComponents: All component types that must not be assigned to an entity in this family.
     /// - Complexity: O(1) for existing families, O(N) where N is the number of entities for new families.
     /// - Returns: The family of entities having 1 required components each.
-    public func family<Comp>(
+    public func family<Comp: Component>(
         requires comp: Comp.Type,
         excludesAll excludedComponents: Component.Type...
-    ) -> Family<Comp> where Comp: Component {
+    ) -> Family<Comp> {
         Family<Comp>(
             nexus: self,
-            requiresAll: (comp),
+            requiresAll: comp,
             excludesAll: excludedComponents
         )
     }

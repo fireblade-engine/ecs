@@ -17,9 +17,9 @@ public struct FamilyMemberContainer<each C: Component> {
     }
 
     /// Creates a new family member container from a sequence of components.
-    /// - Parameter component: A sequence of component tuples.
-    public init<S>(component: S) where S: Sequence, S.Element == (repeat each C) {
-        components = Array(component)
+    /// - Parameter components: A sequence of component tuples.
+    public init<S>(components: S) where S: Sequence, S.Element == (repeat each C) {
+        self.components = Array(components)
     }
 
     /// Creates a new family member container from a family components iterator.

@@ -36,7 +36,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
-      - uses: swift-actions/setup-swift@v2
+      - uses: swift-actions/setup-swift@v3
         id: setup-swiftwasm
         with:
           swift-version: ${{ matrix.config.version }}

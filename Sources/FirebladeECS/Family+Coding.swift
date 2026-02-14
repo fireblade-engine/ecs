@@ -18,14 +18,14 @@ public struct FamilyMemberContainer<each C: Component> {
 
     /// Creates a new family member container from a sequence of components.
     /// - Parameter components: A sequence of component tuples.
-    public init<S>(components: S) where S: Sequence, S.Element == (repeat each C) {
-        self.components = Array(components)
+    public init<S>(components sequence: S) where S: Sequence, S.Element == (repeat each C) {
+        components = Array(sequence)
     }
 
     /// Creates a new family member container from a family components iterator.
     /// - Parameter components: The iterator providing component tuples.
-    public init(components: Family<repeat each C>.ComponentsIterator) {
-        self.components = Array(components)
+    public init(components iterator: Family<repeat each C>.ComponentsIterator) {
+        components = Array(iterator)
     }
 }
 
@@ -74,13 +74,13 @@ extension FamilyMemberContainer: Decodable where repeat each C: Decodable {
     public init(from decoder: Decoder) throws {
         let strategy = decoder.userInfo[CodingUserInfoKey.nexusCodingStrategy] as? CodingStrategy ?? DefaultCodingStrategy()
         var familyContainer = try decoder.unkeyedContainer()
-        var componentsList: [(repeat each C)] = []
+        var decodedComponents: [(repeat each C)] = []
         while !familyContainer.isAtEnd {
             let container = try familyContainer.nestedContainer(keyedBy: DynamicCodingKey.self)
             let memberComponents = try (repeat container.decode((each C).self, forKey: strategy.codingKey(for: (each C).self)))
-            componentsList.append(memberComponents)
+            decodedComponents.append(memberComponents)
         }
-        components = componentsList
+        components = decodedComponents
     }
 }
 

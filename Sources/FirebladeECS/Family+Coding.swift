@@ -17,13 +17,13 @@ public struct FamilyMemberContainer<each C: Component> {
     }
 
     /// Creates a new family member container from a sequence of components.
-    /// - Parameter components: A sequence of component tuples.
+    /// - Parameter sequence: A sequence of component tuples.
     public init<S>(components sequence: S) where S: Sequence, S.Element == (repeat each C) {
         components = Array(sequence)
     }
 
     /// Creates a new family member container from a family components iterator.
-    /// - Parameter components: The iterator providing component tuples.
+    /// - Parameter iterator: The iterator providing component tuples.
     public init(components iterator: Family<repeat each C>.ComponentsIterator) {
         components = Array(iterator)
     }

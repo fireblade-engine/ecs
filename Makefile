@@ -30,7 +30,7 @@ setup:
 
 lint:
 	mint run swiftlint lint --quiet Sources/ Tests/
-	mint run swiftformat --lint --swiftversion $(SWIFT_PACKAGE_VERSION) Sources/ Tests/
+	mint run swiftformat --lint --config .swiftformat --swiftversion $(SWIFT_PACKAGE_VERSION) Sources/ Tests/
 
 lint-fix:
 	mint run swiftformat --swiftversion $(SWIFT_PACKAGE_VERSION) --config .swiftformat Sources/ Tests/

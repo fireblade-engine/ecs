@@ -20,14 +20,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Setup Swift
-        uses: swift-actions/setup-swift@v2
-        with:
-          swift-version: ${{ matrix.swift }}
-      
       - name: Resolve Package Dependencies
-        env:
-          DEVELOPER_DIR: ${{ matrix.swift == '6.1' && '/Applications/Xcode_16.0.app/Contents/Developer' || '' }}
         run: swift package resolve
 
       - name: Select Latest Simulator
@@ -51,8 +44,6 @@ jobs:
           fi
 
       - name: Run Tests (iOS)
-        env:
-          DEVELOPER_DIR: ${{ matrix.swift == '6.1' && '/Applications/Xcode_16.0.app/Contents/Developer' || '' }}
         run: |
           xcodebuild test \
             -scheme FirebladeECS \

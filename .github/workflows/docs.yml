@@ -25,14 +25,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Setup Swift
-        uses: swift-actions/setup-swift@v2
-        with:
-          swift-version: "6.1"
-
       - name: Build Documentation
-        env:
-          DEVELOPER_DIR: /Applications/Xcode_16.0.app/Contents/Developer
         run: make docs-generate REPO_NAME=ecs DOCS_VERSION_PATH=main
 
       - name: Setup Redirects

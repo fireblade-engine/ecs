@@ -13,7 +13,7 @@
     /// Conformance of `JSONDecoder` to `TopLevelDecoder` to support JSON decoding in ECS serialization.
     extension JSONDecoder: TopLevelDecoder {}
 
-    #if canImport(Darwin) || swift(>=6.2)
+    #if swift(>=6.2)
         public typealias UserInfoValue = any Sendable
     #else
         public typealias UserInfoValue = Any

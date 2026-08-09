@@ -1,96 +1,53 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "assignees": [],
   "extends": [
-    "config:recommended",
-    ":combinePatchMinorReleases",
-    ":rebaseStalePrs",
-    ":renovatePrefix",
-    "customManagers:githubActionsVersions"
+    "config:recommended"
   ],
-  "prConcurrentLimit": 5,
-  "prHourlyLimit": 1,
-  "recreateWhen": "auto",
-  "prCreation": "not-pending",
+  "labels": [
+    "dependencies"
+  ],
   "packageRules": [
     {
-      "groupName": "Swift non-major dependencies",
       "description": "Group all Swift package minor and patch updates together",
+      "groupName": "Swift non-major dependencies",
       "matchManagers": [
         "swift"
       ],
       "matchUpdateTypes": [
         "minor",
         "patch"
-      ],
-      "labels": [
-        "dependencies",
-        "renovate",
-        "swift"
       ]
     },
     {
-      "groupName": "GitHub Actions non-major dependencies",
+      "description": "Group all Mint package minor and patch updates together",
+      "groupName": "Mint non-major dependencies",
+      "matchManagers": [
+        "mint"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ]
+    },
+    {
       "description": "Group all GitHub Actions minor and patch updates together",
+      "groupName": "GitHub Actions non-major dependencies",
       "matchManagers": [
         "github-actions"
       ],
       "matchUpdateTypes": [
         "minor",
         "patch"
-      ],
-      "labels": [
-        "dependencies",
-        "renovate",
-        "ci"
-      ]
-    },
-    {
-      "groupName": "Mint non-major dependencies",
-      "description": "Group all Mint package minor and patch updates together",
-      "matchManagers": [
-        "mint"
-      ],
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ],
-      "labels": [
-        "dependencies",
-        "renovate",
-        "mint"
       ]
     }
   ],
-  "customManagers": [
-    {
-      "customType": "regex",
-      "description": "Update swift-tools-version in Package.swift",
-      "managerFilePatterns": [
-        "/Package\\.swift/"
-      ],
-      "matchStrings": [
-        "^//(\\s)?swift-tools-version:[\\s]?(?<currentValue>[0-9.]+)"
-      ],
-      "datasourceTemplate": "github-releases",
-      "depNameTemplate": "swiftlang/swift",
-      "extractVersionTemplate": "^swift-(?<version>.*)-RELEASE$"
-    },
-    {
-      "customType": "regex",
-      "description": "Update .swift-version",
-      "managerFilePatterns": [
-        "/.swift-version/"
-      ],
-      "matchStrings": [
-        "(?<currentValue>[0-9.]+)"
-      ],
-      "datasourceTemplate": "github-releases",
-      "depNameTemplate": "swiftlang/swift",
-      "extractVersionTemplate": "^swift-(?<version>.*)-RELEASE$"
-    }
-  ],
-  "labels": [
-    "dependencies",
-    "renovate"
+  "prCreation": "not-pending",
+  "recreateWhen": "auto",
+  "reviewers": [],
+  "suppressNotifications": [
+    "prIgnoreNotification",
+    "prEditedNotification",
+    "branchAutomergeFailure"
   ]
 }

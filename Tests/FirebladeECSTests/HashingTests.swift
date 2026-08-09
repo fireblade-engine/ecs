@@ -10,7 +10,7 @@ import Testing
 
 @Suite struct HashingTests {
     private func makeComponent() -> Int {
-        if UInt.bitWidth == 64 {
+        #if arch(x86_64) || arch(arm64) || arch(powerpc64) || arch(powerpc64le) || arch(s390x)
             let upperBound: Int = 44
             let range = UInt32.min...UInt32.max
             let high = UInt(UInt32.random(in: range)) << UInt(upperBound)
@@ -21,7 +21,7 @@ import Testing
             #expect(low.trailingZeroBitCount <= 32)
             let rand: UInt = high | low
             return Int(bitPattern: rand)
-        } else {
+        #else
             let upperBound: Int = 16
             let range = UInt16.min...UInt16.max
             let high = UInt(UInt16.random(in: range)) << UInt(upperBound)
@@ -32,16 +32,20 @@ import Testing
             #expect(low.trailingZeroBitCount <= 16)
             let rand: UInt = high | low
             return Int(bitPattern: rand)
-        }
+        #endif
     }
 
     @Test func collisionsInCritialRange() {
         var hashSet = Set<Int>()
 
-        let maxEntities = UInt.bitWidth == 64 ? 1_000_000 : 10_000
+        #if arch(x86_64) || arch(arm64) || arch(powerpc64) || arch(powerpc64le) || arch(s390x)
+            let maxEntities = 1_000_000
+            let maxComponents = 1000
+        #else
+            let maxEntities = 10_000
+            let maxComponents = 100
+        #endif
         var range: [UInt32] = Array(0..<UInt32(maxEntities))
-
-        let maxComponents: Int = UInt.bitWidth == 64 ? 1000 : 100
         let components: [Int] = (0..<maxComponents).map { _ in makeComponent() }
 
         var index: Int = 0

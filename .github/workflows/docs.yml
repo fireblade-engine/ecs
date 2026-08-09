@@ -20,7 +20,7 @@ permissions:
 jobs:
   build-docs:
     name: Build Documentation
-    runs-on: macos-latest
+    runs-on: macos-14
     steps:
       - name: Checkout
         uses: actions/checkout@v6

@@ -10,11 +10,15 @@ on:
 jobs:
   macos:
     name: macOS (Swift ${{ matrix.swift }})
-    runs-on: macos-latest
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
-        swift: ["6.1", "6.2"]
+        include:
+          - swift: "6.1"
+            runner: macos-14
+          - swift: "6.2"
+            runner: macos-latest
 
     steps:
       - name: Checkout

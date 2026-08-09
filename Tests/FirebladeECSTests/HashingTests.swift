@@ -10,25 +10,38 @@ import Testing
 
 @Suite struct HashingTests {
     private func makeComponent() -> Int {
-        let upperBound: Int = 44
-        let range = UInt32.min...UInt32.max
-        let high = UInt(UInt32.random(in: range)) << UInt(upperBound)
-        let low = UInt(UInt32.random(in: range))
-        #expect(high.leadingZeroBitCount < 64 - upperBound)
-        #expect(high.trailingZeroBitCount >= upperBound)
-        #expect(low.leadingZeroBitCount >= 32)
-        #expect(low.trailingZeroBitCount <= 32)
-        let rand: UInt = high | low
-        let cH = Int(bitPattern: rand)
-        return cH
+        if UInt.bitWidth == 64 {
+            let upperBound: Int = 44
+            let range = UInt32.min...UInt32.max
+            let high = UInt(UInt32.random(in: range)) << UInt(upperBound)
+            let low = UInt(UInt32.random(in: range))
+            #expect(high.leadingZeroBitCount < 64 - upperBound)
+            #expect(high.trailingZeroBitCount >= upperBound)
+            #expect(low.leadingZeroBitCount >= 32)
+            #expect(low.trailingZeroBitCount <= 32)
+            let rand: UInt = high | low
+            return Int(bitPattern: rand)
+        } else {
+            let upperBound: Int = 16
+            let range = UInt16.min...UInt16.max
+            let high = UInt(UInt16.random(in: range)) << UInt(upperBound)
+            let low = UInt(UInt16.random(in: range))
+            #expect(high.leadingZeroBitCount < 32 - upperBound)
+            #expect(high.trailingZeroBitCount >= upperBound)
+            #expect(low.leadingZeroBitCount >= 16)
+            #expect(low.trailingZeroBitCount <= 16)
+            let rand: UInt = high | low
+            return Int(bitPattern: rand)
+        }
     }
 
     @Test func collisionsInCritialRange() {
         var hashSet = Set<Int>()
 
-        var range: [UInt32] = Array(0..<1_000_000)
+        let maxEntities = UInt.bitWidth == 64 ? 1_000_000 : 10_000
+        var range: [UInt32] = Array(0..<UInt32(maxEntities))
 
-        let maxComponents: Int = 1000
+        let maxComponents: Int = UInt.bitWidth == 64 ? 1000 : 100
         let components: [Int] = (0..<maxComponents).map { _ in makeComponent() }
 
         var index: Int = 0

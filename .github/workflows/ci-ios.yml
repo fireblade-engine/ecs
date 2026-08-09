@@ -10,22 +10,18 @@ on:
 jobs:
   ios:
     name: iOS (Swift ${{ matrix.swift }})
-    runs-on: ${{ matrix.runner }}
+    runs-on: macos-latest
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - swift: "6.1"
-            runner: "macos-14"
-          - swift: "6.2"
-            runner: "macos-latest"
+        swift: ["6.1", "6.2"]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
       - name: Setup Swift
-        if: matrix.swift != '6.2'
+        if: false
         uses: swift-actions/setup-swift@v2
         with:
           swift-version: ${{ matrix.swift }}

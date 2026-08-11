@@ -1,6 +1,5 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "assignees": [],
   "extends": [
     "config:recommended"
   ],
@@ -31,7 +30,7 @@
       ]
     },
     {
-      "description": "Group all GitHub Actions minor and patch updates together",
+      "description": "Group and automerge non-major GitHub Actions updates",
       "groupName": "GitHub Actions non-major dependencies",
       "matchManagers": [
         "github-actions"
@@ -39,12 +38,10 @@
       "matchUpdateTypes": [
         "minor",
         "patch"
-      ]
+      ],
+      "automerge": true
     }
   ],
-  "prCreation": "not-pending",
-  "recreateWhen": "auto",
-  "reviewers": [],
   "suppressNotifications": [
     "prIgnoreNotification",
     "prEditedNotification",

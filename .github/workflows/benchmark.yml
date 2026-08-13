@@ -1,0 +1,73 @@
+name: Benchmark
+
+on:
+  pull_request:
+    types: [labeled]
+  workflow_dispatch:
+
+# Make sure that we only benchmark the last version per branch, max one at the time
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  build:
+    if: ${{ github.event.label.name == 'benchmark' }}
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: ./Benchmarks
+    strategy:
+      matrix:
+        xcode: ["15.4"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: brew install jemalloc
+
+      - name: Run benchmark
+        run: |
+          swift package --allow-writing-to-package-directory benchmark --no-progress --format jmh
+          ls -la
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          name: benchmarks-${{ matrix.xcode }}-${{ github.run_id }}
+          path: |
+            Current_run.jmh.json
+            Benchmarks/Current_run.jmh.json
+            *.jmh.json
+          if-no-files-found: warn
+          include-hidden-files: true
+
+      # Run `github-action-benchmark` action
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1.20.3
+        with:
+          # What benchmark tool the output.txt came from
+          tool: "jmh"
+          # Where the output from the benchmark tool is stored
+          output-file-path: Benchmarks/Current_run.jmh.json
+          # Where the previous data file is stored
+          # external-data-json-path: ./cache/benchmark-data.json
+          # Workflow will fail when an alert happens
+          # fail-on-alert: true
+          fail-on-alert: true
+          # GitHub API token to make a commit comment
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Enable alert commit comment
+          # comment-on-alert: true
+          # Enable Job Summary for PRs
+          summary-always: true
+          # Mention @rhysd in the commit comment
+          # alert-comment-cc-users: "@rhysd"
+          save-data-file: false
+          skip-fetch-gh-pages: true

@@ -17,7 +17,7 @@ jobs:
         swift: ["6.1", "6.2"]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Test Windows
         uses: brightdigit/swift-build@v1.5.7

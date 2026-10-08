@@ -50,4 +50,29 @@ import Testing
             try decoder.decode(Entity.self, from: Data("3".utf8))
         }
     }
+
+    @Test func unboundResolverThrows() {
+        let resolver = EntityReferenceResolver(mapping: [1: 1])
+        #expect(throws: EntityReferenceError.unboundResolver) {
+            try resolver.resolve(1)
+        }
+        #expect(throws: EntityReferenceError.unboundResolver) {
+            try resolver.targetNexus()
+        }
+    }
+
+    @Test func resolverBoundAfterCreationResolves() throws {
+        // A decoding entry point that creates its own nexus binds the resolver supplied via userInfo.
+        let resolver = EntityReferenceResolver(mapping: [:])
+        let decoder = JSONDecoder()
+        decoder.userInfo[.nexusEntityResolver] = resolver
+
+        let target = Nexus()
+        let entity = target.createEntity()
+        resolver.bind(to: target)
+        resolver.map(9, to: entity.identifier)
+
+        #expect(try resolver.targetNexus() === target)
+        #expect(try decoder.decode(Entity.self, from: Data("9".utf8)) == entity)
+    }
 }

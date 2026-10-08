@@ -20,7 +20,7 @@ extension NexusSnapshot {
             guard let resolver = decoder.userInfo[.nexusEntityResolver] as? EntityReferenceResolver else {
                 throw ComponentSerializationError.missingImportContext
             }
-            let nexus = resolver.nexus
+            let nexus = try resolver.targetNexus()
             let container = try decoder.container(keyedBy: CodingKeys.self)
             let formatVersion = try container.decode(UInt.self, forKey: .formatVersion)
             guard formatVersion <= NexusSnapshot.formatVersion else {

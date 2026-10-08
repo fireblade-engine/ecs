@@ -5,7 +5,9 @@
 //  Created by Christian Treffs on 08.10.26.
 //
 
-#if canImport(FirebladeECSMacrosSupport)
+// Must match `macroHostPlatforms` in Package.swift. `canImport` is unreliable here: Xcode may build
+// FirebladeECSMacrosSupport for iOS while the swift-syntax test support stays unavailable there.
+#if os(macOS) || os(Linux) || os(Windows)
 import SwiftSyntaxMacrosGenericTestSupport
 import Testing
 

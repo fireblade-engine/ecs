@@ -140,4 +140,25 @@ final class SerialParent: SerializableComponent, @unchecked Sendable {
         }
         #expect(nexus.numEntities == 0)
     }
+
+    @Test func snapshotKeepsOriginalEntityIdentifiers() throws {
+        // Identity-preserving restores rely on the original identifiers, including gaps left by destroyed entities.
+        let nexus = Nexus()
+        let first = nexus.createEntity(with: SerialPosition(x: 0, y: 0))
+        let destroyed = nexus.createEntity()
+        let third = nexus.createEntity()
+        let fourth = nexus.createEntity(with: SerialPosition(x: 3, y: 3))
+        nexus.destroy(entity: destroyed)
+
+        let snapshot = try nexus.makeSnapshot(handling: .throwError)
+        #expect(snapshot.members.map(\.identifier) == [first.identifier, third.identifier, fourth.identifier])
+        #expect(snapshot.members.map(\.components.count) == [1, 0, 1])
+
+        var encoder = makeEncoder()
+        let data = try nexus.encodeSnapshot(using: &encoder, handling: .throwError)
+        let json = String(decoding: data, as: UTF8.self)
+        let expected = #"{"entities":[{"components":{"Position":{"x":0,"y":0}},"id":0},{"components":{},"id":2},"#
+            + #"{"components":{"Position":{"x":3,"y":3}},"id":3}],"formatVersion":1}"#
+        #expect(json == expected)
+    }
 }

@@ -38,3 +38,10 @@ extension ComponentTypeRecord {
 }
 
 extension ComponentTypeRecord: Sendable {}
+
+extension ComponentTypeRecord {
+    /// Indicates whether the component type can be cloned.
+    public var isCloneable: Bool {
+        type is any CloneableComponent.Type
+    }
+}

@@ -24,6 +24,9 @@
         /// The type this encoder produces.
         associatedtype Output
 
+        /// The value type of `userInfo`; `Any` or `any Sendable` depending on the Foundation SDK.
+        associatedtype UserInfoValue
+
         /// Encodes an instance of the indicated type.
         ///
         /// - Parameter value: The instance to encode.
@@ -39,6 +42,9 @@
     public protocol TopLevelDecoder {
         /// The type this decoder accepts.
         associatedtype Input
+
+        /// The value type of `userInfo`; `Any` or `any Sendable` depending on the Foundation SDK.
+        associatedtype UserInfoValue
 
         /// Decodes an instance of the indicated type.
         /// - Parameters:

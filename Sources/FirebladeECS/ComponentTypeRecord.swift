@@ -35,13 +35,16 @@ extension ComponentTypeRecord {
     public var isDefaultInitializable: Bool {
         type is any DefaultInitializable.Type
     }
-}
 
-extension ComponentTypeRecord: Sendable {}
-
-extension ComponentTypeRecord {
     /// Indicates whether the component type can be cloned.
     public var isCloneable: Bool {
         type is any CloneableComponent.Type
     }
+
+    /// Indicates whether the component type can be encoded and decoded.
+    public var isSerializable: Bool {
+        type is any SerializableComponent.Type
+    }
 }
+
+extension ComponentTypeRecord: Sendable {}

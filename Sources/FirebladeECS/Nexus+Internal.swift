@@ -73,6 +73,7 @@ extension Nexus {
     func insertComponentInstance(_ component: Component, _ componentId: ComponentIdentifier, _ entityId: EntityIdentifier) {
         if componentsByType[componentId] == nil {
             componentsByType[componentId] = ManagedContiguousArray<Component>()
+            registerOnFirstAssignment(type(of: component))
         }
         componentsByType[componentId]?.insert(component, at: entityId.index)
     }

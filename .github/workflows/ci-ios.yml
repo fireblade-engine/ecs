@@ -96,6 +96,9 @@ jobs:
           echo "scheme=$SCHEME" >> "$GITHUB_OUTPUT"
 
       - name: Run Tests (iOS)
+        # Warnings are errors only for this package's targets. Xcode builds package dependencies
+        # (e.g. swift-syntax) with SWIFT_SUPPRESS_WARNINGS=YES, which conflicts with -warnings-as-errors,
+        # so the setting is derived per target from SWIFT_SUPPRESS_WARNINGS.
         run: |
           xcodebuild test \
             -scheme "${{ steps.select_scheme.outputs.scheme }}" \
@@ -103,4 +106,6 @@ jobs:
             -configuration Release \
             -skipPackagePluginValidation \
             ENABLE_TESTABILITY=YES \
-            OTHER_SWIFT_FLAGS='-warnings-as-errors'
+            'SWIFT_TREAT_WARNINGS_AS_ERRORS=$(ECS_WARNINGS_AS_ERRORS_$(SWIFT_SUPPRESS_WARNINGS))' \
+            ECS_WARNINGS_AS_ERRORS_NO=YES \
+            ECS_WARNINGS_AS_ERRORS_YES=NO

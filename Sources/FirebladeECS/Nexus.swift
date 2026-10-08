@@ -21,6 +21,11 @@ public final class Nexus {
     /// - Value: A sparse set of entity identifiers that are members of this family.
     @usableFromInline final var familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>]
 
+    /// The component types known to this nexus.
+    ///
+    /// Type knowledge outlives data: ``clear()`` does not remove registered types.
+    final var componentRegistry: ComponentRegistry
+
     /// The entity identifier generator responsible for providing unique ids for entities during runtime.
     ///
     /// Provide a custom implementation prior to entity creation.
@@ -63,6 +68,7 @@ public final class Nexus {
         self.familyMembersByTraits = familyMembersByTraits
         self.entityIdGenerator = entityIdGenerator
         self.codingStrategy = codingStrategy
+        componentRegistry = ComponentRegistry()
     }
 
     deinit {

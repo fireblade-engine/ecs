@@ -6,6 +6,11 @@ import PackageDescription
 /// which is only available where the compiler itself runs, not on iOS, tvOS, watchOS or WebAssembly.
 let macroHostPlatforms: [Platform] = [.macOS, .linux, .windows]
 
+/// Platforms that link the macro support library into the macro test target. Besides the macro host platforms,
+/// Xcode builds a testable copy of the macro target into Apple platform test bundles, which needs the support
+/// library at link time. WebAssembly builds don't.
+let macroSupportLinkPlatforms: [Platform] = macroHostPlatforms + [.iOS, .tvOS, .watchOS, .visionOS, .macCatalyst]
+
 let package = Package(
     name: "FirebladeECS",
     platforms: [
@@ -48,7 +53,7 @@ let package = Package(
         .testTarget(name: "FirebladeECSMacrosTests",
                     dependencies: [
                         "FirebladeECSMacros",
-                        .target(name: "FirebladeECSMacrosSupport", condition: .when(platforms: macroHostPlatforms)),
+                        .target(name: "FirebladeECSMacrosSupport", condition: .when(platforms: macroSupportLinkPlatforms)),
                         .product(name: "SwiftSyntaxMacroExpansion", package: "swift-syntax",
                                  condition: .when(platforms: macroHostPlatforms)),
                         .product(name: "SwiftSyntaxMacrosGenericTestSupport", package: "swift-syntax",

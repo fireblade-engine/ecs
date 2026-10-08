@@ -46,7 +46,7 @@ final class SerialParent: SerializableComponent, @unchecked Sendable {
 
         let json = String(decoding: data, as: UTF8.self)
         let expected = #"{"entities":[{"components":{"Position":{"x":1,"y":2}},"id":0},"#
-            + #"{"components":{"Parent":{"parent":0}},"id":1}]}"#
+            + #"{"components":{"Parent":{"parent":0}},"id":1}],"formatVersion":1}"#
         #expect(json == expected)
     }
 
@@ -107,7 +107,7 @@ final class SerialParent: SerializableComponent, @unchecked Sendable {
     @Test func registeredNonSerializableTypeThrowsOnImport() throws {
         let nexus = Nexus()
         try nexus.register(RegisteredPosition.self)
-        let data = Data(#"{"entities":[{"id":0,"components":{"FirebladeECSTests.RegisteredPosition":{}}}]}"#.utf8)
+        let data = Data(#"{"formatVersion":1,"entities":[{"id":0,"components":{"FirebladeECSTests.RegisteredPosition":{}}}]}"#.utf8)
         var decoder = JSONDecoder()
         #expect(throws: ComponentSerializationError.notSerializable(typeName: "FirebladeECSTests.RegisteredPosition")) {
             try nexus.decodeSnapshot(from: data, using: &decoder)
@@ -119,5 +119,25 @@ final class SerialParent: SerializableComponent, @unchecked Sendable {
         let nexus = Nexus()
         #expect(try nexus.register(SerialPosition.self).isSerializable)
         #expect(try !nexus.register(RegisteredPosition.self).isSerializable)
+    }
+
+    @Test func newerFormatVersionThrowsWithoutSideEffects() throws {
+        let nexus = Nexus()
+        let data = Data(#"{"formatVersion":2,"entities":[{"id":0,"components":{}}]}"#.utf8)
+        var decoder = JSONDecoder()
+        #expect(throws: ComponentSerializationError.unsupportedFormatVersion(2)) {
+            try nexus.decodeSnapshot(from: data, using: &decoder)
+        }
+        #expect(nexus.numEntities == 0)
+    }
+
+    @Test func missingFormatVersionThrows() {
+        let nexus = Nexus()
+        let data = Data(#"{"entities":[{"id":0,"components":{}}]}"#.utf8)
+        var decoder = JSONDecoder()
+        #expect(throws: DecodingError.self) {
+            try nexus.decodeSnapshot(from: data, using: &decoder)
+        }
+        #expect(nexus.numEntities == 0)
     }
 }

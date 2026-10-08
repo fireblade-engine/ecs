@@ -9,12 +9,18 @@
 ///
 /// A snapshot references the live component instances of the nexus. Encode it right after creation.
 ///
-/// The encoded form lists all entities in ascending identifier order, each with its components
-/// keyed by their stable ``RegistrableComponent/componentTypeName``:
+/// The encoded form starts with the ``formatVersion`` and lists all entities in ascending identifier order,
+/// each with its original identifier and its components keyed by their stable ``RegistrableComponent/componentTypeName``:
 /// ```json
-/// { "entities": [ { "id": 0, "components": { "MyGame.Position": { "x": 1, "y": 2 } } } ] }
+/// { "formatVersion": 1, "entities": [ { "id": 0, "components": { "MyGame.Position": { "x": 1, "y": 2 } } } ] }
 /// ```
 public struct NexusSnapshot {
+    /// The version of the encoded snapshot format written by this library.
+    ///
+    /// Additions to the format, such as entity identifier generator state, increase the version.
+    /// Decoding rejects snapshots with a newer version.
+    public static let formatVersion: UInt = 1
+
     /// The entities of the snapshot in ascending identifier order.
     public let members: [Member]
 }
@@ -32,6 +38,7 @@ extension NexusSnapshot {
 extension NexusSnapshot {
     /// The coding keys of a snapshot.
     enum CodingKeys: String, CodingKey {
+        case formatVersion
         case entities
     }
 
@@ -49,6 +56,7 @@ extension NexusSnapshot: Encodable {
     /// - Complexity: O(E * C) where E is the number of entities and C the number of components per entity.
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(Self.formatVersion, forKey: .formatVersion)
         var entities = container.nestedUnkeyedContainer(forKey: .entities)
         for member in members {
             var memberContainer = entities.nestedContainer(keyedBy: MemberCodingKeys.self)

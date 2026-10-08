@@ -14,13 +14,18 @@ extension NexusSnapshot {
     struct Import: Decodable {
         /// Decodes the snapshot into the resolver's nexus.
         /// - Parameter decoder: The decoder to read data from.
-        /// - Throws: ``ComponentSerializationError``, ``ComponentRegistryError`` or decoding errors.
+        /// - Throws: ``ComponentSerializationError`` for a missing resolver or an unsupported format version,
+        ///   ``ComponentRegistryError`` or decoding errors.
         init(from decoder: Decoder) throws {
             guard let resolver = decoder.userInfo[.nexusEntityResolver] as? EntityReferenceResolver else {
                 throw ComponentSerializationError.missingImportContext
             }
             let nexus = resolver.nexus
             let container = try decoder.container(keyedBy: CodingKeys.self)
+            let formatVersion = try container.decode(UInt.self, forKey: .formatVersion)
+            guard formatVersion <= NexusSnapshot.formatVersion else {
+                throw ComponentSerializationError.unsupportedFormatVersion(formatVersion)
+            }
 
             var identifiers = try container.nestedUnkeyedContainer(forKey: .entities)
             while !identifiers.isAtEnd {

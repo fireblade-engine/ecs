@@ -12,4 +12,6 @@ public enum ComponentSerializationError: Error, Equatable, Sendable {
     /// A snapshot was decoded without an import context provided by the nexus,
     /// or the decoder's `userInfo` cannot store the import context.
     case missingImportContext
+    /// The snapshot was written in a newer format version than ``NexusSnapshot/formatVersion``.
+    case unsupportedFormatVersion(UInt)
 }

@@ -1,4 +1,5 @@
 // swift-tools-version: 6.1
+import CompilerPluginSupport
 import PackageDescription
 
 let package = Package(
@@ -11,14 +12,37 @@ let package = Package(
     ],
     products: [
         .library(name: "FirebladeECS",
-                 targets: ["FirebladeECS"])
+                 targets: ["FirebladeECS"]),
+        .library(name: "FirebladeECSMacros",
+                 targets: ["FirebladeECSMacros"])
     ],
     traits: [
         .trait(name: "benchmarks", description: "Enable performance tests")
     ],
+    dependencies: [
+        .package(url: "https://github.com/swiftlang/swift-syntax.git", "600.0.0" ..< "700.0.0")
+    ],
     targets: [
         .target(name: "FirebladeECS",
                 swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
+        .macro(name: "FirebladeECSMacrosImpl",
+               dependencies: [
+                   .product(name: "SwiftSyntax", package: "swift-syntax"),
+                   .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                   .product(name: "SwiftDiagnostics", package: "swift-syntax"),
+                   .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
+               ]),
+        .target(name: "FirebladeECSMacros",
+                dependencies: ["FirebladeECS", "FirebladeECSMacrosImpl"],
+                swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
+        .testTarget(name: "FirebladeECSMacrosTests",
+                    dependencies: [
+                        "FirebladeECSMacros",
+                        "FirebladeECSMacrosImpl",
+                        .product(name: "SwiftSyntaxMacroExpansion", package: "swift-syntax"),
+                        .product(name: "SwiftSyntaxMacrosGenericTestSupport", package: "swift-syntax")
+                    ],
+                    swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
         .testTarget(name: "FirebladeECSTests",
                     dependencies: ["FirebladeECS"],
                     swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),

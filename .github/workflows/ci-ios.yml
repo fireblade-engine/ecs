@@ -103,4 +103,4 @@ jobs:
             -configuration Release \
             -skipPackagePluginValidation \
             ENABLE_TESTABILITY=YES \
-            OTHER_SWIFT_FLAGS='-warnings-as-errors'
+            SWIFT_TREAT_WARNINGS_AS_ERRORS=YES

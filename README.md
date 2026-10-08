@@ -278,6 +278,8 @@ try playMode.decodeSnapshot(from: data, using: &decoder)
 
 Component types are registered automatically the first time an instance is assigned. Register them explicitly before decoding snapshots that reference them. All protocols can also be implemented by hand without the macro.
 
+Snapshots start with a `formatVersion` and keep the original entity identifiers. Decoding creates new entities, remaps entity references to them, and rejects snapshots written in a newer format version.
+
 ## 🧪 Demo
 
 See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) to get started.

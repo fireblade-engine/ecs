@@ -45,6 +45,11 @@ extension ComponentTypeRecord {
     public var isSerializable: Bool {
         type is any SerializableComponent.Type
     }
+
+    /// Indicates whether the component type describes its stored properties.
+    public var isInspectable: Bool {
+        type is any InspectableComponent.Type
+    }
 }
 
 extension ComponentTypeRecord: Sendable {}

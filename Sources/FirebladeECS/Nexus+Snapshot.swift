@@ -72,8 +72,11 @@ extension Nexus {
             using decoder: inout SnapshotDecoder
         ) throws -> [EntityIdentifier: Entity] {
             let resolver = EntityReferenceResolver(nexus: self, mapping: [:])
+            guard let resolverValue = resolver as? SnapshotDecoder.UserInfoValue else {
+                throw ComponentSerializationError.missingImportContext
+            }
             let previousResolver = decoder.userInfo[.nexusEntityResolver]
-            decoder.userInfo[.nexusEntityResolver] = resolver
+            decoder.userInfo[.nexusEntityResolver] = resolverValue
             defer { decoder.userInfo[.nexusEntityResolver] = previousResolver }
             do {
                 _ = try decoder.decode(NexusSnapshot.Import.self, from: data)

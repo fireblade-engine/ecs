@@ -9,6 +9,7 @@
 public enum ComponentSerializationError: Error, Equatable, Sendable {
     /// A component of the given type does not conform to ``SerializableComponent``.
     case notSerializable(typeName: String)
-    /// A snapshot was decoded without an import context provided by the nexus.
+    /// A snapshot was decoded without an import context provided by the nexus,
+    /// or the decoder's `userInfo` cannot store the import context.
     case missingImportContext
 }

@@ -227,6 +227,57 @@ let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
 
 ```
 
+### 🧩 Component Macro
+
+The `FirebladeECSMacros` product provides the `@Component` macro. It turns a `final class` into a component and implements a set of component protocols from its stored properties, so you don't have to write that code by hand:
+
+| Protocol | Generated | Enables |
+| --- | --- | --- |
+| `RegistrableComponent` | stable `componentTypeName` (fully qualified type name; declare `static let componentTypeName` to override it) | `nexus.register(_:)`, `nexus.registeredComponentTypes`, `nexus.componentType(named:)` |
+| `CloneableComponent` | `init(cloning:context:)`, `clone(context:)` | `entity.clone()`, `nexus.clone(entities:)`, `nexus.clone(into:)` with remapped entity references |
+| `SerializableComponent` | `CodingKeys`, `init(from:)`, `encode(to:)` | `nexus.encodeSnapshot(using:handling:)`, `nexus.decodeSnapshot(from:using:)` |
+| `InspectableComponent` | `componentProperties` (name, type and key path for each property) | generic inspection, e.g. in editors |
+| `DefaultInitializable` | `init()` if every stored property has a default value | `entity[\Position.x] = 1`, state machines |
+
+Add the product to your target:
+
+```swift
+.target(
+    name: "YourTargetName",
+    dependencies: [.product(name: "FirebladeECSMacros", package: "ecs")])
+```
+
+```swift
+import FirebladeECSMacros
+
+@Component
+final class Transform: @unchecked Sendable {
+    var position: SIMD3<Float> = .zero
+    var parent: Entity?
+    @ComponentIgnored var cachedMatrix: [Float] = []  // still cloned, but not serialized or inspected
+}
+
+@Component(excluding: .serializable)  // runtime-only component
+final class RenderHandle: @unchecked Sendable {
+    var handle: Int = 0
+}
+
+let nexus = Nexus()
+try nexus.register([Transform.self, RenderHandle.self])
+
+// Clone a whole world; entity references (`parent`) are remapped to the clones.
+let playMode = Nexus()
+try nexus.clone(into: playMode)
+
+// Export and import all serializable components, keyed by their stable type names.
+var encoder = JSONEncoder()
+let data = try nexus.encodeSnapshot(using: &encoder, handling: .skip)
+var decoder = JSONDecoder()
+try playMode.decodeSnapshot(from: data, using: &decoder)
+```
+
+Component types are registered automatically the first time an instance is assigned. Register them explicitly before decoding snapshots that reference them. All protocols can also be implemented by hand without the macro.
+
 ## 🧪 Demo
 
 See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) to get started.

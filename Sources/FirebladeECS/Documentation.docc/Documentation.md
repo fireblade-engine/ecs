@@ -55,6 +55,34 @@ For a more detailed example of FirebladeECS in action, see the [Fireblade ECS De
 - ``DefaultInitializable``
 - ``SingleComponent``
 
+### Component Registry
+
+- ``RegistrableComponent``
+- ``StableComponentIdentifier``
+- ``ComponentTypeRecord``
+- ``ComponentRegistryError``
+
+### Cloning
+
+- ``CloneableComponent``
+- ``ComponentCloneContext``
+- ``ComponentCloneError``
+
+### Snapshots
+
+- ``SerializableComponent``
+- ``NexusSnapshot``
+- ``NonSerializableComponentHandling``
+- ``ComponentSerializationError``
+- ``EntityReferenceResolver``
+- ``EntityReferenceError``
+
+### Inspection
+
+- ``InspectableComponent``
+- ``ComponentProperty``
+- ``InspectedComponentProperty``
+
 ### Systems
 
 - ``Family``

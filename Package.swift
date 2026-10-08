@@ -25,11 +25,17 @@ let package = Package(
     targets: [
         .target(name: "FirebladeECS",
                 swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
+        .target(name: "FirebladeECSMacrosSupport",
+                dependencies: [
+                    .product(name: "SwiftSyntax", package: "swift-syntax"),
+                    .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                    .product(name: "SwiftDiagnostics", package: "swift-syntax")
+                ]),
         .macro(name: "FirebladeECSMacrosImpl",
                dependencies: [
+                   "FirebladeECSMacrosSupport",
                    .product(name: "SwiftSyntax", package: "swift-syntax"),
                    .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                   .product(name: "SwiftDiagnostics", package: "swift-syntax"),
                    .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
                ]),
         .target(name: "FirebladeECSMacros",
@@ -38,7 +44,7 @@ let package = Package(
         .testTarget(name: "FirebladeECSMacrosTests",
                     dependencies: [
                         "FirebladeECSMacros",
-                        "FirebladeECSMacrosImpl",
+                        "FirebladeECSMacrosSupport",
                         .product(name: "SwiftSyntaxMacroExpansion", package: "swift-syntax"),
                         .product(name: "SwiftSyntaxMacrosGenericTestSupport", package: "swift-syntax")
                     ],

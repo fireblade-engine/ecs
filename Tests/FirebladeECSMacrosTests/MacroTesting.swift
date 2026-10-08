@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 08.10.26.
 //
 
-import FirebladeECSMacrosImpl
+import FirebladeECSMacrosSupport
 import SwiftSyntaxMacroExpansion
 import SwiftSyntaxMacrosGenericTestSupport
 import Testing

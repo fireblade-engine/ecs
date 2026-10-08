@@ -1,6 +1,6 @@
 //
 //  ComponentMacro+Declaration.swift
-//  FirebladeECSMacrosImpl
+//  FirebladeECSMacrosSupport
 //
 //  Created by Christian Treffs on 08.10.26.
 //

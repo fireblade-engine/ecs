@@ -23,7 +23,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Build Documentation
         run: make docs-generate REPO_NAME=ecs DOCS_VERSION_PATH=main

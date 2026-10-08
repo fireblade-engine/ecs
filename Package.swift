@@ -2,6 +2,10 @@
 import CompilerPluginSupport
 import PackageDescription
 
+/// Platforms that run macro expansion tests. The expansion tests import the macro implementation,
+/// which is only available where the compiler itself runs, not on iOS, tvOS, watchOS or WebAssembly.
+let macroHostPlatforms: [Platform] = [.macOS, .linux, .windows]
+
 let package = Package(
     name: "FirebladeECS",
     platforms: [
@@ -44,9 +48,11 @@ let package = Package(
         .testTarget(name: "FirebladeECSMacrosTests",
                     dependencies: [
                         "FirebladeECSMacros",
-                        "FirebladeECSMacrosSupport",
-                        .product(name: "SwiftSyntaxMacroExpansion", package: "swift-syntax"),
-                        .product(name: "SwiftSyntaxMacrosGenericTestSupport", package: "swift-syntax")
+                        .target(name: "FirebladeECSMacrosSupport", condition: .when(platforms: macroHostPlatforms)),
+                        .product(name: "SwiftSyntaxMacroExpansion", package: "swift-syntax",
+                                 condition: .when(platforms: macroHostPlatforms)),
+                        .product(name: "SwiftSyntaxMacrosGenericTestSupport", package: "swift-syntax",
+                                 condition: .when(platforms: macroHostPlatforms))
                     ],
                     swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
         .testTarget(name: "FirebladeECSTests",

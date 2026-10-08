@@ -5,6 +5,7 @@
 //  Created by Christian Treffs on 08.10.26.
 //
 
+#if canImport(FirebladeECSMacrosSupport)
 import FirebladeECSMacrosSupport
 import SwiftSyntaxMacroExpansion
 import SwiftSyntaxMacrosGenericTestSupport
@@ -51,3 +52,4 @@ func assertComponentExpansion(
         column: column
     )
 }
+#endif

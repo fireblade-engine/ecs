@@ -5,6 +5,7 @@
 //  Created by Christian Treffs on 08.10.26.
 //
 
+#if canImport(FirebladeECSMacrosSupport)
 import SwiftSyntaxMacrosGenericTestSupport
 import Testing
 
@@ -386,3 +387,4 @@ import Testing
         )
     }
 }
+#endif

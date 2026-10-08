@@ -10,21 +10,46 @@ on:
 jobs:
   ios:
     name: iOS (Swift ${{ matrix.swift }})
-    runs-on: macos-latest
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
-        swift: ["6.1", "6.2"]
+        include:
+          # xcodebuild must use the Swift toolchain bundled with the selected
+          # Xcode: a standalone toolchain cannot load an SDK built by a newer
+          # compiler. Swift 6.1 therefore uses Xcode 16.4 (Swift 6.1.x,
+          # iOS 18.5 SDK) on macos-15 instead of a setup-swift toolchain.
+          - swift: "6.1"
+            runner: "macos-15"
+            xcode: "16.4"
+          # Empty xcode keeps the runner image's default Xcode.
+          - swift: "6.2"
+            runner: "macos-latest"
+            xcode: ""
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Setup Swift
-        if: matrix.swift != '6.2'
-        uses: swift-actions/setup-swift@v2
-        with:
-          swift-version: ${{ matrix.swift }}
+      - name: Select Xcode
+        if: matrix.xcode != ''
+        run: |
+          DEVELOPER_DIR="/Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer"
+          test -d "$DEVELOPER_DIR"
+          echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
+
+      - name: Show Toolchain
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Verify Swift Version
+        if: matrix.xcode != ''
+        run: |
+          swift --version 2>&1 | grep -q "Apple Swift version ${{ matrix.swift }}" || {
+            echo "::error::Selected Xcode ${{ matrix.xcode }} does not provide Swift ${{ matrix.swift }}"
+            exit 1
+          }
 
       - name: Resolve Package Dependencies
         run: swift package resolve
@@ -49,10 +74,31 @@ jobs:
             echo "destination=platform=iOS Simulator,OS=latest" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Select Test Scheme
+        id: select_scheme
+        run: |
+          # With a single library product, Xcode's generated FirebladeECS scheme
+          # includes the test targets. With more than one product, the
+          # per-product schemes have no test action and the tests live in the
+          # aggregate FirebladeECS-Package scheme.
+          SCHEMES=$(xcodebuild -list -json | python3 -c 'import json,sys; d=json.load(sys.stdin); print("\n".join((d.get("workspace") or d.get("project"))["schemes"]))')
+          echo "Available schemes:"
+          echo "$SCHEMES"
+          if echo "$SCHEMES" | grep -qx "FirebladeECS-Package"; then
+            SCHEME="FirebladeECS-Package"
+          elif echo "$SCHEMES" | grep -qx "FirebladeECS"; then
+            SCHEME="FirebladeECS"
+          else
+            echo "::error::Neither FirebladeECS-Package nor FirebladeECS scheme found"
+            exit 1
+          fi
+          echo "Selected scheme: $SCHEME"
+          echo "scheme=$SCHEME" >> "$GITHUB_OUTPUT"
+
       - name: Run Tests (iOS)
         run: |
           xcodebuild test \
-            -scheme FirebladeECS \
+            -scheme "${{ steps.select_scheme.outputs.scheme }}" \
             -destination "${{ steps.select_sim.outputs.destination }}" \
             -configuration Release \
             -skipPackagePluginValidation \

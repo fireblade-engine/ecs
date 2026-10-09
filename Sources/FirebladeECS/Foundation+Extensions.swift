@@ -12,10 +12,16 @@
     extension JSONEncoder: TopLevelEncoder {}
     /// Conformance of `JSONDecoder` to `TopLevelDecoder` to support JSON decoding in ECS serialization.
     extension JSONDecoder: TopLevelDecoder {}
+    /// Conformance of `PropertyListEncoder` to `TopLevelEncoder` to support property list encoding in ECS serialization.
+    extension PropertyListEncoder: TopLevelEncoder {}
+    /// Conformance of `PropertyListDecoder` to `TopLevelDecoder` to support property list decoding in ECS serialization.
+    extension PropertyListDecoder: TopLevelDecoder {}
 
     #if swift(>=6.2)
+        /// The value type of `userInfo` dictionaries on Foundation's coders; `any Sendable` from Swift 6.2 on.
         public typealias UserInfoValue = any Sendable
     #else
+        /// The value type of `userInfo` dictionaries on Foundation's coders; `Any` before Swift 6.2.
         public typealias UserInfoValue = Any
     #endif
 

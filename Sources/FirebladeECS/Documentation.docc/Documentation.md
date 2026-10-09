@@ -1,6 +1,6 @@
 # ``FirebladeECS``
 
-Seamlessly, consistently, and asynchronously replicate data.
+A lightweight, fast and easy to use Entity-Component System in Swift.
 
 ## Overview
 
@@ -10,6 +10,8 @@ An ECS comprises entities composed from components of data, with systems which o
 Fireblade ECS is available for all platforms that support [Swift 6.1](https://swift.org/) and higher and the [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager).
 It is developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
 
+The optional `FirebladeECSMacros` product adds the `@Component` macro, which depends on [swift-syntax](https://github.com/swiftlang/swift-syntax). The core `FirebladeECS` library has no dependencies.
+
 For a more detailed example of FirebladeECS in action, see the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo).
 
 ## Topics
@@ -17,6 +19,8 @@ For a more detailed example of FirebladeECS in action, see the [Fireblade ECS De
 ### Essentials
 
 - <doc:GettingStartedWithFirebladeECS>
+- <doc:ComponentMacro>
+- <doc:SavingAndLoadingScenes>
 - ``Nexus``
 - ``NexusEvent``
 - ``NexusEventDelegate``
@@ -31,6 +35,7 @@ For a more detailed example of FirebladeECS in action, see the [Fireblade ECS De
 - ``EntityComponentHash``
 - ``EntityIdentifier``
 - ``EntityIdentifierGenerator``
+- ``PersistableEntityIdentifierGenerator``
 - ``DefaultEntityIdGenerator``
 - ``LinearIncrementingEntityIdGenerator``
 
@@ -49,11 +54,9 @@ For a more detailed example of FirebladeECS in action, see the [Fireblade ECS De
 - ``ComponentTypeProvider``
 - ``ComponentSingletonProvider``
 - ``SingleComponent``
-- ``EntityComponentHash``
 - ``StateComponentMapping``
 - ``DynamicComponentProvider``
 - ``DefaultInitializable``
-- ``SingleComponent``
 
 ### Component Registry
 
@@ -89,6 +92,7 @@ For a more detailed example of FirebladeECS in action, see the [Fireblade ECS De
 - ``FamilyMemberAdded``
 - ``FamilyMemberRemoved``
 - ``FamilyTraitSet``
+- ``FamilyMemberContainer``
 - ``Single``
 
 ### Coding Strategies

@@ -22,6 +22,9 @@ public final class EntityReferenceResolver {
     /// The mapping from encoded (source) entity identifiers to target entity identifiers.
     public private(set) var mapping: [EntityIdentifier: EntityIdentifier]
 
+    /// Indicates whether snapshot imports recreate entities with their encoded identifiers instead of creating new ones.
+    var preservesIdentity = false
+
     /// Creates a new resolver that is not yet bound to a target nexus.
     /// - Parameter mapping: The initial mapping from source to target entity identifiers.
     public init(mapping: [EntityIdentifier: EntityIdentifier]) {

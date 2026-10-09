@@ -46,7 +46,7 @@ final class SerialParent: SerializableComponent, @unchecked Sendable {
 
         let json = String(decoding: data, as: UTF8.self)
         let expected = #"{"entities":[{"components":{"Position":{"x":1,"y":2}},"id":0},"#
-            + #"{"components":{"Parent":{"parent":0}},"id":1}],"formatVersion":1}"#
+            + #"{"components":{"Parent":{"parent":0}},"id":1}],"entityIdGenerator":{"nextFreshId":2,"recycled":[]},"formatVersion":2}"#
         #expect(json == expected)
     }
 
@@ -123,9 +123,9 @@ final class SerialParent: SerializableComponent, @unchecked Sendable {
 
     @Test func newerFormatVersionThrowsWithoutSideEffects() throws {
         let nexus = Nexus()
-        let data = Data(#"{"formatVersion":2,"entities":[{"id":0,"components":{}}]}"#.utf8)
+        let data = Data(#"{"formatVersion":3,"entities":[{"id":0,"components":{}}]}"#.utf8)
         var decoder = JSONDecoder()
-        #expect(throws: ComponentSerializationError.unsupportedFormatVersion(2)) {
+        #expect(throws: ComponentSerializationError.unsupportedFormatVersion(3)) {
             try nexus.decodeSnapshot(from: data, using: &decoder)
         }
         #expect(nexus.numEntities == 0)
@@ -158,7 +158,7 @@ final class SerialParent: SerializableComponent, @unchecked Sendable {
         let data = try nexus.encodeSnapshot(using: &encoder, handling: .throwError)
         let json = String(decoding: data, as: UTF8.self)
         let expected = #"{"entities":[{"components":{"Position":{"x":0,"y":0}},"id":0},{"components":{},"id":2},"#
-            + #"{"components":{"Position":{"x":3,"y":3}},"id":3}],"formatVersion":1}"#
+            + #"{"components":{"Position":{"x":3,"y":3}},"id":3}],"entityIdGenerator":{"nextFreshId":4,"recycled":[1]},"formatVersion":2}"#
         #expect(json == expected)
     }
 }

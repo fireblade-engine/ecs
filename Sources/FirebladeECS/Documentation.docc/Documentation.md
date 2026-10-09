@@ -20,6 +20,7 @@ For a more detailed example of FirebladeECS in action, see the [Fireblade ECS De
 
 - <doc:GettingStartedWithFirebladeECS>
 - <doc:ComponentMacro>
+- <doc:SavingAndLoadingScenes>
 - ``Nexus``
 - ``NexusEvent``
 - ``NexusEventDelegate``
@@ -34,6 +35,7 @@ For a more detailed example of FirebladeECS in action, see the [Fireblade ECS De
 - ``EntityComponentHash``
 - ``EntityIdentifier``
 - ``EntityIdentifierGenerator``
+- ``PersistableEntityIdentifierGenerator``
 - ``DefaultEntityIdGenerator``
 - ``LinearIncrementingEntityIdGenerator``
 

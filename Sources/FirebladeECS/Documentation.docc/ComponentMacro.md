@@ -11,7 +11,7 @@ It turns a `final class` into a component and implements a set of component prot
 | --- | --- | --- |
 | ``RegistrableComponent`` | stable `componentTypeName` | `nexus.register(_:)`, `nexus.registeredComponentTypes`, `nexus.componentType(named:)` |
 | ``CloneableComponent`` | `init(cloning:context:)`, `clone(context:)` | `entity.clone()`, `nexus.clone(entities:)`, `nexus.clone(into:)` |
-| ``SerializableComponent`` | `CodingKeys`, `init(from:)`, `encode(to:)` | `nexus.encodeSnapshot(using:handling:)`, `nexus.decodeSnapshot(from:using:)` |
+| ``SerializableComponent`` | `CodingKeys`, `init(from:)`, `encode(to:)` | `nexus.encodeSnapshot(using:handling:)`, `nexus.restoreSnapshot(from:using:)`, `nexus.decodeSnapshot(from:using:)`, `Nexus: Codable` |
 | ``InspectableComponent`` | `componentProperties` | generic inspection, e.g. in editors |
 | ``DefaultInitializable`` | `init()` if every stored property has a default value | key path assignment, state machines |
 
@@ -47,6 +47,7 @@ final class RenderHandle: @unchecked Sendable {
 ```
 
 - The stable type name defaults to the fully qualified type name. Declare `static let componentTypeName` to override it.
+- After renaming a persisted type, list its former names in `static let componentTypeNameAliases` so existing snapshots keep loading. See <doc:SavingAndLoadingScenes>.
 - `@Component(excluding:)` takes a `ComponentMacroFeatures` set: `.cloneable`, `.serializable`, `.inspectable` and `.defaultInit`. Registration is always implemented.
 - `@ComponentIgnored` keeps a stored property out of serialization and inspection. Ignored properties are still cloned and need a default value.
 - Serialized properties need an explicit type annotation. `let` constants with an initial value are not serialized.

@@ -22,10 +22,10 @@ import Testing
     @Test func traitMatching() {
         let nexus = Nexus()
         let a = nexus.createEntity()
-        a.assign(Position(x: 1, y: 2))
-        a.assign(Name(name: "myName"))
-        a.assign(Velocity(a: 3.14))
-        a.assign(EmptyComponent())
+        a.set(Position(x: 1, y: 2))
+        a.set(Name(name: "myName"))
+        a.set(Velocity(a: 3.14))
+        a.set(EmptyComponent())
 
         let noMatch = nexus.family(requiresAll: Position.self, Velocity.self,
                                    excludesAll: Name.self)

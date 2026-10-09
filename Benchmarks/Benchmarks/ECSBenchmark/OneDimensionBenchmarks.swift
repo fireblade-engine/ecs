@@ -8,10 +8,10 @@ let benchmarks = {
     Benchmark("TraitMatching") { benchmark in
         let nexus = setUpNexus()
         let a = nexus.createEntity()
-        a.assign(Position(x: 1, y: 2))
-        a.assign(Name(name: "myName"))
-        a.assign(Velocity(a: 3.14))
-        a.assign(EmptyComponent())
+        a.set(Position(x: 1, y: 2))
+        a.set(Name(name: "myName"))
+        a.set(Velocity(a: 3.14))
+        a.set(EmptyComponent())
 
         let isMatch = nexus.family(requiresAll: Position.self, Velocity.self,
                                    excludesAll: Party.self)

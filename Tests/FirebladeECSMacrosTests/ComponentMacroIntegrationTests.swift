@@ -53,7 +53,7 @@ final class MacroRenamed: @unchecked Sendable {
         let nexus = Nexus()
         let entity = nexus.createEntity()
         entity[\MacroTransform.position] = 3
-        #expect(try #require(entity.get(component: MacroTransform.self)).position == 3)
+        #expect(try #require(entity.get(MacroTransform.self)).position == 3)
         #expect(nexus.isRegistered(MacroTransform.self))
     }
 
@@ -73,20 +73,20 @@ final class MacroRenamed: @unchecked Sendable {
         let childTransform = MacroTransform()
         childTransform.parent = root
         let renderable = MacroRenderable()
-        root.assign(rootTransform, renderable)
-        child.assign(childTransform)
+        root.set(rootTransform, renderable)
+        child.set(childTransform)
 
         let target = Nexus()
         let mapping = try source.clone(into: target)
 
         let clonedRoot = try #require(mapping[root.identifier])
         let clonedChild = try #require(mapping[child.identifier])
-        let clonedRootTransform = try #require(clonedRoot.get(component: MacroTransform.self))
+        let clonedRootTransform = try #require(clonedRoot.get(MacroTransform.self))
         #expect(clonedRootTransform !== rootTransform)
         #expect(clonedRootTransform.children == [clonedChild])
         #expect(clonedRootTransform.cachedLength == 7)
-        #expect(try #require(clonedChild.get(component: MacroTransform.self)).parent == clonedRoot)
-        #expect(try #require(clonedRoot.get(component: MacroRenderable.self)).handle === renderable.handle)
+        #expect(try #require(clonedChild.get(MacroTransform.self)).parent == clonedRoot)
+        #expect(try #require(clonedRoot.get(MacroRenderable.self)).handle === renderable.handle)
     }
 
     @Test func snapshotRoundTrip() throws {
@@ -99,8 +99,8 @@ final class MacroRenamed: @unchecked Sendable {
         rootTransform.cachedLength = 7
         let childTransform = MacroTransform()
         childTransform.parent = root
-        root.assign(rootTransform, MacroRenderable(), MacroRenamed())
-        child.assign(childTransform)
+        root.set(rootTransform, MacroRenderable(), MacroRenamed())
+        child.set(childTransform)
 
         var encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
@@ -117,12 +117,12 @@ final class MacroRenamed: @unchecked Sendable {
 
         let importedRoot = try #require(mapping[root.identifier])
         let importedChild = try #require(mapping[child.identifier])
-        let importedTransform = try #require(importedRoot.get(component: MacroTransform.self))
+        let importedTransform = try #require(importedRoot.get(MacroTransform.self))
         #expect(importedTransform.position == 2)
         #expect(importedTransform.children == [importedChild])
         #expect(importedTransform.cachedLength == 0)
-        #expect(try #require(importedChild.get(component: MacroTransform.self)).parent == importedRoot)
-        #expect(importedRoot.get(component: MacroRenderable.self) == nil)
+        #expect(try #require(importedChild.get(MacroTransform.self)).parent == importedRoot)
+        #expect(importedRoot.get(MacroRenderable.self) == nil)
         #expect(importedRoot.has(MacroRenamed.self))
     }
 }

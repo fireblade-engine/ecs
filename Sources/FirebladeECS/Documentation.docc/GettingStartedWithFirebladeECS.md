@@ -65,7 +65,7 @@ and assign instances of it to an `Entity` with
 
 ```swift
 let position = Position(x: 1, y: 2)
-entity.assign(position)
+entity.set(position)
 ```
 
 You can be more efficient by assigning components while creating an entity.

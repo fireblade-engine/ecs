@@ -157,8 +157,8 @@ struct SerialFormat: CustomTestStringConvertible, @unchecked Sendable {
         nexus.destroy(entity: destroyed)
         nexus.destroy(entity: alsoDestroyed)
         let shared = SerialPosition(x: 5, y: 6)
-        child.assign(shared)
-        sibling.assign(shared)
+        child.set(shared)
+        sibling.set(shared)
         return (nexus, root, child, sibling)
     }
 
@@ -170,12 +170,12 @@ struct SerialFormat: CustomTestStringConvertible, @unchecked Sendable {
         let root = restored.entity(from: source.root.identifier)
         let child = restored.entity(from: source.child.identifier)
         let sibling = restored.entity(from: source.sibling.identifier)
-        #expect(try #require(root.get(component: SerialPosition.self)).x == 1)
-        #expect(try #require(child.get(component: SerialParent.self)).parent == root)
-        #expect(try #require(child.get(component: SerialTarget.self)).target == root.identifier)
-        #expect(try #require(sibling.get(component: SerialHealth.self)).value == 7)
-        let shared = try #require(child.get(component: SerialPosition.self))
-        #expect(shared === sibling.get(component: SerialPosition.self))
+        #expect(try #require(root.get(SerialPosition.self)).x == 1)
+        #expect(try #require(child.get(SerialParent.self)).parent == root)
+        #expect(try #require(child.get(SerialTarget.self)).target == root.identifier)
+        #expect(try #require(sibling.get(SerialHealth.self)).value == 7)
+        let shared = try #require(child.get(SerialPosition.self))
+        #expect(shared === sibling.get(SerialPosition.self))
         #expect(shared.x == 5)
         #expect(restored.family(requires: SerialPosition.self).count == 3)
 
@@ -274,7 +274,7 @@ struct SerialFormat: CustomTestStringConvertible, @unchecked Sendable {
         try nexus.register(SerialHealth.self)
         var decoder = JSONDecoder()
         try nexus.restoreSnapshot(from: data, using: &decoder)
-        #expect(nexus.entity(from: 0).get(component: SerialHealth.self)?.value == 3)
+        #expect(nexus.entity(from: 0).get(SerialHealth.self)?.value == 3)
         #expect(nexus.componentType(named: "OldHealth")?.typeName == "Health")
 
         let snapshot = try nexus.makeSnapshot(handling: .throwError)
@@ -297,7 +297,7 @@ struct SerialFormat: CustomTestStringConvertible, @unchecked Sendable {
         var decoder = JSONDecoder()
         try nexus.restoreSnapshot(from: data, using: &decoder)
 
-        #expect(nexus.entity(from: 2).get(component: SerialHealth.self)?.value == 2)
+        #expect(nexus.entity(from: 2).get(SerialHealth.self)?.value == 2)
         #expect(nexus.createEntity().identifier == 1)
         #expect(nexus.createEntity().identifier == 3)
     }
@@ -312,7 +312,7 @@ struct SerialFormat: CustomTestStringConvertible, @unchecked Sendable {
             try nexus.restoreSnapshot(from: data, using: &decoder)
         }
         #expect(nexus.numEntities == 1)
-        #expect(existing.get(component: SerialHealth.self)?.value == 1)
+        #expect(existing.get(SerialHealth.self)?.value == 1)
     }
 
     @Test func failedRestoreRollsBack() throws {
@@ -365,7 +365,7 @@ struct SerialFormat: CustomTestStringConvertible, @unchecked Sendable {
         try restored.register(SerialHealth.self)
         var decoder = JSONDecoder()
         try restored.restoreSnapshot(from: data, using: &decoder)
-        #expect(restored.entity(from: kept.identifier).get(component: SerialHealth.self)?.value == 4)
+        #expect(restored.entity(from: kept.identifier).get(SerialHealth.self)?.value == 4)
         #expect(restored.entityIdGenerator is NonPersistableEntityIdGenerator)
     }
 

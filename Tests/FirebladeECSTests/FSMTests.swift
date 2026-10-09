@@ -347,7 +347,7 @@ import Testing
         state.addMapping(for: MockComponent.self).withInstance(component)
         fsm.addState(name: "test", state: state)
         fsm.changeState(name: "test")
-        #expect(entity.get(component: MockComponent.self) === component)
+        #expect(entity.get(MockComponent.self) === component)
     }
 
     @Test func enterSecondStateAddsSecondStatesComponents() {
@@ -365,7 +365,7 @@ import Testing
         fsm.addState(name: "test2", state: state2)
         fsm.changeState(name: "test2")
 
-        #expect(entity.get(component: MockComponent2.self) === component2)
+        #expect(entity.get(MockComponent2.self) === component2)
     }
 
     @Test func enterSecondStateRemovesFirstStatesComponents() {
@@ -417,7 +417,7 @@ import Testing
         fsm.addState(name: "test2", state: state2)
         fsm.changeState(name: "test2")
 
-        #expect(entity.get(component: MockComponent.self) === component1)
+        #expect(entity.get(MockComponent.self) === component1)
     }
 
     @Test func enterSecondStateRemovesDifferentComponentsOfSameType() {
@@ -438,7 +438,7 @@ import Testing
         fsm.addState(name: "test2", state: state2)
         fsm.changeState(name: "test2")
 
-        #expect(entity.get(component: MockComponent.self) === component3)
+        #expect(entity.get(MockComponent.self) === component3)
     }
 
     @Test func createStateAddsState() {
@@ -449,7 +449,7 @@ import Testing
         let component = MockComponent()
         state.addMapping(for: MockComponent.self).withInstance(component)
         fsm.changeState(name: "test")
-        #expect(entity.get(component: MockComponent.self) === component)
+        #expect(entity.get(MockComponent.self) === component)
     }
 
     @Test func createStateDoesNotChangeState() {
@@ -459,7 +459,7 @@ import Testing
         let state = fsm.createState(name: "test")
         let component = MockComponent()
         state.addMapping(for: MockComponent.self).withInstance(component)
-        #expect(entity.get(component: MockComponent.self) == nil)
+        #expect(entity.get(MockComponent.self) == nil)
     }
 
     @Test func callChangeStateWithSameNameLeavesEntityComponentsIntact() {
@@ -473,11 +473,11 @@ import Testing
         state.addMapping(for: MockComponent2.self).withInstance(component2)
         let name = "test"
         fsm.changeState(name: name)
-        #expect(entity.get(component: MockComponent.self) === component1)
-        #expect(entity.get(component: MockComponent2.self) === component2)
+        #expect(entity.get(MockComponent.self) === component1)
+        #expect(entity.get(MockComponent2.self) === component2)
         fsm.changeState(name: name)
-        #expect(entity.get(component: MockComponent.self) === component1)
-        #expect(entity.get(component: MockComponent2.self) === component2)
+        #expect(entity.get(MockComponent.self) === component1)
+        #expect(entity.get(MockComponent2.self) === component2)
     }
 
     @Test func getsDeinitedWhileBeingStronglyReferencedByComponentAssignedToEntity() {
@@ -491,7 +491,7 @@ import Testing
         let nexus = Nexus()
         var entity: Entity? = nexus.createEntity()
         var markerComponent: Marker? = Marker(fsm: EntityStateMachine<String>(entity: entity!))
-        entity?.assign(markerComponent!)
+        entity?.set(markerComponent!)
         weak var weakMarker: Marker?
         weakMarker = markerComponent
         weak var weakFsm: EntityStateMachine<String>?

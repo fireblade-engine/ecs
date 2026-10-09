@@ -36,6 +36,18 @@ extension Nexus {
         return true
     }
 
+    /// Assigns multiple components to an entity, stopping at the first one that collides.
+    ///
+    /// - Parameters:
+    ///   - components: The components to assign.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: `true` if all assignments were successful, `false` otherwise.
+    func assign<each C: Component>(components: repeat each C, entityId: EntityIdentifier) -> Bool {
+        var success = true
+        _ = (repeat (success = success && assign(component: each components, entityId: entityId)))
+        return success
+    }
+
     /// Assigns a single component to an entity.
     ///
     /// - Parameters:

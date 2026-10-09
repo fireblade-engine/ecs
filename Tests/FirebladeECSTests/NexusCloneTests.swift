@@ -60,8 +60,8 @@ final class CloneChildren: CloneableComponent, @unchecked Sendable {
 
         #expect(clone != source)
         #expect(nexus.numEntities == 2)
-        let original = try #require(source.get(component: CloneValue.self))
-        let cloned = try #require(clone.get(component: CloneValue.self))
+        let original = try #require(source.get(CloneValue.self))
+        let cloned = try #require(clone.get(CloneValue.self))
         #expect(cloned !== original)
         #expect(cloned.value == 3)
         #expect(cloned.payload === payload)
@@ -74,13 +74,13 @@ final class CloneChildren: CloneableComponent, @unchecked Sendable {
         let nexus = Nexus()
         let external = nexus.createEntity()
         let source = nexus.createEntity()
-        source.assign(CloneParent(parent: external), CloneChildren(children: [external, source], self_: source.identifier))
+        source.set(CloneParent(parent: external), CloneChildren(children: [external, source], self_: source.identifier))
 
         let clone = try nexus.clone(entity: source)
 
-        let parent = try #require(clone.get(component: CloneParent.self))
+        let parent = try #require(clone.get(CloneParent.self))
         #expect(parent.parent == external)
-        let children = try #require(clone.get(component: CloneChildren.self))
+        let children = try #require(clone.get(CloneChildren.self))
         #expect(children.children == [external, clone])
         #expect(children.self_ == clone.identifier)
     }
@@ -89,16 +89,16 @@ final class CloneChildren: CloneableComponent, @unchecked Sendable {
         let nexus = Nexus()
         let root = nexus.createEntity()
         let child = nexus.createEntity(with: CloneParent(parent: root))
-        root.assign(CloneChildren(children: [child], self_: root.identifier))
+        root.set(CloneChildren(children: [child], self_: root.identifier))
 
         let clones = try nexus.clone(entities: [root, child, root])
 
         #expect(clones.count == 3)
         #expect(clones[0] == clones[2])
         #expect(nexus.numEntities == 4)
-        let clonedChildren = try #require(clones[0].get(component: CloneChildren.self))
+        let clonedChildren = try #require(clones[0].get(CloneChildren.self))
         #expect(clonedChildren.children == [clones[1]])
-        let clonedParent = try #require(clones[1].get(component: CloneParent.self))
+        let clonedParent = try #require(clones[1].get(CloneParent.self))
         #expect(clonedParent.parent == clones[0])
     }
 
@@ -106,7 +106,7 @@ final class CloneChildren: CloneableComponent, @unchecked Sendable {
         let source = Nexus()
         let root = source.createEntity()
         let child = source.createEntity(with: CloneParent(parent: root), CloneValue(value: 1, payload: SharedPayload()))
-        root.assign(CloneChildren(children: [child], self_: root.identifier))
+        root.set(CloneChildren(children: [child], self_: root.identifier))
         source.createEntity()
 
         let target = Nexus()
@@ -116,9 +116,9 @@ final class CloneChildren: CloneableComponent, @unchecked Sendable {
         #expect(target.numComponents == 3)
         let clonedRoot = try #require(mapping[root.identifier])
         let clonedChild = try #require(mapping[child.identifier])
-        #expect(try #require(clonedRoot.get(component: CloneChildren.self)).children == [clonedChild])
-        #expect(try #require(clonedChild.get(component: CloneParent.self)).parent == clonedRoot)
-        #expect(try #require(clonedChild.get(component: CloneValue.self)).value == 1)
+        #expect(try #require(clonedRoot.get(CloneChildren.self)).children == [clonedChild])
+        #expect(try #require(clonedChild.get(CloneParent.self)).parent == clonedRoot)
+        #expect(try #require(clonedChild.get(CloneValue.self)).value == 1)
         #expect(target.family(requires: CloneParent.self).count == 1)
     }
 

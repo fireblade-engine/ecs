@@ -23,7 +23,7 @@ extension Nexus {
             var components: [any SerializableComponent] = []
             var sharedComponents: [String: EntityIdentifier] = [:]
             for componentId in componentIdsByEntity[entityId, default: []] {
-                let component = get(unsafe: componentId, for: entityId)
+                let component = unsafeComponent(componentId, for: entityId)
                 guard let serializable = component as? any SerializableComponent else {
                     switch handling {
                     case .throwError:

@@ -11,8 +11,8 @@ import Testing
 @Suite struct SystemsTests {
     private func createDefaultEntity(in nexus: Nexus) {
         let e = nexus.createEntity()
-        e.assign(Position(x: 1, y: 2))
-        e.assign(Color())
+        e.set(Position(x: 1, y: 2))
+        e.set(Color())
     }
 
     private func batchCreateEntities(in nexus: Nexus, count: Int) {

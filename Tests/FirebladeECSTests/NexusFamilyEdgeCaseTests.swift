@@ -36,10 +36,11 @@ import Testing
         let nexus = Nexus()
         let entity = nexus.createEntity()
         let pos = Position(x: 1, y: 2)
-        nexus.assign(component: pos, to: entity)
-        // Assign same component again -> collision
-        let success = nexus.assign(component: pos, to: entity)
-        #expect(success == false)
+        entity.set(pos)
+        // Set another component of the same type -> collision, the first one is kept
+        entity.set(Position(x: 3, y: 4))
+        #expect(entity.get(Position.self) === pos)
+        #expect(entity.numComponents == 1)
     }
 
     @Test func componentCollisionMultiple() {
@@ -48,10 +49,12 @@ import Testing
         let pos = Position(x: 1, y: 2)
         let name = Name(name: "Test")
         let components: [Component] = [pos, name]
-        nexus.assign(components: components, to: entity)
-        // Assign same components again -> collision
-        let success = nexus.assign(components: components, to: entity)
-        #expect(success == false)
+        entity.set(components)
+        // Set other components of the same types again -> collision, the first ones are kept
+        entity.set([Position(x: 3, y: 4), Name(name: "Other")] as [Component])
+        #expect(entity.get(Position.self) === pos)
+        #expect(entity.get(Name.self) === name)
+        #expect(entity.numComponents == 2)
     }
 
     @Test func assignGenericComponent() {
@@ -60,7 +63,7 @@ import Testing
         let pos = Position(x: 1, y: 2)
 
         func assignGeneric<C: Component>(_ c: C) {
-            nexus.assign(component: c, to: entity)
+            entity.set(c)
         }
 
         assignGeneric(pos)

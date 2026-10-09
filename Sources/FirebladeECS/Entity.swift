@@ -82,32 +82,71 @@ public struct Entity {
         nexus.count(components: identifier) > 0
     }
 
+    /// Adds one or more components to this entity.
+    ///
+    /// If the entity already has a component of the same type, it keeps that instance and the nexus delegate
+    /// receives a non-fatal error.
+    /// - Parameter components: one or more components.
+    /// - Returns: This entity (for chaining).
+    /// - Complexity: O(C * M) where C is the number of components and M is the number of families.
+    @discardableResult
+    public func set<each C: Component>(_ components: repeat each C) -> Entity {
+        _ = nexus.assign(components: repeat each components, entityId: identifier)
+        return self
+    }
+
+    /// Adds a single component to this entity.
+    ///
+    /// If the entity already has a component of the same type, it keeps that instance and the nexus delegate
+    /// receives a non-fatal error.
+    /// - Parameter component: a component.
+    /// - Returns: This entity (for chaining).
+    /// - Complexity: O(M) where M is the number of families.
+    @discardableResult
+    public func set(_ component: Component) -> Entity {
+        _ = nexus.assign(component: component, entityId: identifier)
+        return self
+    }
+
+    /// Adds a collection of components to this entity.
+    ///
+    /// If the entity already has a component of the same type, it keeps that instance and the nexus delegate
+    /// receives a non-fatal error.
+    /// - Parameter components: The components to set.
+    /// - Returns: This entity (for chaining).
+    /// - Complexity: O(C + M) where C is the number of components and M is the number of families.
+    @discardableResult
+    public func set(_ components: some Collection<Component>) -> Entity {
+        _ = nexus.assign(components: components, to: identifier)
+        return self
+    }
+
     /// Add one or more components to this entity.
     /// - Parameter components: one or more components.
     /// - Complexity: O(M) where M is the number of families.
+    @available(*, deprecated, renamed: "set(_:)")
     @discardableResult
     public func assign<each C: Component>(_ components: repeat each C) -> Entity {
-        nexus.assign(components: repeat each components, to: self)
-        return self
+        set(repeat each components)
     }
 
     /// Add a single component to this entity.
     /// - Parameter component: a component.
     /// - Complexity: O(M) where M is the number of families.
+    @available(*, deprecated, renamed: "set(_:)")
     @discardableResult
     public func assign(_ component: Component) -> Entity {
-        nexus.assign(component: component, to: self)
-        return self
+        set(component)
     }
 
     /// Assigns a collection of components to this entity.
     /// - Parameter components: The components to assign.
     /// - Returns: This entity (for chaining).
     /// - Complexity: O(C + M) where C is the number of components and M is the number of families.
+    @available(*, deprecated, renamed: "set(_:)")
     @discardableResult
     public func assign(_ components: some Collection<Component>) -> Entity {
-        nexus.assign(components: components, to: self)
-        return self
+        set(components)
     }
 
     /// Remove a component from this entity.
@@ -168,7 +207,7 @@ extension Entity {
         @usableFromInline
         init(nexus: Nexus, entityIdentifier: EntityIdentifier) {
             iterator = nexus.get(components: entityIdentifier)?
-                .map { nexus.get(unsafe: $0, for: entityIdentifier) }
+                .map { nexus.unsafeComponent($0, for: entityIdentifier) }
                 .makeIterator()
         }
 

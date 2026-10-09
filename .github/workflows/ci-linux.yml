@@ -28,6 +28,10 @@ jobs:
           - swift: "6.2"
             # renovate: datasource=docker depName=swift
             swift-full: "6.2.4"
+            # Older swift-syntax with a published prebuilt for this exact toolchain: saves ~3 min
+            # on cold builds and covers the lower end of the supported swift-syntax range.
+            # The 6.1 job keeps testing the version from Package.resolved.
+            swift-syntax: "602.0.0"
 
     steps:
       - name: Checkout
@@ -49,7 +53,13 @@ jobs:
         uses: actions/cache/restore@v6
         with:
           path: .build
-          key: spm-linux-${{ matrix.swift-full }}-release-${{ hashFiles('Package.swift', 'Package.resolved') }}
+          key: spm-linux-${{ matrix.swift-full }}-swift-syntax-${{ matrix.swift-syntax || 'resolved' }}-release-${{ hashFiles('Package.swift', 'Package.resolved') }}
+
+      - name: Resolve swift-syntax ${{ matrix.swift-syntax }}
+        if: matrix.swift-syntax != ''
+        run: |
+          swift package resolve
+          swift package resolve swift-syntax --version ${{ matrix.swift-syntax }}
 
       - name: Run Tests (Release)
         run: swift test -c release --parallel -Xswiftc -warnings-as-errors

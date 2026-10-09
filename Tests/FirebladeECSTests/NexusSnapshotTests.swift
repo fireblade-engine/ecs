@@ -54,7 +54,7 @@ final class SerialParent: SerializableComponent, @unchecked Sendable {
         let source = Nexus()
         let child = source.createEntity()
         let root = source.createEntity(with: SerialPosition(x: 3, y: 4))
-        child.assign(SerialParent(parent: root))
+        child.set(SerialParent(parent: root))
 
         var encoder = makeEncoder()
         let data = try source.encodeSnapshot(using: &encoder, handling: .throwError)
@@ -69,10 +69,10 @@ final class SerialParent: SerializableComponent, @unchecked Sendable {
         let importedRoot = try #require(mapping[root.identifier])
         let importedChild = try #require(mapping[child.identifier])
         #expect(importedRoot.identifier != root.identifier)
-        let position = try #require(importedRoot.get(component: SerialPosition.self))
+        let position = try #require(importedRoot.get(SerialPosition.self))
         #expect(position.x == 3)
         #expect(position.y == 4)
-        #expect(try #require(importedChild.get(component: SerialParent.self)).parent == importedRoot)
+        #expect(try #require(importedChild.get(SerialParent.self)).parent == importedRoot)
         #expect(target.family(requires: SerialPosition.self).count == 1)
         #expect(decoder.userInfo[.nexusEntityResolver] == nil)
     }

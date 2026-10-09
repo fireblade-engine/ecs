@@ -70,7 +70,7 @@ extension Nexus {
             }
             var components: [any CloneableComponent] = []
             for componentId in componentIds {
-                let component = get(unsafe: componentId, for: sourceId)
+                let component = unsafeComponent(componentId, for: sourceId)
                 guard let cloneable = component as? any CloneableComponent else {
                     throw ComponentCloneError.notCloneable(typeName: String(reflecting: type(of: component)))
                 }

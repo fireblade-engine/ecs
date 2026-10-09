@@ -35,7 +35,7 @@ extension Nexus {
     @discardableResult
     public func createEntity<each C: Component>(with components: repeat each C) -> Entity {
         let newEntity = createEntity()
-        assign(components: repeat each components, to: newEntity)
+        _ = assign(components: repeat each components, entityId: newEntity.identifier)
         return newEntity
     }
 

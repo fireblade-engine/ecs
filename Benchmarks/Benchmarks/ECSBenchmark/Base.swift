@@ -70,11 +70,11 @@ func setUpNexus() -> Nexus {
     let nexus = Nexus()
 
     for i in 0 ..< numEntities {
-        nexus.createEntity().assign(Position(x: 1 + i, y: 2 + i),
-                                    Name(name: "myName\(i)"),
-                                    Velocity(a: 3.14),
-                                    EmptyComponent(),
-                                    Color())
+        nexus.createEntity().set(Position(x: 1 + i, y: 2 + i),
+                                 Name(name: "myName\(i)"),
+                                 Velocity(a: 3.14),
+                                 EmptyComponent(),
+                                 Color())
     }
 
     precondition(nexus.numEntities == numEntities)

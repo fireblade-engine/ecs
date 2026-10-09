@@ -11,16 +11,26 @@ extension Entity {
     /// - Complexity: O(1)
     @inlinable
     public func get<C>() -> C? where C: Component {
-        nexus.get(safe: identifier)
+        nexus.component(for: identifier)
+    }
+
+    /// Retrieves a component of the specified type assigned to this entity.
+    /// - Parameter type: The type of the component to retrieve.
+    /// - Returns: The component instance if found; otherwise, `nil`.
+    /// - Complexity: O(1)
+    @inlinable
+    public func get<C>(_ type: C.Type) -> C? where C: Component {
+        nexus.component(for: identifier)
     }
 
     /// Retrieves a component of the specified type assigned to this entity.
     /// - Parameter compType: The type of the component to retrieve. Defaults to the inferred type.
     /// - Returns: The component instance if found; otherwise, `nil`.
     /// - Complexity: O(1)
+    @available(*, deprecated, renamed: "get(_:)")
     @inlinable
     public func get<A>(component compType: A.Type = A.self) -> A? where A: Component {
-        nexus.get(safe: identifier)
+        get(compType)
     }
 
     /// Retrieves components of the specified types assigned to this entity.
@@ -30,7 +40,7 @@ extension Entity {
     /// - Complexity: O(1)
     @inlinable
     public func get<each C: Component>(components: repeat (each C).Type) -> (repeat (each C)?) {
-        (repeat get(component: (each C).self))
+        (repeat get((each C).self))
     }
 
     /// Get or set component instance by type via subscript.
@@ -44,16 +54,16 @@ extension Entity {
     /// - Complexity: O(1) for get, O(M) for set where M is the number of families.
     @inlinable
     public subscript<Comp>(_ componentType: Comp.Type) -> Comp? where Comp: Component {
-        get { self.get(component: componentType) }
+        get { self.get(componentType) }
         nonmutating set {
             guard let newComponent = newValue else {
                 self.remove(Comp.self)
                 return
             }
-            if self.get(component: componentType) === newComponent {
+            if self.get(componentType) === newComponent {
                 return
             }
-            self.assign(newComponent)
+            self.set(newComponent)
         }
     }
 
@@ -65,7 +75,7 @@ extension Entity {
     /// - Complexity: O(1)
     @inlinable
     public func get<Comp, Value>(valueAt componentKeyPath: KeyPath<Comp, Value>) -> Value where Comp: Component {
-        self.get(component: Comp.self)![keyPath: componentKeyPath]
+        self.get(Comp.self)![keyPath: componentKeyPath]
     }
 
     /// Get the value of a component using the key Path to the property in the component.
@@ -76,7 +86,7 @@ extension Entity {
     /// - Complexity: O(1)
     @inlinable
     public func get<Comp, Value>(valueAt componentKeyPath: KeyPath<Comp, Value?>) -> Value? where Comp: Component {
-        self.get(component: Comp.self)![keyPath: componentKeyPath]
+        self.get(Comp.self)![keyPath: componentKeyPath]
     }
 
     /// Get the value of a component using the key Path to the property in the component.
@@ -101,19 +111,20 @@ extension Entity {
     ///
     /// - Parameters:
     ///   - newValue: The value to set.
-    ///   - componentKeyPath: The `ReferenceWritableKeyPath` to the property of the given component.
+    ///   - componentKeyPath: The `WritableKeyPath` to the property of the given component.
     /// - Returns: Returns true if an action was performed, false otherwise.
     /// - Complexity: O(1) if component exists, O(M) otherwise where M is the number of families.
     @inlinable
     @discardableResult
-    public func set<Comp, Value>(value newValue: Value, for componentKeyPath: ReferenceWritableKeyPath<Comp, Value>) -> Bool where Comp: Component & DefaultInitializable {
-        guard has(Comp.self) else {
-            let newInstance = Comp()
+    public func set<Comp, Value>(value newValue: Value, for componentKeyPath: WritableKeyPath<Comp, Value>) -> Bool where Comp: Component & DefaultInitializable {
+        guard var component = get(Comp.self) else {
+            var newInstance = Comp()
             newInstance[keyPath: componentKeyPath] = newValue
             return nexus.assign(component: newInstance, entityId: identifier)
         }
 
-        get(component: Comp.self)![keyPath: componentKeyPath] = newValue
+        // components are reference types, so this writes through to the assigned instance
+        component[keyPath: componentKeyPath] = newValue
         return true
     }
 
@@ -125,19 +136,20 @@ extension Entity {
     ///
     /// - Parameters:
     ///   - newValue: The value to set.
-    ///   - componentKeyPath: The `ReferenceWritableKeyPath` to the property of the given component.
+    ///   - componentKeyPath: The `WritableKeyPath` to the property of the given component.
     /// - Returns: Returns true if an action was performed, false otherwise.
     /// - Complexity: O(1) if component exists, O(M) otherwise where M is the number of families.
     @inlinable
     @discardableResult
-    public func set<Comp, Value>(value newValue: Value?, for componentKeyPath: ReferenceWritableKeyPath<Comp, Value?>) -> Bool where Comp: Component & DefaultInitializable {
-        guard has(Comp.self) else {
-            let newInstance = Comp()
+    public func set<Comp, Value>(value newValue: Value?, for componentKeyPath: WritableKeyPath<Comp, Value?>) -> Bool where Comp: Component & DefaultInitializable {
+        guard var component = get(Comp.self) else {
+            var newInstance = Comp()
             newInstance[keyPath: componentKeyPath] = newValue
             return nexus.assign(component: newInstance, entityId: identifier)
         }
 
-        get(component: Comp.self)![keyPath: componentKeyPath] = newValue
+        // components are reference types, so this writes through to the assigned instance
+        component[keyPath: componentKeyPath] = newValue
         return true
     }
 
@@ -148,7 +160,7 @@ extension Entity {
     ///   a new instance of `Comp` will be default initialized and `newValue` will be set at the given keyPath.
     /// - Complexity: O(1) for get. O(1) for set if component exists, O(M) otherwise.
     @inlinable
-    public subscript<Comp, Value>(_ componentKeyPath: ReferenceWritableKeyPath<Comp, Value>) -> Value where Comp: Component & DefaultInitializable {
+    public subscript<Comp, Value>(_ componentKeyPath: WritableKeyPath<Comp, Value>) -> Value where Comp: Component & DefaultInitializable {
         get { self.get(valueAt: componentKeyPath) }
         nonmutating set { self.set(value: newValue, for: componentKeyPath) }
     }
@@ -160,7 +172,7 @@ extension Entity {
     ///   a new instance of `Comp` will be default initialized and `newValue` will be set at the given keyPath.
     /// - Complexity: O(1) for get. O(1) for set if component exists, O(M) otherwise.
     @inlinable
-    public subscript<Comp, Value>(_ componentKeyPath: ReferenceWritableKeyPath<Comp, Value?>) -> Value? where Comp: Component & DefaultInitializable {
+    public subscript<Comp, Value>(_ componentKeyPath: WritableKeyPath<Comp, Value?>) -> Value? where Comp: Component & DefaultInitializable {
         get { self.get(valueAt: componentKeyPath) }
         nonmutating set { self.set(value: newValue, for: componentKeyPath) }
     }

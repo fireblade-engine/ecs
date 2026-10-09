@@ -18,11 +18,11 @@ class TypedFamilyPerformanceTests: XCTestCase {
         nexus = Nexus()
 
         for i in 0..<numEntities {
-            nexus.createEntity().assign(Position(x: 1 + i, y: 2 + i),
-                                        Name(name: "myName\(i)"),
-                                        Velocity(a: 3.14),
-                                        EmptyComponent(),
-                                        Color())
+            nexus.createEntity().set(Position(x: 1 + i, y: 2 + i),
+                                     Name(name: "myName\(i)"),
+                                     Velocity(a: 3.14),
+                                     EmptyComponent(),
+                                     Color())
         }
     }
 
@@ -35,10 +35,10 @@ class TypedFamilyPerformanceTests: XCTestCase {
     /// debug:   0.017 sec
     func testMeasureTraitMatching() {
         let a = nexus.createEntity()
-        a.assign(Position(x: 1, y: 2))
-        a.assign(Name(name: "myName"))
-        a.assign(Velocity(a: 3.14))
-        a.assign(EmptyComponent())
+        a.set(Position(x: 1, y: 2))
+        a.set(Name(name: "myName"))
+        a.set(Velocity(a: 3.14))
+        a.set(EmptyComponent())
 
         let isMatch = nexus.family(requiresAll: Position.self, Velocity.self,
                                    excludesAll: Party.self)

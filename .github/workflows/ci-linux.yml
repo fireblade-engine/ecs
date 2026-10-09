@@ -7,23 +7,69 @@ on:
     branches: [ master, main ]
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   linux:
     name: Linux (Swift ${{ matrix.swift }})
     runs-on: ubuntu-latest
+    # The image tag pins the exact toolchain; Renovate proposes patch updates.
+    container: swift:${{ matrix.swift-full }}-noble
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        swift: ["6.1", "6.2"]
+        include:
+          - swift: "6.1"
+            # renovate: datasource=docker depName=swift
+            swift-full: "6.1.3"
+          - swift: "6.2"
+            # renovate: datasource=docker depName=swift
+            swift-full: "6.2.4"
+            # Older swift-syntax with a published prebuilt for this exact toolchain: saves ~3 min
+            # on cold builds and covers the lower end of the supported swift-syntax range.
+            # The 6.1 job keeps testing the version from Package.resolved.
+            swift-syntax: "602.0.0"
+            swift-syntax-revision: "4799286537280063c85a32f09884cfbca301b1a1"
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Setup Swift
-        uses: swift-actions/setup-swift@v2
+      - name: Verify Swift Version
+        run: |
+          swift --version
+          swift --version 2>&1 | grep -qF "Swift version ${{ matrix.swift-full }} (" || {
+            echo "::error::Expected Swift ${{ matrix.swift-full }}"
+            exit 1
+          }
+
+      # Caches only depend on the toolchain and the dependency graph, so they hold the expensive
+      # swift-syntax build; this package's own modules are rebuilt incrementally.
+      # PRs restore master's cache, only master saves it.
+      - name: Restore Build Cache
+        id: cache
+        uses: actions/cache/restore@v6
         with:
-          swift-version: ${{ matrix.swift }}
+          path: .build
+          key: spm-linux-${{ matrix.swift-full }}-swift-syntax-${{ matrix.swift-syntax || 'resolved' }}-release-${{ hashFiles('Package.swift', 'Package.resolved') }}
+
+      # Rewrites the pin instead of re-resolving: resolving from Package.resolved first would check out
+      # its version over the cached one and invalidate the whole cached build.
+      - name: Pin swift-syntax ${{ matrix.swift-syntax }}
+        if: matrix.swift-syntax != ''
+        run: |
+          sed -i -e '/"identity" : "swift-syntax"/,/}/{s/"revision" : "[^"]*"/"revision" : "${{ matrix.swift-syntax-revision }}"/;s/"version" : "[^"]*"/"version" : "${{ matrix.swift-syntax }}"/;}' Package.resolved
+          grep -A6 '"identity" : "swift-syntax"' Package.resolved | grep -qF '"version" : "${{ matrix.swift-syntax }}"'
 
       - name: Run Tests (Release)
         run: swift test -c release --parallel -Xswiftc -warnings-as-errors
+
+      - name: Save Build Cache
+        if: github.event_name == 'push' && steps.cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: .build
+          key: ${{ steps.cache.outputs.cache-primary-key }}

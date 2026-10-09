@@ -65,7 +65,7 @@ jobs:
         run: swift test -c release --parallel -Xswiftc -warnings-as-errors
 
       - name: Save Build Cache
-        if: github.event_name == 'push' && steps.cache.outputs.cache-hit != 'true'
+        if: steps.cache.outputs.cache-hit != 'true'  # TEMP: also save on PRs to measure warm runs
         uses: actions/cache/save@v6
         with:
           path: .build

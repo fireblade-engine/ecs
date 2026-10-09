@@ -123,7 +123,7 @@ jobs:
             ECS_WARNINGS_AS_ERRORS_YES=NO
 
       - name: Save Build Cache
-        if: github.event_name == 'push' && steps.cache.outputs.cache-hit != 'true'
+        if: steps.cache.outputs.cache-hit != 'true'  # TEMP: also save on PRs to measure warm runs
         uses: actions/cache/save@v6
         with:
           path: .derivedData

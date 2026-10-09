@@ -297,9 +297,7 @@ struct SerialFormat: CustomTestStringConvertible, Sendable {
 
         #expect(nexus.entity(from: 2).get(component: SerialHealth.self)?.value == 2)
         #expect(nexus.createEntity().identifier == 1)
-        withKnownIssue("LinearIncrementingEntityIdGenerator(startProviding:) provides the highest in-use identifier again") {
-            #expect(nexus.createEntity().identifier == 3)
-        }
+        #expect(nexus.createEntity().identifier == 3)
     }
 
     @Test func restoreIntoNonEmptyNexusThrowsWithoutSideEffects() throws {

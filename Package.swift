@@ -29,7 +29,7 @@ let package = Package(
         .trait(name: "benchmarks", description: "Enable performance tests")
     ],
     dependencies: [
-        .package(url: "https://github.com/swiftlang/swift-syntax.git", "600.0.0" ..< "700.0.0")
+        .package(url: "https://github.com/swiftlang/swift-syntax.git", "600.0.0" ..< "604.0.0")
     ],
     targets: [
         .target(name: "FirebladeECS",

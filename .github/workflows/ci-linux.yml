@@ -32,6 +32,7 @@ jobs:
             # on cold builds and covers the lower end of the supported swift-syntax range.
             # The 6.1 job keeps testing the version from Package.resolved.
             swift-syntax: "602.0.0"
+            swift-syntax-revision: "4799286537280063c85a32f09884cfbca301b1a1"
 
     steps:
       - name: Checkout
@@ -55,11 +56,13 @@ jobs:
           path: .build
           key: spm-linux-${{ matrix.swift-full }}-swift-syntax-${{ matrix.swift-syntax || 'resolved' }}-release-${{ hashFiles('Package.swift', 'Package.resolved') }}
 
-      - name: Resolve swift-syntax ${{ matrix.swift-syntax }}
+      # Rewrites the pin instead of re-resolving: resolving from Package.resolved first would check out
+      # its version over the cached one and invalidate the whole cached build.
+      - name: Pin swift-syntax ${{ matrix.swift-syntax }}
         if: matrix.swift-syntax != ''
         run: |
-          swift package resolve
-          swift package resolve swift-syntax --version ${{ matrix.swift-syntax }}
+          sed -i -e '/"identity" : "swift-syntax"/,/}/{s/"revision" : "[^"]*"/"revision" : "${{ matrix.swift-syntax-revision }}"/;s/"version" : "[^"]*"/"version" : "${{ matrix.swift-syntax }}"/;}' Package.resolved
+          grep -A6 '"identity" : "swift-syntax"' Package.resolved | grep -qF '"version" : "${{ matrix.swift-syntax }}"'
 
       - name: Run Tests (Release)
         run: swift test -c release --parallel -Xswiftc -warnings-as-errors

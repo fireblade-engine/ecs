@@ -70,7 +70,7 @@ jobs:
           swift build --build-tests -c ${{ matrix.build }} --swift-sdk ${{ matrix.config.sdk }} -Xswiftc -enable-testing
 
       - name: Save Build Cache
-        if: steps.cache.outputs.cache-hit != 'true'  # TEMP: also save on PRs to measure warm runs
+        if: github.event_name == 'push' && steps.cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v6
         with:
           path: .build

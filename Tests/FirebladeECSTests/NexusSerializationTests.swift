@@ -88,31 +88,33 @@ final class SerialEventRecorder: NexusEventDelegate, @unchecked Sendable {
 }
 
 /// A Codable format a scene can be stored in.
-struct SerialFormat: CustomTestStringConvertible, Sendable {
+///
+/// The closures only create stateless coders, so sharing a format between tests is safe.
+struct SerialFormat: CustomTestStringConvertible, @unchecked Sendable {
     let testDescription: String
-    let encode: @Sendable (_ value: any Encodable, _ userInfo: [CodingUserInfoKey: UserInfoValue]) throws -> Data
-    let decodeScene: @Sendable (_ data: Data, _ userInfo: [CodingUserInfoKey: UserInfoValue]) throws -> SerialScene
-    let encodeSnapshot: @Sendable (_ nexus: Nexus) throws -> Data
-    let restoreSnapshot: @Sendable (_ data: Data, _ nexus: Nexus) throws -> Void
+    let encode: (_ value: any Encodable, _ userInfo: [CodingUserInfoKey: any Sendable]) throws -> Data
+    let decodeScene: (_ data: Data, _ userInfo: [CodingUserInfoKey: any Sendable]) throws -> SerialScene
+    let encodeSnapshot: (_ nexus: Nexus) throws -> Data
+    let restoreSnapshot: (_ data: Data, _ nexus: Nexus) throws -> Void
 
     static func make<Encoder: TopLevelEncoder, Decoder: TopLevelDecoder>(
         _ name: String,
-        encoder makeEncoder: @escaping @Sendable () -> Encoder,
-        decoder makeDecoder: @escaping @Sendable () -> Decoder
+        encoder makeEncoder: @escaping () -> Encoder,
+        decoder makeDecoder: @escaping () -> Decoder
     ) -> SerialFormat
-        where Encoder.Output == Data, Decoder.Input == Data,
-        Encoder.UserInfoValue == UserInfoValue, Decoder.UserInfoValue == UserInfoValue
+        where Encoder.Output == Data, Decoder.Input == Data
     {
         SerialFormat(
             testDescription: name,
             encode: { value, userInfo in
                 var encoder = makeEncoder()
-                encoder.userInfo = userInfo
+                // The coders' user info value type is `Any` or `any Sendable`, depending on the SDK.
+                encoder.userInfo = userInfo.compactMapValues { $0 as? Encoder.UserInfoValue }
                 return try encoder.encode(value)
             },
             decodeScene: { data, userInfo in
                 var decoder = makeDecoder()
-                decoder.userInfo = userInfo
+                decoder.userInfo = userInfo.compactMapValues { $0 as? Decoder.UserInfoValue }
                 return try decoder.decode(SerialScene.self, from: data)
             },
             encodeSnapshot: { nexus in
@@ -217,7 +219,7 @@ struct SerialFormat: CustomTestStringConvertible, Sendable {
             return encoder
         }, decoder: { JSONDecoder() })
         let first = try format.encode(SerialScene(name: "Level", nexus: makeScene().nexus), [:])
-        let userInfo: [CodingUserInfoKey: UserInfoValue] = [
+        let userInfo: [CodingUserInfoKey: any Sendable] = [
             .nexusComponentTypes: Self.componentTypes,
             .nexusEntityResolver: EntityReferenceResolver(mapping: [:])
         ]
@@ -356,7 +358,7 @@ struct SerialFormat: CustomTestStringConvertible, Sendable {
         source.destroy(entity: source.entity(from: 0))
         var encoder = JSONEncoder()
         let data = try source.encodeSnapshot(using: &encoder, handling: .throwError)
-        #expect(try !String(decoding: data, as: UTF8.self).contains("entityIdGenerator"))
+        #expect(!String(decoding: data, as: UTF8.self).contains("entityIdGenerator"))
 
         let restored = Nexus()
         restored.entityIdGenerator = NonPersistableEntityIdGenerator(startProviding: [])

@@ -6,7 +6,7 @@
 //
 
 /// A strategy for determining coding keys for components during encoding and decoding.
-public protocol CodingStrategy: Codable, Sendable {
+public protocol CodingStrategy: Sendable {
     /// Returns the coding key to use for a specific component type.
     /// - Parameter componentType: The type of the component.
     /// - Returns: The dynamic coding key to use.

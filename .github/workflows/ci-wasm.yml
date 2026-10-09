@@ -9,12 +9,14 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   wasm:
     name: WASM (Swift ${{ matrix.config.version }})
     runs-on: ubuntu-latest
+    # The image tag pins the exact toolchain; it must match the Swift SDK below.
+    container: swift:${{ matrix.config.version }}-noble
     timeout-minutes: 30
 
     strategy:
@@ -31,19 +33,38 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
-      - name: Import Swift GPG keys
-        # setup-swift v3 verifies swiftly with an empty keyring (swift-actions/setup-swift#798)
-        run: curl -fsSL --compressed https://www.swift.org/keys/all-keys.asc | gpg --import -
-      - uses: swift-actions/setup-swift@v3
-        id: setup-swiftwasm
-        with:
-          swift-version: ${{ matrix.config.version }}
+
+      - name: Verify Swift Version
+        run: |
+          swift --version
+          swift --version 2>&1 | grep -qF "Swift version ${{ matrix.config.version }} (" || {
+            echo "::error::Expected Swift ${{ matrix.config.version }}"
+            exit 1
+          }
+
       - uses: bytecodealliance/actions/wasmtime/setup@v1
+
       - name: Install Swift SDK
         run: swift sdk install ${{ matrix.config.url }} --checksum ${{ matrix.config.checksum }}
+
+      # PRs restore master's cache, only master saves it.
+      - name: Restore Build Cache
+        id: cache
+        uses: actions/cache/restore@v6
+        with:
+          path: .build
+          key: spm-wasm-${{ matrix.config.version }}-${{ matrix.build }}-${{ hashFiles('Package.swift', 'Package.resolved') }}
+
       - name: Build for testing
         run: |
           swift build --build-tests -c ${{ matrix.build }} --swift-sdk ${{ matrix.config.sdk }} -Xswiftc -enable-testing
+
+      - name: Save Build Cache
+        if: github.event_name == 'push' && steps.cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: .build
+          key: ${{ steps.cache.outputs.cache-primary-key }}
 
       - name: Test
         run: |

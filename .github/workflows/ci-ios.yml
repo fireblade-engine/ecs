@@ -7,10 +7,15 @@ on:
     branches: [ master, main ]
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   ios:
     name: iOS (Swift ${{ matrix.swift }})
     runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -19,37 +24,43 @@ jobs:
           # Xcode: a standalone toolchain cannot load an SDK built by a newer
           # compiler. Swift 6.1 therefore uses Xcode 16.4 (Swift 6.1.x,
           # iOS 18.5 SDK) on macos-15 instead of a setup-swift toolchain.
+          # The runner's default Xcode moves on with image updates, so every entry pins one.
           - swift: "6.1"
+            swift-full: "6.1.2"
             runner: "macos-15"
             xcode: "16.4"
-          # Empty xcode keeps the runner image's default Xcode.
           - swift: "6.2"
-            runner: "macos-latest"
-            xcode: ""
+            swift-full: "6.2.4"
+            runner: "macos-26"
+            xcode: "26.3"
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
       - name: Select Xcode
-        if: matrix.xcode != ''
         run: |
           DEVELOPER_DIR="/Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer"
           test -d "$DEVELOPER_DIR"
           echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
 
-      - name: Show Toolchain
+      - name: Verify Swift Version
         run: |
           xcodebuild -version
           swift --version
-
-      - name: Verify Swift Version
-        if: matrix.xcode != ''
-        run: |
-          swift --version 2>&1 | grep -q "Apple Swift version ${{ matrix.swift }}" || {
-            echo "::error::Selected Xcode ${{ matrix.xcode }} does not provide Swift ${{ matrix.swift }}"
+          swift --version 2>&1 | grep -qF "Swift version ${{ matrix.swift-full }} (" || {
+            echo "::error::Xcode ${{ matrix.xcode }} does not provide Swift ${{ matrix.swift-full }}"
             exit 1
           }
+
+      # Holds the expensive swift-syntax build; this package's own modules are rebuilt incrementally.
+      # PRs restore master's cache, only master saves it.
+      - name: Restore Build Cache
+        id: cache
+        uses: actions/cache/restore@v6
+        with:
+          path: .derivedData
+          key: xcode-ios-${{ matrix.xcode }}-release-${{ hashFiles('Package.swift', 'Package.resolved') }}
 
       - name: Resolve Package Dependencies
         run: swift package resolve
@@ -104,8 +115,16 @@ jobs:
             -scheme "${{ steps.select_scheme.outputs.scheme }}" \
             -destination "${{ steps.select_sim.outputs.destination }}" \
             -configuration Release \
+            -derivedDataPath .derivedData \
             -skipPackagePluginValidation \
             ENABLE_TESTABILITY=YES \
             'SWIFT_TREAT_WARNINGS_AS_ERRORS=$(ECS_WARNINGS_AS_ERRORS_$(SWIFT_SUPPRESS_WARNINGS))' \
             ECS_WARNINGS_AS_ERRORS_NO=YES \
             ECS_WARNINGS_AS_ERRORS_YES=NO
+
+      - name: Save Build Cache
+        if: github.event_name == 'push' && steps.cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: .derivedData
+          key: ${{ steps.cache.outputs.cache-primary-key }}

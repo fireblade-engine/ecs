@@ -7,28 +7,65 @@ on:
     branches: [ master, main ]
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   macos:
     name: macOS (Swift ${{ matrix.swift }})
     runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         include:
+          # Each entry pins the Xcode whose bundled toolchain provides the Swift version under test;
+          # the runner's default Xcode moves on with image updates.
           - swift: "6.1"
-            runner: "macos-14"
+            swift-full: "6.1.2"
+            runner: "macos-15"
+            xcode: "16.4"
           - swift: "6.2"
-            runner: "macos-latest"
+            swift-full: "6.2.4"
+            runner: "macos-26"
+            xcode: "26.3"
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Setup Swift
-        if: matrix.swift != '6.2'
-        uses: swift-actions/setup-swift@v3
+      - name: Select Xcode
+        run: |
+          DEVELOPER_DIR="/Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer"
+          test -d "$DEVELOPER_DIR"
+          echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
+
+      - name: Verify Swift Version
+        run: |
+          xcodebuild -version
+          swift --version
+          swift --version 2>&1 | grep -qF "Swift version ${{ matrix.swift-full }} (" || {
+            echo "::error::Xcode ${{ matrix.xcode }} does not provide Swift ${{ matrix.swift-full }}"
+            exit 1
+          }
+
+      # Caches only depend on the toolchain and the dependency graph, so they hold the expensive
+      # swift-syntax build; this package's own modules are rebuilt incrementally.
+      # PRs restore master's cache, only master saves it.
+      - name: Restore Build Cache
+        id: cache
+        uses: actions/cache/restore@v6
         with:
-          swift-version: ${{ matrix.swift }}
+          path: .build
+          key: spm-macos-xcode${{ matrix.xcode }}-release-${{ hashFiles('Package.swift', 'Package.resolved') }}
 
       - name: Run Tests (Release)
         run: swift test -c release --parallel -Xswiftc -warnings-as-errors
+
+      - name: Save Build Cache
+        if: github.event_name == 'push' && steps.cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: .build
+          key: ${{ steps.cache.outputs.cache-primary-key }}

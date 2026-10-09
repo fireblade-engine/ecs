@@ -31,6 +31,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+      - name: Import Swift GPG keys
+        # setup-swift v3 verifies swiftly with an empty keyring (swift-actions/setup-swift#798)
+        run: curl -fsSL --compressed https://www.swift.org/keys/all-keys.asc | gpg --import -
       - uses: swift-actions/setup-swift@v3
         id: setup-swiftwasm
         with:

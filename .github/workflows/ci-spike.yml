@@ -1,0 +1,51 @@
+name: Spike (prebuilts)
+
+on:
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  linux:
+    name: Spike Linux ${{ matrix.image }} swift-syntax ${{ matrix.syntax }}
+    runs-on: ubuntu-latest
+    container: swift:${{ matrix.image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { image: 6.2.4-noble, syntax: 602.0.0, flags: "" }
+          - { image: 6.2.4-noble, syntax: 604.0.0, flags: "" }
+          - { image: 6.1.3-noble, syntax: 601.0.1, flags: "--enable-experimental-prebuilts" }
+    steps:
+      - uses: actions/checkout@v7
+      - run: swift --version && swift -print-target-info | grep -E 'swiftCompilerTag|compilerVersion'
+      - run: swift package resolve swift-syntax --version ${{ matrix.syntax }}
+      - name: Build
+        run: |
+          start=$(date +%s)
+          swift build --build-tests -c release ${{ matrix.flags }} -Xswiftc -warnings-as-errors 2>&1 | tee build.log
+          echo "BUILD SECONDS: $(( $(date +%s) - start ))"
+          echo "SwiftSyntax compile lines: $(grep -c 'Compiling SwiftSyntax ' build.log || true)"
+          grep -iE 'prebuilt' build.log || true
+          ls .build/prebuilts 2>/dev/null || echo "no .build/prebuilts"
+      - run: swift test -c release ${{ matrix.flags }} --skip-build
+
+  macos:
+    name: Spike macOS swift-syntax ${{ matrix.syntax }}
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        syntax: [602.0.0]
+    steps:
+      - uses: actions/checkout@v7
+      - run: xcodebuild -version && swift --version && swift -print-target-info | grep -E 'swiftCompilerTag|compilerVersion'
+      - run: swift package resolve swift-syntax --version ${{ matrix.syntax }}
+      - name: Build
+        run: |
+          start=$(date +%s)
+          swift build --build-tests -c release -Xswiftc -warnings-as-errors 2>&1 | tee build.log
+          echo "BUILD SECONDS: $(( $(date +%s) - start ))"
+          echo "SwiftSyntax compile lines: $(grep -c 'Compiling SwiftSyntax ' build.log || true)"
+          grep -iE 'prebuilt' build.log || true
+          ls .build/prebuilts 2>/dev/null || echo "no .build/prebuilts"

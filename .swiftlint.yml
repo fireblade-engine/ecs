@@ -3,6 +3,9 @@ included:
 excluded:
   - .build
   - Tests
+  - Sources/FirebladeECS/Generated
+  - Sources/FirebladeECS/UnorderedSparseSet.swift
+  - Sources/FirebladeECS/FSM.swift
 identifier_name:
   excluded:
     - id

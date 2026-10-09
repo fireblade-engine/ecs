@@ -5,6 +5,7 @@
 //  Created by Christian Treffs on 29.09.18.
 //
 
+#if FRB_ENABLE_BENCHMARKS
 import FirebladeECS
 import XCTest
 
@@ -354,3 +355,4 @@ class TypedFamilyPerformanceTests: XCTestCase {
         XCTAssertEqual(loopCount, family.count * 10)
     }
 }
+#endif

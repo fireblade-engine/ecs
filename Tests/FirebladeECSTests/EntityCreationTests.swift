@@ -6,24 +6,24 @@
 //
 
 import FirebladeECS
-import XCTest
+import Testing
 
-final class EntityCreationTests: XCTestCase {
-    func testCreateEntityOneComponent() throws {
+@Suite struct EntityCreationTests {
+    @Test func createEntityOneComponent() throws {
         let nexus = Nexus()
         let entity = nexus.createEntity {
             Position(x: 1, y: 2)
         }
 
-        XCTAssertEqual(entity[\Position.x], 1)
-        XCTAssertEqual(entity[\Position.y], 2)
+        #expect(entity[\Position.x] == 1)
+        #expect(entity[\Position.y] == 2)
 
-        XCTAssertEqual(nexus.numEntities, 1)
-        XCTAssertEqual(nexus.numComponents, 1)
-        XCTAssertEqual(nexus.numFamilies, 0)
+        #expect(nexus.numEntities == 1)
+        #expect(nexus.numComponents == 1)
+        #expect(nexus.numFamilies == 0)
     }
 
-    func testCreateEntityMultipleComponents() throws {
+    @Test func createEntityMultipleComponents() throws {
         let nexus = Nexus()
 
         let entity = nexus.createEntity {
@@ -31,32 +31,32 @@ final class EntityCreationTests: XCTestCase {
             Name(name: "Hello")
         }
 
-        XCTAssertEqual(entity[\Position.x], 1)
-        XCTAssertEqual(entity[\Position.y], 2)
+        #expect(entity[\Position.x] == 1)
+        #expect(entity[\Position.y] == 2)
 
-        XCTAssertEqual(entity[\Name.name], "Hello")
+        #expect(entity[\Name.name] == "Hello")
 
-        XCTAssertEqual(nexus.numEntities, 1)
-        XCTAssertEqual(nexus.numComponents, 2)
-        XCTAssertEqual(nexus.numFamilies, 0)
+        #expect(nexus.numEntities == 1)
+        #expect(nexus.numComponents == 2)
+        #expect(nexus.numFamilies == 0)
     }
 
-    func testBulkCreateEntitiesOneComponent() throws {
+    @Test func bulkCreateEntitiesOneComponent() throws {
         let nexus = Nexus()
 
         let entities = nexus.createEntities(count: 100) { ctx in
             Velocity(a: Float(ctx.index))
         }
 
-        XCTAssertEqual(entities[0][\Velocity.a], 0)
-        XCTAssertEqual(entities[99][\Velocity.a], 99)
+        #expect(entities[0][\Velocity.a] == 0)
+        #expect(entities[99][\Velocity.a] == 99)
 
-        XCTAssertEqual(nexus.numEntities, 100)
-        XCTAssertEqual(nexus.numComponents, 100)
-        XCTAssertEqual(nexus.numFamilies, 0)
+        #expect(nexus.numEntities == 100)
+        #expect(nexus.numComponents == 100)
+        #expect(nexus.numFamilies == 0)
     }
 
-    func testBulkCreateEntitiesMultipleComponents() throws {
+    @Test func bulkCreateEntitiesMultipleComponents() throws {
         let nexus = Nexus()
 
         let entities = nexus.createEntities(count: 100) { ctx in
@@ -64,15 +64,15 @@ final class EntityCreationTests: XCTestCase {
             Name(name: "\(ctx.index)")
         }
 
-        XCTAssertEqual(entities[0][\Position.x], 0)
-        XCTAssertEqual(entities[0][\Position.y], 0)
-        XCTAssertEqual(entities[0][\Name.name], "0")
-        XCTAssertEqual(entities[99][\Position.x], 99)
-        XCTAssertEqual(entities[99][\Position.y], 99)
-        XCTAssertEqual(entities[99][\Name.name], "99")
+        #expect(entities[0][\Position.x] == 0)
+        #expect(entities[0][\Position.y] == 0)
+        #expect(entities[0][\Name.name] == "0")
+        #expect(entities[99][\Position.x] == 99)
+        #expect(entities[99][\Position.y] == 99)
+        #expect(entities[99][\Name.name] == "99")
 
-        XCTAssertEqual(nexus.numEntities, 100)
-        XCTAssertEqual(nexus.numComponents, 200)
-        XCTAssertEqual(nexus.numFamilies, 0)
+        #expect(nexus.numEntities == 100)
+        #expect(nexus.numComponents == 200)
+        #expect(nexus.numFamilies == 0)
     }
 }

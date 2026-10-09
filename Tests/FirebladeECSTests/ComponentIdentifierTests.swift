@@ -4,18 +4,36 @@
 //
 //  Created by Christian Treffs on 05.10.19.
 //
-import XCTest
+@testable import FirebladeECS
+import Testing
 
-final class ComponentIdentifierTests: XCTestCase {
-    func testMirrorAsStableIdentifier() {
-        let m = String(reflecting: Position.self)
-        let identifier: String = m
-        XCTAssertEqual(identifier, "FirebladeECSTests.Position")
+private final class CustomIdentifierComponent: Component {
+    static var identifier: ComponentIdentifier { ComponentIdentifier(id: 42) }
+}
+
+private func genericIdentifier<C: Component>(of _: C.Type) -> ComponentIdentifier {
+    C.identifier
+}
+
+@Suite struct ComponentIdentifierTests {
+    @Test func customStaticIdentifierIsUsedInGenericContext() {
+        #expect(genericIdentifier(of: CustomIdentifierComponent.self) == ComponentIdentifier(id: 42))
+        #expect(CustomIdentifierComponent().identifier == ComponentIdentifier(id: 42))
     }
 
-    func testStringDescribingAsStableIdentifier() {
+    @Test func defaultStaticIdentifierIsUsedInGenericContext() {
+        #expect(genericIdentifier(of: Position.self) == ComponentIdentifier(Position.self))
+    }
+
+    @Test func mirrorAsStableIdentifier() {
+        let m = String(reflecting: Position.self)
+        let identifier: String = m
+        #expect(identifier == "FirebladeECSTests.Position")
+    }
+
+    @Test func stringDescribingAsStableIdentifier() {
         let s = String(describing: Position.self)
         let identifier: String = s
-        XCTAssertEqual(identifier, "Position")
+        #expect(identifier == "Position")
     }
 }

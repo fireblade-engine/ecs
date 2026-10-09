@@ -2,16 +2,46 @@ name: WASM
 
 on:
   push:
-    branches: [ master ]
+    branches: [master, main]
   pull_request:
-    branches: [ master ]
+    branches: [master, main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  wasm-build:
+  wasm:
+    name: WASM (Swift ${{ matrix.config.version }})
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - version: 6.2.1
+            url: https://download.swift.org/swift-6.2.1-release/wasm-sdk/swift-6.2.1-RELEASE/swift-6.2.1-RELEASE_wasm.artifactbundle.tar.gz
+            checksum: 482b9f95462b87bedfafca94a092cf9ec4496671ca13b43745097122d20f18af
+            sdk: swift-6.2.1-RELEASE_wasm
+            platform: wasm32-unknown-wasip1
+        build:
+          - release
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Build
-        uses: swiftwasm/swiftwasm-action@v5.9
+      - uses: actions/checkout@v7
+      - uses: swift-actions/setup-swift@v2
+        id: setup-swiftwasm
         with:
-          shell-action: swift build --triple wasm32-unknown-wasi
+          swift-version: ${{ matrix.config.version }}
+      - uses: bytecodealliance/actions/wasmtime/setup@v1
+      - name: Install Swift SDK
+        run: swift sdk install ${{ matrix.config.url }} --checksum ${{ matrix.config.checksum }}
+      - name: Build for testing
+        run: |
+          swift build --build-tests -c ${{ matrix.build }} --swift-sdk ${{ matrix.config.sdk }} -Xswiftc -enable-testing
+
+      - name: Test
+        run: |
+          wasmtime --dir . .build/${{ matrix.config.platform }}/${{ matrix.build }}/FirebladeECSPackageTests.xctest --testing-library swift-testing

@@ -6,106 +6,22 @@
 //
 
 @testable import FirebladeECS
-import XCTest
+import Testing
 
-class SystemsTests: XCTestCase {
-    var nexus: Nexus!
-    var colorSystem: ColorSystem!
-    var positionSystem: PositionSystem!
-
-    override func setUp() {
-        super.setUp()
-        nexus = Nexus()
-        colorSystem = ColorSystem(nexus: nexus)
-        positionSystem = PositionSystem(nexus: nexus)
-    }
-
-    override func tearDown() {
-        colorSystem = nil
-        positionSystem = nil
-        nexus = nil
-        super.tearDown()
-    }
-
-    func testSystemsUpdate() {
-        let num: Int = 10_000
-
-        colorSystem.update()
-        positionSystem.update()
-
-        let posTraits = positionSystem.positions.traits
-
-        XCTAssertEqual(nexus.numEntities, 0)
-        XCTAssertEqual(colorSystem.colors.memberIds.count, 0)
-        XCTAssertEqual(positionSystem.positions.memberIds.count, 0)
-        XCTAssertEqual(nexus.familyMembersByTraits[posTraits]?.count, 0)
-
-        batchCreateEntities(count: num)
-
-        XCTAssertEqual(nexus.numEntities, num)
-        XCTAssertEqual(nexus.familyMembersByTraits[posTraits]?.count, num)
-        XCTAssertEqual(colorSystem.colors.memberIds.count, num)
-        XCTAssertEqual(positionSystem.positions.memberIds.count, num)
-
-        colorSystem.update()
-        positionSystem.update()
-
-        XCTAssertEqual(nexus.numEntities, num)
-        XCTAssertEqual(nexus.familyMembersByTraits[posTraits]?.count, num)
-        XCTAssertEqual(colorSystem.colors.memberIds.count, num)
-        XCTAssertEqual(positionSystem.positions.memberIds.count, num)
-
-        batchCreateEntities(count: num)
-
-        XCTAssertEqual(nexus.numEntities, num * 2)
-        XCTAssertEqual(nexus.familyMembersByTraits[posTraits]?.count, num * 2)
-        XCTAssertEqual(colorSystem.colors.memberIds.count, num * 2)
-        XCTAssertEqual(positionSystem.positions.memberIds.count, num * 2)
-
-        colorSystem.update()
-        positionSystem.update()
-
-        XCTAssertEqual(nexus.numEntities, num * 2)
-        XCTAssertEqual(nexus.familyMembersByTraits[posTraits]?.count, num * 2)
-        XCTAssertEqual(colorSystem.colors.memberIds.count, num * 2)
-        XCTAssertEqual(positionSystem.positions.memberIds.count, num * 2)
-
-        batchDestroyEntities(count: num)
-
-        XCTAssertEqual(nexus.familyMembersByTraits[posTraits]?.count, num)
-        XCTAssertEqual(nexus.numEntities, num)
-        XCTAssertEqual(colorSystem.colors.memberIds.count, num)
-        XCTAssertEqual(positionSystem.positions.memberIds.count, num)
-
-        colorSystem.update()
-        positionSystem.update()
-
-        XCTAssertEqual(nexus.familyMembersByTraits[posTraits]?.count, num)
-        XCTAssertEqual(nexus.numEntities, num)
-        XCTAssertEqual(colorSystem.colors.memberIds.count, num)
-        XCTAssertEqual(positionSystem.positions.memberIds.count, num)
-
-        batchCreateEntities(count: num)
-
-        XCTAssertEqual(nexus.familyMembersByTraits[posTraits]?.count, num * 2)
-        XCTAssertEqual(nexus.numEntities, num * 2)
-        XCTAssertEqual(colorSystem.colors.memberIds.count, num * 2)
-        XCTAssertEqual(positionSystem.positions.memberIds.count, num * 2)
-    }
-
-    func createDefaultEntity() {
+@Suite struct SystemsTests {
+    private func createDefaultEntity(in nexus: Nexus) {
         let e = nexus.createEntity()
         e.assign(Position(x: 1, y: 2))
         e.assign(Color())
     }
 
-    func batchCreateEntities(count: Int) {
+    private func batchCreateEntities(in nexus: Nexus, count: Int) {
         for _ in 0..<count {
-            createDefaultEntity()
+            createDefaultEntity(in: nexus)
         }
     }
 
-    func batchDestroyEntities(count: Int) {
+    private func batchDestroyEntities(in nexus: Nexus, count: Int) {
         let family = nexus.family(requires: Position.self)
 
         family
@@ -114,5 +30,74 @@ class SystemsTests: XCTestCase {
             .forEach { (entity: Entity) in
                 entity.destroy()
             }
+    }
+
+    @Test func systemsUpdate() {
+        let nexus = Nexus()
+        let colorSystem = ColorSystem(nexus: nexus)
+        let positionSystem = PositionSystem(nexus: nexus)
+        let num: Int = 10_000
+
+        colorSystem.update()
+        positionSystem.update()
+
+        let posTraits = positionSystem.positions.traits
+
+        #expect(nexus.numEntities == 0)
+        #expect(colorSystem.colors.memberIds.count == 0)
+        #expect(positionSystem.positions.memberIds.count == 0)
+        #expect(nexus.familyMembersByTraits[posTraits]?.count == 0)
+
+        batchCreateEntities(in: nexus, count: num)
+
+        #expect(nexus.numEntities == num)
+        #expect(nexus.familyMembersByTraits[posTraits]?.count == num)
+        #expect(colorSystem.colors.memberIds.count == num)
+        #expect(positionSystem.positions.memberIds.count == num)
+
+        colorSystem.update()
+        positionSystem.update()
+
+        #expect(nexus.numEntities == num)
+        #expect(nexus.familyMembersByTraits[posTraits]?.count == num)
+        #expect(colorSystem.colors.memberIds.count == num)
+        #expect(positionSystem.positions.memberIds.count == num)
+
+        batchCreateEntities(in: nexus, count: num)
+
+        #expect(nexus.numEntities == num * 2)
+        #expect(nexus.familyMembersByTraits[posTraits]?.count == num * 2)
+        #expect(colorSystem.colors.memberIds.count == num * 2)
+        #expect(positionSystem.positions.memberIds.count == num * 2)
+
+        colorSystem.update()
+        positionSystem.update()
+
+        #expect(nexus.numEntities == num * 2)
+        #expect(nexus.familyMembersByTraits[posTraits]?.count == num * 2)
+        #expect(colorSystem.colors.memberIds.count == num * 2)
+        #expect(positionSystem.positions.memberIds.count == num * 2)
+
+        batchDestroyEntities(in: nexus, count: num)
+
+        #expect(nexus.familyMembersByTraits[posTraits]?.count == num)
+        #expect(nexus.numEntities == num)
+        #expect(colorSystem.colors.memberIds.count == num)
+        #expect(positionSystem.positions.memberIds.count == num)
+
+        colorSystem.update()
+        positionSystem.update()
+
+        #expect(nexus.familyMembersByTraits[posTraits]?.count == num)
+        #expect(nexus.numEntities == num)
+        #expect(colorSystem.colors.memberIds.count == num)
+        #expect(positionSystem.positions.memberIds.count == num)
+
+        batchCreateEntities(in: nexus, count: num)
+
+        #expect(nexus.familyMembersByTraits[posTraits]?.count == num * 2)
+        #expect(nexus.numEntities == num * 2)
+        #expect(colorSystem.colors.memberIds.count == num * 2)
+        #expect(positionSystem.positions.memberIds.count == num * 2)
     }
 }

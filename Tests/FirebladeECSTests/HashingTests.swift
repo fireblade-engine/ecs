@@ -6,33 +6,50 @@
 //
 
 @testable import FirebladeECS
-import XCTest
+import Testing
 
-class HashingTests: XCTestCase {
-    func makeComponent() -> Int {
-        let upperBound: Int = 44
-        let range = UInt32.min...UInt32.max
-        let high = UInt(UInt32.random(in: range)) << UInt(upperBound)
-        let low = UInt(UInt32.random(in: range))
-        XCTAssertTrue(high.leadingZeroBitCount < 64 - upperBound)
-        XCTAssertTrue(high.trailingZeroBitCount >= upperBound)
-        XCTAssertTrue(low.leadingZeroBitCount >= 32)
-        XCTAssertTrue(low.trailingZeroBitCount <= 32)
-        let rand: UInt = high | low
-        let cH = Int(bitPattern: rand)
-        return cH
+@Suite struct HashingTests {
+    private func makeComponent() -> Int {
+        #if arch(x86_64) || arch(arm64) || arch(powerpc64) || arch(powerpc64le) || arch(s390x)
+            let upperBound: Int = 44
+            let range = UInt32.min...UInt32.max
+            let high = UInt(UInt32.random(in: range)) << UInt(upperBound)
+            let low = UInt(UInt32.random(in: range))
+            #expect(high.leadingZeroBitCount < 64 - upperBound)
+            #expect(high.trailingZeroBitCount >= upperBound)
+            #expect(low.leadingZeroBitCount >= 32)
+            #expect(low.trailingZeroBitCount <= 32)
+            let rand: UInt = high | low
+            return Int(bitPattern: rand)
+        #else
+            let upperBound: Int = 16
+            let range = UInt16.min...UInt16.max
+            let high = UInt(UInt16.random(in: range)) << UInt(upperBound)
+            let low = UInt(UInt16.random(in: range))
+            #expect(high.leadingZeroBitCount < 32 - upperBound)
+            #expect(high.trailingZeroBitCount >= upperBound)
+            #expect(low.leadingZeroBitCount >= 16)
+            #expect(low.trailingZeroBitCount <= 16)
+            let rand: UInt = high | low
+            return Int(bitPattern: rand)
+        #endif
     }
 
-    func testCollisionsInCritialRange() {
-        var hashSet: Set<Int> = Set<Int>()
+    @Test func collisionsInCritialRange() {
+        var hashSet = Set<Int>()
 
-        var range: CountableRange<UInt32> = 0 ..< 1_000_000
-
-        let maxComponents: Int = 1000
+        #if arch(x86_64) || arch(arm64) || arch(powerpc64) || arch(powerpc64le) || arch(s390x)
+            let maxEntities = 1_000_000
+            let maxComponents = 1000
+        #else
+            let maxEntities = 10_000
+            let maxComponents = 100
+        #endif
+        var range: [UInt32] = Array(0..<UInt32(maxEntities))
         let components: [Int] = (0..<maxComponents).map { _ in makeComponent() }
 
         var index: Int = 0
-        while let idx: UInt32 = range.popLast() {
+        while let idx = range.popLast() {
             let eId = EntityIdentifier(idx)
 
             let entityId: EntityIdentifier = eId
@@ -44,22 +61,22 @@ class HashingTests: XCTestCase {
             let h: Int = EntityComponentHash.compose(entityId: entityId, componentTypeHash: cH)
 
             let (collisionFree, _) = hashSet.insert(h)
-            XCTAssert(collisionFree)
+            #expect(collisionFree)
 
-            XCTAssert(EntityComponentHash.decompose(h, with: cH) == entityId)
-            XCTAssert(EntityComponentHash.decompose(h, with: entityId) == cH)
+            #expect(EntityComponentHash.decompose(h, with: cH) == entityId)
+            #expect(EntityComponentHash.decompose(h, with: entityId) == cH)
         }
     }
 
-    func testStringHashes() throws {
+    @Test func stringHashes() throws {
         let string = "EiMersaufEn1"
 
-        XCTAssertEqual(StringHashing.bernstein_djb2(string), 13_447_802_024_599_246_090)
-        XCTAssertEqual(StringHashing.singer_djb2(string), 5_428_736_256_651_916_664)
-        XCTAssertEqual(StringHashing.sdbm(string), 15_559_770_072_020_577_201)
+        #expect(StringHashing.bernstein_djb2(string) == 13_447_802_024_599_246_090)
+        #expect(StringHashing.singer_djb2(string) == 5_428_736_256_651_916_664)
+        #expect(StringHashing.sdbm(string) == 15_559_770_072_020_577_201)
 
-        XCTAssertEqual(StringHashing.bernstein_djb2("gamedev"), 229_466_792_000_542)
-        XCTAssertEqual(StringHashing.singer_djb2("gamedev"), 2_867_840_411_746_895_486)
-        XCTAssertEqual(StringHashing.sdbm("gamedev"), 2_761_443_862_055_442_870)
+        #expect(StringHashing.bernstein_djb2("gamedev") == 229_466_792_000_542)
+        #expect(StringHashing.singer_djb2("gamedev") == 2_867_840_411_746_895_486)
+        #expect(StringHashing.sdbm("gamedev") == 2_761_443_862_055_442_870)
     }
 }

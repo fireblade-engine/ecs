@@ -6,18 +6,18 @@
 //
 
 import FirebladeECS
-import XCTest
+import Testing
 
-class ComponentTests: XCTestCase {
-    func testComponentIdentifier() {
-        XCTAssertEqual(Position.identifier, Position.identifier)
-        XCTAssertEqual(Velocity.identifier, Velocity.identifier)
-        XCTAssertNotEqual(Velocity.identifier, Position.identifier)
+@Suite struct ComponentTests {
+    @Test func componentIdentifier() {
+        #expect(Position.identifier == Position.identifier)
+        #expect(Velocity.identifier == Velocity.identifier)
+        #expect(Velocity.identifier != Position.identifier)
 
         let p1 = Position(x: 1, y: 2)
         let v1 = Velocity(a: 3.14)
-        XCTAssertEqual(p1.identifier, Position.identifier)
-        XCTAssertEqual(v1.identifier, Velocity.identifier)
-        XCTAssertNotEqual(v1.identifier, p1.identifier)
+        #expect(p1.identifier == Position.identifier)
+        #expect(v1.identifier == Velocity.identifier)
+        #expect(v1.identifier != p1.identifier)
     }
 }

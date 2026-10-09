@@ -11,19 +11,25 @@ public final class Nexus {
     /// Used for serialization.
     final let version = Version(0, 18, 0)
 
-    /// - Key: ComponentIdentifier aka component type.
-    /// - Value: Array of component instances of same type (uniform).
-    ///          New component instances are appended.
+    /// A map of component identifiers to their storage.
+    /// - Key: The component identifier (type).
+    /// - Value: A contiguous array of components of that type. New component instances are appended.
     @usableFromInline final var componentsByType: [ComponentIdentifier: ManagedContiguousArray<Component>]
 
-    /// - Key: EntityIdentifier aka entity index
-    /// - Value: Set of unique component types (ComponentIdentifier).
-    ///          Each element is a component identifier associated with this entity.
+    /// A map of entity identifiers to their assigned component identifiers.
+    /// - Key: The entity identifier (index).
+    /// - Value: A set of component identifiers associated with this entity.
     @usableFromInline final var componentIdsByEntity: [EntityIdentifier: Set<ComponentIdentifier>]
 
-    /// - Key: FamilyTraitSet aka component types that make up one distinct family.
-    /// - Value: Tightly packed EntityIdentifiers that represent the association of an entity to the family.
+    /// A map of family traits to the entities that match them.
+    /// - Key: The family trait set (component types) that defines the family.
+    /// - Value: A sparse set of entity identifiers that are members of this family.
     @usableFromInline final var familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>]
+
+    /// The component types known to this nexus.
+    ///
+    /// Type knowledge outlives data: ``clear()`` does not remove registered types.
+    final var componentRegistry: ComponentRegistry
 
     /// The entity identifier generator responsible for providing unique ids for entities during runtime.
     ///
@@ -37,8 +43,10 @@ public final class Nexus {
     /// Defaults to `DefaultCodingStrategy`.
     public final var codingStrategy: CodingStrategy
 
+    /// The delegate for handling nexus events.
     public final weak var delegate: NexusEventDelegate?
 
+    /// Initializes a new Nexus with default settings.
     public convenience init() {
         self.init(componentsByType: [:],
                   componentsByEntity: [:],
@@ -47,6 +55,13 @@ public final class Nexus {
                   codingStrategy: DefaultCodingStrategy())
     }
 
+    /// Initializes a new Nexus with the provided storage and strategies.
+    /// - Parameters:
+    ///   - componentsByType: The initial storage for components by type.
+    ///   - componentsByEntity: The initial mapping of entities to their components.
+    ///   - entityIdGenerator: The generator for entity identifiers.
+    ///   - familyMembersByTraits: The initial family membership storage.
+    ///   - codingStrategy: The strategy for encoding/decoding.
     init(componentsByType: [ComponentIdentifier: ManagedContiguousArray<Component>],
          componentsByEntity: [EntityIdentifier: Set<ComponentIdentifier>],
          entityIdGenerator: EntityIdentifierGenerator,
@@ -58,12 +73,16 @@ public final class Nexus {
         self.familyMembersByTraits = familyMembersByTraits
         self.entityIdGenerator = entityIdGenerator
         self.codingStrategy = codingStrategy
+        componentRegistry = ComponentRegistry()
     }
 
     deinit {
         clear()
     }
 
+    /// Clears all data from the Nexus.
+    ///
+    /// This removes all components, entities, and family memberships.
     public final func clear() {
         componentsByType.removeAll()
         componentIdsByEntity.removeAll()
@@ -71,9 +90,12 @@ public final class Nexus {
     }
 }
 
+extension Nexus: @unchecked Sendable {}
+
 // MARK: - CustomDebugStringConvertible
 
 extension Nexus: CustomDebugStringConvertible {
+    /// A textual representation of the Nexus, suitable for debugging.
     public var debugDescription: String {
         "<Nexus entities:\(numEntities) components:\(numComponents) families:\(numFamilies)>"
     }
@@ -81,10 +103,17 @@ extension Nexus: CustomDebugStringConvertible {
 
 // MARK: - default coding strategy
 
+/// The default coding strategy used by `Nexus`.
+///
+/// This strategy uses the component type name as the string key.
 public struct DefaultCodingStrategy: CodingStrategy {
+    /// Creates a new default coding strategy.
     public init() {}
 
-    public func codingKey<C>(for componentType: C.Type) -> DynamicCodingKey where C: Component {
+    /// Returns a coding key based on the component type name.
+    /// - Parameter componentType: The component type.
+    /// - Returns: A `DynamicCodingKey` initialized with the component type name.
+    public func codingKey<C: Component>(for componentType: C.Type) -> DynamicCodingKey {
         DynamicCodingKey(stringValue: "\(C.self)").unsafelyUnwrapped
     }
 }

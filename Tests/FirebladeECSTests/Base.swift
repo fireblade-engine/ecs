@@ -7,10 +7,10 @@
 
 import FirebladeECS
 
-class EmptyComponent: Component {
+class EmptyComponent: Component, @unchecked Sendable {
 }
 
-final class Optionals: Component, DefaultInitializable {
+final class Optionals: Component, DefaultInitializable, @unchecked Sendable {
     var int: Int?
     var float: Float?
     var string: String?
@@ -33,7 +33,7 @@ extension Optionals: Equatable {
     }
 }
 
-final class Name: Component, DefaultInitializable {
+final class Name: Component, DefaultInitializable, @unchecked Sendable {
     var name: String
     init(name: String) {
         self.name = name
@@ -43,8 +43,42 @@ final class Name: Component, DefaultInitializable {
         self.init(name: "")
     }
 }
+extension Name: Codable { }
 
-final class Position: Component, DefaultInitializable {
+final class Comp1: Component, @unchecked Sendable, Codable {
+    var value: Int
+    init(_ value: Int) { self.value = value }
+}
+final class Comp2: Component, @unchecked Sendable, Codable {
+    var value: Int
+    init(_ value: Int) { self.value = value }
+}
+final class Comp3: Component, @unchecked Sendable, Codable {
+    var value: Int
+    init(_ value: Int) { self.value = value }
+}
+final class Comp4: Component, @unchecked Sendable, Codable {
+    var value: Int
+    init(_ value: Int) { self.value = value }
+}
+final class Comp5: Component, @unchecked Sendable, Codable {
+    var value: Int
+    init(_ value: Int) { self.value = value }
+}
+final class Comp6: Component, @unchecked Sendable, Codable {
+    var value: Int
+    init(_ value: Int) { self.value = value }
+}
+final class Comp7: Component, @unchecked Sendable, Codable {
+    var value: Int
+    init(_ value: Int) { self.value = value }
+}
+final class Comp8: Component, @unchecked Sendable, Codable {
+    var value: Int
+    init(_ value: Int) { self.value = value }
+}
+
+final class Position: Component, DefaultInitializable, @unchecked Sendable {
     var x: Int
     var y: Int
 
@@ -59,7 +93,7 @@ final class Position: Component, DefaultInitializable {
 }
 extension Position: Codable { }
 
-final class Velocity: Component, DefaultInitializable {
+final class Velocity: Component, DefaultInitializable, @unchecked Sendable {
     var a: Float
 
     init(a: Float) {
@@ -71,7 +105,7 @@ final class Velocity: Component, DefaultInitializable {
     }
 }
 
-final class Party: Component {
+final class Party: Component, @unchecked Sendable {
     var partying: Bool
 
     init(partying: Bool) {
@@ -80,7 +114,7 @@ final class Party: Component {
 }
 extension Party: Codable { }
 
-final class Color: Component {
+final class Color: Component, @unchecked Sendable {
     var r: UInt8
     var g: UInt8
     var b: UInt8
@@ -93,7 +127,7 @@ final class Color: Component {
 }
 extension Color: Codable { }
 
-class Index: Component {
+class Index: Component, @unchecked Sendable {
     var index: Int
 
     init(index: Int) {
@@ -101,7 +135,7 @@ class Index: Component {
     }
 }
 
-final class MyComponent: Component {
+final class MyComponent: Component, Codable, @unchecked Sendable {
     var name: String
     var flag: Bool
 
@@ -110,10 +144,8 @@ final class MyComponent: Component {
         self.flag = flag
     }
 }
-extension MyComponent: Decodable { }
-extension MyComponent: Encodable { }
 
-final class YourComponent: Component {
+final class YourComponent: Component, @unchecked Sendable {
     var number: Float
 
     init(number: Float) {
@@ -123,13 +155,13 @@ final class YourComponent: Component {
 extension YourComponent: Decodable { }
 extension YourComponent: Encodable { }
 
-final class SingleGameState: SingleComponent {
+final class SingleGameState: SingleComponent, @unchecked Sendable {
     var shouldQuit: Bool = false
     var playerHealth: Int = 67
 }
 
 class ExampleSystem {
-    private let family: Family2<Position, Velocity>
+    private let family: Family<Position, Velocity>
 
     init(nexus: Nexus) {
         family = nexus.family(requiresAll: Position.self, Velocity.self, excludesAll: EmptyComponent.self)
@@ -145,7 +177,7 @@ class ExampleSystem {
 
 class ColorSystem {
     let nexus: Nexus
-    lazy var colors = nexus.family(requires: Color.self)
+    lazy var colors = nexus.family(requiresAll: Color.self)
 
     init(nexus: Nexus) {
         self.nexus = nexus
@@ -162,12 +194,12 @@ class ColorSystem {
 }
 
 class PositionSystem {
-    let positions: Family1<Position>
+    let positions: Family<Position>
 
     var velocity: Double = 4.0
 
     init(nexus: Nexus) {
-        positions = nexus.family(requires: Position.self)
+        positions = nexus.family(requiresAll: Position.self)
     }
 
     func randNorm() -> Double {

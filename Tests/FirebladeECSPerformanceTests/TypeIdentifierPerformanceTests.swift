@@ -5,6 +5,7 @@
 //  Created by Christian Treffs on 05.10.19.
 //
 
+#if FRB_ENABLE_BENCHMARKS
 #if os(macOS)
 import FirebladeECS
 import XCTest
@@ -93,5 +94,6 @@ final class TypeIdentifierPerformanceTests: XCTestCase {
     }
 }
 #else
-#warning("Skipping TypeIdentifierPerformanceTests tests")
+// #warning("Skipping TypeIdentifierPerformanceTests tests")
+#endif
 #endif

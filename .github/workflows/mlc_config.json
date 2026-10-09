@@ -1,0 +1,23 @@
+{
+    "ignorePatterns": [
+        {
+            "pattern": "^http://localhost"
+        },
+        {
+            "pattern": "swiftpackageindex.com"
+        },
+        {
+            "pattern": "^\\./tracks/"
+        }
+    ],
+    "httpHeaders": [
+        {
+            "urls": [
+                "https://github.com"
+            ],
+            "headers": {
+                "Authorization": "Bearer GITHUB_TOKEN"
+            }
+        }
+    ]
+}

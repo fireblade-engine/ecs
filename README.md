@@ -4,14 +4,14 @@
 [![Linux](https://github.com/fireblade-engine/ecs/actions/workflows/ci-linux.yml/badge.svg)](https://github.com/fireblade-engine/ecs/actions/workflows/ci-linux.yml)
 [![Windows](https://github.com/fireblade-engine/ecs/actions/workflows/ci-windows.yml/badge.svg)](https://github.com/fireblade-engine/ecs/actions/workflows/ci-windows.yml)
 [![WASM](https://github.com/fireblade-engine/ecs/actions/workflows/ci-wasm.yml/badge.svg)](https://github.com/fireblade-engine/ecs/actions/workflows/ci-wasm.yml)
-[![documentation](https://github.com/fireblade-engine/ecs/workflows/Documentation/badge.svg)](https://github.com/fireblade-engine/ecs/wiki)  
+[![documentation](https://github.com/fireblade-engine/ecs/workflows/Documentation/badge.svg)](https://fireblade-engine.github.io/ecs)  
 [![codecov](https://codecov.io/gh/fireblade-engine/ecs/branch/master/graph/badge.svg)](https://codecov.io/gh/fireblade-engine/ecs)
 [![spi-swift-versions](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Ffireblade-engine%2Fecs%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/fireblade-engine/ecs)
 [![spi-swift-platforms](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Ffireblade-engine%2Fecs%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/fireblade-engine/ecs)
 
-This is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component System](https://en.wikipedia.org/wiki/Entity_component_system) implementation in Swift. It is developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
+This is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component System](https://en.wikipedia.org/wiki/Entity_component_system) implementation in Swift. The optional `FirebladeECSMacros` product, which provides the [component macro](#-component-macro), depends on [swift-syntax](https://github.com/swiftlang/swift-syntax). It is developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
 
-See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) or have a look at [documentation in the wiki](https://github.com/fireblade-engine/ecs/wiki) to get started.
+See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) or have a look at [documentation](https://fireblade-engine.github.io/ecs) to get started.
 
 ## 🚀 Getting Started
 
@@ -25,19 +25,19 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### 💻 Installing
 
-Fireblade ECS is available for all platforms that support [Swift 5.8](https://swift.org/) and higher and the [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager).
+Fireblade ECS is available for all platforms that support [Swift 6.1](https://swift.org/) and higher and the [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager).
 
 Extend the following lines in your `Package.swift` file or use it to create a new project.
 
 ```swift
-// swift-tools-version:5.8
+// swift-tools-version:6.1
 
 import PackageDescription
 
 let package = Package(
     name: "YourPackageName",
     dependencies: [
-        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.17.5")
+        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "1.2.0")
     ],
     targets: [
         .target(
@@ -227,14 +227,68 @@ let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
 
 ```
 
+### 🧩 Component Macro
+
+The `FirebladeECSMacros` product provides the `@Component` macro. It turns a `final class` into a component and implements a set of component protocols from its stored properties, so you don't have to write that code by hand:
+
+| Protocol | Generated | Enables |
+| --- | --- | --- |
+| `RegistrableComponent` | stable `componentTypeName` (fully qualified type name; declare `static let componentTypeName` to override it) | `nexus.register(_:)`, `nexus.registeredComponentTypes`, `nexus.componentType(named:)` |
+| `CloneableComponent` | `init(cloning:context:)`, `clone(context:)` | `entity.clone()`, `nexus.clone(entities:)`, `nexus.clone(into:)` with remapped entity references |
+| `SerializableComponent` | `CodingKeys`, `init(from:)`, `encode(to:)` | `nexus.encodeSnapshot(using:handling:)`, `nexus.decodeSnapshot(from:using:)` |
+| `InspectableComponent` | `componentProperties` (name, type and key path for each property) | generic inspection, e.g. in editors |
+| `DefaultInitializable` | `init()` if every stored property has a default value | `entity[\Position.x] = 1`, state machines |
+
+Add the product to your target:
+
+```swift
+.target(
+    name: "YourTargetName",
+    dependencies: [.product(name: "FirebladeECSMacros", package: "ecs")])
+```
+
+```swift
+import FirebladeECSMacros
+
+@Component
+final class Transform: @unchecked Sendable {
+    var position: SIMD3<Float> = .zero
+    var parent: Entity?
+    @ComponentIgnored var cachedMatrix: [Float] = []  // still cloned, but not serialized or inspected
+}
+
+@Component(excluding: .serializable)  // runtime-only component
+final class RenderHandle: @unchecked Sendable {
+    var handle: Int = 0
+}
+
+let nexus = Nexus()
+try nexus.register([Transform.self, RenderHandle.self])
+
+// Clone a whole world; entity references (`parent`) are remapped to the clones.
+let playMode = Nexus()
+try nexus.clone(into: playMode)
+
+// Export and import all serializable components, keyed by their stable type names.
+var encoder = JSONEncoder()
+let data = try nexus.encodeSnapshot(using: &encoder, handling: .skip)
+var decoder = JSONDecoder()
+try playMode.decodeSnapshot(from: data, using: &decoder)
+```
+
+Component types are registered automatically the first time an instance is assigned. Register them explicitly before decoding snapshots that reference them. All protocols can also be implemented by hand without the macro.
+
+Snapshots start with a `formatVersion` and keep the original entity identifiers. Decoding creates new entities, remaps entity references to them, and rejects snapshots written in a newer format version.
+
 ## 🧪 Demo
 
 See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) to get started.
 
 ## 📖 Documentation
 
-Consult the [wiki](https://github.com/fireblade-engine/ecs/wiki) for in-depth [documentation](https://github.com/fireblade-engine/ecs/wiki).
+Consult the [online documentation](https://fireblade-engine.github.io/ecs), or preview it locally:
 
+- `make preview-docs`
 
 ## 💁 How to contribute
 

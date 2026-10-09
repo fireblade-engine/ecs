@@ -17,6 +17,8 @@ public struct EntityIdentifier {
     /// The entity identifier.
     public let id: Identifier
 
+    /// Initializes a new entity identifier.
+    /// - Parameter id: The unique raw identifier.
     @inlinable
     public init(_ id: Identifier) {
         self.init(rawValue: id)
@@ -25,12 +27,18 @@ public struct EntityIdentifier {
 
 extension EntityIdentifier: Equatable {}
 extension EntityIdentifier: Hashable {}
+extension EntityIdentifier: Sendable {}
 
 extension EntityIdentifier: RawRepresentable {
     /// The entity identifier represented as a raw value.
     @inline(__always)
-    public var rawValue: Identifier { id }
+    public var rawValue: Identifier {
+        id
+    }
 
+    /// Initializes an entity identifier from a raw value.
+    /// - Parameter rawValue: The raw identifier value.
+    /// - Complexity: O(1)
     @inlinable
     public init(rawValue: Identifier) {
         id = rawValue
@@ -38,6 +46,9 @@ extension EntityIdentifier: RawRepresentable {
 }
 
 extension EntityIdentifier: ExpressibleByIntegerLiteral {
+    /// Initializes an entity identifier from an integer literal.
+    /// - Parameter value: The integer literal value.
+    /// - Complexity: O(1)
     public init(integerLiteral value: Identifier) {
         self.init(value)
     }
@@ -47,6 +58,7 @@ extension EntityIdentifier {
     /// Invalid entity identifier
     ///
     /// Used to represent an invalid entity identifier.
+    /// - Complexity: O(1)
     public static let invalid = EntityIdentifier(.max)
 }
 
@@ -56,6 +68,9 @@ extension EntityIdentifier {
     /// This is a convenience property for collection indexing and does not represent the raw identifier.
     ///
     /// Use `id` or `rawValue` instead.
+    /// - Complexity: O(1)
     @inline(__always)
-    public var index: Int { Int(id) }
+    public var index: Int {
+        Int(id)
+    }
 }

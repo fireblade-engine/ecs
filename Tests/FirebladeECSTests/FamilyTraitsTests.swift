@@ -6,32 +6,21 @@
 //
 
 import FirebladeECS
-import XCTest
+import Testing
 
-class FamilyTraitsTests: XCTestCase {
-    var nexus: Nexus!
-
-    override func setUp() {
-        super.setUp()
-        nexus = Nexus()
-    }
-
-    override func tearDown() {
-        nexus = nil
-        super.tearDown()
-    }
-
-    func testTraitCommutativity() {
+@Suite struct FamilyTraitsTests {
+    @Test func traitCommutativity() {
         let t1 = FamilyTraitSet(requiresAll: [Position.self, Velocity.self],
                                 excludesAll: [Name.self])
         let t2 = FamilyTraitSet(requiresAll: [Velocity.self, Position.self],
                                 excludesAll: [Name.self])
 
-        XCTAssertEqual(t1, t2)
-        XCTAssertEqual(t1.hashValue, t2.hashValue)
+        #expect(t1 == t2)
+        #expect(t1.hashValue == t2.hashValue)
     }
 
-    func testTraitMatching() {
+    @Test func traitMatching() {
+        let nexus = Nexus()
         let a = nexus.createEntity()
         a.assign(Position(x: 1, y: 2))
         a.assign(Name(name: "myName"))
@@ -43,7 +32,7 @@ class FamilyTraitsTests: XCTestCase {
 
         let isMatch = nexus.family(requiresAll: Position.self, Velocity.self)
 
-        XCTAssertFalse(noMatch.canBecomeMember(a))
-        XCTAssertTrue(isMatch.canBecomeMember(a))
+        #expect(!noMatch.canBecomeMember(a))
+        #expect(isMatch.canBecomeMember(a))
     }
 }

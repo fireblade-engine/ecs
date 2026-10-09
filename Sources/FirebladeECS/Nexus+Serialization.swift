@@ -51,21 +51,6 @@
         }
     }
 
-    extension EntityIdentifier: Encodable {
-        public func encode(to encoder: Encoder) throws {
-            var container = encoder.singleValueContainer()
-            try container.encode(id)
-        }
-    }
-
-    extension EntityIdentifier: Decodable {
-        public init(from decoder: Decoder) throws {
-            let container = try decoder.singleValueContainer()
-            let id = try container.decode(UInt32.self)
-            self.init(id)
-        }
-    }
-
     struct SNexus {
         let version: Version
         let entities: [EntityIdentifier: Set<ComponentIdentifier.StableId>]
@@ -88,9 +73,11 @@
     extension SNexus: ComponentEncoding {
         static func encode(component: Component, to encoder: Encoder) throws {
             var container = encoder.singleValueContainer()
-            let bytes = withUnsafeBytes(of: component) {
-                Data(bytes: $0.baseAddress!, count: MemoryLayout.stride(ofValue: component))
-            }
+            // Use an explicitly typed pointer so Swift 6 does not implicitly open the existential to its concrete class reference.
+            let pointer = UnsafeMutablePointer<any Component>.allocate(capacity: 1)
+            pointer.initialize(to: component)
+            defer { pointer.deinitialize(count: 1); pointer.deallocate() }
+            let bytes = Data(bytes: pointer, count: MemoryLayout<any Component>.stride)
             try container.encode(bytes)
         }
     }

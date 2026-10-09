@@ -1,0 +1,111 @@
+name: iOS
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+jobs:
+  ios:
+    name: iOS (Swift ${{ matrix.swift }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # xcodebuild must use the Swift toolchain bundled with the selected
+          # Xcode: a standalone toolchain cannot load an SDK built by a newer
+          # compiler. Swift 6.1 therefore uses Xcode 16.4 (Swift 6.1.x,
+          # iOS 18.5 SDK) on macos-15 instead of a setup-swift toolchain.
+          - swift: "6.1"
+            runner: "macos-15"
+            xcode: "16.4"
+          # Empty xcode keeps the runner image's default Xcode.
+          - swift: "6.2"
+            runner: "macos-latest"
+            xcode: ""
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Select Xcode
+        if: matrix.xcode != ''
+        run: |
+          DEVELOPER_DIR="/Applications/Xcode_${{ matrix.xcode }}.app/Contents/Developer"
+          test -d "$DEVELOPER_DIR"
+          echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
+
+      - name: Show Toolchain
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Verify Swift Version
+        if: matrix.xcode != ''
+        run: |
+          swift --version 2>&1 | grep -q "Apple Swift version ${{ matrix.swift }}" || {
+            echo "::error::Selected Xcode ${{ matrix.xcode }} does not provide Swift ${{ matrix.swift }}"
+            exit 1
+          }
+
+      - name: Resolve Package Dependencies
+        run: swift package resolve
+
+      - name: Select Latest Simulator
+        id: select_sim
+        run: |
+          AVAILABLE_DEVICES=$(xcrun simctl list devices available)
+          # Try to find an iPhone
+          DEVICE_ID=$(echo "$AVAILABLE_DEVICES" | grep "iPhone" | tail -n 1 | grep -oE '[0-9A-F-]{36}')
+          
+          if [ -z "$DEVICE_ID" ]; then
+            # Fallback to any available device (e.g. iPad)
+            DEVICE_ID=$(echo "$AVAILABLE_DEVICES" | grep -v "Devices" | grep -v "\-\-" | tail -n 1 | grep -oE '[0-9A-F-]{36}')
+          fi
+          
+          if [ -n "$DEVICE_ID" ]; then
+            echo "Selected device ID: $DEVICE_ID"
+            echo "destination=platform=iOS Simulator,id=$DEVICE_ID" >> "$GITHUB_OUTPUT"
+          else
+            echo "No device found. Defaulting to generic latest iOS Simulator."
+            echo "destination=platform=iOS Simulator,OS=latest" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Select Test Scheme
+        id: select_scheme
+        run: |
+          # With a single library product, Xcode's generated FirebladeECS scheme
+          # includes the test targets. With more than one product, the
+          # per-product schemes have no test action and the tests live in the
+          # aggregate FirebladeECS-Package scheme.
+          SCHEMES=$(xcodebuild -list -json | python3 -c 'import json,sys; d=json.load(sys.stdin); print("\n".join((d.get("workspace") or d.get("project"))["schemes"]))')
+          echo "Available schemes:"
+          echo "$SCHEMES"
+          if echo "$SCHEMES" | grep -qx "FirebladeECS-Package"; then
+            SCHEME="FirebladeECS-Package"
+          elif echo "$SCHEMES" | grep -qx "FirebladeECS"; then
+            SCHEME="FirebladeECS"
+          else
+            echo "::error::Neither FirebladeECS-Package nor FirebladeECS scheme found"
+            exit 1
+          fi
+          echo "Selected scheme: $SCHEME"
+          echo "scheme=$SCHEME" >> "$GITHUB_OUTPUT"
+
+      - name: Run Tests (iOS)
+        # Warnings are errors only for this package's targets. Xcode builds package dependencies
+        # (e.g. swift-syntax) with SWIFT_SUPPRESS_WARNINGS=YES, which conflicts with -warnings-as-errors,
+        # so the setting is derived per target from SWIFT_SUPPRESS_WARNINGS.
+        run: |
+          xcodebuild test \
+            -scheme "${{ steps.select_scheme.outputs.scheme }}" \
+            -destination "${{ steps.select_sim.outputs.destination }}" \
+            -configuration Release \
+            -skipPackagePluginValidation \
+            ENABLE_TESTABILITY=YES \
+            'SWIFT_TREAT_WARNINGS_AS_ERRORS=$(ECS_WARNINGS_AS_ERRORS_$(SWIFT_SUPPRESS_WARNINGS))' \
+            ECS_WARNINGS_AS_ERRORS_NO=YES \
+            ECS_WARNINGS_AS_ERRORS_YES=NO

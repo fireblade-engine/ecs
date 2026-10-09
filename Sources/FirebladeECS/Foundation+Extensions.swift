@@ -14,8 +14,10 @@
     extension JSONDecoder: TopLevelDecoder {}
 
     #if swift(>=6.2)
+        /// The value type of `userInfo` dictionaries on Foundation's coders; `any Sendable` from Swift 6.2 on.
         public typealias UserInfoValue = any Sendable
     #else
+        /// The value type of `userInfo` dictionaries on Foundation's coders; `Any` before Swift 6.2.
         public typealias UserInfoValue = Any
     #endif
 

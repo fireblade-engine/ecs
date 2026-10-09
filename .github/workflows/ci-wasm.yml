@@ -42,6 +42,10 @@ jobs:
             exit 1
           }
 
+      # The wasmtime release is a .tar.xz; the swift image ships without xz.
+      - name: Install xz
+        run: apt-get update -q && apt-get install -yq --no-install-recommends xz-utils
+
       - uses: bytecodealliance/actions/wasmtime/setup@v1
 
       - name: Install Swift SDK

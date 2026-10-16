@@ -1,22 +1,48 @@
 // swift-tools-version: 6.1
 import CompilerPluginSupport
+import Foundation
 import PackageDescription
 
 /// Platforms that run macro expansion tests. The expansion tests import the macro implementation,
 /// which is only available where the compiler itself runs, not on iOS, tvOS, watchOS or WebAssembly.
 let macroHostPlatforms: [Platform] = [.macOS, .linux, .windows]
 
-/// Macro host platforms where the expansion tests reach the macro implementation through the macro target.
+/// Platforms that link the macro support library into the macro test targets when `linksMacroSupport` is set.
+/// Besides the macro host platforms, Xcode builds a testable copy of the macro target into Apple platform test
+/// bundles, which needs the support library at link time. WebAssembly builds don't.
+let macroSupportLinkPlatforms: [Platform] = macroHostPlatforms + [.iOS, .tvOS, .watchOS, .visionOS, .macCatalyst]
+
+/// Whether the macro tests link the macro support library instead of depending on the macro target.
+///
 /// SwiftPM uses the swift-syntax prebuilt only for macro targets and test targets that depend on a macro target.
 /// A test target that links swift-syntax or FirebladeECSMacrosSupport without a macro target dependency makes it
 /// build swift-syntax from source for the whole package graph, even when a platform condition excludes the
-/// dependency. Windows is left out because SwiftPM 6.1 links the plugin's main symbol into test bundles that
-/// depend on a macro target. Xcode builds a test target with a macro dependency for the host only, so the iOS
-/// workflow skips the expansion tests; they compile to nothing on iOS, tvOS, watchOS and WebAssembly anyway.
-let macroTargetTestPlatforms: [Platform] = [.macOS, .linux]
+/// dependency. So by default the expansion tests depend on the macro target and nothing links the support library.
+///
+/// Builds where that layout fails link the support library instead (and build swift-syntax from source):
+/// - Windows hosts: SwiftPM 6.1 links the plugin's `main` into test bundles that depend on a macro target.
+/// - Xcode builds for iOS, tvOS, watchOS and visionOS (Xcode 16 and 26) and WebAssembly cross builds: the CI
+///   workflows set `FIREBLADE_ECS_LINK_MACRO_SUPPORT=1`, because the manifest cannot see the destination.
+#if os(Windows)
+let linksMacroSupport = true
+#else
+let linksMacroSupport = ProcessInfo.processInfo.environment["FIREBLADE_ECS_LINK_MACRO_SUPPORT"] == "1"
+#endif
 
-/// Macro host platforms where the expansion tests link the macro support library directly instead.
-let macroSupportLinkPlatforms: [Platform] = [.windows]
+/// Dependencies of the integration tests, which use the macro like a client package does.
+let macroIntegrationTestDependencies: [Target.Dependency] = linksMacroSupport
+    ? ["FirebladeECSMacros", .target(name: "FirebladeECSMacrosSupport", condition: .when(platforms: macroSupportLinkPlatforms))]
+    : ["FirebladeECSMacros"]
+
+/// Dependencies of the expansion tests, which run the macro implementation through swift-syntax's macro
+/// expansion test support. The test sources compile only on `macroHostPlatforms`.
+let macroExpansionTestDependencies: [Target.Dependency] = [
+    linksMacroSupport
+        ? .target(name: "FirebladeECSMacrosSupport", condition: .when(platforms: macroSupportLinkPlatforms))
+        : .target(name: "FirebladeECSMacrosImpl", condition: .when(platforms: [.macOS, .linux])),
+    .product(name: "SwiftSyntaxMacroExpansion", package: "swift-syntax", condition: .when(platforms: macroHostPlatforms)),
+    .product(name: "SwiftSyntaxMacrosGenericTestSupport", package: "swift-syntax", condition: .when(platforms: macroHostPlatforms))
+]
 
 let package = Package(
     name: "FirebladeECS",
@@ -57,21 +83,11 @@ let package = Package(
         .target(name: "FirebladeECSMacros",
                 dependencies: ["FirebladeECS", "FirebladeECSMacrosImpl"],
                 swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
-        // Integration tests use the macro like a client package does. They run on every platform and must not
-        // depend on swift-syntax, so that the swift-syntax prebuilt stays usable (see macroTargetTestPlatforms).
         .testTarget(name: "FirebladeECSMacrosTests",
-                    dependencies: ["FirebladeECSMacros"],
+                    dependencies: macroIntegrationTestDependencies,
                     swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
-        // Expansion tests run the macro implementation through swift-syntax's macro expansion test support.
         .testTarget(name: "FirebladeECSMacrosExpansionTests",
-                    dependencies: [
-                        .target(name: "FirebladeECSMacrosImpl", condition: .when(platforms: macroTargetTestPlatforms)),
-                        .target(name: "FirebladeECSMacrosSupport", condition: .when(platforms: macroSupportLinkPlatforms)),
-                        .product(name: "SwiftSyntaxMacroExpansion", package: "swift-syntax",
-                                 condition: .when(platforms: macroHostPlatforms)),
-                        .product(name: "SwiftSyntaxMacrosGenericTestSupport", package: "swift-syntax",
-                                 condition: .when(platforms: macroHostPlatforms))
-                    ],
+                    dependencies: macroExpansionTestDependencies,
                     swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
         .testTarget(name: "FirebladeECSTests",
                     dependencies: ["FirebladeECS"],

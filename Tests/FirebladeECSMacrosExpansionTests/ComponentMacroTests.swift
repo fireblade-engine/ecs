@@ -1,6 +1,6 @@
 //
 //  ComponentMacroTests.swift
-//  FirebladeECSMacrosTests
+//  FirebladeECSMacrosExpansionTests
 //
 //  Created by Christian Treffs on 08.10.26.
 //

@@ -16,6 +16,9 @@ jobs:
     name: iOS (Swift ${{ matrix.swift }})
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 45
+    env:
+      # Xcode links a testable copy of the macro target into iOS test bundles; see linksMacroSupport in Package.swift.
+      FIREBLADE_ECS_LINK_MACRO_SUPPORT: "1"
     strategy:
       fail-fast: false
       matrix:

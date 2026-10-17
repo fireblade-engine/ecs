@@ -63,7 +63,7 @@ import Testing
                 }
             }
 
-            extension Velocity: FirebladeECS.RegistrableComponent, FirebladeECS.CloneableComponent, FirebladeECS.SerializableComponent, FirebladeECS.InspectableComponent, FirebladeECS.DefaultInitializable {
+            extension Velocity: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.CloneableComponent, FirebladeECS.SerializableComponent, FirebladeECS.InspectableComponent, FirebladeECS.DefaultInitializable {
             }
             """
         )
@@ -138,7 +138,7 @@ import Testing
                 }
             }
 
-            extension Mixed: FirebladeECS.RegistrableComponent, FirebladeECS.CloneableComponent, FirebladeECS.InspectableComponent {
+            extension Mixed: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.CloneableComponent, FirebladeECS.InspectableComponent {
             }
             """
         )
@@ -185,7 +185,7 @@ import Testing
                 }
             }
 
-            extension Health: FirebladeECS.RegistrableComponent, FirebladeECS.SerializableComponent {
+            extension Health: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.SerializableComponent {
             }
             """
         )
@@ -222,7 +222,7 @@ import Testing
                 }
             }
 
-            extension Tag: FirebladeECS.RegistrableComponent, FirebladeECS.CloneableComponent, FirebladeECS.SerializableComponent, FirebladeECS.InspectableComponent, FirebladeECS.DefaultInitializable {
+            extension Tag: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.CloneableComponent, FirebladeECS.SerializableComponent, FirebladeECS.InspectableComponent, FirebladeECS.DefaultInitializable {
             }
             """
         )
@@ -267,7 +267,7 @@ import Testing
                 }
             }
 
-            extension Custom: FirebladeECS.RegistrableComponent, FirebladeECS.CloneableComponent, FirebladeECS.SerializableComponent {
+            extension Custom: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.CloneableComponent, FirebladeECS.SerializableComponent {
             }
             """
         )
@@ -294,7 +294,7 @@ import Testing
                 }
             }
 
-            extension Counter: FirebladeECS.RegistrableComponent, FirebladeECS.DefaultInitializable {
+            extension Counter: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.DefaultInitializable {
             }
             """
         )
@@ -344,7 +344,7 @@ import Testing
                 var transient: Int
             }
 
-            extension Broken: FirebladeECS.RegistrableComponent {
+            extension Broken: FirebladeECS.Component, FirebladeECS.RegistrableComponent {
             }
             """,
             diagnostics: [
@@ -376,7 +376,7 @@ import Testing
                 }
             }
 
-            extension Untyped: FirebladeECS.RegistrableComponent, FirebladeECS.DefaultInitializable {
+            extension Untyped: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.DefaultInitializable {
             }
             """,
             diagnostics: [

@@ -17,7 +17,7 @@ import Testing
 let componentMacroSpecs: [String: MacroSpec] = [
     "Component": MacroSpec(
         type: ComponentMacro.self,
-        conformances: ["RegistrableComponent", "CloneableComponent", "SerializableComponent", "InspectableComponent", "DefaultInitializable"]
+        conformances: ["Component", "RegistrableComponent", "CloneableComponent", "SerializableComponent", "InspectableComponent", "DefaultInitializable"]
     ),
     "ComponentIgnored": MacroSpec(type: ComponentIgnoredMacro.self)
 ]

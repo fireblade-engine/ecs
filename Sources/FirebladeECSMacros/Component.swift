@@ -37,7 +37,8 @@
 )
 @attached(
     extension,
-    conformances: RegistrableComponent, CloneableComponent, SerializableComponent, InspectableComponent, DefaultInitializable
+    conformances: Component, RegistrableComponent, CloneableComponent, SerializableComponent, InspectableComponent,
+    DefaultInitializable
 )
 public macro Component(excluding: ComponentMacroFeatures = []) = #externalMacro(module: "FirebladeECSMacrosImpl", type: "ComponentMacro")
 

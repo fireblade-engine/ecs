@@ -195,4 +195,25 @@ let benchmarks: @Sendable () -> Void = {
             )
         }
     }
+
+    // One sample per run: the family must be new, so each run sets up its own nexus outside the measurement.
+    Benchmark("FamilyCreation", configuration: .init(scalingFactor: .one)) { benchmark in
+        let nexus = setUpNexus()
+        benchmark.startMeasurement()
+        blackHole(nexus.family(requiresAll: Position.self, Velocity.self, excludesAll: Party.self))
+        benchmark.stopMeasurement()
+    }
+
+    Benchmark("EntitiesIteration") { benchmark in
+        let nexus = setUpNexus()
+        for _ in benchmark.scaledIterations {
+            blackHole(
+                nexus
+                    .makeEntitiesIterator()
+                    .forEach { (entity: Entity) in
+                        _ = entity
+                    }
+            )
+        }
+    }
 }

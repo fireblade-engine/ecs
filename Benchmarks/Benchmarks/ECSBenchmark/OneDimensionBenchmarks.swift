@@ -4,7 +4,7 @@ import FirebladeECS
 
 // derived from FirebladeECSPerformanceTests/TypedFamilyPerformanceTests.swift in the parent project
 
-let benchmarks = {
+let benchmarks: @Sendable () -> Void = {
     Benchmark("TraitMatching") { benchmark in
         let nexus = setUpNexus()
         let a = nexus.createEntity()
@@ -193,6 +193,49 @@ let benchmarks = {
                     _ = empty
                 }
             )
+        }
+    }
+
+    // One sample per run: the family must be new, so each run sets up its own nexus outside the measurement.
+    Benchmark("FamilyCreation", configuration: .init(scalingFactor: .one)) { benchmark in
+        let nexus = setUpNexus()
+        benchmark.startMeasurement()
+        blackHole(nexus.family(requiresAll: Position.self, Velocity.self, excludesAll: Party.self))
+        benchmark.stopMeasurement()
+    }
+
+    Benchmark("EntitiesIteration") { benchmark in
+        let nexus = setUpNexus()
+        for _ in benchmark.scaledIterations {
+            blackHole(
+                nexus
+                    .makeEntitiesIterator()
+                    .forEach { (entity: Entity) in
+                        _ = entity
+                    }
+            )
+        }
+    }
+
+    // Membership churn on an existing family: components leave and rejoin, entities are created and destroyed.
+    Benchmark("FamilyChurn") { benchmark in
+        let nexus = setUpNexus()
+        let family = nexus.family(requiresAll: Position.self, Velocity.self, excludesAll: Party.self)
+        let entities = Array(family.entities.prefix(1000))
+        for _ in benchmark.scaledIterations {
+            for entity in entities {
+                entity.remove(Velocity.self)
+            }
+            for entity in entities {
+                entity.set(Velocity(a: 3.14))
+            }
+            let spawned = (0 ..< 1000).map { index in
+                nexus.createEntity(with: Position(x: index, y: index), Velocity(a: 1))
+            }
+            for entity in spawned {
+                nexus.destroy(entity: entity)
+            }
+            blackHole(family.count)
         }
     }
 }

@@ -216,4 +216,26 @@ let benchmarks: @Sendable () -> Void = {
             )
         }
     }
+
+    // Membership churn on an existing family: components leave and rejoin, entities are created and destroyed.
+    Benchmark("FamilyChurn") { benchmark in
+        let nexus = setUpNexus()
+        let family = nexus.family(requiresAll: Position.self, Velocity.self, excludesAll: Party.self)
+        let entities = Array(family.entities.prefix(1000))
+        for _ in benchmark.scaledIterations {
+            for entity in entities {
+                entity.remove(Velocity.self)
+            }
+            for entity in entities {
+                entity.set(Velocity(a: 3.14))
+            }
+            let spawned = (0 ..< 1000).map { index in
+                nexus.createEntity(with: Position(x: index, y: index), Velocity(a: 1))
+            }
+            for entity in spawned {
+                nexus.destroy(entity: entity)
+            }
+            blackHole(family.count)
+        }
+    }
 }

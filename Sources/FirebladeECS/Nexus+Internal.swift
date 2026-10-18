@@ -133,8 +133,8 @@ extension Nexus {
     /// - Parameter traits: The traits defining the family.
     func update(familyMembership traits: FamilyTraitSet) {
         // FIXME: iterating all entities is costly for many entities
-        var iter = componentIdsByEntity.keys.makeIterator()
-        while let entityId = iter.next() {
+        // Ascending identifiers keep the member order independent of the per-process hash seed.
+        for entityId in componentIdsByEntity.keys.sorted(by: { $0.id < $1.id }) {
             update(membership: traits, for: entityId)
         }
     }

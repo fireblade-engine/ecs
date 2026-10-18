@@ -304,6 +304,8 @@ Before commiting code please ensure to run:
 
 - `make precommit`
 
+To measure runtime performance run `make benchmark` (see [Benchmarks/README.md](Benchmarks/README.md)).
+
 This project is currently maintained by [Christian Treffs](https://github.com/ctreffs).   
 See also the list of [contributors](https://github.com/fireblade-engine/ecs/contributors) who participated in this project.
 

@@ -4,7 +4,7 @@ import FirebladeECS
 
 // derived from FirebladeECSPerformanceTests/TypedFamilyPerformanceTests.swift in the parent project
 
-let benchmarks = {
+let benchmarks: @Sendable () -> Void = {
     Benchmark("TraitMatching") { benchmark in
         let nexus = setUpNexus()
         let a = nexus.createEntity()

@@ -37,9 +37,13 @@ extension Family {
     /// }
     /// ```
     ///
+    /// Specialization is disabled for this slow path: the Swift 6.4 SIL GenericSpecializer crashes on it in release builds
+    /// (`TypeSubstituter.transformPackElementType`).
+    ///
     /// - Complexity: O(N) where N is the number of members, plus one hash lookup per component type.
     @inlinable
     @_disfavoredOverload
+    @_semantics("optimize.sil.specialize.generic.never")
     public func forEach<each R: Component, each W: Component>(
         reading rTypes: repeat (each R).Type,
         writing wTypes: repeat (each W).Type,
@@ -54,16 +58,8 @@ extension Family {
         guard !members.isEmpty else {
             return
         }
-        let optionalReads = (repeat sparse.existing((each R).self, at: (each R).componentIndex))
-        let optionalWrites = (repeat sparse.existing((each W).self, at: (each W).componentIndex))
-        var complete = true
-        _ = (repeat complete = complete && (each optionalReads) != nil)
-        _ = (repeat complete = complete && (each optionalWrites) != nil)
-        guard complete else {
-            return
-        }
-        let reads = (repeat (each optionalReads).unsafelyUnwrapped)
-        let writes = (repeat (each optionalWrites).unsafelyUnwrapped)
+        let reads = (repeat Self.storage(in: sparse, (each R).self))
+        let writes = (repeat Self.storage(in: sparse, (each W).self))
         sparse.lockDepth += 1
         _ = (repeat sparse.beginWrite((each W).componentIndex))
         _ = (repeat sparse.requireReadable((each R).componentIndex))
@@ -99,7 +95,18 @@ extension Family {
         }
     }
 
+    /// The storage of a type that a non-empty family requires, so it exists.
     @inlinable
+    @_semantics("optimize.sil.specialize.generic.never")
+    static func storage<T: Component>(in sparse: Nexus.SparseSetStorage, _ type: T.Type) -> Nexus.ComponentStorage<T> {
+        guard let storage = sparse.existing(type, at: T.componentIndex) else {
+            preconditionFailure("member without a required component storage")
+        }
+        return storage
+    }
+
+    @inlinable
+    @_semantics("optimize.sil.specialize.generic.never")
     static func value<T: Component>(of storage: Nexus.ComponentStorage<T>, at key: UInt32) -> T {
         let slot = storage.slot(of: key)
         precondition(slot >= 0, "member without a required component")
@@ -107,6 +114,7 @@ extension Family {
     }
 
     @inlinable
+    @_semantics("optimize.sil.specialize.generic.never")
     static func address<T: Component>(in storage: Nexus.ComponentStorage<T>, at key: UInt32) -> UnsafeMutablePointer<T> {
         let slot = storage.slot(of: key)
         precondition(slot >= 0, "member without a required component")
@@ -114,11 +122,13 @@ extension Family {
     }
 
     @inlinable
+    @_semantics("optimize.sil.specialize.generic.never")
     static func load<T: Component>(_ pointer: UnsafeMutablePointer<T>) -> T {
         pointer.pointee
     }
 
     @inlinable
+    @_semantics("optimize.sil.specialize.generic.never")
     static func store<T: Component>(_ value: T, to pointer: UnsafeMutablePointer<T>) {
         pointer.pointee = value
     }

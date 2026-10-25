@@ -65,6 +65,9 @@ let package = Package(
         .package(url: "https://github.com/swiftlang/swift-syntax.git", "600.0.0" ..< "700.0.0")
     ],
     targets: [
+        // Spike S2 (storage protocol, sparse-set and archetype storages). Self-contained.
+        .target(name: "S2Storage",
+                swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
         .target(name: "FirebladeECS",
                 swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
         .target(name: "FirebladeECSMacrosSupport",

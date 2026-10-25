@@ -32,7 +32,33 @@ struct MacroRenamed {
     var value: Int = 0
 }
 
+@Component
+struct MacroMemberwise {
+    var x: Double = 0
+    var y: Double = 0
+}
+
+@Component
+struct MacroDeclaredInit {
+    var value: Int = 0
+
+    init(value: Int) {
+        self.value = value
+    }
+}
+
 @Suite struct ComponentMacroIntegrationTests {
+    @Test func structKeepsMemberwiseInitializer() throws {
+        let memberwise = MacroMemberwise(x: 1, y: 2)
+        #expect(memberwise.x == 1 && memberwise.y == 2)
+        #expect(MacroMemberwise().x == 0)
+        #expect(MacroDeclaredInit().value == 0)
+        #expect(MacroDeclaredInit(value: 4).value == 4)
+        let nexus = Nexus()
+        #expect(try nexus.register(MacroMemberwise.self).isDefaultInitializable)
+        #expect(try nexus.register(MacroDeclaredInit.self).isDefaultInitializable)
+    }
+
     @Test func implementsProtocols() throws {
         let nexus = Nexus()
         let transform = try nexus.register(MacroTransform.self)

@@ -281,6 +281,74 @@ import Testing
     }
 }
 
+@Suite struct ComponentMacroInitializerTests {
+    @Test func internalStructKeepsImplicitInitializers() {
+        assertComponentExpansion(
+            """
+            @Component(excluding: [.cloneable, .serializable, .inspectable])
+            struct Point {
+                var x: Double = 0
+            }
+            """,
+            expandedSource: """
+            struct Point {
+                var x: Double = 0
+            }
+
+            extension Point: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.DefaultInitializable {
+            }
+            """
+        )
+    }
+
+    @Test func structWithDeclaredInitializerGetsDefaultInit() {
+        assertComponentExpansion(
+            """
+            @Component(excluding: [.cloneable, .serializable, .inspectable])
+            struct Point {
+                var x: Double = 0
+                init(x: Double) {
+                    self.x = x
+                }
+            }
+            """,
+            expandedSource: """
+            struct Point {
+                var x: Double = 0
+                init(x: Double) {
+                    self.x = x
+                }
+
+                init() {
+                }
+            }
+
+            extension Point: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.DefaultInitializable {
+            }
+            """
+        )
+    }
+
+    @Test func structWithoutDefaultsHasNoDefaultInit() {
+        assertComponentExpansion(
+            """
+            @Component(excluding: [.cloneable, .serializable, .inspectable])
+            public struct Point {
+                public var x: Double
+            }
+            """,
+            expandedSource: """
+            public struct Point {
+                public var x: Double
+            }
+
+            extension Point: FirebladeECS.Component, FirebladeECS.RegistrableComponent {
+            }
+            """
+        )
+    }
+}
+
 @Suite struct ComponentMacroDiagnosticTests {
     @Test func rejectsClass() {
         assertComponentExpansion(

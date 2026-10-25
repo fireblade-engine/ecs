@@ -123,3 +123,7 @@ single.set(GameState(value: x))      // replaces the component, delivers Compone
 
 - ``ComponentSingletonProvider`` creates its value on first use and hands a copy of it to every entity. It used to hand the same instance to every entity, so a change through one entity was visible on all. Now each entity owns its copy. The name is kept for source compatibility; ComponentValueProvider would describe it better and may replace it.
 - Values have no identity, so a provider is identified by the provider object: ``ComponentInstanceProvider/identifier`` and ``ComponentSingletonProvider/identifier`` are unique per provider. When an entity changes state, a component stays only if both states share the same provider object (`withProvider(_:)`). Two ``ComponentInstanceProvider``s holding equal values are different providers and the component is removed and added again.
+
+### Spans
+
+New API, nothing to migrate. ``Nexus/componentSpan(reading:_:)``, ``Nexus/componentSpan(writing:_:)`` and ``Family/forEachComponentSpan(reading:writing:_:)`` hand out the components of a type as a `Span` or `MutableSpan` inside a closure: zero copy, bounds checked and unable to escape. The APIs are available on macOS 26, iOS 26, tvOS 26, watchOS 26 and visionOS 26; the package keeps its lower deployment targets, so guard calls with `if #available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)`. While the closure runs, structural changes and conflicting reads or writes stop the process with a message. See <doc:ReadingAndWritingComponents>.

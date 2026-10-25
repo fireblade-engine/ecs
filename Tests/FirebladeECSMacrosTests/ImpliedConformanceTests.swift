@@ -3,6 +3,7 @@
 //  FirebladeECSMacrosTests
 //
 
+import FirebladeECS
 import FirebladeECSMacros
 import Testing
 

@@ -5,6 +5,7 @@
 //  Created by Christian Treffs on 25.10.26.
 //
 
+import FirebladeECS
 import FirebladeECSMacros
 import Testing
 

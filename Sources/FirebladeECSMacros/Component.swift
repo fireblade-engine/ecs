@@ -5,6 +5,8 @@
 //  Created by Christian Treffs on 08.10.26.
 //
 
+import FirebladeECS
+
 /// Turns a struct or enum into a component and implements component protocols from its stored properties.
 ///
 /// ```swift

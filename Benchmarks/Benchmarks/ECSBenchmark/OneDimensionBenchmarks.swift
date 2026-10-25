@@ -78,6 +78,17 @@ let benchmarks: @Sendable () -> Void = {
             )
         }
     }
+    // Reads one component and changes another in place; like the benchmarks above, setup is part of the measurement.
+    Benchmark("FamilyWriteTwoComponents") { benchmark in
+        let nexus = setUpNexus()
+        let family = nexus.family(requiresAll: Position.self, Velocity.self, excludesAll: Party.self)
+        for _ in benchmark.scaledIterations {
+            family.forEach(reading: Velocity.self, writing: Position.self) { velocity, position in
+                position.x &+= Int(velocity.a)
+            }
+        }
+    }
+
     Benchmark("TypedFamilyEntityTwoComponents") { benchmark in
         let nexus = setUpNexus()
         let family = nexus.family(requiresAll: Position.self, Velocity.self, excludesAll: Party.self)
@@ -287,6 +298,33 @@ let benchmarks: @Sendable () -> Void = {
         let family = nexus.family(requiresAll: Position.self, Velocity.self, Name.self, excludesAll: Party.self)
         return { family.forEach { (position: Position, velocity: Velocity, name: Name) in
             blackHole(position); blackHole(velocity); blackHole(name)
+        } }
+    }
+
+    // forEach(reading:writing:): the same iteration as the variants above, by typed storage access.
+    iterationOnly("IterOnlyForEachOneComponent") { nexus in
+        let family = nexus.family(requires: Position.self, excludesAll: Party.self)
+        return { family.forEach(reading: Position.self) { position in blackHole(position) } }
+    }
+
+    iterationOnly("IterOnlyForEachReadWrite") { nexus in
+        let family = nexus.family(requiresAll: Position.self, Velocity.self, excludesAll: Party.self)
+        return { family.forEach(reading: Velocity.self, writing: Position.self) { velocity, position in
+            position.x &+= Int(velocity.a)
+        } }
+    }
+
+    iterationOnly("IterOnlyForEachTwoReadsOneWrite") { nexus in
+        let family = nexus.family(requiresAll: Position.self, Velocity.self, Color.self, excludesAll: Party.self)
+        return { family.forEach(reading: Velocity.self, Color.self, writing: Position.self) { velocity, color, position in
+            position.x &+= Int(velocity.a) &+ Int(color.r)
+        } }
+    }
+
+    iterationOnly("IterOnlyForEachFourReads") { nexus in
+        let family = nexus.family(requiresAll: Position.self, Velocity.self, Name.self, Color.self, excludesAll: Party.self)
+        return { family.forEach(reading: Position.self, Velocity.self, Name.self, Color.self) { position, velocity, name, color in
+            blackHole(position); blackHole(velocity); blackHole(name); blackHole(color)
         } }
     }
 }

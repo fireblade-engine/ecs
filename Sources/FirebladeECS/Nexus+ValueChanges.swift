@@ -106,7 +106,7 @@ extension Nexus {
     }
 
     /// Ends the access started by ``beginModify(_:for:)`` for a component that was moved out and not put back:
-    /// removes it, like ``Entity/remove(_:)-(Component.Type)``.
+    /// removes it, like ``Entity/remove(_:)-(ComponentIdentifier)``.
     @usableFromInline
     final func endModifyDiscarding<C: Component>(_: C.Type, for entityId: EntityIdentifier) {
         backend.endAccess(C.componentIndex)

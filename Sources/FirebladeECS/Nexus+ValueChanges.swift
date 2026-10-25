@@ -83,6 +83,38 @@ extension Nexus {
         return try modify(type, for: entityId, body)
     }
 
+    // MARK: Accessor support
+
+    /// Starts an in-place write access for a `_modify` accessor.
+    ///
+    /// Finish it with ``endModify(_:for:)`` or ``endModifyDiscarding(_:for:)``.
+    /// - Returns: The address of the component, or `nil` if the handle is stale or the entity has no such component.
+    @usableFromInline
+    final func beginModify<C: Component>(_ type: C.Type, for entityId: EntityIdentifier) -> UnsafeMutablePointer<C>? {
+        guard isAlive(entityId) else {
+            reportStaleHandle(entityId)
+            return nil
+        }
+        return backend.beginAccess(type, for: entityId)
+    }
+
+    /// Ends the access started by ``beginModify(_:for:)`` and emits ``ComponentModified``.
+    @usableFromInline
+    final func endModify<C: Component>(_: C.Type, for entityId: EntityIdentifier) {
+        backend.endAccess(C.componentIndex)
+        emitModified(C.self, for: entityId)
+    }
+
+    /// Ends the access started by ``beginModify(_:for:)`` for a component that was moved out and not put back:
+    /// removes it, like ``Entity/remove(_:)-(Component.Type)``.
+    @usableFromInline
+    final func endModifyDiscarding<C: Component>(_: C.Type, for entityId: EntityIdentifier) {
+        backend.endAccess(C.componentIndex)
+        backend.discardMovedOut(C.self, for: entityId)
+        update(familyMembership: entityId)
+        delegate?.nexusEvent(ComponentRemoved(component: C.identifier, from: entityId))
+    }
+
     /// Gives `body` write access to all components of a type as contiguous buffers and emits one
     /// ``ComponentsModified`` afterwards, not one event per entity.
     @usableFromInline

@@ -83,7 +83,8 @@ The entity API separates reading a copy, replacing and changing in place, see <d
 - Removing a component the entity does not have delivers no ``ComponentRemoved`` event any more.
 - ``Entity/modify(_:_:)`` and ``Entity/modify(_:default:_:)`` change a component in place. The entity subscripts `entity[Position.self]?.x += 1` and `entity[Counter.self, default: Counter()].value += 1` do the same.
 - The key path subscripts and ``Entity/set(value:for:)-(_,WritableKeyPath<Comp,Value>)`` take `WritableKeyPath` and change the stored component in place. That works for value types, not only for classes (the 1.x implementation wrote to a copy, which only worked because components were classes).
-- ``Entity/components(_:_:writing:_:_:)-(_,_,_,_,_)`` and its siblings change several components at once.
+- ``Entity/components(_:writing:_:)`` and its siblings (0 to 4 read and 0 to 4 written types) change several components at once.
+- ``Family/forEach(reading:writing:_:)`` updates the components of all family members in place and is much faster than iterating the family: `movers.forEach(reading: Velocity.self, writing: Position.self) { velocity, position in position.x += velocity.dx }`.
 - ``Entity`` holds its ``Nexus`` as `unowned(unsafe)`: copying an entity costs no reference counting, but using an entity after its nexus was deallocated is undefined behavior. Keep the nexus alive as long as you use its entities. It was a checked `unowned` reference before, which trapped.
 - While a `modify` closure or an in place subscript access runs, adding or removing components or entities of the same nexus, and reading or modifying the same component type, stop the process with a message such as `structural change while a scoped access is running`. Do such changes after the closure.
 
@@ -100,7 +101,7 @@ struct Position: Component { var x = 0, y = 0 }
 ```
 
 - Reading a component (`get`, `entity[Position.self]`, family iteration) returns a copy. Changing the copy does not change the stored component. Write with ``Entity/set(_:)-(Component)``, ``Entity/modify(_:_:)``, the entity subscripts or the key path subscripts.
-- Iteration hands out copies. `for var position in family { position.x += 1 }` compiles and silently changes nothing. Use `family.entities` and `entity.modify(Position.self) { $0.x += 1 }`, or `entityAndComponents` and `entity.set(...)`.
+- Iteration hands out copies. `for var position in family { position.x += 1 }` compiles and silently changes nothing. Use `family.forEach(writing: Position.self) { $0.x += 1 }`, or `family.entities` and `entity.modify(Position.self) { $0.x += 1 }`, or `entityAndComponents` and `entity.set(...)`.
 - Identity is gone. `===` between components, `ObjectIdentifier(component)` and `weak` or `unowned` references to a component do not compile for structs. Compare values (make the struct `Equatable`) and keep an ``Entity`` or ``EntityIdentifier`` to refer to a component.
 - Two entities no longer share a component instance: `set(sameValue)` on two entities stores two independent copies. Snapshots therefore never write `sharedComponents` any more; they are still read from format versions 1 and 2, each entity gets its own copy.
 - ``ComponentProperty/isWritable`` is true for every `WritableKeyPath`, not only for `ReferenceWritableKeyPath`.

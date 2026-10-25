@@ -70,6 +70,15 @@ let package = Package(
         // Spike S1 (family API with parameter packs). Self-contained, never merged.
         .target(name: "S1FamilyAPI",
                 swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
+        // Own target: the experimental Lifetimes feature is only enabled here.
+        .target(name: "S1EntityView",
+                dependencies: ["S1FamilyAPI"],
+                swiftSettings: [.enableExperimentalFeature("Lifetimes")]),
+        .testTarget(name: "S1EntityViewTests",
+                    dependencies: ["S1EntityView", "S1FamilyAPI"],
+                    swiftSettings: [.enableExperimentalFeature("Lifetimes")]),
+        .executableTarget(name: "S1Bench",
+                          dependencies: ["S1FamilyAPI", "FirebladeECS"]),
         .testTarget(name: "S1FamilyAPITests",
                     dependencies: ["S1FamilyAPI"],
                     swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),

@@ -390,4 +390,56 @@ import Testing
         )
     }
 }
+
+@Suite struct ComponentMacroStoredEntityTests {
+    @Test func suggestsEntityIdentifier() {
+        assertComponentExpansion(
+            """
+            @Component(excluding: [.cloneable, .serializable, .inspectable, .defaultInit])
+            struct Links {
+                var parent: Entity?
+                var children: [Entity]
+                var group: Set<Entity>
+                var named: [String: Entity]
+                var qualified: FirebladeECS.Entity!
+                var fine: EntityIdentifier?
+                var alias: EntityAlias
+                var x, y: Entity
+            }
+            """,
+            expandedSource: """
+            struct Links {
+                var parent: Entity?
+                var children: [Entity]
+                var group: Set<Entity>
+                var named: [String: Entity]
+                var qualified: FirebladeECS.Entity!
+                var fine: EntityIdentifier?
+                var alias: EntityAlias
+                var x, y: Entity
+            }
+
+            extension Links: FirebladeECS.Component, FirebladeECS.RegistrableComponent {
+            }
+            """,
+            diagnostics: [
+                entityDiagnostic(line: 3, column: 17),
+                entityDiagnostic(line: 4, column: 20),
+                entityDiagnostic(line: 5, column: 20),
+                entityDiagnostic(line: 6, column: 25),
+                entityDiagnostic(line: 7, column: 33),
+                entityDiagnostic(line: 10, column: 15)
+            ]
+        )
+    }
+
+    private func entityDiagnostic(line: Int, column: Int) -> DiagnosticSpec {
+        DiagnosticSpec(
+            message: "a component must not store an 'Entity'; store an 'EntityIdentifier', which stays valid when the component is copied, cloned or saved",
+            line: line,
+            column: column,
+            fixIts: [FixItSpec(message: "replace 'Entity' with 'EntityIdentifier'")]
+        )
+    }
+}
 #endif

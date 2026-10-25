@@ -206,6 +206,9 @@ extension ComponentMacro.Declaration {
                 guard isStored(binding) else {
                     continue
                 }
+                if let annotated = binding.typeAnnotation?.type {
+                    diagnostics.append(contentsOf: ComponentMacro.StoredEntity.tokens(in: annotated).map(ComponentMacro.StoredEntity.diagnostic(for:)))
+                }
                 guard !isLazy else {
                     diagnostics.append(Diagnostic(node: binding, message: ComponentMacro.DiagnosticKind.unsupportedLazyProperty))
                     continue

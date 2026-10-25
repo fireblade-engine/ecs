@@ -28,17 +28,19 @@ extension World {
     }
 }
 
-extension Entity: Equatable {
-    public static func == (lhs: borrowing Entity, rhs: borrowing Entity) -> Bool {
-        lhs.id == rhs.id
+#if compiler(>=6.3) // Equatable/Hashable on ~Escapable need a toolchain newer than 6.2.
+    extension Entity: Equatable {
+        public static func == (lhs: borrowing Entity, rhs: borrowing Entity) -> Bool {
+            lhs.id == rhs.id
+        }
     }
-}
 
-extension Entity: Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
+    extension Entity: Hashable {
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(id)
+        }
     }
-}
+#endif
 
 /// `extension Entity: CustomStringConvertible` fails on Swift 6.4: "type 'Entity' does not conform to protocol 'Escapable'".
 extension Entity {

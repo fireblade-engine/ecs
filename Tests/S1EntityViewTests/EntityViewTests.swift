@@ -14,11 +14,15 @@ struct Vel: S1Component { static let componentIndex = 1; var x = 0.0 }
         let entity = world.entity(id)
         #expect(entity.get(Pos.self)?.x == 3)
         // `#expect(a == b)` does not compile for a ~Escapable operand (Testing's __checkBinaryOperation needs Escapable).
+        #if compiler(>=6.3)
         let same = entity == world.entity(id)
         #expect(same)
+        #endif
         #expect(entity.description == "Entity(\(id))")
+        #if compiler(>=6.3)
         let sameHash = entity.hashValue == world.entity(id).hashValue
         #expect(sameHash)
+        #endif
     }
 
     @Test func closureFallback() {

@@ -18,6 +18,7 @@ Timing: `make build-release && .build/release/S1Bench`.
 - **`Mut<W>` is not needed** for correctness and not better: same SIL counts, same speed, and its safety features
   (`~Copyable`, `~Escapable`) cannot be combined with packs on 6.4. `_modify value` is not needed either: the
   `@dynamicMemberLookup` subscript leaves no key path in SIL (`site_MutValue` equals `site_Mut`).
+- Closures taking `Mut<W>` crash Swift 6.2 assert compilers (Windows 6.2.0+Asserts, WASM 6.2.1) in SILGen: `Assertion failed: (isLoadableOrOpaque(LV->getType())), function createLoad`; Mut tests are removed and the bench call sites are guarded with `#if compiler(>=6.3)`.
 
 ## Recommended D7 shape
 
@@ -102,6 +103,7 @@ shipped Mut is a plain pointer wrapper and can escape its step.
 | Closure fallback `withEntity(id) { (e: borrowing EntityScope) in }` without the feature (`~Copyable` scope, in `S1FamilyAPI`) | compiles, works |
 | `Equatable` | compiles (`==` takes `borrowing`); `#expect(a == b)` does not (Testing macro needs Escapable), use a local `let` |
 | `Hashable` | compiles |
+| `Equatable`/`Hashable` on Swift 6.2 | **fails**: `type 'Entity' does not conform to protocol 'Escapable'`; both conformances (and their tests) are guarded with `#if compiler(>=6.3)`, they need a toolchain newer than 6.2 |
 | `CustomStringConvertible` | **fails**: `type 'Entity' does not conform to protocol 'Escapable'` (plain `description` property works) |
 | `forEachEntity { (e: Entity) in }` per step | compiles, 0 alloc_ref/alloc_box/allocObject in SIL |
 

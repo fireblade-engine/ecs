@@ -39,9 +39,11 @@ struct T13: Component { static let componentIndex = 33 }
 struct T14: Component { static let componentIndex = 34 }
 struct T15: Component { static let componentIndex = 35 }
 struct Toggle: Component { static let componentIndex = 36 }
+/// Non-trivial payload: a String (heap buffer shared through reference counting) and a counter.
+struct Named: Component { static let componentIndex = 37; var name: String; var count = 0 }
 
 /// Sets C0 ..< C(count) on the entity, all with value 1.
-func addPayload<S: NexusStorageProviding>(_ storage: S, _ entity: EntityID, count: Int) {
+func addPayload(_ storage: S2Nexus, _ entity: EntityID, count: Int) {
     if count > 0 {
         storage.set(C0(), for: entity)
     }
@@ -105,7 +107,7 @@ func addPayload<S: NexusStorageProviding>(_ storage: S, _ entity: EntityID, coun
 }
 
 /// Adds the tag components whose bit is set in `bits` (bit i selects Ti).
-func addTags<S: NexusStorageProviding>(_ storage: S, _ entity: EntityID, bits: Int) {
+func addTags(_ storage: S2Nexus, _ entity: EntityID, bits: Int) {
     if bits & 1 != 0 {
         storage.set(T0(), for: entity)
     }

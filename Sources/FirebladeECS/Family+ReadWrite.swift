@@ -39,22 +39,29 @@ extension Family {
     ///
     /// - Complexity: O(N) where N is the number of members, plus one hash lookup per component type.
     @inlinable
+    @_disfavoredOverload
     public func forEach<each R: Component, each W: Component>(
         reading rTypes: repeat (each R).Type,
         writing wTypes: repeat (each W).Type,
         body: (inout (repeat each W), repeat each R) throws -> Void
     ) rethrows {
-        guard case let .sparseSet(sparse) = nexus.backend else { return }
+        guard case let .sparseSet(sparse) = nexus.backend else {
+            return
+        }
         _ = (repeat requireRequired((each R).self))
         _ = (repeat requireRequired((each W).self))
         let members = memberIds
-        guard !members.isEmpty else { return }
+        guard !members.isEmpty else {
+            return
+        }
         let optionalReads = (repeat sparse.existing((each R).self, at: (each R).componentIndex))
         let optionalWrites = (repeat sparse.existing((each W).self, at: (each W).componentIndex))
         var complete = true
         _ = (repeat complete = complete && (each optionalReads) != nil)
         _ = (repeat complete = complete && (each optionalWrites) != nil)
-        guard complete else { return }
+        guard complete else {
+            return
+        }
         let reads = (repeat (each optionalReads).unsafelyUnwrapped)
         let writes = (repeat (each optionalWrites).unsafelyUnwrapped)
         sparse.lockDepth += 1
@@ -78,8 +85,8 @@ extension Family {
                 defer {
                     _ = (repeat Self.store(each written, to: each writePointers))
                 }
-                try body(&written, repeat each readValues)
                 visited += 1
+                try body(&written, repeat each readValues)
             }
         }
     }

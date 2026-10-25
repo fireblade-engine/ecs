@@ -35,8 +35,8 @@ extension Family {
                 let key = entry.key
                 let wSlot1 = ws1.slot(of: key)
                 precondition(wSlot1 >= 0, "member without a required component")
-                try body(&wBase1[wSlot1])
                 visited += 1
+                try body(&wBase1[wSlot1])
             }
         }
     }
@@ -78,8 +78,8 @@ extension Family {
                 precondition(wSlot1 >= 0, "member without a required component")
                 let wSlot2 = ws2.slot(of: key)
                 precondition(wSlot2 >= 0, "member without a required component")
-                try body(&wBase1[wSlot1], &wBase2[wSlot2])
                 visited += 1
+                try body(&wBase1[wSlot1], &wBase2[wSlot2])
             }
         }
     }
@@ -129,8 +129,8 @@ extension Family {
                 precondition(wSlot2 >= 0, "member without a required component")
                 let wSlot3 = ws3.slot(of: key)
                 precondition(wSlot3 >= 0, "member without a required component")
-                try body(&wBase1[wSlot1], &wBase2[wSlot2], &wBase3[wSlot3])
                 visited += 1
+                try body(&wBase1[wSlot1], &wBase2[wSlot2], &wBase3[wSlot3])
             }
         }
     }
@@ -188,8 +188,8 @@ extension Family {
                 precondition(wSlot3 >= 0, "member without a required component")
                 let wSlot4 = ws4.slot(of: key)
                 precondition(wSlot4 >= 0, "member without a required component")
-                try body(&wBase1[wSlot1], &wBase2[wSlot2], &wBase3[wSlot3], &wBase4[wSlot4])
                 visited += 1
+                try body(&wBase1[wSlot1], &wBase2[wSlot2], &wBase3[wSlot3], &wBase4[wSlot4])
             }
         }
     }
@@ -219,8 +219,8 @@ extension Family {
                 let key = entry.key
                 let rSlot1 = rs1.slot(of: key)
                 precondition(rSlot1 >= 0, "member without a required component")
-                try body(rBase1[rSlot1])
                 visited += 1
+                try body(rBase1[rSlot1])
             }
         }
     }
@@ -252,8 +252,8 @@ extension Family {
     ///   (for example `entity.get(_:)`) traps, too.
     /// - Members are visited once each, in the order of the family's member list.
     /// - If the delegate subscribed to ``NexusEventMask/valueChanges``, one ``ComponentsModified`` event per written type
-    ///   is delivered after the pass, not one per member. If `body` throws, the pass ends there, members already visited
-    ///   stay changed and the events cover them.
+    ///   is delivered after the pass, not one per member. If `body` throws, the pass ends there, members already visited,
+    ///   including the one that threw, stay changed and the events cover them.
     ///
     /// - Parameters:
     ///   - rType1: The component type to read.
@@ -292,8 +292,8 @@ extension Family {
                 precondition(rSlot1 >= 0, "member without a required component")
                 let wSlot1 = ws1.slot(of: key)
                 precondition(wSlot1 >= 0, "member without a required component")
-                try body(rBase1[rSlot1], &wBase1[wSlot1])
                 visited += 1
+                try body(rBase1[rSlot1], &wBase1[wSlot1])
             }
         }
     }
@@ -341,8 +341,8 @@ extension Family {
                 precondition(wSlot1 >= 0, "member without a required component")
                 let wSlot2 = ws2.slot(of: key)
                 precondition(wSlot2 >= 0, "member without a required component")
-                try body(rBase1[rSlot1], &wBase1[wSlot1], &wBase2[wSlot2])
                 visited += 1
+                try body(rBase1[rSlot1], &wBase1[wSlot1], &wBase2[wSlot2])
             }
         }
     }
@@ -398,8 +398,8 @@ extension Family {
                 precondition(wSlot2 >= 0, "member without a required component")
                 let wSlot3 = ws3.slot(of: key)
                 precondition(wSlot3 >= 0, "member without a required component")
-                try body(rBase1[rSlot1], &wBase1[wSlot1], &wBase2[wSlot2], &wBase3[wSlot3])
                 visited += 1
+                try body(rBase1[rSlot1], &wBase1[wSlot1], &wBase2[wSlot2], &wBase3[wSlot3])
             }
         }
     }
@@ -463,8 +463,8 @@ extension Family {
                 precondition(wSlot3 >= 0, "member without a required component")
                 let wSlot4 = ws4.slot(of: key)
                 precondition(wSlot4 >= 0, "member without a required component")
-                try body(rBase1[rSlot1], &wBase1[wSlot1], &wBase2[wSlot2], &wBase3[wSlot3], &wBase4[wSlot4])
                 visited += 1
+                try body(rBase1[rSlot1], &wBase1[wSlot1], &wBase2[wSlot2], &wBase3[wSlot3], &wBase4[wSlot4])
             }
         }
     }
@@ -500,8 +500,8 @@ extension Family {
                 precondition(rSlot1 >= 0, "member without a required component")
                 let rSlot2 = rs2.slot(of: key)
                 precondition(rSlot2 >= 0, "member without a required component")
-                try body(rBase1[rSlot1], rBase2[rSlot2])
                 visited += 1
+                try body(rBase1[rSlot1], rBase2[rSlot2])
             }
         }
     }
@@ -547,8 +547,8 @@ extension Family {
                 precondition(rSlot2 >= 0, "member without a required component")
                 let wSlot1 = ws1.slot(of: key)
                 precondition(wSlot1 >= 0, "member without a required component")
-                try body(rBase1[rSlot1], rBase2[rSlot2], &wBase1[wSlot1])
                 visited += 1
+                try body(rBase1[rSlot1], rBase2[rSlot2], &wBase1[wSlot1])
             }
         }
     }
@@ -602,8 +602,8 @@ extension Family {
                 precondition(wSlot1 >= 0, "member without a required component")
                 let wSlot2 = ws2.slot(of: key)
                 precondition(wSlot2 >= 0, "member without a required component")
-                try body(rBase1[rSlot1], rBase2[rSlot2], &wBase1[wSlot1], &wBase2[wSlot2])
                 visited += 1
+                try body(rBase1[rSlot1], rBase2[rSlot2], &wBase1[wSlot1], &wBase2[wSlot2])
             }
         }
     }
@@ -665,8 +665,8 @@ extension Family {
                 precondition(wSlot2 >= 0, "member without a required component")
                 let wSlot3 = ws3.slot(of: key)
                 precondition(wSlot3 >= 0, "member without a required component")
-                try body(rBase1[rSlot1], rBase2[rSlot2], &wBase1[wSlot1], &wBase2[wSlot2], &wBase3[wSlot3])
                 visited += 1
+                try body(rBase1[rSlot1], rBase2[rSlot2], &wBase1[wSlot1], &wBase2[wSlot2], &wBase3[wSlot3])
             }
         }
     }
@@ -736,8 +736,8 @@ extension Family {
                 precondition(wSlot3 >= 0, "member without a required component")
                 let wSlot4 = ws4.slot(of: key)
                 precondition(wSlot4 >= 0, "member without a required component")
-                try body(rBase1[rSlot1], rBase2[rSlot2], &wBase1[wSlot1], &wBase2[wSlot2], &wBase3[wSlot3], &wBase4[wSlot4])
                 visited += 1
+                try body(rBase1[rSlot1], rBase2[rSlot2], &wBase1[wSlot1], &wBase2[wSlot2], &wBase3[wSlot3], &wBase4[wSlot4])
             }
         }
     }
@@ -779,8 +779,8 @@ extension Family {
                 precondition(rSlot2 >= 0, "member without a required component")
                 let rSlot3 = rs3.slot(of: key)
                 precondition(rSlot3 >= 0, "member without a required component")
-                try body(rBase1[rSlot1], rBase2[rSlot2], rBase3[rSlot3])
                 visited += 1
+                try body(rBase1[rSlot1], rBase2[rSlot2], rBase3[rSlot3])
             }
         }
     }
@@ -832,8 +832,8 @@ extension Family {
                 precondition(rSlot3 >= 0, "member without a required component")
                 let wSlot1 = ws1.slot(of: key)
                 precondition(wSlot1 >= 0, "member without a required component")
-                try body(rBase1[rSlot1], rBase2[rSlot2], rBase3[rSlot3], &wBase1[wSlot1])
                 visited += 1
+                try body(rBase1[rSlot1], rBase2[rSlot2], rBase3[rSlot3], &wBase1[wSlot1])
             }
         }
     }
@@ -893,8 +893,8 @@ extension Family {
                 precondition(wSlot1 >= 0, "member without a required component")
                 let wSlot2 = ws2.slot(of: key)
                 precondition(wSlot2 >= 0, "member without a required component")
-                try body(rBase1[rSlot1], rBase2[rSlot2], rBase3[rSlot3], &wBase1[wSlot1], &wBase2[wSlot2])
                 visited += 1
+                try body(rBase1[rSlot1], rBase2[rSlot2], rBase3[rSlot3], &wBase1[wSlot1], &wBase2[wSlot2])
             }
         }
     }
@@ -962,8 +962,8 @@ extension Family {
                 precondition(wSlot2 >= 0, "member without a required component")
                 let wSlot3 = ws3.slot(of: key)
                 precondition(wSlot3 >= 0, "member without a required component")
-                try body(rBase1[rSlot1], rBase2[rSlot2], rBase3[rSlot3], &wBase1[wSlot1], &wBase2[wSlot2], &wBase3[wSlot3])
                 visited += 1
+                try body(rBase1[rSlot1], rBase2[rSlot2], rBase3[rSlot3], &wBase1[wSlot1], &wBase2[wSlot2], &wBase3[wSlot3])
             }
         }
     }
@@ -1039,8 +1039,8 @@ extension Family {
                 precondition(wSlot3 >= 0, "member without a required component")
                 let wSlot4 = ws4.slot(of: key)
                 precondition(wSlot4 >= 0, "member without a required component")
-                try body(rBase1[rSlot1], rBase2[rSlot2], rBase3[rSlot3], &wBase1[wSlot1], &wBase2[wSlot2], &wBase3[wSlot3], &wBase4[wSlot4])
                 visited += 1
+                try body(rBase1[rSlot1], rBase2[rSlot2], rBase3[rSlot3], &wBase1[wSlot1], &wBase2[wSlot2], &wBase3[wSlot3], &wBase4[wSlot4])
             }
         }
     }
@@ -1088,8 +1088,8 @@ extension Family {
                 precondition(rSlot3 >= 0, "member without a required component")
                 let rSlot4 = rs4.slot(of: key)
                 precondition(rSlot4 >= 0, "member without a required component")
-                try body(rBase1[rSlot1], rBase2[rSlot2], rBase3[rSlot3], rBase4[rSlot4])
                 visited += 1
+                try body(rBase1[rSlot1], rBase2[rSlot2], rBase3[rSlot3], rBase4[rSlot4])
             }
         }
     }
@@ -1147,8 +1147,8 @@ extension Family {
                 precondition(rSlot4 >= 0, "member without a required component")
                 let wSlot1 = ws1.slot(of: key)
                 precondition(wSlot1 >= 0, "member without a required component")
-                try body(rBase1[rSlot1], rBase2[rSlot2], rBase3[rSlot3], rBase4[rSlot4], &wBase1[wSlot1])
                 visited += 1
+                try body(rBase1[rSlot1], rBase2[rSlot2], rBase3[rSlot3], rBase4[rSlot4], &wBase1[wSlot1])
             }
         }
     }
@@ -1214,8 +1214,8 @@ extension Family {
                 precondition(wSlot1 >= 0, "member without a required component")
                 let wSlot2 = ws2.slot(of: key)
                 precondition(wSlot2 >= 0, "member without a required component")
-                try body(rBase1[rSlot1], rBase2[rSlot2], rBase3[rSlot3], rBase4[rSlot4], &wBase1[wSlot1], &wBase2[wSlot2])
                 visited += 1
+                try body(rBase1[rSlot1], rBase2[rSlot2], rBase3[rSlot3], rBase4[rSlot4], &wBase1[wSlot1], &wBase2[wSlot2])
             }
         }
     }
@@ -1289,8 +1289,8 @@ extension Family {
                 precondition(wSlot2 >= 0, "member without a required component")
                 let wSlot3 = ws3.slot(of: key)
                 precondition(wSlot3 >= 0, "member without a required component")
-                try body(rBase1[rSlot1], rBase2[rSlot2], rBase3[rSlot3], rBase4[rSlot4], &wBase1[wSlot1], &wBase2[wSlot2], &wBase3[wSlot3])
                 visited += 1
+                try body(rBase1[rSlot1], rBase2[rSlot2], rBase3[rSlot3], rBase4[rSlot4], &wBase1[wSlot1], &wBase2[wSlot2], &wBase3[wSlot3])
             }
         }
     }
@@ -1372,8 +1372,8 @@ extension Family {
                 precondition(wSlot3 >= 0, "member without a required component")
                 let wSlot4 = ws4.slot(of: key)
                 precondition(wSlot4 >= 0, "member without a required component")
-                try body(rBase1[rSlot1], rBase2[rSlot2], rBase3[rSlot3], rBase4[rSlot4], &wBase1[wSlot1], &wBase2[wSlot2], &wBase3[wSlot3], &wBase4[wSlot4])
                 visited += 1
+                try body(rBase1[rSlot1], rBase2[rSlot2], rBase3[rSlot3], rBase4[rSlot4], &wBase1[wSlot1], &wBase2[wSlot2], &wBase3[wSlot3], &wBase4[wSlot4])
             }
         }
     }

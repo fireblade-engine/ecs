@@ -98,8 +98,8 @@ family() {
     ///   (for example `entity.get(_:)`) traps, too.
     /// - Members are visited once each, in the order of the family's member list.
     /// - If the delegate subscribed to ``NexusEventMask/valueChanges``, one ``ComponentsModified`` event per written type
-    ///   is delivered after the pass, not one per member. If `body` throws, the pass ends there, members already visited
-    ///   stay changed and the events cover them.
+    ///   is delivered after the pass, not one per member. If `body` throws, the pass ends there, members already visited,
+    ///   including the one that threw, stay changed and the events cover them.
     ///
     /// - Parameters:
     ///   - rType1: The component type to read.
@@ -155,8 +155,8 @@ DOC
             local callArgs=()
             for ((i = 1; i <= r; i++)); do callArgs+=("rBase$i[rSlot$i]"); done
             for ((i = 1; i <= w; i++)); do callArgs+=("&wBase$i[wSlot$i]"); done
-            echo "                try body($(join ', ' "${callArgs[@]}"))"
             echo "                visited += 1"
+            echo "                try body($(join ', ' "${callArgs[@]}"))"
             echo "            }"
             echo "        }"
             echo "    }"

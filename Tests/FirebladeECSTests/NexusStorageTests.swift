@@ -8,15 +8,15 @@
 @testable import FirebladeECS
 import Testing
 
-private final class Tag127: Component, @unchecked Sendable {
+private struct Tag127: Component, Sendable {
     static let componentIndex = 127
 }
 
-private final class Tag128: Component, @unchecked Sendable {
+private struct Tag128: Component, Sendable {
     static let componentIndex = 128
 }
 
-private final class Tag300: Component, @unchecked Sendable {
+private struct Tag300: Component, Sendable {
     static let componentIndex = 300
 }
 

@@ -9,7 +9,7 @@
 import Foundation
 import Testing
 
-final class SerialPosition: SerializableComponent, @unchecked Sendable {
+struct SerialPosition: Equatable, SerializableComponent, Sendable {
     static let componentTypeName = "Position"
     var x: Int
     var y: Int
@@ -20,7 +20,7 @@ final class SerialPosition: SerializableComponent, @unchecked Sendable {
     }
 }
 
-final class SerialParent: SerializableComponent, @unchecked Sendable {
+struct SerialParent: Equatable, SerializableComponent, Sendable {
     static let componentTypeName = "Parent"
     var parent: Entity
 

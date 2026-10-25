@@ -15,7 +15,7 @@ private struct Movers: FamilyTraitsProviding {
     static let traits = FamilyTraitSet(requiresAll: [Comp1.self, Comp2.self], excludesAll: [Frozen.self])
     static let readComponents: Set<ComponentIdentifier> = [Comp1.identifier]
     static let writeComponents: Set<ComponentIdentifier> = [Comp2.identifier]
-    static let familyIndex = Nexus.FamilyIndexRegistry.shared.index(of: Movers.self)
+    static let familyIndex = Nexus.familyIndex(of: Movers.self)
 
     let family: Family<Comp1, Comp2>
 

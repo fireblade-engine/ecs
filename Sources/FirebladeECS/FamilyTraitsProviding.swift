@@ -95,7 +95,7 @@ extension FamilyTraitsProviding {
 
     /// A lazily assigned process-wide index.
     public static var familyIndex: Int {
-        Nexus.FamilyIndexRegistry.shared.index(of: Self.self)
+        Nexus.familyIndex(of: Self.self)
     }
 }
 
@@ -116,6 +116,15 @@ extension Nexus {
         }
         boundFamilies[index] = bound
         return bound
+    }
+
+    /// The dense per-process index of a type, assigned on first use. Stable for the lifetime of the process.
+    ///
+    /// Store the result in a `static let` when you implement ``FamilyTraitsProviding/familyIndex`` yourself.
+    /// - Parameter type: The declaring type.
+    /// - Complexity: O(1)
+    public static func familyIndex(of type: any FamilyTraitsProviding.Type) -> Int {
+        FamilyIndexRegistry.shared.index(of: type)
     }
 
     /// Assigns dense indices to ``FamilyTraitsProviding`` types, once per type and process.

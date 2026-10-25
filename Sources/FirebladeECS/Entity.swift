@@ -159,29 +159,41 @@ public struct Entity {
         set(components)
     }
 
-    /// Remove a component from this entity.
-    /// - Parameter component: the component.
+    /// Removes the component of the same type as `component` from this entity.
+    /// - Parameter component: A component; only its type is used.
+    /// - Returns: `true` if the entity had such a component and it was removed, `false` if it was not there or the
+    ///   entity is destroyed (an assertion failure in debug builds).
     /// - Complexity: O(M) where M is the number of families.
     @discardableResult
-    public func remove(_ component: some Component) -> Entity {
+    public func remove(_ component: some Component) -> Bool {
         remove(component.identifier)
     }
 
-    /// Remove a component by type from this entity.
-    /// - Parameter compType: the component type.
+    /// Removes a component by type from this entity.
+    /// - Parameter compType: The component type.
+    /// - Returns: `true` if the entity had such a component and it was removed, `false` if it was not there or the
+    ///   entity is destroyed (an assertion failure in debug builds).
     /// - Complexity: O(M) where M is the number of families.
     @discardableResult
-    public func remove(_ compType: (some Component).Type) -> Entity {
+    public func remove(_ compType: (some Component).Type) -> Bool {
         remove(compType.identifier)
     }
 
-    /// Remove a component by id from this entity.
-    /// - Parameter compId: the component id.
+    /// Removes a component by id from this entity.
+    /// - Parameter compId: The component id.
+    /// - Returns: `true` if the entity had such a component and it was removed, `false` if it was not there or the
+    ///   entity is destroyed (an assertion failure in debug builds).
     /// - Complexity: O(M) where M is the number of families.
     @discardableResult
-    public func remove(_ compId: ComponentIdentifier) -> Entity {
-        nexus.remove(component: compId, from: identifier)
-        return self
+    public func remove(_ compId: ComponentIdentifier) -> Bool {
+        guard nexus.isAlive(identifier) else {
+            nexus.reportStaleHandle(identifier)
+            return false
+        }
+        guard has(compId) else {
+            return false
+        }
+        return nexus.remove(component: compId, from: identifier)
     }
 
     /// Remove all components from this entity.

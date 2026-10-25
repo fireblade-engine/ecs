@@ -129,10 +129,10 @@ extension Nexus.Backend {
     }
 
     @inlinable
-    func modify<C: Component>(_ type: C.Type, for entityId: EntityIdentifier, _ body: (inout C) -> Void) -> Bool {
+    func modify<C: Component>(_ type: C.Type, for entityId: EntityIdentifier, _ body: (inout C) throws -> Void) rethrows -> Bool {
         switch self {
         case let .sparseSet(storage):
-            storage.modify(type, for: entityId, body)
+            try storage.modify(type, for: entityId, body)
         }
     }
 

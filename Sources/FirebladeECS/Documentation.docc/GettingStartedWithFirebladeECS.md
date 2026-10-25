@@ -119,7 +119,7 @@ class PlayerMovementSystem {
             _ = mov.position
             _ = mov.velocity
             
-            // iteration yields copies: to write, use the entity, e.g. `entity.modify(Movement.self) { ... }`
+            // iteration yields copies: to write, use `family.forEach(reading:writing:)` or the entity, e.g. `entity.modify(Movement.self) { ... }`
             ...
             
             // current input command for the given entity

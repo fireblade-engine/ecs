@@ -86,7 +86,7 @@ family() {
     /// ```
     ///
     /// Access is declared like the `in` and `inout` term modifiers of flecs queries
-    /// (<https://github.com/SanderMertens/flecs/blob/master/docs/Queries.md>), whose `each` callbacks take `const T&`
+    /// ("Access modifiers" in <https://github.com/SanderMertens/flecs/blob/master/docs/Queries.md>), whose `each` callbacks take `const T&`
     /// for reads and `T&` for writes: here the labels `reading:` and `writing:` state it.
     ///
     /// - Every read and written type must be a required component of this family, not an excluded one.

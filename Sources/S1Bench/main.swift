@@ -43,8 +43,10 @@ for index in 0 ..< entityCount {
 let oldFamily = nexus.family(requiresAll: OldPos.self, OldVel.self)
 
 measure("A  (inout tuple)") { family.forEach { (w: inout (BVel), p: BPos) in w.x += p.x } }
-measure("Mut (dynamic member)") { family.forEachMut { (p: BPos, v: Mut<BVel>) in v.x += p.x } }
-measure("Mut (value accessor)") { family.forEachMut { (p: BPos, v: Mut<BVel>) in v.value.x += p.x } }
+#if compiler(>=6.3)
+    measure("Mut (dynamic member)") { family.forEachMut { (p: BPos, v: Mut<BVel>) in v.x += p.x } }
+    measure("Mut (value accessor)") { family.forEachMut { (p: BPos, v: Mut<BVel>) in v.value.x += p.x } }
+#endif
 measure("per-arity, no packs") { world.forEach(reading: BPos.self, writing: BVel.self) { (p: BPos, v: inout BVel) in v.x += p.x } }
 measure("1.x Family iterator") { for (pos, vel) in oldFamily {
     vel.x += pos.x

@@ -6,6 +6,20 @@
 //
 
 extension Nexus {
+    /// Reports a mutation through a handle of an entity that is destroyed.
+    ///
+    /// Notifies the delegate and stops with an assertion failure in debug builds, naming the stale and the current version of the slot.
+    /// - Parameter entityId: The stale identifier.
+    @usableFromInline
+    func reportStaleHandle(_ entityId: EntityIdentifier) {
+        let current = componentIdsByEntity.keys.first { $0.index == entityId.index }
+        let message = "stale handle \(entityId), " + (current.map { "slot is at \($0)" } ?? "slot is free")
+        delegate?.nexusNonFatalError(message)
+        if assertsOnStaleHandles {
+            assertionFailure(message)
+        }
+    }
+
     /// Assigns a collection of components to an entity.
     ///
     /// - Parameters:
@@ -15,6 +29,10 @@ extension Nexus {
     @usableFromInline
     @discardableResult
     func assign(components: some Collection<Component>, to entityId: EntityIdentifier) -> Bool {
+        guard isAlive(entityId) else {
+            reportStaleHandle(entityId)
+            return false
+        }
         var iter = components.makeIterator()
         while let component = iter.next() {
             let componentId = component.identifier
@@ -56,6 +74,10 @@ extension Nexus {
     /// - Returns: `true` if the assignment was successful, `false` otherwise.
     @usableFromInline
     func assign(component: Component, entityId: EntityIdentifier) -> Bool {
+        guard isAlive(entityId) else {
+            reportStaleHandle(entityId)
+            return false
+        }
         let componentId = component.identifier
 
         // test if component is already assigned
@@ -153,7 +175,7 @@ extension Nexus {
         }
 
         let isMember: Bool = isMember(entity: entityId, inFamilyWithTraits: traits)
-        if !exists(entity: entityId), isMember {
+        if !isAlive(entityId), isMember {
             remove(entityWithId: entityId, fromFamilyWithTraits: traits)
             return
         }

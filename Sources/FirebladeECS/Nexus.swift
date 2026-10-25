@@ -38,6 +38,11 @@ public final class Nexus {
     /// Defaults to `DefaultCodingStrategy`.
     public final var codingStrategy: CodingStrategy
 
+    /// Indicates whether mutating an entity through a stale handle stops with an assertion failure in debug builds.
+    ///
+    /// Release builds only return `false` and report the problem to the delegate.
+    final var assertsOnStaleHandles = true
+
     /// The delegate for handling nexus events.
     public final weak var delegate: NexusEventDelegate?
 

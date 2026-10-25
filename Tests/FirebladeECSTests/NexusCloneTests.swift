@@ -153,12 +153,12 @@ final class CloneChildren: CloneableComponent, @unchecked Sendable {
         let context = ComponentCloneContext(nexus: nexus, mapping: [1: 5])
         #expect(context.clone(42) == 42)
         #expect(context.clone("text") == "text")
-        #expect(context.clone(EntityIdentifier(index: 1, generation: 1)) == 5)
-        #expect(context.clone(EntityIdentifier(index: 2, generation: 1)) == 2)
-        #expect(context.clone(Optional(EntityIdentifier(index: 1, generation: 1))) == 5)
-        #expect(context.clone([EntityIdentifier(index: 1, generation: 1), 2]) == [5, 2])
+        #expect(context.clone(EntityIdentifier(index: 1, generation: 0)) == 5)
+        #expect(context.clone(EntityIdentifier(index: 2, generation: 0)) == 2)
+        #expect(context.clone(Optional(EntityIdentifier(index: 1, generation: 0))) == 5)
+        #expect(context.clone([EntityIdentifier(index: 1, generation: 0), 2]) == [5, 2])
         #expect(context.clone(Set<EntityIdentifier>([1, 2])) == [5, 2])
-        let entity = nexus.entity(from: 1)
+        let entity = nexus.createEntity() // the first entity has index 1
         #expect(context.clone(["a": entity])["a"]?.identifier == 5)
     }
 }

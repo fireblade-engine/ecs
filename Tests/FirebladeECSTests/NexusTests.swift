@@ -15,30 +15,32 @@ import Testing
 
         let e0 = nexus.createEntity()
 
-        #expect(e0.identifier.index == 0)
+        #expect(e0.identifier.index == 1) // index 0 is reserved
+        #expect(e0.identifier.generation == 0)
         #expect(nexus.numEntities == 1)
 
         let e1 = nexus.createEntity(with: Name(name: "Entity 1"))
 
-        #expect(e1.identifier.index == 1)
+        #expect(e1.identifier.index == 2)
         #expect(nexus.numEntities == 2)
         #expect(!nexus.debugDescription.isEmpty)
     }
 
-    @Test func entityDestroy() {
+    @Test func entityDestroy() throws {
         let nexus = Nexus()
         _ = nexus.createEntity()
         let e1 = nexus.createEntity(with: Name(name: "Entity 1"))
         #expect(nexus.numEntities == 2)
 
-        let e1Fetched = nexus.entity(from: EntityIdentifier(index: 1, generation: 1))
-        #expect(nexus.exists(entity: EntityIdentifier(index: 1, generation: 1)))
-        #expect(e1Fetched.identifier.index == 1)
+        let e1Fetched = try #require(nexus.entity(e1.identifier))
+        #expect(nexus.isAlive(e1.identifier))
+        #expect(e1Fetched.identifier.index == 2)
 
         #expect(nexus.destroy(entity: e1))
         #expect(!nexus.destroy(entity: e1))
 
-        #expect(!nexus.exists(entity: EntityIdentifier(index: 1, generation: 1)))
+        #expect(!nexus.isAlive(e1.identifier))
+        #expect(nexus.entity(e1.identifier) == nil)
 
         #expect(nexus.numEntities == 1)
 
@@ -66,11 +68,11 @@ import Testing
         #expect(rP0?.y == 2)
     }
 
-    @Test func componentDeletion() {
+    @Test func componentDeletion() throws {
         let nexus = Nexus()
         let identifier: EntityIdentifier = nexus.createEntity().identifier
 
-        let e0 = nexus.entity(from: identifier)
+        let e0 = try #require(nexus.entity(identifier))
 
         #expect(e0.numComponents == 0)
         e0.remove(Position.self)
@@ -157,7 +159,7 @@ import Testing
 
         #expect(entityArray.count == 1000)
 
-        #expect(entityArray.contains(where: { $0.identifier.index == 0 }))
-        #expect(entityArray.contains(where: { $0.identifier.index == 999 }))
+        #expect(entityArray.contains(where: { $0.identifier.index == 1 }))
+        #expect(entityArray.contains(where: { $0.identifier.index == 1000 }))
     }
 }

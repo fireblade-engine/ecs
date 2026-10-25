@@ -65,19 +65,46 @@ extension Nexus {
         EntitiesIterator(nexus: self)
     }
 
+    /// Checks if an entity identifier refers to a living entity of the Nexus.
+    ///
+    /// The identifier of a destroyed entity is stale: it stays not alive, even if its slot is reused by a later entity,
+    /// because the later entity has a higher generation.
+    /// - Parameter entityId: The identifier of the entity to check.
+    /// - Returns: `true` if the generation of the identifier matches the current generation of its slot and the slot holds an entity; otherwise, `false`.
+    /// - Complexity: O(1)
+    public func isAlive(_ entityId: EntityIdentifier) -> Bool {
+        componentIdsByEntity.keys.contains(entityId)
+    }
+
     /// Checks if an entity exists in the Nexus.
     /// - Parameter entityId: The identifier of the entity to check.
     /// - Returns: `true` if the entity exists; otherwise, `false`.
     /// - Complexity: O(1)
+    @available(*, deprecated, renamed: "isAlive(_:)")
     public func exists(entity entityId: EntityIdentifier) -> Bool {
-        componentIdsByEntity.keys.contains(entityId)
+        isAlive(entityId)
     }
 
-    /// Retrieves an entity instance for a given identifier.
+    /// Retrieves the living entity for a given identifier.
     ///
+    /// - Parameter entityId: The entity identifier.
+    /// - Returns: The `Entity` associated with the identifier, or `nil` if the identifier is stale or unknown.
+    ///   Never a different entity that reuses the slot of a destroyed entity.
+    /// - Complexity: O(1)
+    public func entity(_ entityId: EntityIdentifier) -> Entity? {
+        guard isAlive(entityId) else {
+            return nil
+        }
+        return Entity(nexus: self, id: entityId)
+    }
+
+    /// Retrieves an entity instance for a given identifier, without checking that the entity is alive.
+    ///
+    /// Mutating a handle of a destroyed entity fails, but the handle can not be told apart from a living one before.
     /// - Parameter entityId: The entity identifier.
     /// - Returns: An `Entity` instance associated with the identifier.
     /// - Complexity: O(1)
+    @available(*, deprecated, message: "Use entity(_:), which returns nil for stale or unknown identifiers.")
     public func entity(from entityId: EntityIdentifier) -> Entity {
         Entity(nexus: self, id: entityId)
     }
@@ -94,9 +121,10 @@ extension Nexus {
 
     /// Destroys an entity by its identifier.
     ///
-    /// This removes all components associated with the entity and releases its identifier for reuse.
+    /// This removes all components associated with the entity and releases its slot for reuse with a higher generation,
+    /// so that `entityId` and all copies of it are stale afterwards.
     /// - Parameter entityId: The identifier of the entity to destroy.
-    /// - Returns: `true` if the entity was found and destroyed; otherwise, `false`.
+    /// - Returns: `true` if the entity was found and destroyed; `false` if the identifier is stale or unknown.
     /// - Complexity: O(C * M) where C is the number of components and M is the number of families.
     @discardableResult
     public func destroy(entityId: EntityIdentifier) -> Bool {

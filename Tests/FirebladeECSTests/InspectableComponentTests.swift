@@ -40,6 +40,19 @@ struct InspectedTransform: InspectableComponent, RegistrableComponent, Sendable 
         #expect(component.position == 5)
     }
 
+    @Test func setsWritablePropertiesOnACopy() {
+        var component = InspectedTransform()
+        let position = InspectedTransform.componentProperties[0]
+        let name = InspectedTransform.componentProperties[1]
+
+        #expect(position.set(5.0, on: &component))
+        #expect(component.position == 5)
+        #expect(!position.set("wrong type", on: &component))
+        #expect(component.position == 5)
+        #expect(!name.set("renamed", on: &component))
+        #expect(component.name == "transform")
+    }
+
     @Test func typeErasedInspection() throws {
         let nexus = Nexus()
         let entity = nexus.createEntity(with: InspectedTransform())

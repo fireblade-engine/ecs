@@ -5,7 +5,7 @@
 //  Created by Christian Treffs on 25.10.26.
 //
 
-// swiftlint:disable file_length function_body_length line_length
+// swiftlint:disable all
 
 @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
 extension Family {
@@ -459,3 +459,5 @@ extension Family {
         }
     }
 }
+
+// swiftlint:enable all

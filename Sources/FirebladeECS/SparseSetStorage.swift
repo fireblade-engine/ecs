@@ -90,23 +90,6 @@ extension Nexus {
             activeWrites.remove(componentIndex)
         }
 
-        /// Starts a read span of the type: it must not be written, and writing it traps until ``endRead(_:wasReading:)``.
-        /// - Returns: Whether the type was in a read span already (spans nest); hand it to ``endRead(_:wasReading:)``.
-        @inlinable
-        func beginRead(_ componentIndex: Int) -> Bool {
-            requireReadable(componentIndex)
-            let wasReading = activeReads.contains(componentIndex)
-            activeReads.insert(componentIndex)
-            return wasReading
-        }
-
-        @inlinable
-        func endRead(_ componentIndex: Int, wasReading: Bool) {
-            if !wasReading {
-                activeReads.remove(componentIndex)
-            }
-        }
-
         @inlinable
         func requireReadable(_ componentIndex: Int) {
             precondition(!activeWrites.contains(componentIndex), "read of component \(componentIndex) during a write access to it")

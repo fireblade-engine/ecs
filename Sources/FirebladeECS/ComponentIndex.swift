@@ -35,6 +35,21 @@ extension Component {
     /// A collision or an index out of range traps at first use of the type in a nexus.
     /// - Complexity: O(1)
     public static var componentIndex: Int {
+        registeredComponentIndex
+    }
+
+    /// The index the process-wide registry assigns to this component type, taking the next free one on first access.
+    ///
+    /// Use it to cache the index in a stored `static let`, which is what the `@Component` macro generates:
+    ///
+    /// ```swift
+    /// static let componentIndex = registeredComponentIndex
+    /// ```
+    ///
+    /// Typed lookups then read a plain static instead of taking the registry lock. A type that caches the
+    /// registry's index can never collide with a lazily assigned one.
+    /// - Complexity: O(1)
+    public static var registeredComponentIndex: Int {
         Nexus.ComponentIndexRegistry.shared.index(of: Self.self)
     }
 }

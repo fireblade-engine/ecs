@@ -48,6 +48,13 @@ struct MacroDeclaredInit {
 }
 
 @Suite struct ComponentMacroIntegrationTests {
+    @Test func storesComponentIndexFromTheRegistry() {
+        #expect(MacroTransform.componentIndex == MacroTransform.registeredComponentIndex)
+        #expect(MacroTransform.componentIndex == MacroTransform.componentIndex)
+        #expect(MacroTransform.componentIndex != MacroRenderable.componentIndex)
+        #expect(MacroRenderable.componentIndex != MacroRenamed.componentIndex)
+    }
+
     @Test func structKeepsMemberwiseInitializer() throws {
         let memberwise = MacroMemberwise(x: 1, y: 2)
         #expect(memberwise.x == 1 && memberwise.y == 2)

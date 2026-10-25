@@ -30,11 +30,14 @@
 /// Members you declare yourself are not generated. Declaring any of `CodingKeys`, `init(from:)`
 /// or `encode(to:)` leaves serialization entirely to you.
 ///
+/// The macro also stores the type's ``Component/componentIndex`` in a `static let`, so typed lookups read a plain
+/// static instead of taking the registry lock. Declare your own `componentIndex` to opt out.
+///
 /// The generated initializers live in an extension, so a struct keeps its memberwise initializer.
 /// Only a `public` or `package` struct, or a struct that declares initializers, receives a generated `init()`
 /// in its body, because the implicit one is internal and does not exist next to declared initializers.
 /// - Parameter excluding: Features not to implement, e.g. `.serializable` for runtime-only components.
-@attached(member, names: named(init))
+@attached(member, names: named(init), named(componentIndex))
 @attached(
     extension,
     conformances: Component, RegistrableComponent, CloneableComponent, SerializableComponent, InspectableComponent,

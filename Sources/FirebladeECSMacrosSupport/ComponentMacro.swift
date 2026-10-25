@@ -25,6 +25,9 @@ extension ComponentMacro: MemberMacro {
         }
 
         var members: [DeclSyntax] = []
+        if !component.declaredMembers.componentIndex {
+            members.append("\(raw: component.accessModifier)static let componentIndex: Int = Self.registeredComponentIndex")
+        }
         if component.needsDefaultInit {
             members.append("\(raw: component.accessModifier)init() {}")
         }

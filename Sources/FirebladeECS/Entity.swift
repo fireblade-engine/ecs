@@ -35,6 +35,7 @@ public struct Entity {
     ///   - nexus: The nexus managing this entity's components.
     ///   - id: The unique identifier for this entity.
     /// - Complexity: O(1)
+    @usableFromInline
     init(nexus: Nexus, id: EntityIdentifier) {
         self.nexus = nexus
         identifier = id

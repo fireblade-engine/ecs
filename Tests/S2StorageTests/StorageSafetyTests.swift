@@ -28,8 +28,12 @@ private func populated(_ kind: S2Nexus.StorageKind) -> (S2Nexus, EntityID) {
     return (storage, entity)
 }
 
-private func stderrText(_ result: ExitTest.Result?) -> String {
-    String(decoding: result?.standardErrorContent ?? [], as: UTF8.self)
+// Release (-O) builds trap without printing the precondition message, so only check it in debug builds.
+private func expectTrapMessage(_ result: ExitTest.Result?, _ message: String) {
+    #if DEBUG
+    let stderr = String(decoding: result?.standardErrorContent ?? [], as: UTF8.self)
+    #expect(stderr.contains(message))
+    #endif
 }
 
 private func structuralChangeDuringIterationTrapsBody(_ kind: S2Nexus.StorageKind) {
@@ -83,112 +87,112 @@ private func twoTypesSharingAComponentIndexTrapBody(_ kind: S2Nexus.StorageKind)
         let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
             structuralChangeDuringIterationTrapsBody(.sparseSet)
         }
-        #expect(stderrText(result).contains("structural change"))
+        expectTrapMessage(result, "structural change")
     }
 
     @Test func structuralChangeDuringIterationTraps_archetype() async {
         let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
             structuralChangeDuringIterationTrapsBody(.archetype)
         }
-        #expect(stderrText(result).contains("structural change"))
+        expectTrapMessage(result, "structural change")
     }
 
     @Test func destroyDuringModifyTraps_sparseSet() async {
         let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
             destroyDuringModifyTrapsBody(.sparseSet)
         }
-        #expect(stderrText(result).contains("structural change"))
+        expectTrapMessage(result, "structural change")
     }
 
     @Test func destroyDuringModifyTraps_archetype() async {
         let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
             destroyDuringModifyTrapsBody(.archetype)
         }
-        #expect(stderrText(result).contains("structural change"))
+        expectTrapMessage(result, "structural change")
     }
 
     @Test func nestedWritingIterationTraps_sparseSet() async {
         let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
             nestedWritingIterationTrapsBody(.sparseSet)
         }
-        #expect(stderrText(result).contains("nested write access"))
+        expectTrapMessage(result, "nested write access")
     }
 
     @Test func nestedWritingIterationTraps_archetype() async {
         let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
             nestedWritingIterationTrapsBody(.archetype)
         }
-        #expect(stderrText(result).contains("nested write access"))
+        expectTrapMessage(result, "nested write access")
     }
 
     @Test func modifyInsideModifyOfTheSameTypeTraps_sparseSet() async {
         let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
             modifyInsideModifyOfTheSameTypeTrapsBody(.sparseSet)
         }
-        #expect(stderrText(result).contains("nested write access"))
+        expectTrapMessage(result, "nested write access")
     }
 
     @Test func modifyInsideModifyOfTheSameTypeTraps_archetype() async {
         let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
             modifyInsideModifyOfTheSameTypeTrapsBody(.archetype)
         }
-        #expect(stderrText(result).contains("nested write access"))
+        expectTrapMessage(result, "nested write access")
     }
 
     @Test func getInsideWriteOfTheSameTypeTraps_sparseSet() async {
         let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
             getInsideWriteOfTheSameTypeTrapsBody(.sparseSet)
         }
-        #expect(stderrText(result).contains("during a write access"))
+        expectTrapMessage(result, "during a write access")
     }
 
     @Test func getInsideWriteOfTheSameTypeTraps_archetype() async {
         let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
             getInsideWriteOfTheSameTypeTrapsBody(.archetype)
         }
-        #expect(stderrText(result).contains("during a write access"))
+        expectTrapMessage(result, "during a write access")
     }
 
     @Test func iterationInsideWriteOfTheSameTypeTraps_sparseSet() async {
         let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
             iterationInsideWriteOfTheSameTypeTrapsBody(.sparseSet)
         }
-        #expect(stderrText(result).contains("during a write access"))
+        expectTrapMessage(result, "during a write access")
     }
 
     @Test func iterationInsideWriteOfTheSameTypeTraps_archetype() async {
         let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
             iterationInsideWriteOfTheSameTypeTrapsBody(.archetype)
         }
-        #expect(stderrText(result).contains("during a write access"))
+        expectTrapMessage(result, "during a write access")
     }
 
     @Test func readingAndWritingOneTypeInOneIterationTraps_sparseSet() async {
         let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
             readingAndWritingOneTypeInOneIterationTrapsBody(.sparseSet)
         }
-        #expect(stderrText(result).contains("cannot be read and written"))
+        expectTrapMessage(result, "cannot be read and written")
     }
 
     @Test func readingAndWritingOneTypeInOneIterationTraps_archetype() async {
         let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
             readingAndWritingOneTypeInOneIterationTrapsBody(.archetype)
         }
-        #expect(stderrText(result).contains("cannot be read and written"))
+        expectTrapMessage(result, "cannot be read and written")
     }
 
     @Test func twoTypesSharingAComponentIndexTrap_sparseSet() async {
         let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
             twoTypesSharingAComponentIndexTrapBody(.sparseSet)
         }
-        #expect(stderrText(result).contains("used by two component types"))
+        expectTrapMessage(result, "used by two component types")
     }
 
     @Test func twoTypesSharingAComponentIndexTrap_archetype() async {
         let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
             twoTypesSharingAComponentIndexTrapBody(.archetype)
         }
-        #expect(stderrText(result).contains("used by two component types"))
+        expectTrapMessage(result, "used by two component types")
     }
 }
 

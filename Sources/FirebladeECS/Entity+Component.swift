@@ -97,6 +97,10 @@ extension Entity {
     ///   Assigning `nil` removes it.
     ///
     /// The restrictions of ``modify(_:_:)`` apply to the code that runs while the component is accessed in place.
+    ///
+    /// - Note: While components are classes, assigning a property through the subscript (`entity[Health.self]?.hp = 1`)
+    ///   only reads the reference and takes no write access, so it delivers no ``ComponentModified`` event. Use
+    ///   ``modify(_:_:)`` for that. Value type components always take the in place access.
     /// - Complexity: O(1) for get and in place access, O(M) for adding or removing where M is the number of families.
     @inlinable
     public subscript<Comp>(_ componentType: Comp.Type) -> Comp? where Comp: Component {

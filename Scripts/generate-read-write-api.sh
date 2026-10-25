@@ -96,7 +96,8 @@ family() {
     ///   components, and replacing a component with `set`. Collect them and apply them after the pass, and write
     ///   changed values through the `inout` parameters. Reading a written type through the nexus
     ///   (for example `entity.get(_:)`) traps, too.
-    /// - Members are visited once each, in the order of the family's member list.
+    /// - Members are visited once each. The sparse-set storage visits them in the order of the family's member list, the
+    ///   archetype storage table by table and row by row; neither order is a contract, and structural changes reorder them.
     /// - If the delegate subscribed to ``NexusEventMask/valueChanges``, one ``ComponentsModified`` event per written type
     ///   is delivered after the pass, not one per member. If `body` throws, the pass ends there, members already visited,
     ///   including the one that threw, stay changed and the events cover them.
@@ -117,46 +118,76 @@ DOC
             for p in "${params[@]}"; do echo "        $p,"; done
             echo "        _ body: ($(join ', ' "${closureParams[@]}")) throws -> Void"
             echo "    ) rethrows {"
-            echo "        guard case let .sparseSet(sparse) = nexus.backend else { return }"
             for ((i = 1; i <= r; i++)); do echo "        requireRequired(R$i.self)"; done
             for ((i = 1; i <= w; i++)); do echo "        requireRequired(W$i.self)"; done
-            echo "        let members = memberIds"
+            echo "        switch nexus.backend {"
+            echo "        case let .sparseSet(sparse):"
+            echo "            let members = memberIds"
             local conds=("!members.isEmpty")
             for ((i = 1; i <= r; i++)); do conds+=("let rs$i = sparse.existing(R$i.self, at: R$i.componentIndex)"); done
             for ((i = 1; i <= w; i++)); do conds+=("let ws$i = sparse.existing(W$i.self, at: W$i.componentIndex)"); done
-            echo "        guard $(join ', ' "${conds[@]}") else { return }"
-            echo "        sparse.lockDepth += 1"
-            for ((i = 1; i <= w; i++)); do echo "        sparse.beginWrite(W$i.componentIndex)"; done
-            for ((i = 1; i <= r; i++)); do echo "        sparse.requireReadable(R$i.componentIndex)"; done
-            echo "        var visited = 0"
-            echo "        defer {"
-            for ((i = 1; i <= w; i++)); do echo "            sparse.endWrite(W$i.componentIndex)"; done
-            echo "            sparse.lockDepth -= 1"
+            echo "            guard $(join ', ' "${conds[@]}") else { return }"
+            echo "            sparse.lockDepth += 1"
+            for ((i = 1; i <= w; i++)); do echo "            sparse.beginWrite(W$i.componentIndex)"; done
+            for ((i = 1; i <= r; i++)); do echo "            sparse.requireReadable(R$i.componentIndex)"; done
+            echo "            var visited = 0"
+            echo "            defer {"
+            for ((i = 1; i <= w; i++)); do echo "                sparse.endWrite(W$i.componentIndex)"; done
+            echo "                sparse.lockDepth -= 1"
             if ((w > 0)); then
-                echo "            if visited > 0 {"
-                for ((i = 1; i <= w; i++)); do echo "                nexus.emitModified(W$i.self, count: visited)"; done
-                echo "            }"
+                echo "                if visited > 0 {"
+                for ((i = 1; i <= w; i++)); do echo "                    nexus.emitModified(W$i.self, count: visited)"; done
+                echo "                }"
             fi
-            echo "        }"
-            for ((i = 1; i <= r; i++)); do echo "        let rBase$i = rs$i.base"; done
-            for ((i = 1; i <= w; i++)); do echo "        let wBase$i = ws$i.base"; done
-            echo "        let entries = members.storage.dense"
-            echo "        try entries.withUnsafeBufferPointer { entries in"
-            echo "            for entry in entries {"
-            echo "                let key = entry.key"
+            echo "            }"
+            for ((i = 1; i <= r; i++)); do echo "            let rBase$i = rs$i.base"; done
+            for ((i = 1; i <= w; i++)); do echo "            let wBase$i = ws$i.base"; done
+            echo "            let entries = members.storage.dense"
+            echo "            try entries.withUnsafeBufferPointer { entries in"
+            echo "                for entry in entries {"
+            echo "                    let key = entry.key"
             for ((i = 1; i <= r; i++)); do
-                echo "                let rSlot$i = rs$i.slot(of: key)"
-                echo "                precondition(rSlot$i >= 0, \"member without a required component\")"
+                echo "                    let rSlot$i = rs$i.slot(of: key)"
+                echo "                    precondition(rSlot$i >= 0, \"member without a required component\")"
             done
             for ((i = 1; i <= w; i++)); do
-                echo "                let wSlot$i = ws$i.slot(of: key)"
-                echo "                precondition(wSlot$i >= 0, \"member without a required component\")"
+                echo "                    let wSlot$i = ws$i.slot(of: key)"
+                echo "                    precondition(wSlot$i >= 0, \"member without a required component\")"
             done
-            local callArgs=()
-            for ((i = 1; i <= r; i++)); do callArgs+=("rBase$i[rSlot$i]"); done
-            for ((i = 1; i <= w; i++)); do callArgs+=("&wBase$i[wSlot$i]"); done
-            echo "                visited += 1"
-            echo "                try body($(join ', ' "${callArgs[@]}"))"
+            local callArgs=() rowArgs=()
+            for ((i = 1; i <= r; i++)); do callArgs+=("rBase$i[rSlot$i]"); rowArgs+=("rBase$i[row]"); done
+            for ((i = 1; i <= w; i++)); do callArgs+=("&wBase$i[wSlot$i]"); rowArgs+=("&wBase$i[row]"); done
+            echo "                    visited += 1"
+            echo "                    try body($(join ', ' "${callArgs[@]}"))"
+            echo "                }"
+            echo "            }"
+            echo "        case let .archetype(archetype):"
+            echo "            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }"
+            echo "            let query = archetype.matchingTables(filter)"
+            echo "            archetype.lockDepth += 1"
+            for ((i = 1; i <= w; i++)); do echo "            archetype.beginWrite(W$i.componentIndex)"; done
+            for ((i = 1; i <= r; i++)); do echo "            archetype.requireReadable(R$i.componentIndex)"; done
+            if ((w > 0)); then echo "            var visited = 0"; fi
+            echo "            defer {"
+            for ((i = 1; i <= w; i++)); do echo "                archetype.endWrite(W$i.componentIndex)"; done
+            echo "                archetype.lockDepth -= 1"
+            if ((w > 0)); then
+                echo "                if visited > 0 {"
+                for ((i = 1; i <= w; i++)); do echo "                    nexus.emitModified(W$i.self, count: visited)"; done
+                echo "                }"
+            fi
+            echo "            }"
+            echo "            for entry in query.tables {"
+            echo "                try entry._withUnsafeGuaranteedRef { table in"
+            echo "                    let count = table.entities.count"
+            echo "                    guard count > 0 else { return }"
+            for ((i = 1; i <= r; i++)); do echo "                    let rBase$i = table.base(R$i.self, at: R$i.componentIndex)"; done
+            for ((i = 1; i <= w; i++)); do echo "                    let wBase$i = table.base(W$i.self, at: W$i.componentIndex)"; done
+            echo "                    for row in 0 ..< count {"
+            if ((w > 0)); then echo "                        visited += 1"; fi
+            echo "                        try body($(join ', ' "${rowArgs[@]}"))"
+            echo "                    }"
+            echo "                }"
             echo "            }"
             echo "        }"
             echo "    }"

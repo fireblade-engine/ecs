@@ -49,11 +49,25 @@ extension Family {
         writing wTypes: repeat (each W).Type,
         body: (inout (repeat each W), repeat each R) throws -> Void
     ) rethrows {
-        guard case let .sparseSet(sparse) = nexus.backend else {
-            return
-        }
         _ = (repeat requireRequired((each R).self))
         _ = (repeat requireRequired((each W).self))
+        switch nexus.backend {
+        case let .sparseSet(sparse):
+            try forEachPack(in: sparse, reading: repeat (each R).self, writing: repeat (each W).self, body: body)
+
+        case let .archetype(archetype):
+            try forEachPack(in: archetype, reading: repeat (each R).self, writing: repeat (each W).self, body: body)
+        }
+    }
+
+    @inlinable
+    @_semantics("optimize.sil.specialize.generic.never")
+    func forEachPack<each R: Component, each W: Component>(
+        in sparse: Nexus.SparseSetStorage,
+        reading rTypes: repeat (each R).Type,
+        writing wTypes: repeat (each W).Type,
+        body: (inout (repeat each W), repeat each R) throws -> Void
+    ) rethrows {
         let members = memberIds
         guard !members.isEmpty else {
             return
@@ -77,6 +91,54 @@ extension Family {
                 let key = entry.key
                 let readValues = (repeat Self.value(of: each reads, at: key))
                 let writePointers = (repeat Self.address(in: each writes, at: key))
+                var written = (repeat Self.load(each writePointers))
+                visited += 1
+                // the write back uses an immutable copy: a pack expansion over a `var` tuple is an l-value (crashes SILGen on 6.2)
+                func writeBack() {
+                    let final = written
+                    _ = (repeat Self.store(each final, to: each writePointers))
+                }
+                do {
+                    try body(&written, repeat each readValues)
+                } catch {
+                    writeBack()
+                    throw error
+                }
+                writeBack()
+            }
+        }
+    }
+
+    @inlinable
+    @_semantics("optimize.sil.specialize.generic.never")
+    func forEachPack<each R: Component, each W: Component>(
+        in archetype: Nexus.ArchetypeStorage,
+        reading rTypes: repeat (each R).Type,
+        writing wTypes: repeat (each W).Type,
+        body: (inout (repeat each W), repeat each R) throws -> Void
+    ) rethrows {
+        guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else {
+            return
+        }
+        let query = archetype.matchingTables(filter)
+        archetype.lockDepth += 1
+        _ = (repeat archetype.beginWrite((each W).componentIndex))
+        _ = (repeat archetype.requireReadable((each R).componentIndex))
+        var visited = 0
+        defer {
+            _ = (repeat archetype.endWrite((each W).componentIndex))
+            archetype.lockDepth -= 1
+            if visited > 0 {
+                _ = (repeat nexus.emitModified((each W).self, count: visited))
+            }
+        }
+        for entry in query.tables {
+            let table = entry.takeUnretainedValue()
+            let readBases = (repeat Self.base(in: table, (each R).self))
+            let writeBases = (repeat Self.base(in: table, (each W).self))
+            for row in 0 ..< table.entities.count {
+                let readValues = (repeat Self.value(of: each readBases, at: row))
+                let writePointers = (repeat Self.address(of: each writeBases, at: row))
                 var written = (repeat Self.load(each writePointers))
                 visited += 1
                 // the write back uses an immutable copy: a pack expansion over a `var` tuple is an l-value (crashes SILGen on 6.2)
@@ -119,6 +181,24 @@ extension Family {
         let slot = storage.slot(of: key)
         precondition(slot >= 0, "member without a required component")
         return storage.base + slot
+    }
+
+    @inlinable
+    @_semantics("optimize.sil.specialize.generic.never")
+    static func base<T: Component>(in table: Nexus.ArchetypeTable, _ type: T.Type) -> UnsafeMutablePointer<T> {
+        table.base(type, at: T.componentIndex)
+    }
+
+    @inlinable
+    @_semantics("optimize.sil.specialize.generic.never")
+    static func value<T: Component>(of base: UnsafeMutablePointer<T>, at row: Int) -> T {
+        base[row]
+    }
+
+    @inlinable
+    @_semantics("optimize.sil.specialize.generic.never")
+    static func address<T: Component>(of base: UnsafeMutablePointer<T>, at row: Int) -> UnsafeMutablePointer<T> {
+        base + row
     }
 
     @inlinable

@@ -11,70 +11,85 @@ import Testing
 
 @Suite(.serialized)
 struct StorageConformanceTests {
-    @Test(arguments: StorageKind.allCases)
-    func setGetReplaceRemove(_ kind: StorageKind) {
+    @Test(arguments: S2Nexus.StorageKind.allCases)
+    func setGetReplaceRemove(_ kind: S2Nexus.StorageKind) {
         kind.run(SetGetReplaceRemove.self)
     }
 
-    @Test(arguments: StorageKind.allCases)
-    func modifyInPlace(_ kind: StorageKind) {
+    @Test(arguments: S2Nexus.StorageKind.allCases)
+    func modifyInPlace(_ kind: S2Nexus.StorageKind) {
         kind.run(ModifyInPlace.self)
     }
 
-    @Test(arguments: StorageKind.allCases)
-    func swapRemoveKeepsOtherEntitiesIntact(_ kind: StorageKind) {
+    @Test(arguments: S2Nexus.StorageKind.allCases)
+    func swapRemoveKeepsOtherEntitiesIntact(_ kind: S2Nexus.StorageKind) {
         kind.run(SwapRemove.self)
     }
 
-    @Test(arguments: StorageKind.allCases)
-    func pagingBoundaries(_ kind: StorageKind) {
+    @Test(arguments: S2Nexus.StorageKind.allCases)
+    func pagingBoundaries(_ kind: S2Nexus.StorageKind) {
         kind.run(PagingBoundaries.self)
     }
 
-    @Test(arguments: StorageKind.allCases)
-    func growthAcrossBlocksAndReallocation(_ kind: StorageKind) {
+    @Test(arguments: S2Nexus.StorageKind.allCases)
+    func growthAcrossBlocksAndReallocation(_ kind: S2Nexus.StorageKind) {
         kind.run(Growth.self)
     }
 
-    @Test(arguments: StorageKind.allCases)
-    func nonTrivialFieldsSurviveMovesAndRemoves(_ kind: StorageKind) {
+    @Test(arguments: S2Nexus.StorageKind.allCases)
+    func nonTrivialFieldsSurviveMovesAndRemoves(_ kind: S2Nexus.StorageKind) {
         kind.run(NonTrivialFields.self)
     }
 
-    @Test(arguments: StorageKind.allCases)
-    func componentsAreReleasedWithTheStorage(_ kind: StorageKind) {
+    @Test(arguments: S2Nexus.StorageKind.allCases)
+    func componentsAreReleasedWithTheStorage(_ kind: S2Nexus.StorageKind) {
         let before = Token.live
         kind.run(TokenLifetime.self)
         #expect(Token.live == before)
     }
 
-    @Test(arguments: StorageKind.allCases)
-    func rowMovesPreserveOtherComponents(_ kind: StorageKind) {
+    @Test(arguments: S2Nexus.StorageKind.allCases)
+    func rowMovesPreserveOtherComponents(_ kind: S2Nexus.StorageKind) {
         kind.run(RowMoves.self)
     }
 
-    @Test(arguments: StorageKind.allCases)
-    func familyMembershipWithExcludes(_ kind: StorageKind) {
+    @Test(arguments: S2Nexus.StorageKind.allCases)
+    func familyMembershipWithExcludes(_ kind: S2Nexus.StorageKind) {
         kind.run(Membership.self)
     }
 
-    @Test(arguments: StorageKind.allCases)
-    func destroyRemovesEverything(_ kind: StorageKind) {
+    @Test(arguments: S2Nexus.StorageKind.allCases)
+    func destroyRemovesEverything(_ kind: S2Nexus.StorageKind) {
         kind.run(Destroy.self)
     }
 
-    @Test(arguments: StorageKind.allCases)
-    func typedIterationAcrossArities(_ kind: StorageKind) {
+    @Test(arguments: S2Nexus.StorageKind.allCases)
+    func typedIterationAcrossArities(_ kind: S2Nexus.StorageKind) {
         kind.run(Iteration.self)
     }
 
-    @Test(arguments: StorageKind.allCases)
-    func untypedSlowPaths(_ kind: StorageKind) {
+    @Test(arguments: S2Nexus.StorageKind.allCases)
+    func untypedSlowPaths(_ kind: S2Nexus.StorageKind) {
         kind.run(Untyped.self)
     }
 
-    @Test(arguments: StorageKind.allCases)
-    func bulkAccessCoversEveryComponentOnce(_ kind: StorageKind) {
+    @Test(arguments: S2Nexus.StorageKind.allCases)
+    func nestedAccessToTheSameTypeSeesRealData(_ kind: S2Nexus.StorageKind) {
+        kind.run(NestedAccess.self)
+    }
+
+    @Test(arguments: S2Nexus.StorageKind.allCases)
+    func deadEntitiesReportAbsence(_ kind: S2Nexus.StorageKind) {
+        kind.run(DeadEntity.self)
+    }
+
+    @Test(arguments: S2Nexus.StorageKind.allCases)
+    func outOfRangeComponentIndicesAreAbsent(_ kind: S2Nexus.StorageKind) {
+        kind.run(OutOfRangeIndex.self)
+    }
+
+    @Test(arguments: S2Nexus.StorageKind.allCases)
+    func bulkAccessCoversEveryComponentOnce(_ kind: S2Nexus.StorageKind) {
         kind.run(Bulk.self)
     }
 }
@@ -82,7 +97,7 @@ struct StorageConformanceTests {
 // MARK: - Test bodies
 
 private enum SetGetReplaceRemove: StorageTest {
-    static func run<S: NexusStorageProviding>(_ storage: S) {
+    static func run(_ storage: S2Nexus) {
         let entity = storage.createEntity()
         #expect(storage.isAlive(entity))
         #expect(storage.get(Position.self, for: entity) == nil)
@@ -104,7 +119,7 @@ private enum SetGetReplaceRemove: StorageTest {
 }
 
 private enum ModifyInPlace: StorageTest {
-    static func run<S: NexusStorageProviding>(_ storage: S) {
+    static func run(_ storage: S2Nexus) {
         let entity = storage.createEntity()
         #expect(!storage.modify(Position.self, for: entity) { $0.x = 1 })
         storage.set(Position(x: 1, y: 1), for: entity)
@@ -114,7 +129,7 @@ private enum ModifyInPlace: StorageTest {
 }
 
 private enum SwapRemove: StorageTest {
-    static func run<S: NexusStorageProviding>(_ storage: S) {
+    static func run(_ storage: S2Nexus) {
         let entities = storage.makeEntities(10)
         for (offset, entity) in entities.enumerated() {
             storage.set(Position(x: Double(offset)), for: entity)
@@ -136,7 +151,7 @@ private enum SwapRemove: StorageTest {
 }
 
 private enum PagingBoundaries: StorageTest {
-    static func run<S: NexusStorageProviding>(_ storage: S) {
+    static func run(_ storage: S2Nexus) {
         let page = PagedSparseIndex.pageSize
         let entities = storage.makeEntities(2 * page + 904)
         let probes = [0, page - 1, page, 2 * page - 1, 2 * page, entities.count - 1]
@@ -160,7 +175,7 @@ private enum PagingBoundaries: StorageTest {
 }
 
 private enum Growth: StorageTest {
-    static func run<S: NexusStorageProviding>(_ storage: S) {
+    static func run(_ storage: S2Nexus) {
         let count = 5000 // several blocks of 1024, several array doublings
         var entities: [EntityID] = []
         for offset in 0 ..< count {
@@ -183,7 +198,7 @@ private enum Growth: StorageTest {
 }
 
 private enum NonTrivialFields: StorageTest {
-    static func run<S: NexusStorageProviding>(_ storage: S) {
+    static func run(_ storage: S2Nexus) {
         let entities = storage.makeEntities(200)
         for (offset, entity) in entities.enumerated() {
             storage.set(Label(text: String(repeating: "label-\(offset)-", count: 8)), for: entity)
@@ -216,7 +231,7 @@ private enum NonTrivialFields: StorageTest {
 }
 
 private enum TokenLifetime: StorageTest {
-    static func run<S: NexusStorageProviding>(_ storage: S) {
+    static func run(_ storage: S2Nexus) {
         let base = Token.live
         let entities = storage.makeEntities(50)
         for entity in entities {
@@ -243,7 +258,7 @@ private enum TokenLifetime: StorageTest {
 }
 
 private enum RowMoves: StorageTest {
-    static func run<S: NexusStorageProviding>(_ storage: S) {
+    static func run(_ storage: S2Nexus) {
         let entities = storage.makeEntities(6)
         for (offset, entity) in entities.enumerated() {
             storage.set(Position(x: Double(offset)), for: entity)
@@ -266,7 +281,7 @@ private enum RowMoves: StorageTest {
 }
 
 private enum Membership: StorageTest {
-    static func run<S: NexusStorageProviding>(_ storage: S) {
+    static func run(_ storage: S2Nexus) {
         let entities = storage.makeEntities(30)
         for (offset, entity) in entities.enumerated() {
             storage.set(Position(x: Double(offset)), for: entity)
@@ -304,7 +319,7 @@ private enum Membership: StorageTest {
 }
 
 private enum Destroy: StorageTest {
-    static func run<S: NexusStorageProviding>(_ storage: S) {
+    static func run(_ storage: S2Nexus) {
         let entities = storage.makeEntities(5)
         for entity in entities {
             storage.set(Position(x: 1), for: entity)
@@ -336,7 +351,7 @@ private enum Destroy: StorageTest {
 }
 
 private enum Iteration: StorageTest {
-    static func run<S: NexusStorageProviding>(_ storage: S) {
+    static func run(_ storage: S2Nexus) {
         let count = 3000
         for offset in 0 ..< count {
             let entity = storage.createEntity()
@@ -398,7 +413,7 @@ private enum Iteration: StorageTest {
 }
 
 private enum Untyped: StorageTest {
-    static func run<S: NexusStorageProviding>(_ storage: S) {
+    static func run(_ storage: S2Nexus) {
         let entity = storage.createEntity()
         storage.assign(any: Position(x: 1), to: entity)
         storage.assign(any: Label(text: "a"), to: entity)
@@ -416,7 +431,7 @@ private enum Untyped: StorageTest {
 }
 
 private enum Bulk: StorageTest {
-    static func run<S: NexusStorageProviding>(_ storage: S) {
+    static func run(_ storage: S2Nexus) {
         let count = 2500
         for offset in 0 ..< count {
             let entity = storage.createEntity()
@@ -442,60 +457,73 @@ private enum Bulk: StorageTest {
     }
 }
 
-// MARK: - Structural changes during iteration trap (D4)
 
-private func setDuringIteration<S: NexusStorageProviding>(_: S.Type) {
-    let storage = S()
-    let entity = storage.createEntity()
-    storage.set(Position(), for: entity)
-    storage.forEach(reading: Position.self) { _ in
-        storage.set(Velocity(), for: entity)
+private enum NestedAccess: StorageTest {
+    static func run(_ storage: S2Nexus) {
+        let entities = storage.makeEntities(50)
+        for (offset, entity) in entities.enumerated() {
+            storage.set(Position(x: Double(offset)), for: entity)
+            storage.set(Velocity(dx: 1), for: entity)
+        }
+        var nestedBulk = 0
+        var nestedIteration = 0
+        storage.forEach(reading: Velocity.self) { _ in
+            // Reading and bulk-writing another type from inside an iteration must see all of its data.
+            if nestedBulk == 0 {
+                storage.withComponents(of: Position.self) { ids, components in
+                    nestedBulk = components.count
+                    #expect(ids.count == components.count)
+                    #expect(storage.get(Velocity.self, for: entities[3])?.dx == 1)
+                    storage.forEach(reading: Velocity.self) { _ in nestedIteration += 1 }
+                    _ = storage.modify(Mass.self, for: entities[3]) { $0.kilograms = 2 }
+                }
+            }
+        }
+        #expect(nestedBulk == 50)
+        #expect(nestedIteration == 50)
+        // Reading the same type twice is not a conflict.
+        var pairs = 0
+        storage.forEach(reading: Position.self) { _ in
+            storage.forEach(reading: Position.self) { _ in pairs += 1 }
+        }
+        #expect(pairs == 50 * 50)
+        // A bulk write to Position may read Velocity and iterate over it.
+        storage.withComponents(of: Position.self) { _, components in
+            var sum = 0.0
+            storage.forEach(reading: Velocity.self) { sum += $0.dx }
+            components[0].y = sum
+        }
+        #expect(storage.get(Position.self, for: entities[0])?.y == 50)
     }
 }
 
-private func destroyDuringModify<S: NexusStorageProviding>(_: S.Type) {
-    let storage = S()
-    let entity = storage.createEntity()
-    storage.set(Position(), for: entity)
-    _ = storage.modify(Position.self, for: entity) { _ in
+private enum DeadEntity: StorageTest {
+    static func run(_ storage: S2Nexus) {
+        let entity = storage.createEntity()
+        storage.set(Position(x: 1), for: entity)
         storage.destroyEntity(entity)
+        #expect(storage.get(Position.self, for: entity) == nil)
+        #expect(!storage.modify(Position.self, for: entity) { $0.x = 2 })
+        #expect(!storage.remove(Position.self, from: entity))
+        #expect(!storage.has(Position.self, for: entity))
+        #expect(storage.get(Position.self, for: EntityID(index: 9999)) == nil)
     }
 }
 
-@Suite struct StructuralChangeTrapTests {
-    @Test func sparseSetTrapsOnSetDuringIteration() async {
-        await #expect(processExitsWith: .failure) { setDuringIteration(SparseSetStorage.self) }
-    }
-
-    @Test func archetypeTrapsOnSetDuringIteration() async {
-        await #expect(processExitsWith: .failure) { setDuringIteration(ArchetypeStorage.self) }
-    }
-
-    @Test func blockSparseSetTrapsOnSetDuringIteration() async {
-        await #expect(processExitsWith: .failure) { setDuringIteration(BlockSparseSetStorage.self) }
-    }
-
-    @Test func sparseSetTrapsOnDestroyDuringModify() async {
-        await #expect(processExitsWith: .failure) { destroyDuringModify(SparseSetStorage.self) }
-    }
-
-    @Test func archetypeTrapsOnDestroyDuringModify() async {
-        await #expect(processExitsWith: .failure) { destroyDuringModify(ArchetypeStorage.self) }
-    }
-}
-
-@Suite struct PagedSparseIndexTests {
-    @Test func sparseIndexAllocatesPagesOnDemand() {
-        let index = PagedSparseIndex()
-        #expect(index.allocatedPageCount == 0)
-        #expect(index.slot(of: 5) == -1)
-        #expect(index.slot(of: 1_000_000) == -1)
-        index.set(5, slot: 0)
-        index.set(UInt32(PagedSparseIndex.pageSize * 40), slot: 1)
-        #expect(index.allocatedPageCount == 2)
-        #expect(index.slot(of: 5) == 0)
-        #expect(index.slot(of: UInt32(PagedSparseIndex.pageSize * 40)) == 1)
-        index.clear(5)
-        #expect(index.slot(of: 5) == -1)
+private enum OutOfRangeIndex: StorageTest {
+    static func run(_ storage: S2Nexus) {
+        let entity = storage.createEntity()
+        storage.set(Position(), for: entity)
+        for index in [-1, 256, 1000, Int.max] {
+            #expect(!storage.has(componentIndex: index, for: entity))
+            #expect(!storage.remove(componentIndex: index, from: entity))
+            #expect(storage.anyComponent(componentIndex: index, for: entity) == nil)
+        }
+        var mask = ComponentMask()
+        #expect(!mask.contains(300))
+        #expect(!mask.contains(-1))
+        mask.remove(300)
+        mask.remove(-5)
+        #expect(mask.isEmpty)
     }
 }

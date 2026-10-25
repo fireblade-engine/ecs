@@ -6,7 +6,12 @@
 /// Type-erased base of one column of an archetype table. The methods are the slow, untyped paths used by
 /// row moves and snapshots; typed access casts to `Column` with `unsafeDowncast`.
 public class AnyColumn {
-    init() {}
+    /// The component type of this column; guards `unsafeDowncast` against two types sharing an index.
+    @usableFromInline let typeID: ObjectIdentifier
+
+    init(typeID: ObjectIdentifier) {
+        self.typeID = typeID
+    }
 
     /// A column of the same component type with no rows.
     func makeEmpty() -> AnyColumn {
@@ -44,9 +49,9 @@ public final class Column<C: Component>: AnyColumn {
     @exclusivity(unchecked) @usableFromInline var count = 0
     @exclusivity(unchecked) @usableFromInline var capacity = 0
 
-    override public init() {
+    public init() {
         base = UnsafeMutablePointer<C>(bitPattern: MemoryLayout<C>.alignment).unsafelyUnwrapped
-        super.init()
+        super.init(typeID: ObjectIdentifier(C.self))
     }
 
     deinit {
@@ -132,6 +137,8 @@ public final class ArchetypeTable {
     @exclusivity(unchecked) @usableFromInline var entities = ContiguousArray<UInt32>()
     /// Indexed by component index; `nil` for components not in `mask`.
     @exclusivity(unchecked) @usableFromInline var columns: ContiguousArray<AnyColumn?>
+    /// The same columns without reference counting, for iteration loops. `columns` keeps them alive.
+    @exclusivity(unchecked) @usableFromInline var unmanagedColumns: ContiguousArray<Unmanaged<AnyColumn>?>
     /// The component indices in `mask`, ascending.
     let columnIndices: [Int]
     /// Cached transitions: `addEdges[c]` is the table after adding component `c`, `-1` when unknown.
@@ -141,13 +148,17 @@ public final class ArchetypeTable {
     init(mask: ComponentMask, columns: [(Int, AnyColumn)]) {
         self.mask = mask
         var sparseColumns = ContiguousArray<AnyColumn?>()
+        var unmanaged = ContiguousArray<Unmanaged<AnyColumn>?>()
         for (index, column) in columns {
             while sparseColumns.count <= index {
                 sparseColumns.append(nil)
+                unmanaged.append(nil)
             }
             sparseColumns[index] = column
+            unmanaged[index] = Unmanaged.passUnretained(column)
         }
         self.columns = sparseColumns
+        unmanagedColumns = unmanaged
         columnIndices = columns.map(\.0)
     }
 
@@ -161,7 +172,18 @@ public final class ArchetypeTable {
         guard index < columns.count, let column = columns[index] else {
             return nil
         }
+        precondition(column.typeID == ObjectIdentifier(C.self), "component index \(index) is used by two component types")
         return unsafeDowncast(column, to: Column<C>.self)
+    }
+
+    /// Address of row 0 of the column for `C`, without retaining the column. The table must have the column
+    /// and at least one row.
+    @inlinable
+    func base<C: Component>(_: C.Type) -> UnsafeMutablePointer<C> {
+        unmanagedColumns[C.componentIndex].unsafelyUnwrapped._withUnsafeGuaranteedRef { column in
+            precondition(column.typeID == ObjectIdentifier(C.self), "component index \(C.componentIndex) is used by two component types")
+            return unsafeDowncast(column, to: Column<C>.self).base
+        }
     }
 
     func edge(_ edges: ContiguousArray<Int32>, _ componentIndex: Int) -> Int {

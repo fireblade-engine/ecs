@@ -4,7 +4,7 @@
 //
 
 // Arity-numbered names (s0, b0, i0) mirror the per-arity overloads.
-// swiftlint:disable identifier_name function_body_length
+// swiftlint:disable identifier_name function_body_length type_body_length
 
 /// Sparse-set storage: one dense array per component type, a paged sparse index per type, a bitset per entity.
 ///
@@ -12,14 +12,16 @@
 /// - Iterating a family walks the smallest participating dense array and looks the other components up
 ///   through their sparse indices: one lookup per extra component and entity.
 /// - Random access (`get`) is a sparse lookup plus an array read.
-public final class SparseSetStorage: NexusStorageProviding {
+public final class SparseSetStorage {
     @exclusivity(unchecked) @usableFromInline var entities = EntityTable()
     /// Indexed by `Component.componentIndex`; `nil` until the type is first used.
     @exclusivity(unchecked) @usableFromInline var storages = ContiguousArray<AnyComponentStorage?>()
     /// Greater than zero while a scoped access or iteration runs; structural changes trap then.
     @exclusivity(unchecked) @usableFromInline var lockDepth = 0
+    /// Component types with a running write access (`modify`, writing iteration, `withComponents`).
+    @exclusivity(unchecked) @usableFromInline var activeWrites = ComponentMask()
 
-    public required init() {}
+    public init() {}
 
     // MARK: Helpers
 
@@ -29,6 +31,7 @@ public final class SparseSetStorage: NexusStorageProviding {
         guard index < storages.count, let storage = storages[index] else {
             return nil
         }
+        precondition(storage.typeID == ObjectIdentifier(C.self), "component index \(index) is used by two component types")
         return unsafeDowncast(storage, to: ComponentStorage<C>.self)
     }
 
@@ -45,6 +48,22 @@ public final class SparseSetStorage: NexusStorageProviding {
         let storage = ComponentStorage<C>()
         storages[index] = storage
         return storage
+    }
+
+    @inlinable
+    func beginWrite(_ componentIndex: Int) {
+        precondition(!activeWrites.contains(componentIndex), "nested write access to component \(componentIndex)")
+        activeWrites.insert(componentIndex)
+    }
+
+    @inlinable
+    func endWrite(_ componentIndex: Int) {
+        activeWrites.remove(componentIndex)
+    }
+
+    @inlinable
+    func requireReadable(_ componentIndex: Int) {
+        precondition(!activeWrites.contains(componentIndex), "read of component \(componentIndex) during a write access to it")
     }
 
     @inlinable
@@ -88,7 +107,7 @@ public final class SparseSetStorage: NexusStorageProviding {
         let storage = storage(creating: C.self)
         let slot = storage.slot(of: entity.index)
         if slot >= 0 {
-            storage.dense[slot] = component
+            storage[slot] = component
         } else {
             storage.insert(component, for: entity.index)
             entities.insert(C.componentIndex, into: entity)
@@ -97,11 +116,12 @@ public final class SparseSetStorage: NexusStorageProviding {
 
     @inlinable
     public func get<C: Component>(_: C.Type, for entity: EntityID) -> C? {
-        guard let storage = existing(C.self) else {
+        requireReadable(C.componentIndex)
+        guard entities.isAlive(entity), let storage = existing(C.self) else {
             return nil
         }
         let slot = storage.slot(of: entity.index)
-        return slot >= 0 ? storage.dense[slot] : nil
+        return slot >= 0 ? storage[slot] : nil
     }
 
     @inlinable
@@ -113,9 +133,13 @@ public final class SparseSetStorage: NexusStorageProviding {
         guard slot >= 0 else {
             return false
         }
+        beginWrite(C.componentIndex)
         lockDepth += 1
-        defer { lockDepth -= 1 }
-        body(&storage.dense[slot])
+        defer {
+            lockDepth -= 1
+            endWrite(C.componentIndex)
+        }
+        body(&storage[slot])
         return true
     }
 
@@ -159,7 +183,7 @@ public final class SparseSetStorage: NexusStorageProviding {
     }
 
     public func anyComponent(componentIndex: Int, for entity: EntityID) -> (any Component)? {
-        guard componentIndex < storages.count else {
+        guard componentIndex >= 0, componentIndex < storages.count else {
             return nil
         }
         return storages[componentIndex]?.anyComponent(for: entity.index)
@@ -185,6 +209,7 @@ public final class SparseSetStorage: NexusStorageProviding {
         guard let s0 = existing(R0.self), !s0.isEmpty else {
             return
         }
+        requireReadable(R0.componentIndex)
         lockDepth += 1
         defer { lockDepth -= 1 }
         let b0 = s0.base
@@ -206,6 +231,8 @@ public final class SparseSetStorage: NexusStorageProviding {
         guard let s0 = existing(R0.self), !s0.isEmpty, let s1 = existing(R1.self), !s1.isEmpty else {
             return
         }
+        requireReadable(R0.componentIndex)
+        requireReadable(R1.componentIndex)
         lockDepth += 1
         defer { lockDepth -= 1 }
         let b0 = s0.base, b1 = s1.base
@@ -232,6 +259,10 @@ public final class SparseSetStorage: NexusStorageProviding {
         else {
             return
         }
+        requireReadable(R0.componentIndex)
+        requireReadable(R1.componentIndex)
+        requireReadable(R2.componentIndex)
+        requireReadable(R3.componentIndex)
         lockDepth += 1
         defer { lockDepth -= 1 }
         let b0 = s0.base, b1 = s1.base, b2 = s2.base, b3 = s3.base
@@ -255,8 +286,14 @@ public final class SparseSetStorage: NexusStorageProviding {
         guard let s0 = existing(R0.self), !s0.isEmpty, let w0 = existing(W0.self), !w0.isEmpty else {
             return
         }
+        requireReadable(R0.componentIndex)
+        precondition(R0.componentIndex != W0.componentIndex, "a component cannot be read and written in one iteration")
+        beginWrite(W0.componentIndex)
         lockDepth += 1
-        defer { lockDepth -= 1 }
+        defer {
+            lockDepth -= 1
+            endWrite(W0.componentIndex)
+        }
         let b0 = s0.base, c0 = w0.base
         let v0 = s0.sparse.view, x0 = w0.sparse.view
         let ids = smallest(s0, w0).ids
@@ -280,8 +317,16 @@ public final class SparseSetStorage: NexusStorageProviding {
         else {
             return
         }
+        requireReadable(R0.componentIndex)
+        requireReadable(R1.componentIndex)
+        precondition(R0.componentIndex != W0.componentIndex, "a component cannot be read and written in one iteration")
+        precondition(R1.componentIndex != W0.componentIndex, "a component cannot be read and written in one iteration")
+        beginWrite(W0.componentIndex)
         lockDepth += 1
-        defer { lockDepth -= 1 }
+        defer {
+            lockDepth -= 1
+            endWrite(W0.componentIndex)
+        }
         let b0 = s0.base, b1 = s1.base, c0 = w0.base
         let v0 = s0.sparse.view, v1 = s1.sparse.view, x0 = w0.sparse.view
         let ids = smallest(smallest(s0, s1), w0).ids
@@ -305,6 +350,8 @@ public final class SparseSetStorage: NexusStorageProviding {
         guard present, let driver else {
             return
         }
+        let readMask = ComponentMask(repeat (each R).self)
+        precondition(activeWrites.isDisjoint(with: readMask), "read during a write access to the same component")
         lockDepth += 1
         defer { lockDepth -= 1 }
         let ids = driver.ids
@@ -328,12 +375,14 @@ public final class SparseSetStorage: NexusStorageProviding {
         guard let storage = existing(C.self), !storage.isEmpty else {
             return
         }
+        beginWrite(C.componentIndex)
         lockDepth += 1
-        defer { lockDepth -= 1 }
+        defer {
+            lockDepth -= 1
+            endWrite(C.componentIndex)
+        }
         storage.ids.withUnsafeBufferPointer { ids in
-            storage.dense.withUnsafeMutableBufferPointer { components in
-                body(ids, components)
-            }
+            body(ids, UnsafeMutableBufferPointer(start: storage.base, count: ids.count))
         }
     }
 }

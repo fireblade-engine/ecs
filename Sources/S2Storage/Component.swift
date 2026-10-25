@@ -54,7 +54,7 @@ public struct ComponentMask: Hashable, Sendable {
 
     @inlinable
     public func contains(_ index: Int) -> Bool {
-        bits[index >> 6] & (1 << UInt64(truncatingIfNeeded: index & 63)) != 0
+        index >= 0 && index < Self.capacity && bits[index >> 6] & (1 << UInt64(truncatingIfNeeded: index & 63)) != 0
     }
 
     @inlinable
@@ -65,6 +65,9 @@ public struct ComponentMask: Hashable, Sendable {
 
     @inlinable
     public mutating func remove(_ index: Int) {
+        guard index >= 0, index < Self.capacity else {
+            return
+        }
         bits[index >> 6] &= ~(1 << UInt64(truncatingIfNeeded: index & 63))
     }
 

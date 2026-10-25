@@ -3,22 +3,34 @@
 //  S2Storage
 //
 
-/// The dense storage of one component type in a sparse-set storage: a hole-free `ContiguousArray<C>` whose
-/// position `i` belongs to the entity at `ids[i]`, addressed through the paged sparse index.
+/// The dense storage of one component type in a sparse-set storage: a hole-free buffer whose position `i`
+/// belongs to the entity at `ids[i]`, addressed through the paged sparse index.
 ///
-/// Removal swaps the last element into the freed slot, so it is O(1) and keeps the array dense.
+/// The values live in memory this class owns, so a pointer to slot 0 never comes from a `withUnsafe…` scope
+/// and no array is ever swapped out while a closure runs: nested `get`, `modify` and iteration over the same
+/// type see the real data. Elements are initialized and deinitialized by hand; `deinit` releases the live ones.
+/// Removal swaps the last element into the freed slot, so it is O(1) and keeps the buffer dense.
 public final class ComponentStorage<C: Component>: AnyComponentStorage {
-    @exclusivity(unchecked) @usableFromInline var dense = ContiguousArray<C>()
+    /// Address of slot 0; dangling (never dereferenced) while `capacity` is 0.
+    @exclusivity(unchecked) @usableFromInline var base: UnsafeMutablePointer<C>
+    @exclusivity(unchecked) @usableFromInline var capacity = 0
 
-    override public init() {
-        super.init()
+    public init() {
+        base = UnsafeMutablePointer<C>(bitPattern: MemoryLayout<C>.alignment).unsafelyUnwrapped
+        super.init(typeID: ObjectIdentifier(C.self))
     }
 
-    /// The address of dense slot 0. Only valid while the storage is neither modified nor reallocated, which
-    /// the storage provider guarantees for the duration of an iteration. Requires `count > 0`.
+    deinit {
+        base.deinitialize(count: ids.count)
+        if capacity > 0 {
+            base.deallocate()
+        }
+    }
+
     @inlinable
-    var base: UnsafeMutablePointer<C> {
-        dense.withUnsafeMutableBufferPointer { $0.baseAddress.unsafelyUnwrapped }
+    subscript(slot: Int) -> C {
+        unsafeAddress { UnsafePointer(base + slot) }
+        unsafeMutableAddress { base + slot }
     }
 
     @inlinable
@@ -28,9 +40,25 @@ public final class ComponentStorage<C: Component>: AnyComponentStorage {
 
     @inlinable
     func insert(_ component: C, for index: UInt32) {
-        sparse.set(index, slot: dense.count)
-        dense.append(component)
+        let slot = ids.count
+        if slot == capacity {
+            grow()
+        }
+        (base + slot).initialize(to: component)
+        sparse.set(index, slot: slot)
         ids.append(index)
+    }
+
+    @usableFromInline
+    func grow() {
+        let newCapacity = max(8, capacity * 2)
+        let newBase = UnsafeMutablePointer<C>.allocate(capacity: newCapacity)
+        newBase.moveInitialize(from: base, count: ids.count)
+        if capacity > 0 {
+            base.deallocate()
+        }
+        base = newBase
+        capacity = newCapacity
     }
 
     override public func remove(_ index: UInt32) -> Bool {
@@ -39,35 +67,30 @@ public final class ComponentStorage<C: Component>: AnyComponentStorage {
 
     /// Typed, inlinable swap-remove; the provider's typed `remove` calls this so the work is specialized
     /// in the client instead of running through the generic class's unspecialized virtual method.
+    ///
+    /// The removed value is moved out first and released last, after `ids`, the sparse index and the buffer are
+    /// consistent again, so a `deinit` that re-enters the storage sees a valid state.
     @inlinable
     func removeSwap(_ index: UInt32) -> Bool {
         let slot = sparse.slot(of: index)
         guard slot >= 0 else {
             return false
         }
-        let last = dense.count - 1
+        let last = ids.count - 1
+        let removed = (base + slot).move()
         if slot != last {
-            dense.swapAt(slot, last)
-            ids.swapAt(slot, last)
+            (base + slot).moveInitialize(from: base + last, count: 1)
+            ids[slot] = ids[last]
             sparse.set(ids[slot], slot: slot)
         }
-        dense.removeLast()
         ids.removeLast()
         sparse.clear(index)
+        withExtendedLifetime(removed) {}
         return true
     }
 
     override public func anyComponent(for index: UInt32) -> (any Component)? {
         let slot = sparse.slot(of: index)
-        return slot >= 0 ? dense[slot] : nil
-    }
-
-    override public func assign(any component: any Component, to index: UInt32) -> Bool {
-        let slot = sparse.slot(of: index)
-        guard slot >= 0, let typed = component as? C else {
-            return false
-        }
-        dense[slot] = typed
-        return true
+        return slot >= 0 ? self[slot] : nil
     }
 }

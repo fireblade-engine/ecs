@@ -4,7 +4,7 @@
 //
 
 // Arity-numbered names (c0, b0) mirror the per-arity overloads.
-// swiftlint:disable identifier_name function_body_length
+// swiftlint:disable identifier_name function_body_length type_body_length
 
 /// Archetype storage: entities with the same component set live in one table with a column per component type.
 ///
@@ -13,7 +13,7 @@
 /// - Adding or removing a component moves the entity's whole row to another table (all other components
 ///   are copied), so churning components is the weak spot. Transitions are cached as edges between tables.
 /// - Random access (`get`) is two array reads (location, column) after the mask test.
-public final class ArchetypeStorage: NexusStorageProviding {
+public final class ArchetypeStorage {
     @usableFromInline struct Location {
         @usableFromInline var table: Int32
         @usableFromInline var row: Int32
@@ -24,8 +24,12 @@ public final class ArchetypeStorage: NexusStorageProviding {
     @exclusivity(unchecked) @usableFromInline var tables = ContiguousArray<ArchetypeTable>()
     var tableIndex: [ComponentMask: Int] = [:]
     @exclusivity(unchecked) @usableFromInline var lockDepth = 0
+    /// Component types with a running write access (`modify`, writing iteration, `withComponents`).
+    @exclusivity(unchecked) @usableFromInline var activeWrites = ComponentMask()
+    /// Matching tables per family, extended lazily as new tables appear (tables are never removed).
+    var queryCache: [FamilyFilter: TableQuery] = [:]
 
-    public required init() {
+    public init() {
         tables.append(ArchetypeTable(mask: ComponentMask(), columns: []))
         tableIndex[ComponentMask()] = 0
     }
@@ -36,6 +40,43 @@ public final class ArchetypeStorage: NexusStorageProviding {
     }
 
     // MARK: Helpers
+
+    @inlinable
+    func beginWrite(_ componentIndex: Int) {
+        precondition(!activeWrites.contains(componentIndex), "nested write access to component \(componentIndex)")
+        activeWrites.insert(componentIndex)
+    }
+
+    @inlinable
+    func endWrite(_ componentIndex: Int) {
+        activeWrites.remove(componentIndex)
+    }
+
+    @inlinable
+    func requireReadable(_ componentIndex: Int) {
+        precondition(!activeWrites.contains(componentIndex), "read of component \(componentIndex) during a write access to it")
+    }
+
+    /// The tables whose component set matches `family`, cached per family. Only tables created since the last
+    /// call for this family are tested again.
+    @usableFromInline
+    func matchingTables(_ family: FamilyFilter) -> TableQuery {
+        let query: TableQuery
+        if let cached = queryCache[family] {
+            query = cached
+        } else {
+            query = TableQuery()
+            queryCache[family] = query
+        }
+        while query.scanned < tables.count {
+            let table = tables[query.scanned]
+            if family.accepts(table.mask) {
+                query.tables.append(Unmanaged.passUnretained(table))
+            }
+            query.scanned += 1
+        }
+        return query
+    }
 
     @inlinable
     func requireUnlocked() {
@@ -179,6 +220,7 @@ public final class ArchetypeStorage: NexusStorageProviding {
 
     @inlinable
     public func get<C: Component>(_: C.Type, for entity: EntityID) -> C? {
+        requireReadable(C.componentIndex)
         guard entities.isAlive(entity) else {
             return nil
         }
@@ -195,8 +237,12 @@ public final class ArchetypeStorage: NexusStorageProviding {
         guard let column = tables[Int(location.table)].column(C.self) else {
             return false
         }
+        beginWrite(C.componentIndex)
         lockDepth += 1
-        defer { lockDepth -= 1 }
+        defer {
+            lockDepth -= 1
+            endWrite(C.componentIndex)
+        }
         body(&column[Int(location.row)])
         return true
     }
@@ -263,12 +309,16 @@ public final class ArchetypeStorage: NexusStorageProviding {
         var required = filter.requires
         required.insert(R0.componentIndex)
         let family = matching(filter, requiring: required)
+        requireReadable(R0.componentIndex)
         lockDepth += 1
         defer { lockDepth -= 1 }
-        for table in tables where !table.entities.isEmpty && family.accepts(table.mask) {
-            let b0 = table.column(R0.self).unsafelyUnwrapped.base
-            for row in 0 ..< table.entities.count {
-                body(b0[row])
+        for entry in matchingTables(family).tables {
+            entry._withUnsafeGuaranteedRef { table in
+                guard !table.entities.isEmpty else { return }
+                let b0 = table.base(R0.self)
+                for row in 0 ..< table.entities.count {
+                    body(b0[row])
+                }
             }
         }
     }
@@ -279,13 +329,18 @@ public final class ArchetypeStorage: NexusStorageProviding {
         required.insert(R0.componentIndex)
         required.insert(R1.componentIndex)
         let family = matching(filter, requiring: required)
+        requireReadable(R0.componentIndex)
+        requireReadable(R1.componentIndex)
         lockDepth += 1
         defer { lockDepth -= 1 }
-        for table in tables where !table.entities.isEmpty && family.accepts(table.mask) {
-            let b0 = table.column(R0.self).unsafelyUnwrapped.base
-            let b1 = table.column(R1.self).unsafelyUnwrapped.base
-            for row in 0 ..< table.entities.count {
-                body(b0[row], b1[row])
+        for entry in matchingTables(family).tables {
+            entry._withUnsafeGuaranteedRef { table in
+                guard !table.entities.isEmpty else { return }
+                let b0 = table.base(R0.self)
+                let b1 = table.base(R1.self)
+                for row in 0 ..< table.entities.count {
+                    body(b0[row], b1[row])
+                }
             }
         }
     }
@@ -301,15 +356,22 @@ public final class ArchetypeStorage: NexusStorageProviding {
         required.insert(R2.componentIndex)
         required.insert(R3.componentIndex)
         let family = matching(filter, requiring: required)
+        requireReadable(R0.componentIndex)
+        requireReadable(R1.componentIndex)
+        requireReadable(R2.componentIndex)
+        requireReadable(R3.componentIndex)
         lockDepth += 1
         defer { lockDepth -= 1 }
-        for table in tables where !table.entities.isEmpty && family.accepts(table.mask) {
-            let b0 = table.column(R0.self).unsafelyUnwrapped.base
-            let b1 = table.column(R1.self).unsafelyUnwrapped.base
-            let b2 = table.column(R2.self).unsafelyUnwrapped.base
-            let b3 = table.column(R3.self).unsafelyUnwrapped.base
-            for row in 0 ..< table.entities.count {
-                body(b0[row], b1[row], b2[row], b3[row])
+        for entry in matchingTables(family).tables {
+            entry._withUnsafeGuaranteedRef { table in
+                guard !table.entities.isEmpty else { return }
+                let b0 = table.base(R0.self)
+                let b1 = table.base(R1.self)
+                let b2 = table.base(R2.self)
+                let b3 = table.base(R3.self)
+                for row in 0 ..< table.entities.count {
+                    body(b0[row], b1[row], b2[row], b3[row])
+                }
             }
         }
     }
@@ -322,13 +384,22 @@ public final class ArchetypeStorage: NexusStorageProviding {
         required.insert(R0.componentIndex)
         required.insert(W0.componentIndex)
         let family = matching(filter, requiring: required)
+        requireReadable(R0.componentIndex)
+        precondition(R0.componentIndex != W0.componentIndex, "a component cannot be read and written in one iteration")
+        beginWrite(W0.componentIndex)
         lockDepth += 1
-        defer { lockDepth -= 1 }
-        for table in tables where !table.entities.isEmpty && family.accepts(table.mask) {
-            let b0 = table.column(R0.self).unsafelyUnwrapped.base
-            let c0 = table.column(W0.self).unsafelyUnwrapped.base
-            for row in 0 ..< table.entities.count {
-                body(b0[row], &c0[row])
+        defer {
+            lockDepth -= 1
+            endWrite(W0.componentIndex)
+        }
+        for entry in matchingTables(family).tables {
+            entry._withUnsafeGuaranteedRef { table in
+                guard !table.entities.isEmpty else { return }
+                let b0 = table.base(R0.self)
+                let c0 = table.base(W0.self)
+                for row in 0 ..< table.entities.count {
+                    body(b0[row], &c0[row])
+                }
             }
         }
     }
@@ -342,14 +413,25 @@ public final class ArchetypeStorage: NexusStorageProviding {
         required.insert(R1.componentIndex)
         required.insert(W0.componentIndex)
         let family = matching(filter, requiring: required)
+        requireReadable(R0.componentIndex)
+        requireReadable(R1.componentIndex)
+        precondition(R0.componentIndex != W0.componentIndex, "a component cannot be read and written in one iteration")
+        precondition(R1.componentIndex != W0.componentIndex, "a component cannot be read and written in one iteration")
+        beginWrite(W0.componentIndex)
         lockDepth += 1
-        defer { lockDepth -= 1 }
-        for table in tables where !table.entities.isEmpty && family.accepts(table.mask) {
-            let b0 = table.column(R0.self).unsafelyUnwrapped.base
-            let b1 = table.column(R1.self).unsafelyUnwrapped.base
-            let c0 = table.column(W0.self).unsafelyUnwrapped.base
-            for row in 0 ..< table.entities.count {
-                body(b0[row], b1[row], &c0[row])
+        defer {
+            lockDepth -= 1
+            endWrite(W0.componentIndex)
+        }
+        for entry in matchingTables(family).tables {
+            entry._withUnsafeGuaranteedRef { table in
+                guard !table.entities.isEmpty else { return }
+                let b0 = table.base(R0.self)
+                let b1 = table.base(R1.self)
+                let c0 = table.base(W0.self)
+                for row in 0 ..< table.entities.count {
+                    body(b0[row], b1[row], &c0[row])
+                }
             }
         }
     }
@@ -363,10 +445,13 @@ public final class ArchetypeStorage: NexusStorageProviding {
         defer {
             lockDepth -= 1
         }
-        for table in tables where !table.entities.isEmpty && family.accepts(table.mask) {
-            let bases = (repeat ColumnCursor((each R).self, in: table))
-            for row in 0 ..< table.entities.count {
-                body(repeat (each bases).value(row))
+        for entry in matchingTables(family).tables {
+            entry._withUnsafeGuaranteedRef { table in
+                guard !table.entities.isEmpty else { return }
+                let bases = (repeat ColumnCursor((each R).self, in: table))
+                for row in 0 ..< table.entities.count {
+                    body(repeat (each bases).value(row))
+                }
             }
         }
     }
@@ -376,8 +461,12 @@ public final class ArchetypeStorage: NexusStorageProviding {
     public func withComponents<C: Component>(
         of _: C.Type, _ body: (UnsafeBufferPointer<UInt32>, UnsafeMutableBufferPointer<C>) -> Void
     ) {
+        beginWrite(C.componentIndex)
         lockDepth += 1
-        defer { lockDepth -= 1 }
+        defer {
+            lockDepth -= 1
+            endWrite(C.componentIndex)
+        }
         for table in tables where !table.entities.isEmpty {
             guard let column = table.column(C.self) else {
                 continue
@@ -395,11 +484,19 @@ public struct ColumnCursor<C: Component> {
 
     @inlinable
     init(_: C.Type, in table: ArchetypeTable) {
-        base = table.column(C.self).unsafelyUnwrapped.base
+        base = table.base(C.self)
     }
 
     @inlinable
     func value(_ row: Int) -> C {
         base[row]
     }
+}
+
+/// The tables matching one family, as unretained references (`ArchetypeStorage.tables` owns them).
+public final class TableQuery {
+    @usableFromInline var tables = ContiguousArray<Unmanaged<ArchetypeTable>>()
+    @usableFromInline var scanned = 0
+
+    init() {}
 }

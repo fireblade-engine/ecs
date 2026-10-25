@@ -43,7 +43,18 @@ public final class Nexus {
     final var assertsOnStaleHandles = true
 
     /// The delegate for handling nexus events.
-    public final weak var delegate: NexusEventDelegate?
+    ///
+    /// The nexus caches ``NexusEventDelegate/subscribedEvents`` when the delegate is assigned. Assign the delegate again
+    /// after changing its subscription.
+    public final weak var delegate: NexusEventDelegate? {
+        didSet {
+            deliversValueChanges = delegate?.subscribedEvents.contains(.valueChanges) ?? false
+        }
+    }
+
+    /// Whether the delegate subscribed to value changes; the single branch a value write pays.
+    @usableFromInline
+    final var deliversValueChanges = false
 
     /// Initializes a new Nexus.
     /// - Parameter storage: The storage to keep entities and components in. Defaults to ``StorageKind/default``.

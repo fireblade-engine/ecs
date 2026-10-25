@@ -19,7 +19,8 @@ let componentMacroSpecs: [String: MacroSpec] = [
         type: ComponentMacro.self,
         conformances: ["Component", "RegistrableComponent", "CloneableComponent", "SerializableComponent", "InspectableComponent", "DefaultInitializable"]
     ),
-    "ComponentIgnored": MacroSpec(type: ComponentIgnoredMacro.self)
+    "ComponentIgnored": MacroSpec(type: ComponentIgnoredMacro.self),
+    "FamilyTraits": MacroSpec(type: FamilyTraitsMacro.self, conformances: ["FamilyTraitsProviding"])
 ]
 
 /// Asserts a macro expansion and reports failures as Swift Testing issues.

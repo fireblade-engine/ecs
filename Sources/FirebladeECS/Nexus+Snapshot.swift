@@ -6,6 +6,9 @@
 //
 
 extension Nexus {
+    /// The highest entity index a snapshot may restore; the nexus keeps per-entity data up to the highest index.
+    static let maxRestoredEntityIndex: EntityIdentifier.Index = 1 << 24
+
     /// Creates a snapshot of all entities, their serializable components and the entity identifier generator state.
     ///
     /// Component instances shared by several entities are listed once and referenced by the other entities.
@@ -55,6 +58,9 @@ extension Nexus {
     /// - Throws: ``ComponentSerializationError/entityIdentifierMismatch(expected:actual:)`` if the generator provides another identifier.
     /// - Complexity: O(N) where N is the number of identifiers.
     func recreateEntities(withIdentifiers identifiers: [EntityIdentifier]) throws {
+        if let absurd = identifiers.first(where: { $0.index > Self.maxRestoredEntityIndex }) {
+            throw ComponentSerializationError.entityIndexOutOfRange(absurd)
+        }
         let generatorType = type(of: entityIdGenerator)
         entityIdGenerator = generatorType.init(startProviding: identifiers.reversed())
         for expected in identifiers {

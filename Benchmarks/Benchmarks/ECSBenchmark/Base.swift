@@ -66,9 +66,9 @@ struct SingleGameState: SingleComponent, Sendable {
     var playerHealth: Int = 67
 }
 
-func setUpNexus() -> Nexus {
+func setUpNexus(storage: Nexus.StorageKind = .default) -> Nexus {
     let numEntities = 10000
-    let nexus = Nexus()
+    let nexus = Nexus(storage: storage)
 
     for i in 0 ..< numEntities {
         nexus.createEntity().set(Position(x: 1 + i, y: 2 + i),

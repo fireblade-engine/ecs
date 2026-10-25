@@ -86,3 +86,38 @@ The entity API separates reading a copy, replacing and changing in place, see <d
 - ``Entity/components(_:_:writing:_:_:)-(_,_,_,_,_)`` and its siblings change several components at once.
 - ``Entity`` holds its ``Nexus`` as `unowned(unsafe)`: copying an entity costs no reference counting, but using an entity after its nexus was deallocated is undefined behavior. Keep the nexus alive as long as you use its entities. It was a checked `unowned` reference before, which trapped.
 - While a `modify` closure or an in place subscript access runs, adding or removing components or entities of the same nexus, and reading or modifying the same component type, stop the process with a message such as `structural change while a scoped access is running`. Do such changes after the closure.
+
+### Components are value types
+
+``Component`` no longer requires `AnyObject`. Declare components as structs or enums; classes still work, but the nexus stores them like any other value. A component with a handle that is not `Sendable` conforms with `@unchecked Sendable`. The `@Component` macro still only accepts classes until a later release.
+
+```swift
+// before
+final class Position: Component { var x = 0, y = 0 }
+
+// after
+struct Position: Component { var x = 0, y = 0 }
+```
+
+- Reading a component (`get`, `entity[Position.self]`, family iteration) returns a copy. Changing the copy does not change the stored component. Write with ``Entity/set(_:)-(Component)``, ``Entity/modify(_:_:)``, the entity subscripts or the key path subscripts.
+- Iteration hands out copies. `for var position in family { position.x += 1 }` compiles and silently changes nothing. Use `family.entities` and `entity.modify(Position.self) { $0.x += 1 }`, or `entityAndComponents` and `entity.set(...)`.
+- Identity is gone. `===` between components, `ObjectIdentifier(component)` and `weak` or `unowned` references to a component do not compile for structs. Compare values (make the struct `Equatable`) and keep an ``Entity`` or ``EntityIdentifier`` to refer to a component.
+- Two entities no longer share a component instance: `set(sameValue)` on two entities stores two independent copies. Snapshots therefore never write `sharedComponents` any more; they are still read from format versions 1 and 2, each entity gets its own copy.
+- ``ComponentProperty/isWritable`` is true for every `WritableKeyPath`, not only for `ReferenceWritableKeyPath`.
+- A component keeps its stored properties alive for as long as the nexus stores it. If a property is a class instance, `deinit` runs when the last copy is released.
+
+### Single
+
+``Single/component`` returns a copy and is read-only. `single.component.value = x` no longer compiles for a struct component (it wrote to the shared instance before). Use the new write methods:
+
+```swift
+single.modify { $0.value = x }       // in place, delivers ComponentModified
+single.set(GameState(value: x))      // replaces the component, delivers ComponentReplaced
+```
+
+### State machine providers
+
+``ComponentProvider/getComponent()`` returns a component value that the machine stores through ``Entity/set(_:)-(Component)``.
+
+- ``ComponentSingletonProvider`` creates its value on first use and hands a copy of it to every entity. It used to hand the same instance to every entity, so a change through one entity was visible on all. Now each entity owns its copy. The name is kept for source compatibility; ComponentValueProvider would describe it better and may replace it.
+- Values have no identity, so a provider is identified by the provider object: ``ComponentInstanceProvider/identifier`` and ``ComponentSingletonProvider/identifier`` are unique per provider. When an entity changes state, a component stays only if both states share the same provider object (`withProvider(_:)`). Two ``ComponentInstanceProvider``s holding equal values are different providers and the component is removed and added again.

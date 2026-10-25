@@ -11,6 +11,7 @@ extension ComponentMacro {
     /// Diagnostics emitted by `@Component`.
     enum DiagnosticKind: String, DiagnosticMessage {
         case requiresValueType
+        case storedEntity
         case unsupportedLazyProperty
         case unsupportedPattern
         case unsupportedExcludingArgument
@@ -21,6 +22,9 @@ extension ComponentMacro {
             switch self {
             case .requiresValueType:
                 "@Component requires a value type (struct or enum); classes are not supported"
+
+            case .storedEntity:
+                "a component must not store an 'Entity'; store an 'EntityIdentifier', which stays valid when the component is copied, cloned or saved"
 
             case .unsupportedLazyProperty:
                 "@Component does not support lazy properties"

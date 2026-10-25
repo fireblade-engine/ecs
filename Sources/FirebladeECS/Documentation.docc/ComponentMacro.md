@@ -5,7 +5,7 @@ Implement registration, cloning, snapshots and inspection for a component from i
 ## Overview
 
 The optional `FirebladeECSMacros` product provides the `@Component` macro.
-It turns a `final class` into a component and implements a set of component protocols from its stored properties, so you don't have to write that code by hand:
+It turns a `struct` or `enum` into a component and implements a set of component protocols from its stored properties, so you don't have to write that code by hand:
 
 | Protocol | Generated | Enables |
 | --- | --- | --- |
@@ -13,7 +13,8 @@ It turns a `final class` into a component and implements a set of component prot
 | ``CloneableComponent`` | `init(cloning:context:)`, `clone(context:)` | `entity.clone()`, `nexus.clone(entities:)`, `nexus.clone(into:)` |
 | ``SerializableComponent`` | `CodingKeys`, `init(from:)`, `encode(to:)` | `nexus.encodeSnapshot(using:handling:)`, `nexus.restoreSnapshot(from:using:)`, `nexus.decodeSnapshot(from:using:)`, `Nexus: Codable` |
 | ``InspectableComponent`` | `componentProperties` | generic inspection, e.g. in editors |
-| ``DefaultInitializable`` | `init()` if every stored property has a default value | key path assignment, state machines |
+| ``DefaultInitializable`` | `init()` if every stored property has a default value (structs) | key path assignment, state machines |
+| ``Component`` | `static let componentIndex` | typed lookups read a plain static instead of taking the registry lock |
 
 The core `FirebladeECS` library stays dependency free. Only `FirebladeECSMacros` depends on [swift-syntax](https://github.com/swiftlang/swift-syntax).
 All protocols can also be implemented by hand without the macro.
@@ -34,14 +35,14 @@ Add the product to your target. It re-exports `FirebladeECS`.
 import FirebladeECSMacros
 
 @Component
-final class Transform: @unchecked Sendable {
+struct Transform {
     var position: SIMD3<Float> = .zero
-    var parent: Entity?
+    var parent: EntityIdentifier?
     @ComponentIgnored var cachedMatrix: [Float] = []  // still cloned, but not serialized or inspected
 }
 
 @Component(excluding: .serializable)  // runtime-only component
-final class RenderHandle: @unchecked Sendable {
+struct RenderHandle: @unchecked Sendable {
     var handle: Int = 0
 }
 ```
@@ -52,7 +53,15 @@ final class RenderHandle: @unchecked Sendable {
 - `@ComponentIgnored` keeps a stored property out of serialization and inspection. Ignored properties are still cloned and need a default value.
 - Serialized properties need an explicit type annotation. `let` constants with an initial value are not serialized.
 - Members you declare yourself are not generated. Declaring any of `CodingKeys`, `init(from:)` or `encode(to:)` leaves serialization entirely to you.
-- The generated initializers are designated initializers, so the class no longer gets an implicit `init()`. Keep `.defaultInit` enabled or declare your own initializers.
+- The generated initializers live in an extension, so a struct keeps its memberwise initializer. A `public` or `package` struct, and a struct that declares initializers, gets a generated `init()` in its body (the implicit `init()` is internal and disappears next to declared initializers); an internal struct without initializers keeps the implicit one.
+- An enum is cloned as a whole and listed without properties. It is serialized only if it declares `Codable` itself, and it gets `DefaultInitializable` only if it declares `init()`.
+- The macro stores `static let componentIndex = registeredComponentIndex`. The index still comes from the registry at first access, so it cannot collide with a lazily assigned one. Declare your own `componentIndex` to opt out.
+
+### Value types and diagnostics
+
+`@Component` reports an error when it is applied to a class: components are value types, so use a struct or enum. The nexus also asserts once per component type, in debug builds, that a hand-written conformance is not a class.
+
+A stored property spelled `Entity`, `Entity?`, `[Entity]`, `Set<Entity>` or `[Key: Entity]` is an error with a fix-it that replaces `Entity` by ``EntityIdentifier``. An ``Entity`` keeps its nexus alive and is not valid after a copy, a clone or a snapshot, while an identifier is a plain value that the clone context remaps. The macro sees syntax only: an `Entity` behind a typealias or in a nested type is not diagnosed and stays a convention.
 
 ### Registering, cloning and snapshots
 

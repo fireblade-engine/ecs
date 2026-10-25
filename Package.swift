@@ -97,6 +97,9 @@ let package = Package(
         .testTarget(name: "FirebladeECSTests",
                     dependencies: ["FirebladeECS"],
                     swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
+        .testTarget(name: "FirebladeFSMTests",
+                    dependencies: ["FirebladeFSM"],
+                    swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
         .testTarget(name: "FirebladeECSPerformanceTests",
                     dependencies: ["FirebladeECS"],
                     swiftSettings: [

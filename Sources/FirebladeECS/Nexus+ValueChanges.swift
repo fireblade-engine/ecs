@@ -117,11 +117,13 @@ extension Nexus {
 
     /// Gives `body` write access to all components of a type as contiguous buffers and emits one
     /// ``ComponentsModified`` afterwards, not one event per entity.
+    ///
+    /// The archetype storage calls `body` once per table that holds the type; the event counts the components of all calls.
     @usableFromInline
     final func withComponents<C: Component>(of type: C.Type, _ body: (UnsafeBufferPointer<UInt32>, UnsafeMutableBufferPointer<C>) -> Void) {
         var count = 0
         backend.withComponents(of: type) { ids, components in
-            count = components.count
+            count += components.count
             body(ids, components)
         }
         if count > 0 {

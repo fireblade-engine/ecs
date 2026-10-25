@@ -100,6 +100,8 @@ For a more detailed example of FirebladeECS in action, see the [Fireblade ECS De
 - ``FamilyMemberAdded``
 - ``FamilyMemberRemoved``
 - ``FamilyTraitSet``
+- ``FamilyProtocol``
+- ``FamilyTraitsProviding``
 - ``FamilyMemberContainer``
 - ``Single``
 

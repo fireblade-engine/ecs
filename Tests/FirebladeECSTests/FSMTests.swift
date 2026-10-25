@@ -9,27 +9,26 @@
 import Testing
 
 @Suite struct ComponentInstanceProviderTests {
-    @Test func providerReturnsTheInstance() {
+    @Test func providerReturnsACopyOfTheValue() {
         let instance = MockComponent(value: .max)
         let provider1 = ComponentInstanceProvider(instance: instance)
         let providedComponent = provider1.getComponent() as? MockComponent
-        #expect(providedComponent === instance)
+        #expect(providedComponent == instance)
     }
 
-    @Test func providersWithSameInstanceHaveSameIdentifier() {
-        let instance = MockComponent(value: .max)
-        let provider1 = ComponentInstanceProvider(instance: instance)
-        let provider2 = ComponentInstanceProvider(instance: instance)
-        #expect(provider1.identifier == provider2.identifier)
+    @Test func providerIsItsOwnIdentity() {
+        // values have no identity: two providers of equal values are different, the same provider object is equivalent
+        let provider = ComponentInstanceProvider(instance: MockComponent(value: .max))
+        #expect(provider.identifier == provider.identifier)
     }
 
-    @Test func providersWithDifferentInstanceHaveDifferentIdentifier() {
+    @Test func providersWithEqualValuesHaveDifferentIdentifier() {
         let provider1 = ComponentInstanceProvider(instance: MockComponent(value: .max))
         let provider2 = ComponentInstanceProvider(instance: MockComponent(value: .max))
         #expect(provider1.identifier != provider2.identifier)
     }
 
-    class MockComponent: Component, @unchecked Sendable {
+    struct MockComponent: Component, Equatable, Sendable {
         var value: Int
 
         init(value: Int) {
@@ -47,11 +46,12 @@ import Testing
         #expect(component != nil)
     }
 
-    @Test func providerReturnsNewInstanceEachTime() {
+    @Test func providerReturnsAFreshDefaultValueEachTime() {
         let provider = ComponentTypeProvider(type: MockComponent.self)
         let component1 = provider.getComponent() as? MockComponent
         let component2 = provider.getComponent() as? MockComponent
-        #expect(component1 !== component2)
+        #expect(component1 == MockComponent())
+        #expect(component2 == MockComponent())
     }
 
     @Test func providersWithSameTypeHaveSameIdentifier() {
@@ -66,18 +66,18 @@ import Testing
         #expect(provider1.identifier != provider2.identifier)
     }
 
-    class MockComponent: Component, DefaultInitializable, @unchecked Sendable {
+    struct MockComponent: Component, DefaultInitializable, Equatable, Sendable {
         var value: String
 
-        required init() {
+        init() {
             value = ""
         }
     }
 
-    class MockComponent2: Component, DefaultInitializable, @unchecked Sendable {
+    struct MockComponent2: Component, DefaultInitializable, Equatable, Sendable {
         var value: Bool
 
-        required init() {
+        init() {
             value = false
         }
     }
@@ -92,12 +92,22 @@ import Testing
         #expect(component != nil)
     }
 
-    @Test func providerReturnsSameInstanceEachTime() {
+    @Test func providerReturnsACopyOfTheSameValueEachTime() {
         let provider = ComponentSingletonProvider(type: MockComponent.self)
         let component1 = provider.getComponent() as? MockComponent
         let component2 = provider.getComponent() as? MockComponent
-        #expect(component1 === component2)
+        #expect(component1 == component2)
+    }
 
+    @Test func entitiesGetIndependentCopiesOfTheValue() {
+        // 1.x handed the one shared instance to every entity; now each entity owns its copy
+        let nexus = Nexus()
+        let provider = ComponentSingletonProvider(type: MockComponent.self)
+        let entity1 = nexus.createEntity().set(provider.getComponent())
+        let entity2 = nexus.createEntity().set(provider.getComponent())
+        entity1.modify(MockComponent.self) { $0.value = 1 }
+        #expect(entity1.get(MockComponent.self)?.value == 1)
+        #expect(entity2.get(MockComponent.self)?.value == 0)
     }
 
     @Test func providersWithSameTypeHaveDifferentIdentifier() {
@@ -112,18 +122,18 @@ import Testing
         #expect(provider1.identifier != provider2.identifier)
     }
 
-    class MockComponent: Component, DefaultInitializable, @unchecked Sendable {
+    struct MockComponent: Component, DefaultInitializable, Equatable, Sendable {
         var value: Int
 
-        required init() {
+        init() {
             value = 0
         }
     }
 
-    class MockComponent2: Component, DefaultInitializable, @unchecked Sendable {
+    struct MockComponent2: Component, DefaultInitializable, Equatable, Sendable {
         var value: String
 
-        required init() {
+        init() {
             value = ""
         }
     }
@@ -137,7 +147,7 @@ import Testing
         let providerMethod = DynamicComponentProvider.Closure { instance }
         let provider = DynamicComponentProvider(closure: providerMethod)
         let component = provider.getComponent() as? MockComponent
-        #expect(component === instance)
+        #expect(component == instance)
     }
 
     @Test func providersWithSameMethodHaveSameIdentifier() {
@@ -157,7 +167,7 @@ import Testing
         #expect(provider1.identifier != provider2.identifier)
     }
 
-    class MockComponent: Component, @unchecked Sendable {
+    struct MockComponent: Component, Equatable, Sendable {
         let value: Int
 
         init(value: Int) {
@@ -195,7 +205,7 @@ import Testing
         state.addMapping(for: MockComponent.self).withInstance(component)
         let provider = state.providers[MockComponent.identifier]
         #expect(provider is ComponentInstanceProvider)
-        #expect(provider?.getComponent() === component)
+        #expect(provider?.getComponent() as? MockComponent == component)
     }
 
     @Test func addMappingWithSingletonQualifierCreatesSingletonProvider() {
@@ -285,7 +295,7 @@ import Testing
         let component = MockComponent()
         state.addInstance(component)
         #expect(state.provider(for: MockComponent.self) is ComponentInstanceProvider)
-        #expect(state.provider(for: MockComponent.self)?.getComponent() === component)
+        #expect(state.provider(for: MockComponent.self)?.getComponent() as? MockComponent == component)
     }
 
     @Test func addTypeCreatesMappingAndSetsTypeProviderForType() {
@@ -309,7 +319,7 @@ import Testing
         let component = MockComponent()
         state.addMethod(closure: .init { component })
         #expect(state.provider(for: MockComponent.self) is DynamicComponentProvider<MockComponent>)
-        #expect(state.provider(for: MockComponent.self)?.getComponent() === component)
+        #expect(state.provider(for: MockComponent.self)?.getComponent() as? MockComponent == component)
     }
 
     @Test func addProviderCreatesMappingAndSetsProvider() {
@@ -320,19 +330,29 @@ import Testing
         #expect(state.provider(for: MockComponent.self) != nil)
     }
 
-    class MockComponent: ComponentInitializable, @unchecked Sendable {
+    struct MockComponent: ComponentInitializable, Equatable, Sendable {
         let value: Int
 
         init(value: Int) {
             self.value = value
         }
 
-        required init() {
+        init() {
             value = 0
         }
     }
 
-    class MockComponent2: MockComponent, @unchecked Sendable {}
+    struct MockComponent2: ComponentInitializable, Equatable, Sendable {
+        let value: Int
+
+        init(value: Int) {
+            self.value = value
+        }
+
+        init() {
+            value = 0
+        }
+    }
 }
 
 // MARK: -
@@ -347,7 +367,7 @@ import Testing
         state.addMapping(for: MockComponent.self).withInstance(component)
         fsm.addState(name: "test", state: state)
         fsm.changeState(name: "test")
-        #expect(entity.get(MockComponent.self) === component)
+        #expect(entity.get(MockComponent.self) == component)
     }
 
     @Test func enterSecondStateAddsSecondStatesComponents() {
@@ -365,7 +385,7 @@ import Testing
         fsm.addState(name: "test2", state: state2)
         fsm.changeState(name: "test2")
 
-        #expect(entity.get(MockComponent2.self) === component2)
+        #expect(entity.get(MockComponent2.self) == component2)
     }
 
     @Test func enterSecondStateRemovesFirstStatesComponents() {
@@ -406,18 +426,20 @@ import Testing
         nexus.delegate = delgate
         let state1 = EntityState()
         let component1 = MockComponent()
-        state1.addMapping(for: MockComponent.self).withInstance(component1)
+        // the provider object is the identity of what a state provides: sharing it keeps the component
+        let provider1 = ComponentInstanceProvider(instance: component1)
+        state1.addMapping(for: MockComponent.self).withProvider(provider1)
         fsm.addState(name: "test1", state: state1)
         fsm.changeState(name: "test1")
 
         let state2 = EntityState()
         let component2 = MockComponent2()
-        state2.addMapping(for: MockComponent.self).withInstance(component1)
+        state2.addMapping(for: MockComponent.self).withProvider(provider1)
         state2.addMapping(for: MockComponent2.self).withInstance(component2)
         fsm.addState(name: "test2", state: state2)
         fsm.changeState(name: "test2")
 
-        #expect(entity.get(MockComponent.self) === component1)
+        #expect(entity.get(MockComponent.self) == component1)
     }
 
     @Test func enterSecondStateRemovesDifferentComponentsOfSameType() {
@@ -438,7 +460,7 @@ import Testing
         fsm.addState(name: "test2", state: state2)
         fsm.changeState(name: "test2")
 
-        #expect(entity.get(MockComponent.self) === component3)
+        #expect(entity.get(MockComponent.self) == component3)
     }
 
     @Test func createStateAddsState() {
@@ -449,7 +471,7 @@ import Testing
         let component = MockComponent()
         state.addMapping(for: MockComponent.self).withInstance(component)
         fsm.changeState(name: "test")
-        #expect(entity.get(MockComponent.self) === component)
+        #expect(entity.get(MockComponent.self) == component)
     }
 
     @Test func createStateDoesNotChangeState() {
@@ -473,15 +495,15 @@ import Testing
         state.addMapping(for: MockComponent2.self).withInstance(component2)
         let name = "test"
         fsm.changeState(name: name)
-        #expect(entity.get(MockComponent.self) === component1)
-        #expect(entity.get(MockComponent2.self) === component2)
+        #expect(entity.get(MockComponent.self) == component1)
+        #expect(entity.get(MockComponent2.self) == component2)
         fsm.changeState(name: name)
-        #expect(entity.get(MockComponent.self) === component1)
-        #expect(entity.get(MockComponent2.self) === component2)
+        #expect(entity.get(MockComponent.self) == component1)
+        #expect(entity.get(MockComponent2.self) == component2)
     }
 
     @Test func getsDeinitedWhileBeingStronglyReferencedByComponentAssignedToEntity() {
-        class Marker: Component, @unchecked Sendable {
+        struct Marker: Component, Sendable {
             let fsm: EntityStateMachine<String>
             init(fsm: EntityStateMachine<String>) {
                 self.fsm = fsm
@@ -492,41 +514,37 @@ import Testing
         var entity: Entity? = nexus.createEntity()
         var markerComponent: Marker? = Marker(fsm: EntityStateMachine<String>(entity: entity!))
         entity?.set(markerComponent!)
-        weak var weakMarker: Marker?
-        weakMarker = markerComponent
         weak var weakFsm: EntityStateMachine<String>?
         weakFsm = markerComponent?.fsm
         nexus.destroy(entity: entity!)
         entity = nexus.createEntity()
         markerComponent = .init(fsm: .init(entity: entity!))
         
-        withExtendedLifetime(weakMarker) { _ in }
         withExtendedLifetime(weakFsm) { _ in }
         
-        #expect(weakMarker == nil)
         #expect(weakFsm == nil)
     }
 
-    class MockComponent: ComponentInitializable, @unchecked Sendable {
+    struct MockComponent: ComponentInitializable, Equatable, Sendable {
         let value: Int
 
         init(value: Int) {
             self.value = value
         }
 
-        required init() {
+        init() {
             value = 0
         }
     }
 
-    class MockComponent2: ComponentInitializable, @unchecked Sendable {
+    struct MockComponent2: ComponentInitializable, Equatable, Sendable {
         let value: String
 
         init(value: String) {
             self.value = value
         }
 
-        required init() {
+        init() {
             self.value = ""
         }
     }
@@ -554,26 +572,26 @@ import Testing
         #expect(state.hasProvider(for: MockComponent.self))
     }
 
-    class MockComponent: ComponentInitializable, @unchecked Sendable {
+    struct MockComponent: ComponentInitializable, Equatable, Sendable {
         let value: Int
 
         init(value: Int) {
             self.value = value
         }
 
-        required init() {
+        init() {
             value = 0
         }
     }
 
-    class MockComponent2: ComponentInitializable, @unchecked Sendable {
+    struct MockComponent2: ComponentInitializable, Equatable, Sendable {
         let value: String
 
         init(value: String) {
             self.value = value
         }
 
-        required init() {
+        init() {
             self.value = ""
         }
     }

@@ -50,7 +50,7 @@ import Testing
 
         var index: Int = 0
         while let idx = range.popLast() {
-            let eId = EntityIdentifier(index: idx, generation: 1)
+            let eId = EntityIdentifier(index: idx, generation: 0)
 
             let entityId: EntityIdentifier = eId
             let c = (index % maxComponents)

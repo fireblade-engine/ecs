@@ -47,7 +47,7 @@ public typealias DefaultEntityIdGenerator = LinearIncrementingEntityIdGenerator
 /// This entity id generator creates linearly incrementing entity ids
 /// unless an entity is marked as unused then the marked id is returned next in a FIFO order
 /// with an increased generation.
-/// Slots start at generation 1. A slot whose generation reaches `UInt32.max` is retired and never provided again.
+/// The slot index 0 is reserved and never provided; slots start at generation 0. A slot whose generation reaches `UInt32.max` is retired and never provided again.
 ///
 /// Furthermore it respects order of entity ids on initialization, meaning the provided ids on initialization will be provided in order
 /// until all are in use. After that the free entities start at the lowest available id increasing linearly skipping already in-use entity ids.
@@ -55,7 +55,7 @@ public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
     /// Internal storage for entity identifiers.
     @usableFromInline
     final class Storage: @unchecked Sendable {
-        /// The bottom of the stack is the next fresh identifier (generation 1), provided once no recycled identifiers are left.
+        /// The bottom of the stack is the next fresh identifier (generation 0), provided once no recycled identifiers are left.
         /// The elements above it are the recycled identifiers, provided in last out order.
         @usableFromInline var stack: [EntityIdentifier]
         @usableFromInline var count: Int {
@@ -66,14 +66,15 @@ public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
         /// - Parameter initialEntityIds: Identifiers to start with.
         @usableFromInline
         init<EntityIds>(startProviding initialEntityIds: EntityIds) where EntityIds: BidirectionalCollection, EntityIds.Element == EntityIdentifier {
-            let initialInUse: [EntityIdentifier] = Array(initialEntityIds)
+            // the reserved index 0 is never provided
+            let initialInUse: [EntityIdentifier] = initialEntityIds.filter { $0.index != 0 }
             guard let maxInUseIndex = initialInUse.map(\.index).max() else {
-                stack = [Self.firstFresh(0)]
+                stack = [Self.firstFresh(1)]
                 return
             }
             precondition(maxInUseIndex < .max, "Entity index space is exhausted.")
             let inUseSet = Set(initialInUse.map(\.index)) // a set of all indices in use
-            let freeSet = Set(0 ..< maxInUseIndex).subtracting(inUseSet) // all "holes" / unused / free indices below maxInUseIndex
+            let freeSet = Set(1 ..< maxInUseIndex).subtracting(inUseSet) // all "holes" / unused / free indices below maxInUseIndex
             // order them to provide them linear increasing after all initially used are provided.
             let initialFree = freeSet.sorted(by: >).map(Self.firstFresh)
             stack = [Self.firstFresh(maxInUseIndex + 1)] + initialFree + initialInUse
@@ -82,13 +83,13 @@ public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
         /// Initializes the storage with a default identifier.
         @usableFromInline
         init() {
-            stack = [Self.firstFresh(0)]
+            stack = [Self.firstFresh(1)]
         }
 
-        /// Creates the identifier of the first generation of a slot.
+        /// Creates the identifier of the first generation (0) of a slot.
         @usableFromInline
         static func firstFresh(_ index: EntityIdentifier.Index) -> EntityIdentifier {
-            EntityIdentifier(index: index, generation: 1)
+            EntityIdentifier(index: index, generation: 0)
         }
 
         /// Returns the next available identifier.
@@ -106,10 +107,13 @@ public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
 
         /// Marks an identifier as unused.
         ///
-        /// The slot is recycled with an increased generation, or retired once the generation would reach `UInt32.max`.
+        /// The slot is recycled with an increased generation, or retired once its generation would reach `UInt32.max`.
         /// - Parameter entityId: The identifier to recycle.
         @usableFromInline
         func markUnused(entityId: EntityIdentifier) {
+            guard entityId.index != 0 else {
+                return // reserved
+            }
             let nextGeneration = entityId.generation &+ 1
             guard nextGeneration < .max, nextGeneration > entityId.generation else {
                 return // retired: the generation can not be increased any further without wrapping around.

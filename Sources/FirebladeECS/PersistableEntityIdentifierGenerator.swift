@@ -18,11 +18,11 @@ public protocol PersistableEntityIdentifierGenerator: EntityIdentifierGenerator,
 extension LinearIncrementingEntityIdGenerator: PersistableEntityIdentifierGenerator {
     /// The coding keys of a linear incrementing entity id generator.
     enum CodingKeys: String, CodingKey {
-        /// The slot index provided once no recycled identifiers are left. It is provided with generation 1.
+        /// The slot index provided once no recycled identifiers are left. It is provided with generation 0.
         case nextFreshId
         /// The recycled identifiers as raw values with their increased generations, provided next in last out order.
         case recycledIds
-        /// The recycled slot indices of generator state written by format version 1 and 2, which did not persist generations.
+        /// The recycled slot indices of generator state written by format version 1 and 2, which did not persist generations. The reserved index 0 is dropped.
         case recycled
     }
 
@@ -38,13 +38,14 @@ extension LinearIncrementingEntityIdGenerator: PersistableEntityIdentifierGenera
 
     /// Decodes the state of a generator.
     ///
-    /// State without `recycledIds` was written by an earlier version: its recycled slot indices decode with generation 1.
+    /// State without `recycledIds` was written by an earlier version: its recycled slot indices decode with generation 0.
     /// - Parameter decoder: The decoder to read data from.
     /// - Throws: An error if decoding fails or a recycled identifier is not lower than the next fresh identifier.
     /// - Complexity: O(N) where N is the number of recycled identifiers.
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let nextFreshId = try container.decode(EntityIdentifier.Index.self, forKey: .nextFreshId)
+        // index 0 is reserved: state of earlier versions starting at 0 continues at 1
+        let nextFreshId = try max(container.decode(EntityIdentifier.Index.self, forKey: .nextFreshId), 1)
         let recycled: [EntityIdentifier]
         let recycledKey: CodingKeys
         if container.contains(.recycledIds) {
@@ -52,12 +53,12 @@ extension LinearIncrementingEntityIdGenerator: PersistableEntityIdentifierGenera
             recycled = try container.decode([UInt64].self, forKey: .recycledIds).map { EntityIdentifier(rawValue: $0) }
         } else {
             recycledKey = .recycled
-            recycled = try container.decode([EntityIdentifier.Index].self, forKey: .recycled).map { EntityIdentifier(index: $0, generation: 1) }
+            recycled = try container.decode([EntityIdentifier.Index].self, forKey: .recycled).filter { $0 != 0 }.map { EntityIdentifier(index: $0, generation: 0) }
         }
-        guard recycled.allSatisfy({ $0.isValid && $0.index < nextFreshId }) else {
+        guard recycled.allSatisfy({ $0.index != 0 && $0.index < nextFreshId }) else {
             throw DecodingError.dataCorruptedError(forKey: recycledKey,
                                                    in: container,
-                                                   debugDescription: "Recycled entity identifiers must be valid and have an index lower than nextFreshId \(nextFreshId).")
+                                                   debugDescription: "Recycled entity identifiers must have an index between 1 and nextFreshId \(nextFreshId).")
         }
         self.init()
         storage.stack = [Storage.firstFresh(nextFreshId)] + recycled

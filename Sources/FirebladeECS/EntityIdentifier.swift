@@ -14,7 +14,8 @@
 /// An identifier of a destroyed entity (a stale identifier) therefore never matches a later entity in the same slot,
 /// see ``Nexus/isAlive(_:)`` and ``Nexus/entity(_:)``.
 ///
-/// Generations of live entities start at 1, so that the raw value `0` is never a live identifier and can serve as ``invalid``.
+/// The slot index 0 is reserved and never handed out, as in flecs, so that the raw value `0` (index 0, generation 0)
+/// is never a live identifier and can serve as ``invalid``. Generations start at 0.
 public struct EntityIdentifier: Hashable, Sendable, BitwiseCopyable {
     /// The type of the slot index.
     public typealias Index = UInt32
@@ -38,7 +39,7 @@ public struct EntityIdentifier: Hashable, Sendable, BitwiseCopyable {
     /// Initializes an entity identifier from a slot index and generation.
     /// - Parameters:
     ///   - index: The index of the slot.
-    ///   - generation: The generation of the slot. Generations of live entities are at least 1.
+    ///   - generation: The generation of the slot.
     /// - Complexity: O(1)
     @inlinable
     public init(index: Index, generation: Generation) {
@@ -86,14 +87,14 @@ extension EntityIdentifier {
     @available(*, deprecated, renamed: "Index")
     public typealias Identifier = UInt32
 
-    /// Initializes an entity identifier of generation 1 from a slot index.
+    /// Initializes an entity identifier of generation 0 from a slot index.
     ///
-    /// Generation 1 is the first generation of every slot, which is the generation entity identifiers of earlier versions decode with.
+    /// Generation 0 is the first generation of every slot, which is the generation entity identifiers of earlier versions decode with.
     /// - Parameter id: The slot index.
-    @available(*, deprecated, message: "Use init(index:generation:). This initializer creates an identifier of generation 1, which is stale once the entity is destroyed.")
+    @available(*, deprecated, message: "Use init(index:generation:). This initializer creates an identifier of generation 0, which is stale once the entity is destroyed.")
     @inlinable
     public init(_ id: Index) {
-        self.init(index: id, generation: 1)
+        self.init(index: id, generation: 0)
     }
 
     /// The slot index of the identifier.

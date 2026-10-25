@@ -80,7 +80,7 @@ import Testing
         #expect(generator.count == 1)
 
         for i in 10..<60 {
-            generator.markUnused(entityId: EntityIdentifier(index: UInt32(i), generation: 1))
+            generator.markUnused(entityId: EntityIdentifier(index: UInt32(i), generation: 0))
         }
 
         #expect(generator.count == 51)

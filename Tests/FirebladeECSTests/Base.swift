@@ -220,9 +220,9 @@ class PositionSystem {
     }
 }
 
-/// Test convenience: an integer literal is the index of an identifier of generation 1, the first generation of every slot.
+/// Test convenience: an integer literal is the index of an identifier of generation 0, the first generation of every slot.
 extension EntityIdentifier: ExpressibleByIntegerLiteral {
     public init(integerLiteral value: UInt32) {
-        self.init(index: value, generation: 1)
+        self.init(index: value, generation: 0)
     }
 }

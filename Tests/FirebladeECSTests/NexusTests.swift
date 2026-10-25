@@ -55,13 +55,13 @@ import Testing
 
         let p0 = Position(x: 1, y: 2)
 
-        e0.assign(p0)
-        // component collision: e0.assign(p0)
+        e0.set(p0)
+        // component collision: e0.set(p0)
 
         #expect(e0.hasComponents)
         #expect(e0.numComponents == 1)
 
-        let rP0: Position? = e0.get(component: Position.self)
+        let rP0: Position? = e0.get(Position.self)
         #expect(rP0?.x == 1)
         #expect(rP0?.y == 2)
     }
@@ -79,7 +79,7 @@ import Testing
         let n0 = Name(name: "myName")
         let p0 = Position(x: 99, y: 111)
 
-        e0.assign(n0)
+        e0.set(n0)
         #expect(e0.numComponents == 1)
         #expect(e0.hasComponents)
 
@@ -88,7 +88,7 @@ import Testing
         #expect(e0.numComponents == 0)
         #expect(!e0.hasComponents)
 
-        e0.assign(p0)
+        e0.set(p0)
 
         #expect(e0.numComponents == 1)
         #expect(e0.hasComponents)
@@ -98,8 +98,8 @@ import Testing
         #expect(e0.numComponents == 0)
         #expect(!e0.hasComponents)
 
-        e0.assign(n0)
-        e0.assign(p0)
+        e0.set(n0)
+        e0.set(p0)
 
         #expect(e0.numComponents == 2)
         let (name, position) = e0.get(components: Name.self, Position.self)
@@ -135,9 +135,9 @@ import Testing
 
         #expect(nexus.numEntities == 3)
 
-        a.assign(Position(x: 0, y: 0))
-        b.assign(Position(x: 0, y: 0))
-        c.assign(Position(x: 0, y: 0))
+        a.set(Position(x: 0, y: 0))
+        b.set(Position(x: 0, y: 0))
+        c.set(Position(x: 0, y: 0))
 
         let pA: Position? = a.get()
         let pB: Position? = b.get()

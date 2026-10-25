@@ -121,7 +121,7 @@ extension Family {
             guard let entityId: EntityIdentifier = memberIdsIterator.next() else {
                 return nil
             }
-            return (repeat nexus.get(unsafe: entityId) as (each C))
+            return (repeat nexus.unsafeComponent(for: entityId) as (each C))
         }
     }
 }
@@ -196,7 +196,7 @@ extension Family {
                 return nil
             }
             let entity = Entity(nexus: nexus, id: entityId)
-            let components = (repeat nexus.get(unsafe: entityId) as (each C))
+            let components = (repeat nexus.unsafeComponent(for: entityId) as (each C))
             return (entity, repeat each components)
         }
     }

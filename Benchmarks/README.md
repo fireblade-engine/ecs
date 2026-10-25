@@ -1,8 +1,12 @@
 # Benchmarks for FirebladeECS
 
-Originally seeded by replicating performance tests into a new form leveraging [package-benchmark](https://swiftpackageindex.com/ordo-one/package-benchmark/) [Documentation](https://swiftpackageindex.com/ordo-one/package-benchmark/main/documentation/benchmark).
+Originally seeded by replicating performance tests into a new form leveraging [benchmark](https://github.com/ordo-one/benchmark) [Documentation](https://swiftpackageindex.com/ordo-one/package-benchmark/main/documentation/benchmark).
 
-To run all the available benchmarks:
+To run all the available benchmarks from the repository root:
+
+    make benchmark
+
+or from this directory:
 
     swift package benchmark --format markdown
 

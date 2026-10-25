@@ -35,8 +35,8 @@ extension Nexus {
         componentRegistry.recordsByIdentifier.values.sorted { $0.typeName < $1.typeName }
     }
 
-    /// Returns the component type registered under the given name.
-    /// - Parameter typeName: The stable component type name.
+    /// Returns the component type registered under the given name or one of its ``RegistrableComponent/componentTypeNameAliases``.
+    /// - Parameter typeName: The stable component type name or an alias.
     /// - Returns: The record if a type is registered under the name; otherwise, `nil`.
     /// - Complexity: O(1)
     public final func componentType(named typeName: String) -> ComponentTypeRecord? {

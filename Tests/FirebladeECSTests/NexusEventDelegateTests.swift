@@ -75,11 +75,11 @@ import Testing
         #expect(componentsAddedEvents.count == 0)
         #expect(entityCreatedEvents.count == 0)
         let entity = nexus.createEntity()
-        entity.assign(MyComponent(name: "0", flag: true))
+        entity.set(MyComponent(name: "0", flag: true))
         #expect(componentsAddedEvents.count == 1)
         #expect(entityCreatedEvents.count == 1)
         let entity2 = nexus.createEntity()
-        entity2.assign(MyComponent(name: "0", flag: true), YourComponent(number: 2))
+        entity2.set(MyComponent(name: "0", flag: true), YourComponent(number: 2))
         #expect(componentsAddedEvents.count == 3)
         #expect(entityCreatedEvents.count == 2)
     }
@@ -98,7 +98,7 @@ import Testing
         })
         
         let entity = nexus.createEntity()
-        entity.assign(
+        entity.set(
             MyComponent(name: "Hello", flag: false),
             YourComponent(number: 3.14),
             EmptyComponent()

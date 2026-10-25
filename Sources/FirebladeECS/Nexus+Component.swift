@@ -39,6 +39,7 @@ extension Nexus {
     ///   - entity: The entity to assign the component to.
     /// - Returns: `true` if the assignment was successful.
     /// - Complexity: O(M) where M is the number of families.
+    @available(*, deprecated, message: "Use entity.set(_:) instead. Get the entity for an identifier with nexus.entity(from:).")
     @discardableResult
     public final func assign(component: Component, to entity: Entity) -> Bool {
         let entityId: EntityIdentifier = entity.identifier
@@ -51,11 +52,10 @@ extension Nexus {
     ///   - entity: The entity to assign the components to.
     /// - Returns: `true` if all assignments were successful.
     /// - Complexity: O(C * M) where C is the number of components and M is the number of families.
+    @available(*, deprecated, message: "Use entity.set(_:) instead. Get the entity for an identifier with nexus.entity(from:).")
     @discardableResult
     public final func assign<each C: Component>(components: repeat each C, to entity: Entity) -> Bool {
-        var success = true
-        _ = (repeat (success = success && assign(component: each components, to: entity)))
-        return success
+        assign(components: repeat each components, entityId: entity.identifier)
     }
 
     /// Assigns a collection of components to an entity.
@@ -64,6 +64,7 @@ extension Nexus {
     ///   - entity: The entity to assign the components to.
     /// - Returns: `true` if all assignments were successful.
     /// - Complexity: O(C + M) where C is the number of components and M is the number of families.
+    @available(*, deprecated, message: "Use entity.set(_:) instead. Get the entity for an identifier with nexus.entity(from:).")
     @discardableResult
     public final func assign(components: some Collection<Component>, to entity: Entity) -> Bool {
         assign(components: components, to: entity.identifier)
@@ -75,12 +76,10 @@ extension Nexus {
     ///   - entityId: The identifier of the entity.
     /// - Returns: The component instance if found; otherwise, `nil`.
     /// - Complexity: O(1)
+    @available(*, deprecated, message: "Use entity.get(_:) instead. Get the entity for an identifier with nexus.entity(from:).")
     @inlinable
     public final func get(safe componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
-        guard let uniformComponents = componentsByType[componentId], uniformComponents.contains(entityId.index) else {
-            return nil
-        }
-        return uniformComponents.get(at: entityId.index)
+        component(componentId, for: entityId)
     }
 
     /// Unsafely retrieves a component by its identifier for a given entity.
@@ -91,10 +90,10 @@ extension Nexus {
     /// - Returns: The component instance.
     /// - Precondition: The component MUST be assigned to the entity.
     /// - Complexity: O(1)
+    @available(*, deprecated, message: "Use entity.get(_:) instead. Get the entity for an identifier with nexus.entity(from:).")
     @inlinable
     public final func get(unsafe componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component {
-        let uniformComponents = componentsByType[componentId].unsafelyUnwrapped
-        return uniformComponents.get(unsafeAt: entityId.index)
+        unsafeComponent(componentId, for: entityId)
     }
 
     /// Safely retrieves a typed component for a given entity.
@@ -103,18 +102,20 @@ extension Nexus {
     ///   - entityId: The identifier of the entity.
     /// - Returns: The cast component instance if found; otherwise, `nil`.
     /// - Complexity: O(1)
+    @available(*, deprecated, message: "Use entity.get(_:) instead. Get the entity for an identifier with nexus.entity(from:).")
     @inlinable
     public final func get<C: Component>(safe componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> C? {
-        get(safe: componentId, for: entityId) as? C
+        component(componentId, for: entityId) as? C
     }
 
     /// Safely retrieves a typed component for a given entity using the component type's identifier.
     /// - Parameter entityId: The identifier of the entity.
     /// - Returns: The component instance if found; otherwise, `nil`.
     /// - Complexity: O(1)
+    @available(*, deprecated, message: "Use entity.get(_:) instead. Get the entity for an identifier with nexus.entity(from:).")
     @inlinable
     public final func get<C: Component>(safe entityId: EntityIdentifier) -> C? {
-        get(safe: C.identifier, for: entityId)
+        component(for: entityId)
     }
 
     /// Unsafely retrieves a typed component for a given entity.
@@ -122,9 +123,56 @@ extension Nexus {
     /// - Returns: The component instance.
     /// - Precondition: The component MUST be assigned to the entity.
     /// - Complexity: O(1)
+    @available(*, deprecated, message: "Use entity.get(_:) instead. Get the entity for an identifier with nexus.entity(from:).")
     @inlinable
     public final func get<C: Component>(unsafe entityId: EntityIdentifier) -> C {
-        let component: Component = get(unsafe: C.identifier, for: entityId)
+        unsafeComponent(for: entityId)
+    }
+
+    /// Retrieves a component by its identifier for a given entity.
+    /// - Parameters:
+    ///   - componentId: The identifier of the component.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: The component instance if found; otherwise, `nil`.
+    /// - Complexity: O(1)
+    @inlinable
+    final func component(_ componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
+        guard let uniformComponents = componentsByType[componentId], uniformComponents.contains(entityId.index) else {
+            return nil
+        }
+        return uniformComponents.get(at: entityId.index)
+    }
+
+    /// Retrieves a typed component for a given entity using the component type's identifier.
+    /// - Parameter entityId: The identifier of the entity.
+    /// - Returns: The component instance if found; otherwise, `nil`.
+    /// - Complexity: O(1)
+    @inlinable
+    final func component<C: Component>(for entityId: EntityIdentifier) -> C? {
+        component(C.identifier, for: entityId) as? C
+    }
+
+    /// Retrieves a component by its identifier for a given entity, without checking that it exists.
+    /// - Parameters:
+    ///   - componentId: The identifier of the component.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: The component instance.
+    /// - Precondition: The component MUST be assigned to the entity.
+    /// - Complexity: O(1)
+    @inlinable
+    final func unsafeComponent(_ componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component {
+        let uniformComponents = componentsByType[componentId].unsafelyUnwrapped
+        return uniformComponents.get(unsafeAt: entityId.index)
+    }
+
+    /// Retrieves a typed component for a given entity, without checking that it exists.
+    /// - Parameter entityId: The identifier of the entity.
+    /// - Returns: The component instance.
+    /// - Precondition: The component MUST be assigned to the entity.
+    /// - Complexity: O(1)
+    @inlinable
+    final func unsafeComponent<C: Component>(for entityId: EntityIdentifier) -> C {
+        let component: Component = unsafeComponent(C.identifier, for: entityId)
         // components are guaranteed to be reference types so unsafeDowncast is applicable here
         return unsafeDowncast(component, to: C.self)
     }

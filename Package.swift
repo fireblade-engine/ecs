@@ -56,7 +56,9 @@ let package = Package(
         .library(name: "FirebladeECS",
                  targets: ["FirebladeECS"]),
         .library(name: "FirebladeECSMacros",
-                 targets: ["FirebladeECSMacros"])
+                 targets: ["FirebladeECSMacros"]),
+        .library(name: "S1FamilyAPI",
+                 targets: ["S1FamilyAPI"])
     ],
     traits: [
         .trait(name: "benchmarks", description: "Enable performance tests")
@@ -65,6 +67,12 @@ let package = Package(
         .package(url: "https://github.com/swiftlang/swift-syntax.git", "600.0.0" ..< "700.0.0")
     ],
     targets: [
+        // Spike S1 (family API with parameter packs). Self-contained, never merged.
+        .target(name: "S1FamilyAPI",
+                swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
+        .testTarget(name: "S1FamilyAPITests",
+                    dependencies: ["S1FamilyAPI"],
+                    swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
         .target(name: "FirebladeECS",
                 swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
         .target(name: "FirebladeECSMacrosSupport",

@@ -34,7 +34,7 @@ public struct Mut<C> {
 }
 
 public struct Family<Read, Write> {
-    @usableFromInline let world: World
+    public let world: World
     public init(world: World, reading: Read, writing: Write) {
         self.world = world
     }
@@ -51,7 +51,7 @@ extension Family {
 extension Family {
     /// Smallest storage across all families' component types drives iteration (membership by random access).
     @inlinable
-    func driver<each R: S1Component, each W: S1Component>(
+    public func driver<each R: S1Component, each W: S1Component>(
         _ r: repeat (each R).Type, writing w: repeat (each W).Type
     ) -> AnyComponentStorage? {
         var best: AnyComponentStorage?

@@ -66,15 +66,21 @@ public final class World {
         return i >= 0 ? s.dense[i] : nil
     }
 
-    /// Typed access via `unsafeDowncast`, creating the storage on first use.
+    /// Typed access via `unsafeDowncast`, creating the storage on first use (cold path kept out of line).
     @inlinable
     public func storage<C: S1Component>(_: C.Type) -> ComponentStorage<C> {
+        if let existing = storages.count > C.componentIndex ? storages[C.componentIndex] : nil {
+            return unsafeDowncast(existing, to: ComponentStorage<C>.self)
+        }
+        return createStorage(C.self)
+    }
+
+    @inline(never)
+    @usableFromInline
+    func createStorage<C: S1Component>(_: C.Type) -> ComponentStorage<C> {
         let index = C.componentIndex
         if index >= storages.count {
             storages.append(contentsOf: repeatElement(nil, count: index + 1 - storages.count))
-        }
-        if let existing = storages[index] {
-            return unsafeDowncast(existing, to: ComponentStorage<C>.self)
         }
         let created = ComponentStorage<C>()
         storages[index] = created

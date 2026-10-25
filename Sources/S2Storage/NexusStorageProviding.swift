@@ -138,4 +138,10 @@ extension NexusStorageProviding {
     ) {
         forEach(reading: r0, r1, writing: w0, where: .none, body)
     }
+
+    public func forEach<R0: Component, R1: Component, R2: Component, R3: Component>(
+        reading r0: R0.Type, _ r1: R1.Type, _ r2: R2.Type, _ r3: R3.Type, _ body: (R0, R1, R2, R3) -> Void
+    ) {
+        forEach(reading: r0, r1, r2, r3, where: .none, body)
+    }
 }

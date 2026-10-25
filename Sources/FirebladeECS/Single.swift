@@ -41,7 +41,10 @@ extension Single: Equatable {
 }
 
 extension Single where A: SingleComponent {
-    /// The singleton component instance.
+    /// A copy of the singleton component.
+    ///
+    /// The property is read-only: changing the copy does not change the stored component, and the compiler rejects
+    /// `single.component.value = x`. Write with ``modify(_:)`` or ``set(_:)``.
     ///
     /// - Note: The component must exist, which the lifecycle of the singleton entity guarantees. Accessing it after the entity was destroyed traps.
     /// - Complexity: O(1)
@@ -50,6 +53,24 @@ extension Single where A: SingleComponent {
         // and component assignment we may unsafelyUnwrap here.
         // The lookup checks the generation of the identifier and traps with a message if the component is gone.
         nexus.backend.unsafeGet(A.self, at: cursor.index, for: entityId)
+    }
+
+    /// Changes the singleton component in place and delivers ``ComponentModified`` afterwards.
+    ///
+    /// The restrictions of ``Entity/modify(_:_:)`` apply to `body`.
+    /// - Parameter body: Changes the component.
+    /// - Complexity: O(1)
+    @inlinable
+    public func modify(_ body: (inout A) throws -> Void) rethrows {
+        try nexus.modify(A.self, for: entityId, body)
+    }
+
+    /// Replaces the singleton component by a new value and delivers ``ComponentReplaced``.
+    /// - Parameter newValue: The new value of the component.
+    /// - Complexity: O(1)
+    @inlinable
+    public func set(_ newValue: A) {
+        entity.set(newValue)
     }
 
     /// The entity associated with this singleton component.

@@ -46,7 +46,7 @@ final class SerialParent: SerializableComponent, @unchecked Sendable {
 
         let json = String(decoding: data, as: UTF8.self)
         let expected = #"{"entities":[{"components":{"Position":{"x":1,"y":2}},"id":0},"#
-            + #"{"components":{"Parent":{"parent":0}},"id":1}],"entityIdGenerator":{"nextFreshId":2,"recycled":[]},"formatVersion":2}"#
+            + #"{"components":{"Parent":{"parent":0}},"id":1}],"entityIdGenerator":{"nextFreshId":2,"recycledIds":[]},"formatVersion":2}"#
         #expect(json == expected)
     }
 
@@ -158,7 +158,7 @@ final class SerialParent: SerializableComponent, @unchecked Sendable {
         let data = try nexus.encodeSnapshot(using: &encoder, handling: .throwError)
         let json = String(decoding: data, as: UTF8.self)
         let expected = #"{"entities":[{"components":{"Position":{"x":0,"y":0}},"id":0},{"components":{},"id":2},"#
-            + #"{"components":{"Position":{"x":3,"y":3}},"id":3}],"entityIdGenerator":{"nextFreshId":4,"recycled":[1]},"formatVersion":2}"#
+            + #"{"components":{"Position":{"x":3,"y":3}},"id":3}],"entityIdGenerator":{"nextFreshId":4,"recycledIds":[8589934593]},"formatVersion":2}"#
         #expect(json == expected)
     }
 }

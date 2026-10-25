@@ -70,21 +70,22 @@ import Testing
         #expect(gen.nextId() == 1)
         #expect(gen.nextId() == 2)
 
-        gen.markUnused(entityId: EntityIdentifier(index: 1, generation: 1))
+        gen.markUnused(entityId: 1)
 
-        #expect(gen.nextId() == 1)
+        // a recycled index is provided again, with the next generation
+        #expect(gen.nextId() == EntityIdentifier(index: 1, generation: 2))
         #expect(gen.nextId() == 3)
         #expect(gen.nextId() == 4)
 
         gen.markUnused(entityId: 3)
         gen.markUnused(entityId: 0)
 
-        #expect(gen.nextId() == 0)
-        #expect(gen.nextId() == 3)
+        #expect(gen.nextId() == EntityIdentifier(index: 0, generation: 2))
+        #expect(gen.nextId() == EntityIdentifier(index: 3, generation: 2))
 
-        gen.markUnused(entityId: 3)
+        gen.markUnused(entityId: EntityIdentifier(index: 3, generation: 2))
 
-        #expect(gen.nextId() == 3)
+        #expect(gen.nextId() == EntityIdentifier(index: 3, generation: 3))
         #expect(gen.nextId() == 5)
         #expect(gen.nextId() == 6)
         #expect(gen.nextId() == 7)

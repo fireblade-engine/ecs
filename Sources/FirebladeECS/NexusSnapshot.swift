@@ -23,6 +23,7 @@
 /// ```
 /// - `entityIdGenerator` is present if the generator of the nexus is a ``PersistableEntityIdentifierGenerator``.
 /// - `sharedComponents` is present for entities that share a component instance with an entity listed before them.
+///   Components are values since 2.0, so snapshots never write it; it is still read from older data.
 ///   It maps the component type name to the identifier of the entity that encodes the instance.
 ///
 /// Version history:

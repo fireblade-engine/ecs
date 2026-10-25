@@ -8,7 +8,7 @@
 import FirebladeECS
 import Testing
 
-final class InspectedTransform: InspectableComponent, RegistrableComponent, @unchecked Sendable {
+struct InspectedTransform: InspectableComponent, RegistrableComponent, Sendable {
     var position: Double = 1
     let name: String = "transform"
 
@@ -31,11 +31,11 @@ final class InspectedTransform: InspectableComponent, RegistrableComponent, @unc
     }
 
     @Test func readsAndWritesThroughKeyPaths() throws {
-        let component = InspectedTransform()
+        var component = InspectedTransform()
         let property = InspectedTransform.componentProperties[0]
         #expect(property.value(of: component) as? Double == 1)
 
-        let writable = try #require(property.keyPath as? ReferenceWritableKeyPath<InspectedTransform, Double>)
+        let writable = try #require(property.keyPath as? WritableKeyPath<InspectedTransform, Double>)
         component[keyPath: writable] = 5
         #expect(component.position == 5)
     }

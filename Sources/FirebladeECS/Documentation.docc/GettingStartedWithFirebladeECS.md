@@ -53,15 +53,15 @@ then create entities by letting the `Nexus` generate them.
 let newEntity = nexus.createEntity()
 ```
 
-To define components, conform your class to the `Component` protocol
+To define components, conform your struct or enum to the `Component` protocol. Components are value types: the nexus stores them by value and reading one returns a copy.
 
 ```swift
-final class Position: Component {
+struct Position: Component {
     var x: Int = 0
     var y: Int = 0
 }
 ```
-and assign instances of it to an `Entity` with
+and assign values of it to an `Entity` with
 
 ```swift
 let position = Position(x: 1, y: 2)
@@ -119,8 +119,7 @@ class PlayerMovementSystem {
             _ = mov.position
             _ = mov.velocity
             
-            // set properties
-            mov.position.x = mov.position.x + 3.0
+            // iteration yields copies: to write, use the entity, e.g. `entity.modify(Movement.self) { ... }`
             ...
             
             // current input command for the given entity
@@ -165,7 +164,7 @@ class PlayerMovementSystem {
 A `Single` on the other hand is a special kind of family that holds exactly **one** entity with exactly **one** component for the entire lifetime of the Nexus. This may come in handy if you have components that have a [Singleton](https://en.wikipedia.org/wiki/Singleton_(mathematics)) character. Single components must conform to the `SingleComponent` protocol and will not be available through regular family iteration.
 
 ```swift
-final class GameState: SingleComponent {
+struct GameState: SingleComponent {
     var quitGame: Bool = false
 }
 class GameLogicSystem {
@@ -177,7 +176,8 @@ class GameLogicSystem {
     
     func update() {
         // update your game sate here
-        gameState.component.quitGame = true
+        // `component` is a copy; write with `set` or `modify`
+        gameState.modify { $0.quitGame = true }
         
         // entity access is provided as well
         _ = gameState.entity

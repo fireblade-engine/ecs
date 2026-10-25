@@ -13,7 +13,7 @@ Conform each component you want to persist to ``SerializableComponent``, or anno
 Give each persisted type an explicit, stable name. The default name is the fully qualified Swift type name, which changes when you rename the type or its module:
 
 ```swift
-final class Position: SerializableComponent {
+struct Position: SerializableComponent {
     static let componentTypeName = "Position"
     var x: Double
     var y: Double
@@ -23,7 +23,7 @@ final class Position: SerializableComponent {
 If you rename a type later, list its former names, so existing scene files keep loading:
 
 ```swift
-final class Health: SerializableComponent {
+struct Health: SerializableComponent {
     static let componentTypeName = "Health"
     static let componentTypeNameAliases = ["HitPoints"]
     var value: Int
@@ -105,7 +105,7 @@ For deterministic output, for example for scene files under version control, sor
 ### What a snapshot contains
 
 - Every entity, including entities without components, with its original identifier. Identifiers of destroyed entities stay stale after loading.
-- Every serializable component. A component instance shared by several entities is stored once and shared again after loading.
+- Every serializable component. Components are values, so each entity stores its own copy. Snapshots of format versions 1 and 2 that list a shared component load as one copy per entity.
 - The entity identifier generator state including the generations of recycled slots, if the generator conforms to ``PersistableEntityIdentifierGenerator``. ``LinearIncrementingEntityIdGenerator`` does.
 
 Not contained are components that are not serializable, families (they are derived from the components) and the nexus delegate.

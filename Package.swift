@@ -44,6 +44,10 @@ let macroExpansionTestDependencies: [Target.Dependency] = [
     .product(name: "SwiftSyntaxMacrosGenericTestSupport", package: "swift-syntax", condition: .when(platforms: macroHostPlatforms))
 ]
 
+/// Spike S1 only: set S1_UNCHECKED=1 to build the S1 targets with exclusivity checks off (gap attribution).
+let s1Unchecked = ProcessInfo.processInfo.environment["S1_UNCHECKED"] == "1"
+let s1Flags: [SwiftSetting] = s1Unchecked ? [.unsafeFlags(["-enforce-exclusivity=unchecked"])] : []
+
 let package = Package(
     name: "FirebladeECS",
     platforms: [
@@ -69,7 +73,7 @@ let package = Package(
     targets: [
         // Spike S1 (family API with parameter packs). Self-contained, never merged.
         .target(name: "S1FamilyAPI",
-                swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
+                swiftSettings: [.enableUpcomingFeature("StrictConcurrency")] + s1Flags),
         // Own target: the experimental Lifetimes feature is only enabled here.
         .target(name: "S1EntityView",
                 dependencies: ["S1FamilyAPI"],
@@ -78,7 +82,8 @@ let package = Package(
                     dependencies: ["S1EntityView", "S1FamilyAPI"],
                     swiftSettings: [.enableExperimentalFeature("Lifetimes")]),
         .executableTarget(name: "S1Bench",
-                          dependencies: ["S1FamilyAPI", "FirebladeECS"]),
+                          dependencies: ["S1FamilyAPI", "FirebladeECS"],
+                          swiftSettings: s1Flags),
         .testTarget(name: "S1FamilyAPITests",
                     dependencies: ["S1FamilyAPI"],
                     swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),

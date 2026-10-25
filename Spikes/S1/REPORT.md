@@ -13,8 +13,8 @@ Timing: `make build-release && .build/release/S1Bench`.
   "zero witness_method" gate**: the pack loops stay dynamic in -O SIL (`dynamic_pack_index`, per element generic
   calls on `@pack_element` archetypes), and the generic `World.storage<C>` is called unspecialized
   (`witness_method C.componentIndex`). `@inline(__always)` on the helpers makes it worse (16 to 32 witness calls).
-- Cost: 1R1W over 10k entities, -O: A 19.2 us, Mut 17.8 us, 1.x `Family` iterator 118 us, hand-written loop on the
-  same storage 0.79 us. Packs are about 6x faster than 1.x but about 24x slower than a concrete loop.
+- Cost: 1R1W over 10k entities, -O: A 211 us, Mut 199 us, 1.x `Family` iterator 1178 us, hand-written loop on the
+  same storage 7.9 us (first measurement, see Gap attribution). Packs are about 6x faster than 1.x but about 25x slower than a concrete loop.
 - **`Mut<W>` is not needed** for correctness and not better: same SIL counts, same speed, and its safety features
   (`~Copyable`, `~Escapable`) cannot be combined with packs on 6.4. `_modify value` is not needed either: the
   `@dynamicMemberLookup` subscript leaves no key path in SIL (`site_MutValue` equals `site_Mut`).
@@ -119,8 +119,32 @@ shipped Mut is a plain pointer wrapper and can escape its step.
 Caveat: result from the Swift 6.4 toolchain with the macOS 27 SDK; re-check on 6.2/Xcode 26 in CI before relying on
 `ContiguousArray.span` ungated. Decision stands: span APIs stay availability-gated.
 
+## Gap attribution (1R1W, 10k entities, -O, us per pass)
+
+`S1_UNCHECKED=1 make build-release` builds the S1 targets with `-enforce-exclusivity=unchecked` (unsafeFlags in the spike
+targets only). "Per-arity" is `World.forEach<R, W>(reading:writing:_:)` in `Concrete.swift`: same World, storages,
+smallest-set walk and sparse lookups, no packs. The "hand-written" loop already did the sparse lookup per entity, but
+walked the position storage directly and held concrete storages (no `World.storage` lookups, no smallest-set choice).
+
+| Loop | exclusivity checked | unchecked |
+| :--- | --: | --: |
+| Variant A (packs) | 211 | 117 |
+| Variant Mut (packs) | 199 | 106 |
+| Per-arity overload, no packs | 14.6 | 12.5 |
+| Hand-written concrete loop (sparse lookups) | 7.9 | 7.9 |
+| 1.x `Family` iterator | 1178 | 1165 (not S1) |
+
+The 4 `witness_method` calls run once per `forEach` (prologue: `World.storage` for the driver search and the
+`rs`/`ws` tuples), not per entity. Per entity the pack loops call the generic `fetchElement`/`loadElement`/`storeElement`
+with pack-element archetypes (unspecialized generic calls, no witness lookups), plus dynamic exclusivity checks.
+
+Conclusion: of the ~25x gap, the pack machinery is about 8 to 9x over the equivalent per-arity code (117 vs 12.5 unchecked),
+exclusivity checks add another ~1.8x on top for packs, and the iteration architecture (storage lookup, smallest-set
+walk) costs only ~1.6x over the concrete loop (12.5 vs 7.9). Per-arity overloads (macro or generated) would keep
+nearly all of the speed, so the D7 trade-off is packs (ergonomics, ~10x slower than per-arity) vs generated arities.
+
 ## Open items
 
 - Swift 6.2 compile of all four spike targets pending CI (incl. `Lifetimes` and the `Equatable`/`Hashable` on `~Escapable`).
-- Performance gap vs concrete loops (24x) needs a D7 decision (macro/arity overloads vs accepting packs).
+- Performance gap vs concrete loops (25x) needs a D7 decision (macro/arity overloads vs accepting packs).
 - Not measured: package-benchmark (skipped on purpose; plain `ContinuousClock` loop in `S1Bench`).

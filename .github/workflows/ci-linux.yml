@@ -3,16 +3,24 @@ name: Linux
 on:
   push:
     branches: [ master, main ]
+  # PRs into master run automatically. PRs into any other branch (e.g. stacked PRs) run when they carry
+  # the `run-ci` label (all platforms) or `run-ci-linux` (this platform only); later pushes then rerun.
   pull_request:
-    branches: [ master, main ]
+    types: [ opened, synchronize, reopened, labeled ]
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # A run started by an unrelated label gets its own group, so it never cancels a run in progress.
+  group: ${{ github.workflow }}-${{ github.ref }}${{ (github.event.action == 'labeled' && github.event.label.name != 'run-ci' && github.event.label.name != 'run-ci-linux') && format('-{0}', github.run_id) || '' }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   linux:
+    if: >-
+      github.event_name != 'pull_request' ||
+      (github.event.action == 'labeled' && (github.event.label.name == 'run-ci' || github.event.label.name == 'run-ci-linux')) ||
+      (github.event.action != 'labeled' && (github.base_ref == 'master' || github.base_ref == 'main' ||
+        contains(github.event.pull_request.labels.*.name, 'run-ci') || contains(github.event.pull_request.labels.*.name, 'run-ci-linux')))
     name: Linux (Swift ${{ matrix.swift }})
     runs-on: ubuntu-latest
     # The image tag pins the exact toolchain; Renovate proposes patch updates.

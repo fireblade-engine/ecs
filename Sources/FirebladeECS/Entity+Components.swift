@@ -26,7 +26,11 @@ extension Entity {
     /// written component. The written types must differ from each other, else the access traps.
     /// - Returns: `false` if this entity is destroyed or lacks one of the components; `body` is not called then.
     @discardableResult
-    public func components<W1: Component, W2: Component>(writing w1: W1.Type, _ w2: W2.Type, _ body: (inout W1, inout W2) throws -> Void) rethrows -> Bool {
+    public func components<W1: Component, W2: Component>(
+        writing wType1: W1.Type,
+        _ wType2: W2.Type,
+        _ body: (inout W1, inout W2) throws -> Void
+    ) rethrows -> Bool {
         guard has(W1.self), has(W2.self) else {
             return reportMissingForAccess()
         }
@@ -46,7 +50,12 @@ extension Entity {
     /// written component. The written types must differ from each other, else the access traps.
     /// - Returns: `false` if this entity is destroyed or lacks one of the components; `body` is not called then.
     @discardableResult
-    public func components<W1: Component, W2: Component, W3: Component>(writing w1: W1.Type, _ w2: W2.Type, _ w3: W3.Type, _ body: (inout W1, inout W2, inout W3) throws -> Void) rethrows -> Bool {
+    public func components<W1: Component, W2: Component, W3: Component>(
+        writing wType1: W1.Type,
+        _ wType2: W2.Type,
+        _ wType3: W3.Type,
+        _ body: (inout W1, inout W2, inout W3) throws -> Void
+    ) rethrows -> Bool {
         guard has(W1.self), has(W2.self), has(W3.self) else {
             return reportMissingForAccess()
         }
@@ -68,7 +77,11 @@ extension Entity {
     /// written component. The written types must differ from each other, else the access traps.
     /// - Returns: `false` if this entity is destroyed or lacks one of the components; `body` is not called then.
     @discardableResult
-    public func components<R1: Component, W1: Component>(_ r1: R1.Type, writing w1: W1.Type, _ body: (R1, inout W1) throws -> Void) rethrows -> Bool {
+    public func components<R1: Component, W1: Component>(
+        _ rType1: R1.Type,
+        writing wType1: W1.Type,
+        _ body: (R1, inout W1) throws -> Void
+    ) rethrows -> Bool {
         guard has(R1.self), has(W1.self) else {
             return reportMissingForAccess()
         }
@@ -87,7 +100,12 @@ extension Entity {
     /// written component. The written types must differ from each other, else the access traps.
     /// - Returns: `false` if this entity is destroyed or lacks one of the components; `body` is not called then.
     @discardableResult
-    public func components<R1: Component, W1: Component, W2: Component>(_ r1: R1.Type, writing w1: W1.Type, _ w2: W2.Type, _ body: (R1, inout W1, inout W2) throws -> Void) rethrows -> Bool {
+    public func components<R1: Component, W1: Component, W2: Component>(
+        _ rType1: R1.Type,
+        writing wType1: W1.Type,
+        _ wType2: W2.Type,
+        _ body: (R1, inout W1, inout W2) throws -> Void
+    ) rethrows -> Bool {
         guard has(R1.self), has(W1.self), has(W2.self) else {
             return reportMissingForAccess()
         }
@@ -108,7 +126,13 @@ extension Entity {
     /// written component. The written types must differ from each other, else the access traps.
     /// - Returns: `false` if this entity is destroyed or lacks one of the components; `body` is not called then.
     @discardableResult
-    public func components<R1: Component, W1: Component, W2: Component, W3: Component>(_ r1: R1.Type, writing w1: W1.Type, _ w2: W2.Type, _ w3: W3.Type, _ body: (R1, inout W1, inout W2, inout W3) throws -> Void) rethrows -> Bool {
+    public func components<R1: Component, W1: Component, W2: Component, W3: Component>(
+        _ rType1: R1.Type,
+        writing wType1: W1.Type,
+        _ wType2: W2.Type,
+        _ wType3: W3.Type,
+        _ body: (R1, inout W1, inout W2, inout W3) throws -> Void
+    ) rethrows -> Bool {
         guard has(R1.self), has(W1.self), has(W2.self), has(W3.self) else {
             return reportMissingForAccess()
         }
@@ -131,7 +155,12 @@ extension Entity {
     /// written component. The written types must differ from each other, else the access traps.
     /// - Returns: `false` if this entity is destroyed or lacks one of the components; `body` is not called then.
     @discardableResult
-    public func components<R1: Component, R2: Component, W1: Component>(_ r1: R1.Type, _ r2: R2.Type, writing w1: W1.Type, _ body: (R1, R2, inout W1) throws -> Void) rethrows -> Bool {
+    public func components<R1: Component, R2: Component, W1: Component>(
+        _ rType1: R1.Type,
+        _ rType2: R2.Type,
+        writing wType1: W1.Type,
+        _ body: (R1, R2, inout W1) throws -> Void
+    ) rethrows -> Bool {
         guard has(R1.self), has(R2.self), has(W1.self) else {
             return reportMissingForAccess()
         }
@@ -151,7 +180,13 @@ extension Entity {
     /// written component. The written types must differ from each other, else the access traps.
     /// - Returns: `false` if this entity is destroyed or lacks one of the components; `body` is not called then.
     @discardableResult
-    public func components<R1: Component, R2: Component, W1: Component, W2: Component>(_ r1: R1.Type, _ r2: R2.Type, writing w1: W1.Type, _ w2: W2.Type, _ body: (R1, R2, inout W1, inout W2) throws -> Void) rethrows -> Bool {
+    public func components<R1: Component, R2: Component, W1: Component, W2: Component>(
+        _ rType1: R1.Type,
+        _ rType2: R2.Type,
+        writing wType1: W1.Type,
+        _ wType2: W2.Type,
+        _ body: (R1, R2, inout W1, inout W2) throws -> Void
+    ) rethrows -> Bool {
         guard has(R1.self), has(R2.self), has(W1.self), has(W2.self) else {
             return reportMissingForAccess()
         }
@@ -173,7 +208,14 @@ extension Entity {
     /// written component. The written types must differ from each other, else the access traps.
     /// - Returns: `false` if this entity is destroyed or lacks one of the components; `body` is not called then.
     @discardableResult
-    public func components<R1: Component, R2: Component, W1: Component, W2: Component, W3: Component>(_ r1: R1.Type, _ r2: R2.Type, writing w1: W1.Type, _ w2: W2.Type, _ w3: W3.Type, _ body: (R1, R2, inout W1, inout W2, inout W3) throws -> Void) rethrows -> Bool {
+    public func components<R1: Component, R2: Component, W1: Component, W2: Component, W3: Component>(
+        _ rType1: R1.Type,
+        _ rType2: R2.Type,
+        writing wType1: W1.Type,
+        _ wType2: W2.Type,
+        _ wType3: W3.Type,
+        _ body: (R1, R2, inout W1, inout W2, inout W3) throws -> Void
+    ) rethrows -> Bool {
         guard has(R1.self), has(R2.self), has(W1.self), has(W2.self), has(W3.self) else {
             return reportMissingForAccess()
         }

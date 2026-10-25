@@ -22,6 +22,11 @@ import Testing
         static let componentIndex = 5000
     }
 
+    /// A hand-assigned index above the limit of 1,048,576.
+    private final class TooHigh: Component, @unchecked Sendable {
+        static let componentIndex = 2_000_000
+    }
+
     private func populated() -> (Nexus.SparseSetStorage, EntityIdentifier) {
         let storage = Nexus.SparseSetStorage()
         let entity = EntityIdentifier(index: 1, generation: 0)
@@ -77,6 +82,11 @@ import Testing
         storage.insertEntity(entity)
         storage.set(TwinA(), for: entity)
         _ = storage.get(TwinB.self, for: entity)
+    }
+
+    private func componentIndexAboveTheLimitTrapsBody() {
+        let (storage, entity) = populated()
+        storage.set(TooHigh(), for: entity)
     }
 
     private func settingOnADeadEntityTrapsBody() {
@@ -137,6 +147,13 @@ import Testing
                 twoTypesSharingAComponentIndexTrapBody()
             }
             expectTrapMessage(result, "used by two component types")
+        }
+
+        @Test func componentIndexAboveTheLimitTraps() async {
+            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                componentIndexAboveTheLimitTrapsBody()
+            }
+            expectTrapMessage(result, "out of range")
         }
 
         @Test func settingOnADeadEntityTraps() async {

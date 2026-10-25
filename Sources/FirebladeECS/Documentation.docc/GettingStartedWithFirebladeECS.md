@@ -10,7 +10,7 @@ An ECS comprises entities composed from components of data, with systems which o
 Extend the following lines in your `Package.swift` file or use it to create a new project.
 
 ```swift
-// swift-tools-version:6.1
+// swift-tools-version:6.2
 
 import PackageDescription
 

@@ -22,10 +22,6 @@ jobs:
         include:
           # Each entry pins the Xcode whose bundled toolchain provides the Swift version under test;
           # the runner's default Xcode moves on with image updates.
-          - swift: "6.1"
-            swift-full: "6.1.2"
-            runner: "macos-15"
-            xcode: "16.4"
           - swift: "6.2"
             swift-full: "6.2.4"
             runner: "macos-26"

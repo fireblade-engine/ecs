@@ -7,7 +7,7 @@ A lightweight, fast and easy to use Entity-Component System in Swift.
 This is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component System](https://en.wikipedia.org/wiki/Entity_component_system) implementation in Swift. 
 An ECS comprises entities composed from components of data, with systems which operate on the components.
 
-Fireblade ECS is available for all platforms that support [Swift 6.1](https://swift.org/) and higher and the [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager).
+Fireblade ECS is available for all platforms that support [Swift 6.2](https://swift.org/) and higher and the [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager).
 It is developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
 
 The optional `FirebladeECSMacros` product adds the `@Component` macro, which depends on [swift-syntax](https://github.com/swiftlang/swift-syntax). The core `FirebladeECS` library has no dependencies.

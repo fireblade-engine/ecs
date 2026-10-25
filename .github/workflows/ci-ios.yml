@@ -25,13 +25,8 @@ jobs:
         include:
           # xcodebuild must use the Swift toolchain bundled with the selected
           # Xcode: a standalone toolchain cannot load an SDK built by a newer
-          # compiler. Swift 6.1 therefore uses Xcode 16.4 (Swift 6.1.x,
-          # iOS 18.5 SDK) on macos-15 instead of a setup-swift toolchain.
+          # compiler, so each entry uses the bundled Xcode instead of a setup-swift toolchain.
           # The runner's default Xcode moves on with image updates, so every entry pins one.
-          - swift: "6.1"
-            swift-full: "6.1.2"
-            runner: "macos-15"
-            xcode: "16.4"
           - swift: "6.2"
             swift-full: "6.2.4"
             runner: "macos-26"

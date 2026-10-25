@@ -9,7 +9,7 @@
 import Foundation
 import Testing
 
-final class SerialTarget: SerializableComponent, @unchecked Sendable {
+struct SerialTarget: SerializableComponent, Sendable {
     static let componentTypeName = "Target"
     var target: EntityIdentifier
 
@@ -18,7 +18,7 @@ final class SerialTarget: SerializableComponent, @unchecked Sendable {
     }
 }
 
-final class SerialHealth: SerializableComponent, @unchecked Sendable {
+struct SerialHealth: SerializableComponent, Sendable {
     static let componentTypeName = "Health"
     static let componentTypeNameAliases = ["OldHealth"]
     var value: Int
@@ -28,7 +28,7 @@ final class SerialHealth: SerializableComponent, @unchecked Sendable {
     }
 }
 
-final class SerialConflictingHealth: SerializableComponent, @unchecked Sendable {
+struct SerialConflictingHealth: SerializableComponent, Sendable {
     static let componentTypeName = "ConflictingHealth"
     static let componentTypeNameAliases = ["Health"]
     var value = 0
@@ -146,7 +146,7 @@ struct SerialFormat: CustomTestStringConvertible, @unchecked Sendable {
 @Suite struct NexusSerializationTests {
     static let componentTypes: [any SerializableComponent.Type] = [SerialPosition.self, SerialParent.self, SerialTarget.self, SerialHealth.self]
 
-    /// Builds a nexus with gaps in its entity identifiers, entity references and a shared component instance.
+    /// Builds a nexus with gaps in its entity identifiers, entity references and equal component values on two entities.
     private func makeScene() -> (nexus: Nexus, root: Entity, child: Entity, sibling: Entity) {
         let nexus = Nexus()
         let root = nexus.createEntity(with: SerialPosition(x: 1, y: 2))
@@ -175,7 +175,7 @@ struct SerialFormat: CustomTestStringConvertible, @unchecked Sendable {
         #expect(try #require(child.get(SerialTarget.self)).target == root.identifier)
         #expect(try #require(sibling.get(SerialHealth.self)).value == 7)
         let shared = try #require(child.get(SerialPosition.self))
-        #expect(shared === sibling.get(SerialPosition.self))
+        #expect(shared == sibling.get(SerialPosition.self))
         #expect(shared.x == 5)
         #expect(restored.family(requires: SerialPosition.self).count == 3)
 
@@ -183,6 +183,13 @@ struct SerialFormat: CustomTestStringConvertible, @unchecked Sendable {
         for _ in 0 ..< 3 {
             #expect(restored.createEntity().identifier == source.nexus.createEntity().identifier)
         }
+    }
+
+    @Test(arguments: SerialFormat.all)
+    func snapshotListsEveryCopyAndNeverWritesSharedComponents(format: SerialFormat) throws {
+        let source = makeScene()
+        let data = try format.encodeSnapshot(source.nexus)
+        #expect(!String(decoding: data, as: UTF8.self).contains("sharedComponents"))
     }
 
     @Test(arguments: SerialFormat.all)

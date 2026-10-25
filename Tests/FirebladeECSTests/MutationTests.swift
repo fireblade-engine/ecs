@@ -8,19 +8,19 @@
 @testable import FirebladeECS
 import Testing
 
-private final class Health: Component, DefaultInitializable, @unchecked Sendable {
+private struct Health: Equatable, Component, DefaultInitializable, Sendable {
     var hp = 100
     var armor: Int?
     init() {}
     init(hp: Int) { self.hp = hp }
 }
 
-private final class Counter: Component, DefaultInitializable, @unchecked Sendable {
+private struct Counter: Component, DefaultInitializable, Sendable {
     var value = 0
     init() {}
 }
 
-private final class Speed: Component, @unchecked Sendable {
+private struct Speed: Component, Sendable {
     var dx = 0
     var dy = 0
     init(dx: Int, dy: Int) {
@@ -308,7 +308,7 @@ private func makeNexus() -> Nexus {
         let entity = nexus.createEntity(with: Health(hp: 1))
         let replacement = Health(hp: 2)
         entity.set(replacement)
-        #expect(entity.get(Health.self) === replacement)
+        #expect(entity.get(Health.self) == replacement)
         #expect(entity.numComponents == 1)
     }
 
@@ -455,22 +455,9 @@ private func makeNexus() -> Nexus {
 
     // MARK: copy semantics
 
-    /// Documents what `get` returns today. Components are classes in this release, so a copy aliases the stored
-    /// instance and mutating a `var` copy changes the entity. See `valueCopyIsDetached` for the 2.0 contract.
-    @Test func copyOfAClassComponentAliasesTheStoredInstance() {
-        let nexus = makeNexus()
-        defer { withExtendedLifetime(nexus) {} }
-        defer { withExtendedLifetime(nexus) {} }
-        let entity = nexus.createEntity(with: Health())
-        var health = entity.get(Health.self)!
-        hurt(&health)
-        #expect(entity.get(Health.self)?.hp == 90)
-    }
-
     /// The 2.0 contract: `get` is a copy, so changing a `var` copy never changes the entity; only `set` and
-    /// `modify` do. It holds once components are value types (PR 8). Enable it then, and make `Health` a struct.
-    @Test(.disabled("components are classes until PR 8 turns them into value types"))
-    func valueCopyIsDetached() {
+    /// `modify` do.
+    @Test func valueCopyIsDetached() {
         let nexus = makeNexus()
         defer { withExtendedLifetime(nexus) {} }
         defer { withExtendedLifetime(nexus) {} }
@@ -480,6 +467,26 @@ private func makeNexus() -> Nexus {
         #expect(entity.get(Health.self)?.hp == 100)
         entity.set(health)
         #expect(entity.get(Health.self)?.hp == 90)
+    }
+
+    /// The hazard of plain iteration: the loop variables are copies, so `for var` compiles and silently changes nothing.
+    /// Writes go through `modify`, `set` or the subscripts of the entity.
+    @Test func mutatingTheLoopVariableOfAFamilyChangesNothing() {
+        let nexus = makeNexus()
+        defer { withExtendedLifetime(nexus) {} }
+        let entity = nexus.createEntity(with: Speed(dx: 1, dy: 2))
+        let family = nexus.family(requires: Speed.self)
+        for var speed in family {
+            speed.dx += 10
+            #expect(speed.dx == 11)
+        }
+        #expect(entity.get(Speed.self)?.dx == 1)
+
+        for (member, var speed) in family.entityAndComponents {
+            speed.dx += 10
+            member.set(speed)
+        }
+        #expect(entity.get(Speed.self)?.dx == 11)
     }
 }
 

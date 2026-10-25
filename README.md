@@ -9,9 +9,9 @@
 [![spi-swift-versions](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Ffireblade-engine%2Fecs%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/fireblade-engine/ecs)
 [![spi-swift-platforms](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Ffireblade-engine%2Fecs%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/fireblade-engine/ecs)
 
-This is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component System](https://en.wikipedia.org/wiki/Entity_component_system) implementation in Swift. The optional `FirebladeECSMacros` product, which provides the [component macro](#-component-macro), depends on [swift-syntax](https://github.com/swiftlang/swift-syntax). It is developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
+This is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component System](https://en.wikipedia.org/wiki/Entity_component_system) implementation in Swift. Components are value types, identifiers are generational, and the default archetype storage iterates families linearly (see the [benchmarks](Benchmarks/README.md)). With 10 000 entities, `forEach(reading:writing:)` over two components takes about 4 μs on the archetype storage; 1.x needed about 1 220 μs for a plain iteration of two components (release build, Apple silicon, `make benchmark`). It is developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
 
-See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) or have a look at [documentation](https://fireblade-engine.github.io/ecs) to get started.
+Coming from 1.x? Read the [migration guide](https://fireblade-engine.github.io/ecs/documentation/firebladeecs/migratingtofirebladeecs2) first, and see the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) or the [documentation](https://fireblade-engine.github.io/ecs) to get started.
 
 ## 🚀 Getting Started
 
@@ -25,7 +25,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### 💻 Installing
 
-Fireblade ECS is available for all platforms that support [Swift 6.2](https://swift.org/) and higher and the [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager).
+Fireblade ECS 2 needs [Swift 6.2](https://swift.org/) or later and the [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager). It runs on macOS, iOS, tvOS, watchOS, visionOS, Linux, Windows and WebAssembly.
 
 Extend the following lines in your `Package.swift` file or use it to create a new project.
 
@@ -37,15 +37,33 @@ import PackageDescription
 let package = Package(
     name: "YourPackageName",
     dependencies: [
-        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "1.2.0")
+        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "2.0.0")
     ],
     targets: [
         .target(
             name: "YourTargetName",
-            dependencies: ["FirebladeECS"])
+            dependencies: [
+                .product(name: "FirebladeECS", package: "ecs")
+            ])
     ]
 )
 
+```
+
+The package provides three products:
+
+| Product | Provides | Dependencies |
+| --- | --- | --- |
+| `FirebladeECS` | `Nexus`, `Entity`, `Family`, `Single`, events, snapshots | none |
+| `FirebladeECSMacros` | the `@Component` and `@FamilyTraits` macros | [swift-syntax](https://github.com/swiftlang/swift-syntax) |
+| `FirebladeFSM` | `EntityStateMachine`, `EntityState`, component providers | `FirebladeECS` |
+
+**Import rule:** `FirebladeECSMacros` and `FirebladeFSM` do not re-export `FirebladeECS`. Add each product you use to the target and import `FirebladeECS` in every file next to the module you need:
+
+```swift
+import FirebladeECS
+import FirebladeECSMacros   // only where @Component or @FamilyTraits is used
+import FirebladeFSM         // only where the state machine is used
 ```
 
 ## 📝 Code Example
@@ -54,13 +72,13 @@ let package = Package(
 
 The core element in the Fireblade-ECS is the [Nexus](https://en.wiktionary.org/wiki/nexus#Noun). 
 It acts as a centralized way to store, access and manage entities and their components. 
-A single `Nexus` may (theoretically) hold up to 4294967295 `Entities` at a time.   
 You may use more than one `Nexus` at a time.
 
 Initialize a `Nexus` with
 
 ```swift
-let nexus = Nexus()
+let nexus = Nexus()                        // archetype storage (default)
+let churning = Nexus(storage: .sparseSet)  // for worlds that add and remove components constantly
 ```
 
 ### 👤 Entities
@@ -72,19 +90,27 @@ then create entities by letting the `Nexus` generate them.
 let newEntity = nexus.createEntity()
 ```
 
-To define components, conform your class to the `Component` protocol
+Components are value types. Conform a struct or enum to the `Component` protocol
 
 ```swift
-final class Position: Component {
-	var x: Int = 0
-	var y: Int = 0
+struct Position: Component {
+    var x: Int = 0
+    var y: Int = 0
 }
 ```
-and assign instances of it to an `Entity` with
+and `set` values of it on an `Entity`. Setting adds the component, or replaces the one the entity already has.
 
 ```swift
-let position = Position(x: 1, y: 2)
-entity.set(position)
+newEntity.set(Position(x: 1, y: 2))
+```
+
+Reading a component returns a **copy**. Change the stored component with `modify`, a subscript or `set`:
+
+```swift
+let copy = newEntity.get(Position.self)                      // Position?, a copy
+newEntity.modify(Position.self) { $0.x += 1 }                // in place, false if missing
+newEntity[Position.self]?.y += 1                             // in place through the subscript
+newEntity.modify(Position.self, default: Position()) { $0.x += 1 }  // adds the default if missing
 ```
 
 You can be more efficient by assigning components while creating an entity.
@@ -92,14 +118,14 @@ You can be more efficient by assigning components while creating an entity.
 ```swift
 // an entity with two components assigned.
 nexus.createEntity {
-	Position(x: 1, y: 2)
-	Color(.red)
+    Position(x: 1, y: 2)
+    Velocity(dx: 1, dy: 0)
 }
 
 // bulk create entities with multiple components assigned.
 nexus.createEntities(count: 100) { _ in
-	Position()
-	Color()
+    Position()
+    Velocity()
 }
 
 ```
@@ -110,73 +136,71 @@ Entities with the __same component types__ may belong to one `Family`.
 A `Family` has entities as members and component types as family traits.
 
 Create a family by calling `.family` with a set of traits on the nexus.
-A family that contains only entities with a `Movement` and `PlayerInput` component, but no `Texture` component is created by
+A family that contains only entities with a `Position` and `Velocity` component, but no `Frozen` component is created by
 
 ```swift
-let family = nexus.family(requiresAll: Movement.self, PlayerInput.self,
-                          excludesAll: Texture.self)
+let family = nexus.family(requiresAll: Position.self, Velocity.self,
+                          excludesAll: Frozen.self)
 ```
 
-These entities are cached in the nexus for efficient access and iteration.
-Families conform to the [Sequence](https://developer.apple.com/documentation/swift/sequence) protocol so that members (components) 
-may be iterated and accessed like any other sequence in Swift.   
-Access a family's components directly on the family instance. To get family entities and access components at the same time call `family.entityAndComponents`.
+Update the members with `forEach(reading:writing:)`. The read components arrive as copies, the written ones as `inout`, and the changes land in the storage. This is the fast path: no allocation and no lookup per member.
+
+```swift
+struct Frozen: Component {}
+struct Velocity: Component { var dx = 0, dy = 0 }
+
+final class MovementSystem {
+    let family: Family<Position, Velocity>
+
+    init(nexus: Nexus) {
+        family = nexus.family(requiresAll: Position.self, Velocity.self, excludesAll: Frozen.self)
+    }
+
+    func update() {
+        family.forEach(reading: Velocity.self, writing: Position.self) { velocity, position in
+            position.x += velocity.dx
+            position.y += velocity.dy
+        }
+    }
+}
+```
+
+> [!WARNING]
+> **The `for var` hazard.** Plain iteration, `get` and the entity API hand out *copies*. This compiles, runs, and changes nothing:
+>
+> ```swift
+> for (var position, velocity) in family {   // `position` is a copy
+>     position.x += velocity.dx              // lost
+> }
+> ```
+>
+> The compiler cannot catch it. Write with `forEach(reading:writing:)`, `entity.modify` or `entity.set`. Plain `for` loops are fine for read-only systems.
+
+Families conform to the [Sequence](https://developer.apple.com/documentation/swift/sequence) protocol for read-only access.
+To get family entities and components at the same time call `family.entityAndComponents`.
 If you are only interested in a family's entities call `family.entities`.
 
 ```swift
-class PlayerMovementSystem {
-	let family = nexus.family(requiresAll: Movement.self, PlayerInput.self,
-                              excludesAll: Texture.self)
-
-	func update() {
-		family
-			.forEach { (mov: Movement, input: PlayerInput) in
-			
-			// position & velocity component for the current entity
-			
-			// get properties
-			_ = mov.position
-			_ = mov.velocity
-			
-			// set properties
-			mov.position.x = mov.position.x + 3.0
-			...
-			
-			// current input command for the given entity
-			_ = input.command
-			...
-			
-		}
-	}
-
-	func update2() {
-		family
-			.entityAndComponents
-			.forEach { (entity: Entity, mov: Movement, input: PlayerInput) in
-			
-			// the current entity instance
-			_ = entity
-
-			// position & velocity component for the current entity
-			
-			// get properties
-			_ = mov.position
-			_ = mov.velocity
-			
-			
-		}
-	}
-
-	func update3() {
-		family
-			.entities
-			.forEach { (entity: Entity) in
-			
-			// the current entity instance
-			_ = entity
-		}
-	}
+func inspect(_ family: Family<Position, Velocity>) {
+    for (position, velocity) in family {
+        _ = (position.x, velocity.dx)   // read-only copies
+    }
+    for (entity, position, _) in family.entityAndComponents {
+        _ = (entity.identifier, position)
+    }
+    for entity in family.entities {
+        entity.modify(Position.self) { $0.x = 0 }   // write through the entity
+    }
 }
+```
+
+With the `FirebladeECSMacros` product a family can be declared once as a type, see the [documentation](https://fireblade-engine.github.io/ecs):
+
+```swift
+@FamilyTraits(reading: Velocity.self, writing: Position.self, excluding: Frozen.self)
+struct Movers {}
+
+Movers(in: nexus).forEach { velocity, position in position.x += velocity.dx }
 ```
 
 ### 🧑 Singles
@@ -184,7 +208,7 @@ class PlayerMovementSystem {
 A `Single` on the other hand is a special kind of family that holds exactly **one** entity with exactly **one** component for the entire lifetime of the Nexus. This may come in handy if you have components that have a [Singleton](https://en.wikipedia.org/wiki/Singleton_(mathematics)) character. Single components must conform to the `SingleComponent` protocol and will not be available through regular family iteration.
 
 ```swift
-final class GameState: SingleComponent {
+struct GameState: SingleComponent {
     var quitGame: Bool = false
 }
 class GameLogicSystem {
@@ -195,14 +219,25 @@ class GameLogicSystem {
     }
     
     func update() {
-        // update your game sate here
-        gameState.component.quitGame = true
+        // `component` is a read-only copy: write with `modify` or `set`
+        gameState.modify { $0.quitGame = true }
         
         // entity access is provided as well
         _ = gameState.entity
     }
 }
 
+```
+
+### 🆔 Entity identifiers
+
+An `EntityIdentifier` is a 64 bit value of slot index and generation. When an entity is destroyed, its identifier goes stale and never matches a later entity in the same slot:
+
+```swift
+let id = newEntity.identifier
+nexus.destroy(entity: newEntity)
+nexus.isAlive(id)    // false
+nexus.entity(id)     // nil
 ```
 
 ### 🔗 Serialization
@@ -277,7 +312,7 @@ var decoder = JSONDecoder()
 try playMode.decodeSnapshot(from: data, using: &decoder)
 ```
 
-Component types are registered automatically the first time an instance is assigned. Register them explicitly before decoding snapshots that reference them. All protocols can also be implemented by hand without the macro.
+Component types are registered automatically the first time a value is set. Register them explicitly before decoding snapshots that reference them. All protocols can also be implemented by hand without the macro.
 
 Snapshots start with a `formatVersion` and keep the original entity identifiers, including their generations (older versions still load). Decoding creates new entities, remaps entity references to them, and rejects snapshots written in a newer format version.
 
@@ -307,7 +342,7 @@ See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) t
 
 Consult the [online documentation](https://fireblade-engine.github.io/ecs), or preview it locally:
 
-- `make preview-docs`
+- `make docs-preview`
 
 ## 💁 How to contribute
 
@@ -317,11 +352,11 @@ To start your project contribution run these in your command line:
 
 1. `git clone git@github.com:fireblade-engine/ecs.git fireblade-ecs`
 2. `cd fireblade-ecs`
-3. `make setupEnvironment`
+3. `make setup`
 
 Before commiting code please ensure to run:
 
-- `make precommit`
+- `make pre-commit`
 
 To measure runtime performance run `make benchmark` (see [Benchmarks/README.md](Benchmarks/README.md)).
 

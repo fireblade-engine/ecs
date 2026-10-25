@@ -9,8 +9,8 @@
 import Foundation
 import Testing
 
-/// A component whose `deinit` runs arbitrary code, like user code releasing the last reference would.
-private final class Reentrant: Component, @unchecked Sendable {
+/// Runs arbitrary code when its last copy is released, like user code releasing the last reference would.
+private final class DeinitHook: Sendable {
     nonisolated(unsafe) static var onDeinit: (() -> Void)?
 
     deinit {
@@ -20,8 +20,10 @@ private final class Reentrant: Component, @unchecked Sendable {
     }
 }
 
-private class BaseComponent: Component, @unchecked Sendable {}
-private final class SubComponent: BaseComponent, @unchecked Sendable {}
+/// A component value that owns a reference: the storage releasing the value releases the reference.
+private struct Reentrant: Component {
+    let hook = DeinitHook()
+}
 
 private final class DestroyOnAdd: NexusEventDelegate, @unchecked Sendable {
     var nexus: Nexus?
@@ -44,7 +46,7 @@ private final class DestroyOnAdd: NexusEventDelegate, @unchecked Sendable {
     @Test func deinitReAddingTheSameTypeKeepsMaskAndStorageInSync() {
         let nexus = Nexus()
         let entity = nexus.createEntity(with: Reentrant(), Position(x: 1, y: 1))
-        Reentrant.onDeinit = { entity.set(Reentrant()) }
+        DeinitHook.onDeinit = { entity.set(Reentrant()) }
         entity.remove(Reentrant.self)
 
         #expect(entity.has(Reentrant.self))
@@ -63,7 +65,7 @@ private final class DestroyOnAdd: NexusEventDelegate, @unchecked Sendable {
         nexus.assertsOnStaleHandles = false
         let family = nexus.family(requires: Reentrant.self)
         let entity = nexus.createEntity(with: Reentrant())
-        Reentrant.onDeinit = { entity.set(Reentrant()) }
+        DeinitHook.onDeinit = { entity.set(Reentrant()) }
         nexus.destroy(entity: entity)
 
         #expect(!nexus.isAlive(entity.identifier))
@@ -76,7 +78,7 @@ private final class DestroyOnAdd: NexusEventDelegate, @unchecked Sendable {
         let nexus = Nexus()
         nexus.assertsOnStaleHandles = false
         let entity = nexus.createEntity(with: Reentrant())
-        Reentrant.onDeinit = { entity.set(Reentrant()) }
+        DeinitHook.onDeinit = { entity.set(Reentrant()) }
         nexus.clear()
         #expect(nexus.numEntities == 0)
         #expect(nexus.numComponents == 0)
@@ -146,15 +148,15 @@ private final class DestroyOnAdd: NexusEventDelegate, @unchecked Sendable {
         nexus.delegate = nil
     }
 
-    @Test func subclassInstancesAreStoredUnderTheirDynamicType() {
-        // As in 1.x, `Component.identifier` of the instance, and with it the storage, is that of the dynamic type.
+    @Test func existentialComponentsAreStoredUnderTheirDynamicType() {
+        // `Component.identifier` of the value, and with it the storage, is that of the dynamic type.
         let nexus = Nexus()
-        let base: BaseComponent = SubComponent()
+        let erased: Component = Position(x: 4, y: 5)
         let entity = nexus.createEntity()
-        entity.set(base)
-        #expect(entity.has(SubComponent.self))
-        #expect(entity.get(SubComponent.self) === base)
-        #expect(nexus.get(components: entity.identifier) == [SubComponent.identifier])
+        entity.set(erased)
+        #expect(entity.has(Position.self))
+        #expect(entity.get(Position.self)?.x == 4)
+        #expect(nexus.get(components: entity.identifier) == [Position.identifier])
     }
 
     @Test func familyOrderIsDeterministicAfterSwapRemoveChurn() {

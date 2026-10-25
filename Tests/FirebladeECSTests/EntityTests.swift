@@ -43,10 +43,12 @@ import Testing
         entity.set(pos)
         entity.set(name, vel)
 
-        let expectedComponents: [Component] = [pos, name, vel]
         let allComponents = Array(entity.makeComponentsIterator())
 
-        #expect(allComponents.elementsEqualUnordered(expectedComponents) { $0 === $1 })
+        #expect(allComponents.count == 3)
+        #expect(allComponents.compactMap { $0 as? Position } == [pos])
+        #expect(allComponents.compactMap { $0 as? Name } == [name])
+        #expect(allComponents.compactMap { $0 as? Velocity } == [vel])
     }
 
     @Test func entityEquality() {
@@ -121,9 +123,9 @@ import Testing
         entity[Position.self] = nil
         #expect(entity[Position.self] == nil)
         entity[Position.self] = pos // assign position comp instance
-        #expect(entity[Position.self] === pos)
+        #expect(entity[Position.self] == pos)
         entity[Position.self] = pos // re-assign
-        #expect(entity[Position.self] === pos)
+        #expect(entity[Position.self] == pos)
         entity[Position.self] = nil // remove position component
         #expect(entity[Position.self] == nil)
 
@@ -161,8 +163,8 @@ import Testing
         let pos = Position(x: 1, y: 2)
         let name = Name(name: "Hello")
         entity.set(pos).set(name)
-        #expect(entity.get(Position.self) === pos)
-        #expect(entity.get(Name.self) === name)
+        #expect(entity.get(Position.self) == pos)
+        #expect(entity.get(Name.self) == name)
 
         entity.set([Velocity(a: 1), Color()] as [Component])
         #expect(entity.has(Velocity.self))
@@ -178,10 +180,11 @@ import Testing
         #expect(entity.set(value: 3, for: keyPath))
         #expect(entity.get(Position.self)?.x == 3)
 
-        // writes through to the assigned instance
+        // writes in place; a copy taken before does not change
         let pos = try #require(entity.get(Position.self))
         #expect(entity.set(value: 4, for: keyPath))
-        #expect(pos.x == 4)
+        #expect(pos.x == 3)
+        #expect(entity.get(Position.self)?.x == 4)
     }
 
     @Test func entityCreationIntrinsic() {

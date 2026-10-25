@@ -40,7 +40,7 @@ import Testing
         // Set another component of the same type -> it replaces the first one
         let replacement = Position(x: 3, y: 4)
         entity.set(replacement)
-        #expect(entity.get(Position.self) === replacement)
+        #expect(entity.get(Position.self) == replacement)
         #expect(entity.numComponents == 1)
     }
 
@@ -55,8 +55,8 @@ import Testing
         let newPos = Position(x: 3, y: 4)
         let newName = Name(name: "Other")
         entity.set([newPos, newName] as [Component])
-        #expect(entity.get(Position.self) === newPos)
-        #expect(entity.get(Name.self) === newName)
+        #expect(entity.get(Position.self) == newPos)
+        #expect(entity.get(Name.self) == newName)
         #expect(entity.numComponents == 2)
     }
 

@@ -40,6 +40,9 @@ extension Nexus {
         /// Component types with a running write access (`modify`, `withComponents`).
         @exclusivity(unchecked)
         @usableFromInline var activeWrites = ComponentMask()
+        /// Component types with a running read span (`componentSpan(reading:)`, `forEachComponentSpan`). Writes to them trap.
+        @exclusivity(unchecked)
+        @usableFromInline var activeReads = ComponentMask()
 
         @usableFromInline
         init() {}
@@ -78,12 +81,30 @@ extension Nexus {
         @inlinable
         func beginWrite(_ componentIndex: Int) {
             precondition(!activeWrites.contains(componentIndex), "nested write access to component \(componentIndex)")
+            precondition(!activeReads.contains(componentIndex), "write access to component \(componentIndex) during a read span of it")
             activeWrites.insert(componentIndex)
         }
 
         @inlinable
         func endWrite(_ componentIndex: Int) {
             activeWrites.remove(componentIndex)
+        }
+
+        /// Starts a read span of the type: it must not be written, and writing it traps until ``endRead(_:wasReading:)``.
+        /// - Returns: Whether the type was in a read span already (spans nest); hand it to ``endRead(_:wasReading:)``.
+        @inlinable
+        func beginRead(_ componentIndex: Int) -> Bool {
+            requireReadable(componentIndex)
+            let wasReading = activeReads.contains(componentIndex)
+            activeReads.insert(componentIndex)
+            return wasReading
+        }
+
+        @inlinable
+        func endRead(_ componentIndex: Int, wasReading: Bool) {
+            if !wasReading {
+                activeReads.remove(componentIndex)
+            }
         }
 
         @inlinable

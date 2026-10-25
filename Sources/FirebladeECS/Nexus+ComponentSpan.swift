@@ -37,6 +37,7 @@ extension Nexus {
     ///   - body: Receives the span; its result is returned.
     /// - Complexity: O(1) plus `body`.
     @inlinable
+    @discardableResult
     public func componentSpan<C: Component, Result>(reading type: C.Type, _ body: (Span<C>) throws -> Result) rethrows -> Result {
         guard case let .sparseSet(sparse) = backend else {
             return try body(Span<C>())
@@ -79,6 +80,7 @@ extension Nexus {
     ///   - body: Receives the span; its result is returned.
     /// - Complexity: O(1) plus `body`.
     @inlinable
+    @discardableResult
     public func componentSpan<C: Component, Result>(writing type: C.Type, _ body: (inout MutableSpan<C>) throws -> Result) rethrows -> Result {
         guard case let .sparseSet(sparse) = backend else {
             var empty = MutableSpan<C>()

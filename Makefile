@@ -79,15 +79,14 @@ docs-preview:
 
 docs-generate:
 	mkdir -p .build/documentation/$(DOCS_VERSION_PATH)
-	for target in $(DOCS_TARGETS); do \
-		swift package --disable-sandbox \
-			--allow-writing-to-directory .build/documentation \
-			generate-documentation --target $$target \
-			--disable-indexing \
-			--transform-for-static-hosting \
-			--hosting-base-path $(HOSTING_BASE_PATH) \
-			--output-path .build/documentation/$(DOCS_VERSION_PATH) $(XCS_FORMATTER) || exit 1; \
-	done
+	# Hosts FirebladeECS only: a second target in the same output path overwrites the shared navigator index.
+	swift package --disable-sandbox \
+		--allow-writing-to-directory .build/documentation \
+		generate-documentation --target FirebladeECS \
+		--disable-indexing \
+		--transform-for-static-hosting \
+		--hosting-base-path $(HOSTING_BASE_PATH) \
+		--output-path .build/documentation/$(DOCS_VERSION_PATH) $(XCS_FORMATTER)
 
 DOCS_COVERAGE_THRESHOLD ?= 95
 

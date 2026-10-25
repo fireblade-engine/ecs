@@ -14,6 +14,8 @@ struct MacroTransform {
     var position: Double = 0
     var parent: EntityIdentifier?
     var children: [EntityIdentifier] = []
+    var slots: [String: EntityIdentifier] = [:]
+    var group: Set<EntityIdentifier> = []
     @ComponentIgnored var cachedLength: Double = 0
 }
 
@@ -91,7 +93,7 @@ struct MacroDeclaredInit {
     }
 
     @Test func inspectionSkipsIgnoredProperties() {
-        #expect(MacroTransform.componentProperties.map(\.name) == ["position", "parent", "children"])
+        #expect(MacroTransform.componentProperties.map(\.name) == ["position", "parent", "children", "slots", "group"])
         #expect(MacroRenamed.componentProperties.map(\.name) == ["version", "value"])
         #expect(!MacroRenamed.componentProperties[0].isWritable)
     }
@@ -112,6 +114,8 @@ struct MacroDeclaredInit {
         var rootTransform = MacroTransform()
         rootTransform.children = [child.identifier]
         rootTransform.cachedLength = 7
+        rootTransform.slots = ["first": child.identifier]
+        rootTransform.group = [child.identifier]
         var childTransform = MacroTransform()
         childTransform.parent = root.identifier
         let renderable = MacroRenderable()
@@ -125,6 +129,8 @@ struct MacroDeclaredInit {
         let clonedChild = try #require(mapping[child.identifier])
         let clonedRootTransform = try #require(clonedRoot.get(MacroTransform.self))
         #expect(clonedRootTransform.children == [clonedChild.identifier])
+        #expect(clonedRootTransform.slots == ["first": clonedChild.identifier])
+        #expect(clonedRootTransform.group == [clonedChild.identifier])
         #expect(clonedRootTransform.cachedLength == 7)
         #expect(try #require(clonedChild.get(MacroTransform.self)).parent == clonedRoot.identifier)
         #expect(try #require(clonedRoot.get(MacroRenderable.self)).handle === renderable.handle)

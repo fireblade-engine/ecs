@@ -2,6 +2,8 @@
 
 Originally seeded by replicating performance tests into a new form leveraging [benchmark](https://github.com/ordo-one/benchmark) [Documentation](https://swiftpackageindex.com/ordo-one/package-benchmark/main/documentation/benchmark).
 
+The iteration-only (`IterOnly...`) and storage (`S2...`) benchmarks run on both storages of `Nexus(storage:)`: the name carries the storage in brackets, for example `IterOnlyForEachReadWrite [archetype]`. The `S2...` benchmarks are ported from the storage spike and cover iteration at several arities, filtered and fragmented families, 100k entities in permuted storage order, random access and structural churn.
+
 To run all the available benchmarks from the repository root:
 
     make benchmark

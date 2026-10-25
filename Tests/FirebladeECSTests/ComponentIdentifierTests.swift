@@ -7,7 +7,7 @@
 @testable import FirebladeECS
 import Testing
 
-private final class CustomIdentifierComponent: Component {
+private struct CustomIdentifierComponent: Component {
     static var identifier: ComponentIdentifier { ComponentIdentifier(id: 42) }
 }
 

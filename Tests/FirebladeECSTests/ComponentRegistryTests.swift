@@ -8,16 +8,16 @@
 @testable import FirebladeECS
 import Testing
 
-final class RegisteredPosition: RegistrableComponent, DefaultInitializable, @unchecked Sendable {
+struct RegisteredPosition: RegistrableComponent, DefaultInitializable, Sendable {
     var x: Int = 0
     init() {}
 }
 
-final class RenamedVelocity: RegistrableComponent, @unchecked Sendable {
+struct RenamedVelocity: RegistrableComponent, Sendable {
     static let componentTypeName = "Velocity"
 }
 
-final class ConflictingVelocity: RegistrableComponent, @unchecked Sendable {
+struct ConflictingVelocity: RegistrableComponent, Sendable {
     static let componentTypeName = "Velocity"
 }
 

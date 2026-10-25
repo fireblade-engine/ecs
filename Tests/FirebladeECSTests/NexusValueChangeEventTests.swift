@@ -8,11 +8,11 @@
 @testable import FirebladeECS
 import Testing
 
-private final class Health: Component, @unchecked Sendable {
+private struct Health: Component, Sendable {
     var points = 10
 }
 
-private final class Mana: Component, @unchecked Sendable {
+private struct Mana: Component, Sendable {
     var points = 5
 }
 

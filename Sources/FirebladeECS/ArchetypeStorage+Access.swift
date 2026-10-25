@@ -124,3 +124,45 @@ extension Nexus.ArchetypeStorage {
         tables.contains { $0.rowCount > 0 && $0.mask.contains(componentIndex) }
     }
 }
+
+extension Nexus.ArchetypeStorage {
+    /// How many components of a type exist, and the table that holds them all if it is only one.
+    @inlinable
+    func rowCount(of componentIndex: Int) -> (total: Int, onlyTable: Nexus.ArchetypeTable?) {
+        var total = 0
+        var only: Nexus.ArchetypeTable?
+        var holders = 0
+        for table in tables where table.rowCount > 0 && table.mask.contains(componentIndex) {
+            total += table.rowCount
+            only = table
+            holders += 1
+        }
+        return (total, holders == 1 ? only : nil)
+    }
+
+    /// Copies the components of a type from all tables into `buffer`, table by table, in row order.
+    @inlinable
+    func gather<C: Component>(_: C.Type, at componentIndex: Int, into buffer: UnsafeMutablePointer<C>) {
+        var offset = 0
+        for table in tables where table.rowCount > 0 {
+            guard let column = table.column(C.self, at: componentIndex) else {
+                continue
+            }
+            (buffer + offset).initialize(from: column.base, count: column.count)
+            offset += column.count
+        }
+    }
+
+    /// Writes the buffer filled by ``gather(_:at:into:)`` (and changed since) back into the columns.
+    @inlinable
+    func scatter<C: Component>(_: C.Type, at componentIndex: Int, from buffer: UnsafeMutablePointer<C>) {
+        var offset = 0
+        for table in tables where table.rowCount > 0 {
+            guard let column = table.column(C.self, at: componentIndex) else {
+                continue
+            }
+            column.base.update(from: buffer + offset, count: column.count)
+            offset += column.count
+        }
+    }
+}

@@ -35,7 +35,7 @@ extension Nexus {
     @discardableResult
     public func createEntity<each C: Component>(with components: repeat each C) -> Entity {
         let newEntity = createEntity()
-        assign(components: repeat each components, to: newEntity)
+        _ = assign(components: repeat each components, entityId: newEntity.identifier)
         return newEntity
     }
 
@@ -123,7 +123,7 @@ extension Nexus {
 // MARK: - entities iterator
 
 extension Nexus {
-    /// An iterator over the entities managed by the Nexus.
+    /// An iterator over the entities managed by the Nexus, in a deterministic order.
     public struct EntitiesIterator: IteratorProtocol {
         private var iterator: AnyIterator<Entity>
 
@@ -131,7 +131,8 @@ extension Nexus {
         /// - Parameter nexus: The nexus to iterate over.
         @usableFromInline
         init(nexus: Nexus) {
-            var iter = nexus.componentIdsByEntity.keys.makeIterator()
+            // Sorting makes the order deterministic instead of following the per-process hash seed.
+            var iter = nexus.componentIdsByEntity.keys.sorted { $0.id < $1.id }.makeIterator()
             iterator = AnyIterator {
                 guard let entityId = iter.next() else {
                     return nil

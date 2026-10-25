@@ -55,12 +55,15 @@ public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
         @usableFromInline
         init<EntityIds>(startProviding initialEntityIds: EntityIds) where EntityIds: BidirectionalCollection, EntityIds.Element == EntityIdentifier {
             let initialInUse: [EntityIdentifier.Identifier] = initialEntityIds.map(\.id)
-            let maxInUseValue = initialInUse.max() ?? 0
+            guard let maxInUseValue = initialInUse.max() else {
+                stack = [0]
+                return
+            }
             let inUseSet = Set(initialInUse) // a set of all eIds in use
-            let allSet = Set(0 ... maxInUseValue) // all eIds from 0 to including maxInUseValue
-            let freeSet = allSet.subtracting(inUseSet) // all "holes" / unused / free eIds
-            let initialFree = Array(freeSet).sorted().reversed() // order them to provide them linear increasing after all initially used are provided.
-            stack = initialFree + initialInUse
+            let freeSet = Set(0 ..< maxInUseValue).subtracting(inUseSet) // all "holes" / unused / free eIds below maxInUseValue
+            let initialFree = freeSet.sorted(by: >) // order them to provide them linear increasing after all initially used are provided.
+            // The bottom of the stack is the next fresh id, provided once all initially used and free ids are provided.
+            stack = [maxInUseValue + 1] + initialFree + initialInUse
         }
 
         /// Initializes the storage with a default identifier.

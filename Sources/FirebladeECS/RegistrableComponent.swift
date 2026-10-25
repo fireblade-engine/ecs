@@ -20,6 +20,12 @@ public protocol RegistrableComponent: Component {
     /// across process launches for types declared at file scope or nested in other types.
     /// Provide an explicit name to keep persisted data valid when renaming or moving the type.
     static var componentTypeName: String { get }
+
+    /// Former names of this component type that are still accepted when decoding.
+    ///
+    /// Add the previous ``componentTypeName`` here after renaming or moving a type,
+    /// so that data persisted under the old name keeps loading. Encoding always uses ``componentTypeName``.
+    static var componentTypeNameAliases: [String] { get }
 }
 
 extension RegistrableComponent {
@@ -27,6 +33,12 @@ extension RegistrableComponent {
     /// - Complexity: O(1)
     public static var componentTypeName: String {
         String(reflecting: Self.self)
+    }
+
+    /// No former names.
+    /// - Complexity: O(1)
+    public static var componentTypeNameAliases: [String] {
+        []
     }
 
     /// The stable identifier of this component type, derived from ``componentTypeName``.

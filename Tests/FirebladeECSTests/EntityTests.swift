@@ -30,8 +30,8 @@ import Testing
         let vel = Velocity(a: 1.234)
 
         let entity = nexus.createEntity()
-        entity.assign(pos)
-        entity.assign(name, vel)
+        entity.set(pos)
+        entity.set(name, vel)
 
         let expectedComponents: [Component] = [pos, name, vel]
         let allComponents = Array(entity.makeComponentsIterator())
@@ -131,7 +131,7 @@ import Testing
         entity[\Optionals.string] = "world"
         #expect(entity[\Optionals.string] == "world")
 
-        entity.assign(Comp1(12))
+        entity.set(Comp1(12))
         #expect(entity[\Comp1.value] == 12)
     }
 
@@ -139,8 +139,39 @@ import Testing
         let nexus = Nexus()
         let entity = nexus.createEntity()
         #expect(Array(entity.makeComponentsIterator()).isEmpty)
-        entity.assign(Position())
+        entity.set(Position())
         #expect(Array(entity.makeComponentsIterator()).count == 1)
+    }
+
+    @Test func setAndGet() {
+        let nexus = Nexus()
+        let entity = nexus.createEntity()
+        #expect(entity.get(Position.self) == nil)
+
+        let pos = Position(x: 1, y: 2)
+        let name = Name(name: "Hello")
+        entity.set(pos).set(name)
+        #expect(entity.get(Position.self) === pos)
+        #expect(entity.get(Name.self) === name)
+
+        entity.set([Velocity(a: 1), Color()] as [Component])
+        #expect(entity.has(Velocity.self))
+        #expect(entity.has(Color.self))
+    }
+
+    @Test func setValueThroughWritableKeyPath() throws {
+        let nexus = Nexus()
+        let entity = nexus.createEntity()
+        let keyPath: WritableKeyPath<Position, Int> = \.x
+
+        // creates a default-initialized component
+        #expect(entity.set(value: 3, for: keyPath))
+        #expect(entity.get(Position.self)?.x == 3)
+
+        // writes through to the assigned instance
+        let pos = try #require(entity.get(Position.self))
+        #expect(entity.set(value: 4, for: keyPath))
+        #expect(pos.x == 4)
     }
 
     @Test func entityCreationIntrinsic() {

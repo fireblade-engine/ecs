@@ -144,6 +144,9 @@ extension ComponentMacro: ExtensionMacro {
         let missing = Set(protocols.compactMap { $0.trimmedDescription.split(separator: ".").last.map(String.init) })
         let features = component.features
         let candidates: [(name: String, isEnabled: Bool)] = [
+            // Implied by every other protocol, but spelled out: the compiler can lose conformances that are
+            // only implied by a macro-generated extension (swiftlang/swift#92390).
+            ("Component", true),
             ("RegistrableComponent", true),
             ("CloneableComponent", features.isCloneable),
             ("SerializableComponent", features.isSerializable),

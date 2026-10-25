@@ -40,11 +40,49 @@
         "patch"
       ],
       "automerge": true
+    },
+    {
+      "description": "Swift toolchains in CI: only patch updates within each tested Swift minor; adding a minor is a deliberate matrix change",
+      "groupName": "Swift toolchains",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchDepNames": [
+        "swift"
+      ],
+      "matchUpdateTypes": [
+        "major",
+        "minor"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "Group Swift toolchain patch updates; never automerge, a toolchain bump changes what CI tests",
+      "groupName": "Swift toolchains",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchDepNames": [
+        "swift"
+      ],
+      "automerge": false
     }
   ],
   "suppressNotifications": [
     "prIgnoreNotification",
     "prEditedNotification",
     "branchAutomergeFailure"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Exact Swift toolchain versions pinned in CI matrices (swift-full), annotated with a renovate comment",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/.+\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+swift-full: \"(?<currentValue>[^\"]+)\""
+      ]
+    }
   ]
 }

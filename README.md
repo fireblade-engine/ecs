@@ -9,7 +9,7 @@
 [![spi-swift-versions](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Ffireblade-engine%2Fecs%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/fireblade-engine/ecs)
 [![spi-swift-platforms](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Ffireblade-engine%2Fecs%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/fireblade-engine/ecs)
 
-This is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component System](https://en.wikipedia.org/wiki/Entity_component_system) implementation in Swift. It is developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
+This is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component System](https://en.wikipedia.org/wiki/Entity_component_system) implementation in Swift. The optional `FirebladeECSMacros` product, which provides the [component macro](#-component-macro), depends on [swift-syntax](https://github.com/swiftlang/swift-syntax). It is developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
 
 See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) or have a look at [documentation](https://fireblade-engine.github.io/ecs) to get started.
 
@@ -25,19 +25,19 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### 💻 Installing
 
-Fireblade ECS is available for all platforms that support [Swift 6.1](https://swift.org/) and higher and the [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager).
+Fireblade ECS is available for all platforms that support [Swift 6.2](https://swift.org/) and higher and the [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager).
 
 Extend the following lines in your `Package.swift` file or use it to create a new project.
 
 ```swift
-// swift-tools-version:6.1
+// swift-tools-version:6.2
 
 import PackageDescription
 
 let package = Package(
     name: "YourPackageName",
     dependencies: [
-        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.17.7")
+        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "1.2.0")
     ],
     targets: [
         .target(
@@ -84,7 +84,7 @@ and assign instances of it to an `Entity` with
 
 ```swift
 let position = Position(x: 1, y: 2)
-entity.assign(position)
+entity.set(position)
 ```
 
 You can be more efficient by assigning components while creating an entity.
@@ -303,6 +303,8 @@ To start your project contribution run these in your command line:
 Before commiting code please ensure to run:
 
 - `make precommit`
+
+To measure runtime performance run `make benchmark` (see [Benchmarks/README.md](Benchmarks/README.md)).
 
 This project is currently maintained by [Christian Treffs](https://github.com/ctreffs).   
 See also the list of [contributors](https://github.com/fireblade-engine/ecs/contributors) who participated in this project.

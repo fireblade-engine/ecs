@@ -47,7 +47,7 @@ extension Single where A: SingleComponent {
         // Since we guarantee that the component will always be present by managing the complete lifecycle of the entity
         // and component assignment we may unsafelyUnwrap here.
         // Since components will always be of reference type (class) we may use unsafeDowncast here for performance reasons.
-        nexus.get(unsafe: entityId)
+        nexus.unsafeComponent(for: entityId)
     }
 
     /// The entity associated with this singleton component.

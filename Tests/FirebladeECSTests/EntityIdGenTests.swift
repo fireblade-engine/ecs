@@ -42,11 +42,26 @@ import Testing
         #expect(gen.nextId() == 10)
         #expect(gen.nextId() == 12)
 
-        for i in 13...304 {
+        for i in 13...303 {
             #expect(gen.nextId() == EntityIdentifier(EntityIdentifier.Identifier(i)))
         }
 
+        // 304 is in use already.
         #expect(gen.nextId() == 305)
+        #expect(gen.nextId() == 306)
+    }
+
+    @Test func generateWithSingleInitialId() {
+        let gen = DefaultEntityIdGenerator(startProviding: [0])
+        #expect(gen.nextId() == 0)
+        #expect(gen.nextId() == 1)
+        #expect(gen.nextId() == 2)
+    }
+
+    @Test func generateWithInitialIdsNeverRepeatsInUseIds() {
+        let gen = DefaultEntityIdGenerator(startProviding: [2, 0])
+        let generatedIds = (0..<5).map { _ in gen.nextId() }
+        #expect(generatedIds == [0, 2, 1, 3, 4])
     }
 
     @Test func generatorMarkUnused() {

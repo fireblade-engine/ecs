@@ -36,6 +36,18 @@ extension Nexus {
         return true
     }
 
+    /// Assigns multiple components to an entity, stopping at the first one that collides.
+    ///
+    /// - Parameters:
+    ///   - components: The components to assign.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: `true` if all assignments were successful, `false` otherwise.
+    func assign<each C: Component>(components: repeat each C, entityId: EntityIdentifier) -> Bool {
+        var success = true
+        _ = (repeat (success = success && assign(component: each components, entityId: entityId)))
+        return success
+    }
+
     /// Assigns a single component to an entity.
     ///
     /// - Parameters:
@@ -121,8 +133,8 @@ extension Nexus {
     /// - Parameter traits: The traits defining the family.
     func update(familyMembership traits: FamilyTraitSet) {
         // FIXME: iterating all entities is costly for many entities
-        var iter = componentIdsByEntity.keys.makeIterator()
-        while let entityId = iter.next() {
+        // Sorting makes the member order deterministic instead of following the per-process hash seed.
+        for entityId in componentIdsByEntity.keys.sorted(by: { $0.id < $1.id }) {
             update(membership: traits, for: entityId)
         }
     }

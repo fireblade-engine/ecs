@@ -7,16 +7,16 @@
 
 import FirebladeECS
 
-class EmptyComponent: Component {}
+final class EmptyComponent: Component, @unchecked Sendable {}
 
-class Name: Component {
+final class Name: Component, @unchecked Sendable {
     var name: String
     init(name: String) {
         self.name = name
     }
 }
 
-class Position: Component {
+final class Position: Component, @unchecked Sendable {
     var x: Int
     var y: Int
     init(x: Int, y: Int) {
@@ -25,21 +25,21 @@ class Position: Component {
     }
 }
 
-class Velocity: Component {
+final class Velocity: Component, @unchecked Sendable {
     var a: Float
     init(a: Float) {
         self.a = a
     }
 }
 
-class Party: Component {
+final class Party: Component, @unchecked Sendable {
     var partying: Bool
     init(partying: Bool) {
         self.partying = partying
     }
 }
 
-class Color: Component {
+final class Color: Component, @unchecked Sendable {
     var r: UInt8 = 0
     var g: UInt8 = 0
     var b: UInt8 = 0
@@ -60,7 +60,7 @@ class ExampleSystem {
     }
 }
 
-final class SingleGameState: SingleComponent {
+final class SingleGameState: SingleComponent, @unchecked Sendable {
     var shouldQuit: Bool = false
     var playerHealth: Int = 67
 }
@@ -70,11 +70,11 @@ func setUpNexus() -> Nexus {
     let nexus = Nexus()
 
     for i in 0 ..< numEntities {
-        nexus.createEntity().assign(Position(x: 1 + i, y: 2 + i),
-                                    Name(name: "myName\(i)"),
-                                    Velocity(a: 3.14),
-                                    EmptyComponent(),
-                                    Color())
+        nexus.createEntity().set(Position(x: 1 + i, y: 2 + i),
+                                 Name(name: "myName\(i)"),
+                                 Velocity(a: 3.14),
+                                 EmptyComponent(),
+                                 Color())
     }
 
     precondition(nexus.numEntities == numEntities)

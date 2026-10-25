@@ -10,14 +10,14 @@ An ECS comprises entities composed from components of data, with systems which o
 Extend the following lines in your `Package.swift` file or use it to create a new project.
 
 ```swift
-// swift-tools-version:6.1
+// swift-tools-version:6.2
 
 import PackageDescription
 
 let package = Package(
     name: "YourPackageName",
     dependencies: [
-        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "0.17.7")
+        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "1.2.0")
     ],
     targets: [
         .target(
@@ -65,7 +65,7 @@ and assign instances of it to an `Entity` with
 
 ```swift
 let position = Position(x: 1, y: 2)
-entity.assign(position)
+entity.set(position)
 ```
 
 You can be more efficient by assigning components while creating an entity.

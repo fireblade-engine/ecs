@@ -441,7 +441,7 @@ public class EntityStateMachine<StateIdentifier: Hashable>: @unchecked Sendable 
         }
 
         for (_, provider) in toAdd {
-            entity.assign(provider.getComponent())
+            entity.set(provider.getComponent())
         }
         currentState = newState
     }

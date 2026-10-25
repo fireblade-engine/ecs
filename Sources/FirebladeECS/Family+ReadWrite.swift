@@ -40,6 +40,9 @@ extension Family {
     /// - Complexity: O(N) where N is the number of members, plus one hash lookup per component type.
     @inlinable
     @_disfavoredOverload
+    // Swift 6.4 crashes in the SIL GenericSpecializer (TypeSubstituter::transformPackElementType) when it specializes this
+    // pack code for concrete types in release builds. This is the slow path, so keep it generic.
+    @_semantics("optimize.sil.specialize.generic.never")
     public func forEach<each R: Component, each W: Component>(
         reading rTypes: repeat (each R).Type,
         writing wTypes: repeat (each W).Type,
@@ -100,6 +103,7 @@ extension Family {
     }
 
     @inlinable
+    @_semantics("optimize.sil.specialize.generic.never")
     static func value<T: Component>(of storage: Nexus.ComponentStorage<T>, at key: UInt32) -> T {
         let slot = storage.slot(of: key)
         precondition(slot >= 0, "member without a required component")
@@ -107,6 +111,7 @@ extension Family {
     }
 
     @inlinable
+    @_semantics("optimize.sil.specialize.generic.never")
     static func address<T: Component>(in storage: Nexus.ComponentStorage<T>, at key: UInt32) -> UnsafeMutablePointer<T> {
         let slot = storage.slot(of: key)
         precondition(slot >= 0, "member without a required component")
@@ -114,11 +119,13 @@ extension Family {
     }
 
     @inlinable
+    @_semantics("optimize.sil.specialize.generic.never")
     static func load<T: Component>(_ pointer: UnsafeMutablePointer<T>) -> T {
         pointer.pointee
     }
 
     @inlinable
+    @_semantics("optimize.sil.specialize.generic.never")
     static func store<T: Component>(_ value: T, to pointer: UnsafeMutablePointer<T>) {
         pointer.pointee = value
     }

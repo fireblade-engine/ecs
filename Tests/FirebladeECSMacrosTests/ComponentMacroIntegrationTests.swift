@@ -10,23 +10,23 @@ import Foundation
 import Testing
 
 @Component
-final class MacroTransform: @unchecked Sendable {
+struct MacroTransform {
     var position: Double = 0
-    var parent: Entity?
-    var children: [Entity] = []
+    var parent: EntityIdentifier?
+    var children: [EntityIdentifier] = []
     @ComponentIgnored var cachedLength: Double = 0
 }
 
 final class GPUHandle: @unchecked Sendable {}
 
 @Component(excluding: .serializable)
-final class MacroRenderable: @unchecked Sendable {
+struct MacroRenderable {
     var handle = GPUHandle()
-    var onChange: (() -> Void)?
+    var onChange: (@Sendable () -> Void)?
 }
 
 @Component
-final class MacroRenamed: @unchecked Sendable {
+struct MacroRenamed {
     static let componentTypeName = "Renamed"
     let version: Int = 1
     var value: Int = 0
@@ -67,11 +67,11 @@ final class MacroRenamed: @unchecked Sendable {
         let source = Nexus()
         let root = source.createEntity()
         let child = source.createEntity()
-        let rootTransform = MacroTransform()
-        rootTransform.children = [child]
+        var rootTransform = MacroTransform()
+        rootTransform.children = [child.identifier]
         rootTransform.cachedLength = 7
-        let childTransform = MacroTransform()
-        childTransform.parent = root
+        var childTransform = MacroTransform()
+        childTransform.parent = root.identifier
         let renderable = MacroRenderable()
         root.set(rootTransform, renderable)
         child.set(childTransform)
@@ -82,10 +82,9 @@ final class MacroRenamed: @unchecked Sendable {
         let clonedRoot = try #require(mapping[root.identifier])
         let clonedChild = try #require(mapping[child.identifier])
         let clonedRootTransform = try #require(clonedRoot.get(MacroTransform.self))
-        #expect(clonedRootTransform !== rootTransform)
-        #expect(clonedRootTransform.children == [clonedChild])
+        #expect(clonedRootTransform.children == [clonedChild.identifier])
         #expect(clonedRootTransform.cachedLength == 7)
-        #expect(try #require(clonedChild.get(MacroTransform.self)).parent == clonedRoot)
+        #expect(try #require(clonedChild.get(MacroTransform.self)).parent == clonedRoot.identifier)
         #expect(try #require(clonedRoot.get(MacroRenderable.self)).handle === renderable.handle)
     }
 
@@ -93,12 +92,12 @@ final class MacroRenamed: @unchecked Sendable {
         let source = Nexus()
         let root = source.createEntity()
         let child = source.createEntity()
-        let rootTransform = MacroTransform()
+        var rootTransform = MacroTransform()
         rootTransform.position = 2
-        rootTransform.children = [child]
+        rootTransform.children = [child.identifier]
         rootTransform.cachedLength = 7
-        let childTransform = MacroTransform()
-        childTransform.parent = root
+        var childTransform = MacroTransform()
+        childTransform.parent = root.identifier
         root.set(rootTransform, MacroRenderable(), MacroRenamed())
         child.set(childTransform)
 
@@ -119,9 +118,9 @@ final class MacroRenamed: @unchecked Sendable {
         let importedChild = try #require(mapping[child.identifier])
         let importedTransform = try #require(importedRoot.get(MacroTransform.self))
         #expect(importedTransform.position == 2)
-        #expect(importedTransform.children == [importedChild])
+        #expect(importedTransform.children == [importedChild.identifier])
         #expect(importedTransform.cachedLength == 0)
-        #expect(try #require(importedChild.get(MacroTransform.self)).parent == importedRoot)
+        #expect(try #require(importedChild.get(MacroTransform.self)).parent == importedRoot.identifier)
         #expect(importedRoot.get(MacroRenderable.self) == nil)
         #expect(importedRoot.has(MacroRenamed.self))
     }

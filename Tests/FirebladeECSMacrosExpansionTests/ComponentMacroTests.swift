@@ -16,54 +16,48 @@ import Testing
         assertComponentExpansion(
             """
             @Component
-            public final class Velocity {
+            public struct Velocity {
                 public var linear: Double = 0
-                public var target: Entity?
+                public var target: EntityIdentifier?
             }
             """,
             expandedSource: """
-            public final class Velocity {
+            public struct Velocity {
                 public var linear: Double = 0
-                public var target: Entity?
-
-                public init(cloning other: Velocity, context: FirebladeECS.ComponentCloneContext) {
-                    self.linear = context.clone(other.linear)
-                    self.target = context.clone(other.target)
-                }
-
-                public func clone(context: FirebladeECS.ComponentCloneContext) -> Velocity {
-                    Velocity(cloning: self, context: context)
-                }
-
-                private enum CodingKeys: String, Swift.CodingKey {
-                    case linear
-                    case target
-                }
-
-                public init(from decoder: any Swift.Decoder) throws {
-                    let container = try decoder.container(keyedBy: CodingKeys.self)
-                    self.linear = try container.decode(Double.self, forKey: .linear)
-                    self.target = try container.decodeIfPresent(Entity.self, forKey: .target)
-                }
-
-                public func encode(to encoder: any Swift.Encoder) throws {
-                    var container = encoder.container(keyedBy: CodingKeys.self)
-                    try container.encode(self.linear, forKey: .linear)
-                    try container.encodeIfPresent(self.target, forKey: .target)
-                }
-
-                public static var componentProperties: [FirebladeECS.ComponentProperty<Velocity>] {
-                    [
-                        FirebladeECS.ComponentProperty(name: "linear", keyPath: \\Velocity.linear),
-                        FirebladeECS.ComponentProperty(name: "target", keyPath: \\Velocity.target)
-                    ]
-                }
+                public var target: EntityIdentifier?
 
                 public init() {
                 }
             }
 
             extension Velocity: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.CloneableComponent, FirebladeECS.SerializableComponent, FirebladeECS.InspectableComponent, FirebladeECS.DefaultInitializable {
+                public init(cloning other: Velocity, context: FirebladeECS.ComponentCloneContext) {
+                    self.linear = context.clone(other.linear)
+                    self.target = context.clone(other.target)
+                }
+                public func clone(context: FirebladeECS.ComponentCloneContext) -> Velocity {
+                    Velocity(cloning: self, context: context)
+                }
+                private enum CodingKeys: String, Swift.CodingKey {
+                    case linear
+                    case target
+                }
+                public init(from decoder: any Swift.Decoder) throws {
+                    let container = try decoder.container(keyedBy: CodingKeys.self)
+                    self.linear = try container.decode(Double.self, forKey: .linear)
+                    self.target = try container.decodeIfPresent(EntityIdentifier.self, forKey: .target)
+                }
+                public func encode(to encoder: any Swift.Encoder) throws {
+                    var container = encoder.container(keyedBy: CodingKeys.self)
+                    try container.encode(self.linear, forKey: .linear)
+                    try container.encodeIfPresent(self.target, forKey: .target)
+                }
+                public static var componentProperties: [FirebladeECS.ComponentProperty<Velocity>] {
+                    [
+                        FirebladeECS.ComponentProperty(name: "linear", keyPath: \\Velocity.linear),
+                        FirebladeECS.ComponentProperty(name: "target", keyPath: \\Velocity.target)
+                    ]
+                }
             }
             """
         )
@@ -75,7 +69,7 @@ import Testing
         assertComponentExpansion(
             """
             @Component(excluding: .serializable)
-            final class Mixed {
+            struct Mixed {
                 static var shared = 0
                 let kind = "mixed"
                 let id: Int
@@ -95,7 +89,7 @@ import Testing
             }
             """,
             expandedSource: """
-            final class Mixed {
+            struct Mixed {
                 static var shared = 0
                 let kind = "mixed"
                 let id: Int
@@ -112,7 +106,9 @@ import Testing
                     x = 0
                     y = 0
                 }
+            }
 
+            extension Mixed: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.CloneableComponent, FirebladeECS.InspectableComponent {
                 init(cloning other: Mixed, context: FirebladeECS.ComponentCloneContext) {
                     self.id = context.clone(other.id)
                     self.observed = context.clone(other.observed)
@@ -121,11 +117,9 @@ import Testing
                     self.wrapped = context.clone(other.wrapped)
                     self.cache = context.clone(other.cache)
                 }
-
                 func clone(context: FirebladeECS.ComponentCloneContext) -> Mixed {
                     Mixed(cloning: self, context: context)
                 }
-
                 static var componentProperties: [FirebladeECS.ComponentProperty<Mixed>] {
                     [
                         FirebladeECS.ComponentProperty(name: "kind", keyPath: \\Mixed.kind),
@@ -137,9 +131,6 @@ import Testing
                     ]
                 }
             }
-
-            extension Mixed: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.CloneableComponent, FirebladeECS.InspectableComponent {
-            }
             """
         )
     }
@@ -148,7 +139,7 @@ import Testing
         assertComponentExpansion(
             """
             @Component(excluding: [.cloneable, .inspectable, .defaultInit])
-            package final class Health {
+            package struct Health {
                 let maximum = 100
                 var current: Int = 100
                 var shield: Int!
@@ -157,35 +148,32 @@ import Testing
             }
             """,
             expandedSource: """
-            package final class Health {
+            package struct Health {
                 let maximum = 100
                 var current: Int = 100
                 var shield: Int!
                 var regeneration: Optional<Double> = nil
                 var onChange: (() -> Void)? = nil
+            }
 
+            extension Health: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.SerializableComponent {
                 private enum CodingKeys: String, Swift.CodingKey {
                     case current
                     case shield
                     case regeneration
                 }
-
                 package init(from decoder: any Swift.Decoder) throws {
                     let container = try decoder.container(keyedBy: CodingKeys.self)
                     self.current = try container.decode(Int.self, forKey: .current)
                     self.shield = try container.decodeIfPresent(Int.self, forKey: .shield)
                     self.regeneration = try container.decodeIfPresent(Double.self, forKey: .regeneration)
                 }
-
                 package func encode(to encoder: any Swift.Encoder) throws {
                     var container = encoder.container(keyedBy: CodingKeys.self)
                     try container.encode(self.current, forKey: .current)
                     try container.encodeIfPresent(self.shield, forKey: .shield)
                     try container.encodeIfPresent(self.regeneration, forKey: .regeneration)
                 }
-            }
-
-            extension Health: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.SerializableComponent {
             }
             """
         )
@@ -195,34 +183,26 @@ import Testing
         assertComponentExpansion(
             """
             @Component
-            final class Tag {
+            struct Tag {
             }
             """,
             expandedSource: """
-            final class Tag {
-
-                init(cloning other: Tag, context: FirebladeECS.ComponentCloneContext) {
-                }
-
-                func clone(context: FirebladeECS.ComponentCloneContext) -> Tag {
-                    Tag(cloning: self, context: context)
-                }
-
-                init(from _: any Swift.Decoder) throws {
-                }
-
-                func encode(to _: any Swift.Encoder) throws {
-                }
-
-                static var componentProperties: [FirebladeECS.ComponentProperty<Tag>] {
-                    []
-                }
-
-                init() {
-                }
+            struct Tag {
             }
 
             extension Tag: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.CloneableComponent, FirebladeECS.SerializableComponent, FirebladeECS.InspectableComponent, FirebladeECS.DefaultInitializable {
+                init(cloning other: Tag, context: FirebladeECS.ComponentCloneContext) {
+                }
+                func clone(context: FirebladeECS.ComponentCloneContext) -> Tag {
+                    Tag(cloning: self, context: context)
+                }
+                init(from _: any Swift.Decoder) throws {
+                }
+                func encode(to _: any Swift.Encoder) throws {
+                }
+                static var componentProperties: [FirebladeECS.ComponentProperty<Tag>] {
+                    []
+                }
             }
             """
         )
@@ -234,7 +214,7 @@ import Testing
         assertComponentExpansion(
             """
             @Component(excluding: .inspectable)
-            final class Custom: Codable {
+            struct Custom: Codable {
                 var value: Int
 
                 init(value: Int) {
@@ -251,7 +231,7 @@ import Testing
             }
             """,
             expandedSource: """
-            final class Custom: Codable {
+            struct Custom: Codable {
                 var value: Int
 
                 init(value: Int) {
@@ -277,7 +257,7 @@ import Testing
         assertComponentExpansion(
             """
             @Component(excluding: [.cloneable, .serializable, .inspectable])
-            final class Counter {
+            struct Counter {
                 var count: Int
 
                 init() {
@@ -286,7 +266,7 @@ import Testing
             }
             """,
             expandedSource: """
-            final class Counter {
+            struct Counter {
                 var count: Int
 
                 init() {
@@ -302,26 +282,50 @@ import Testing
 }
 
 @Suite struct ComponentMacroDiagnosticTests {
-    @Test func requiresFinalClass() {
+    @Test func rejectsClass() {
         assertComponentExpansion(
             """
             @Component
-            class Open {
-            }
-            @Component
-            struct Value {
+            final class Reference {
             }
             """,
             expandedSource: """
-            class Open {
-            }
-            struct Value {
+            final class Reference {
             }
             """,
             diagnostics: [
-                DiagnosticSpec(message: "@Component can only be applied to a final class", line: 1, column: 1),
-                DiagnosticSpec(message: "@Component can only be applied to a final class", line: 4, column: 1)
+                DiagnosticSpec(message: "@Component requires a value type (struct or enum); classes are not supported", line: 1, column: 1)
             ]
+        )
+    }
+
+    @Test func acceptsEnum() {
+        assertComponentExpansion(
+            """
+            @Component
+            enum Phase: Codable {
+                case idle
+                case running(Int)
+            }
+            """,
+            expandedSource: """
+            enum Phase: Codable {
+                case idle
+                case running(Int)
+            }
+
+            extension Phase: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.CloneableComponent, FirebladeECS.SerializableComponent, FirebladeECS.InspectableComponent {
+                init(cloning other: Phase, context: FirebladeECS.ComponentCloneContext) {
+                    self = other
+                }
+                func clone(context: FirebladeECS.ComponentCloneContext) -> Phase {
+                    Phase(cloning: self, context: context)
+                }
+                static var componentProperties: [FirebladeECS.ComponentProperty<Phase>] {
+                    []
+                }
+            }
+            """
         )
     }
 
@@ -329,7 +333,7 @@ import Testing
         assertComponentExpansion(
             """
             @Component(excluding: [.cloneable, .inspectable, .defaultInit, .unknown])
-            final class Broken {
+            struct Broken {
                 lazy var expensive: Int = 0
                 var (a, b): (Int, Int) = (0, 0)
                 var inferred = 1
@@ -337,7 +341,7 @@ import Testing
             }
             """,
             expandedSource: """
-            final class Broken {
+            struct Broken {
                 lazy var expensive: Int = 0
                 var (a, b): (Int, Int) = (0, 0)
                 var inferred = 1
@@ -364,16 +368,13 @@ import Testing
         assertComponentExpansion(
             """
             @Component(excluding: [.cloneable, .inspectable])
-            final class Untyped {
+            struct Untyped {
                 var inferred = 1
             }
             """,
             expandedSource: """
-            final class Untyped {
+            struct Untyped {
                 var inferred = 1
-
-                init() {
-                }
             }
 
             extension Untyped: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.DefaultInitializable {

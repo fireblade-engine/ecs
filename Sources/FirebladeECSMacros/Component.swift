@@ -5,40 +5,42 @@
 //  Created by Christian Treffs on 08.10.26.
 //
 
-/// Turns a final class into a component and implements component protocols from its stored properties.
+/// Turns a struct or enum into a component and implements component protocols from its stored properties.
 ///
 /// ```swift
 /// @Component
-/// final class Velocity: @unchecked Sendable {
+/// struct Velocity {
 ///     var linear: Double = 0
-///     var target: Entity?
+///     var target: EntityIdentifier?
 /// }
 /// ```
+///
+/// Classes are rejected with a diagnostic: components are value types.
 ///
 /// The macro implements
 /// - ``RegistrableComponent`` (always). Declare `static let componentTypeName` to override the stable type name.
 /// - ``CloneableComponent``: copies every stored property through ``ComponentCloneContext``,
-///   remapping entity references.
+///   remapping entity references. An enum is copied as a whole.
 /// - ``SerializableComponent``: encodes every stored property except `@ComponentIgnored` ones and
 ///   `let` constants with an initial value. Serialized properties require an explicit type annotation.
+///   An enum has to declare its own `Codable` conformance.
 /// - ``InspectableComponent``: lists every stored property except `@ComponentIgnored` ones.
-/// - ``DefaultInitializable``: generates `init()` if every stored property has a default value.
+/// - ``DefaultInitializable``: for a struct with a default value for every stored property.
 ///
 /// Members you declare yourself are not generated. Declaring any of `CodingKeys`, `init(from:)`
 /// or `encode(to:)` leaves serialization entirely to you.
 ///
-/// The generated initializers are designated initializers, so the class no longer receives an
-/// implicit `init()`; keep ``ComponentMacroFeatures/defaultInit`` enabled or declare initializers.
+/// The generated initializers live in an extension, so a struct keeps its memberwise initializer.
+/// Only a `public` or `package` struct, or a struct that declares initializers, receives a generated `init()`
+/// in its body, because the implicit one is internal and does not exist next to declared initializers.
 /// - Parameter excluding: Features not to implement, e.g. `.serializable` for runtime-only components.
-@attached(
-    member,
-    names: named(init(cloning:context:)), named(clone(context:)), named(init), named(init(from:)),
-    named(encode(to:)), named(CodingKeys), named(componentProperties)
-)
+@attached(member, names: named(init))
 @attached(
     extension,
     conformances: Component, RegistrableComponent, CloneableComponent, SerializableComponent, InspectableComponent,
-    DefaultInitializable
+    DefaultInitializable,
+    names: named(init(cloning:context:)), named(clone(context:)), named(init(from:)),
+    named(encode(to:)), named(CodingKeys), named(componentProperties)
 )
 public macro Component(excluding: ComponentMacroFeatures = []) = #externalMacro(module: "FirebladeECSMacrosImpl", type: "ComponentMacro")
 

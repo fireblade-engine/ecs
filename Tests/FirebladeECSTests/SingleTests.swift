@@ -8,6 +8,13 @@
 @testable import FirebladeECS
 import Testing
 
+private final class SingleEventRecorder: NexusEventDelegate, @unchecked Sendable {
+    private(set) var events: [NexusEvent] = []
+    var subscribedEvents: NexusEventMask { .valueChanges }
+    func nexusEvent(_ event: NexusEvent) { events.append(event) }
+    func nexusNonFatalError(_: String) {}
+}
+
 @Suite struct SingleTests {
     @Test func singleCreation() {
         let nexus = Nexus()
@@ -49,7 +56,7 @@ import Testing
         let singleGame = SingleGameState()
         _ = nexus.createEntity(with: singleGame)
         let single = nexus.single(SingleGameState.self)
-        #expect(singleGame === single.component)
+        #expect(single.component == singleGame)
     }
 
     @Test func singleEntityAccess() {
@@ -58,5 +65,44 @@ import Testing
         let entity = single.entity
         #expect(entity.nexus === nexus)
         #expect(entity.identifier == single.entityId)
+    }
+
+    @Test func singleComponentIsACopy() {
+        let nexus = Nexus()
+        let single = nexus.single(SingleGameState.self)
+        var copy = single.component
+        copy.playerHealth = 1
+        #expect(single.component.playerHealth != 1)
+    }
+
+    @Test func singleSetReplacesComponent() {
+        let nexus = Nexus()
+        let single = nexus.single(SingleGameState.self)
+        var state = single.component
+        state.playerHealth = 7
+        state.shouldQuit = true
+        single.set(state)
+        #expect(single.component == state)
+        #expect(single.entity[SingleGameState.self] == state)
+    }
+
+    @Test func singleModifyWritesInPlace() {
+        let nexus = Nexus()
+        let single = nexus.single(SingleGameState.self)
+        single.modify { $0.playerHealth = 3 }
+        #expect(single.component.playerHealth == 3)
+    }
+
+    @Test func singleSetAndModifyDeliverEvents() {
+        let nexus = Nexus()
+        let single = nexus.single(SingleGameState.self)
+        let recorder = SingleEventRecorder()
+        nexus.delegate = recorder
+        single.modify { $0.playerHealth = 3 }
+        single.set(SingleGameState(shouldQuit: true, playerHealth: 5))
+        #expect(recorder.events.count == 2)
+        #expect(recorder.events[0] is ComponentModified)
+        #expect(recorder.events[1] is ComponentReplaced)
+        withExtendedLifetime(nexus) {}
     }
 }

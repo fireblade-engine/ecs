@@ -21,6 +21,7 @@ For a more detailed example of FirebladeECS in action, see the [Fireblade ECS De
 - <doc:GettingStartedWithFirebladeECS>
 - <doc:ComponentMacro>
 - <doc:SavingAndLoadingScenes>
+- <doc:MigratingToFirebladeECS2>
 - ``Nexus``
 - ``NexusEvent``
 - ``NexusEventDelegate``

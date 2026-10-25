@@ -79,26 +79,37 @@ docs-preview:
 
 docs-generate:
 	mkdir -p .build/documentation/$(DOCS_VERSION_PATH)
-	swift package --disable-sandbox \
-		--allow-writing-to-directory .build/documentation \
-		generate-documentation --target FirebladeECS \
-		--disable-indexing \
-		--transform-for-static-hosting \
-		--hosting-base-path $(HOSTING_BASE_PATH) \
-		--output-path .build/documentation/$(DOCS_VERSION_PATH) $(XCS_FORMATTER)
+	for target in $(DOCS_TARGETS); do \
+		swift package --disable-sandbox \
+			--allow-writing-to-directory .build/documentation \
+			generate-documentation --target $$target \
+			--disable-indexing \
+			--transform-for-static-hosting \
+			--hosting-base-path $(HOSTING_BASE_PATH) \
+			--output-path .build/documentation/$(DOCS_VERSION_PATH) $(XCS_FORMATTER) || exit 1; \
+	done
 
 DOCS_COVERAGE_THRESHOLD ?= 95
+
+# Documented targets; FirebladeFSM is the optional state machine product.
+DOCS_TARGETS ?= FirebladeECS FirebladeFSM
 
 docs-coverage: docs-check-coverage
 
 docs-check-coverage:
-	swift package --disable-sandbox generate-documentation --target FirebladeECS --experimental-documentation-coverage --coverage-summary-level brief $(XCS_FORMATTER)
+	for target in $(DOCS_TARGETS); do \
+		swift package --disable-sandbox generate-documentation --target $$target --experimental-documentation-coverage --coverage-summary-level brief $(XCS_FORMATTER) || exit 1; \
+	done
 
 docs-coverage-detailed:
-	swift package --disable-sandbox generate-documentation --target FirebladeECS --experimental-documentation-coverage --coverage-summary-level detailed $(XCS_FORMATTER)
+	for target in $(DOCS_TARGETS); do \
+		swift package --disable-sandbox generate-documentation --target $$target --experimental-documentation-coverage --coverage-summary-level detailed $(XCS_FORMATTER) || exit 1; \
+	done
 
 docs-check-links:
-	swift package --disable-sandbox generate-documentation --target FirebladeECS --analyze --warnings-as-errors $(XCS_FORMATTER)
+	for target in $(DOCS_TARGETS); do \
+		swift package --disable-sandbox generate-documentation --target $$target --analyze --warnings-as-errors $(XCS_FORMATTER) || exit 1; \
+	done
 
 # Preview DocC documentation with analysis/warnings and overview of coverage
 preview-analysis-docs:

@@ -11,7 +11,7 @@ extension Nexus {
 
     /// Creates a snapshot of all entities, their serializable components and the entity identifier generator state.
     ///
-    /// Component instances shared by several entities are listed once and referenced by the other entities.
+    /// Components are values, so every entity lists its own copies. ``NexusSnapshot/Member/sharedComponents`` is only filled by decoding legacy data.
     /// - Parameter handling: Defines how components that are not serializable are treated.
     /// - Returns: A snapshot referencing the live component instances and entity identifier generator.
     /// - Throws: ``ComponentSerializationError/notSerializable(typeName:)`` if `handling` is ``NonSerializableComponentHandling/throwError``
@@ -19,12 +19,10 @@ extension Nexus {
     /// - Complexity: O(E * C log C) where E is the number of entities and C the number of components per entity.
     public final func makeSnapshot(handling: NonSerializableComponentHandling) throws -> NexusSnapshot {
         let entityIds = backend.livingEntityIds
-        var owners: [ObjectIdentifier: EntityIdentifier] = [:]
         var members: [NexusSnapshot.Member] = []
         members.reserveCapacity(entityIds.count)
         for entityId in entityIds {
             var components: [any SerializableComponent] = []
-            var sharedComponents: [String: EntityIdentifier] = [:]
             for componentIndex in backend.componentIndices(of: entityId) {
                 guard let component = backend.anyComponent(componentIndex: componentIndex, for: entityId) else {
                     continue
@@ -38,15 +36,10 @@ extension Nexus {
                         continue
                     }
                 }
-                if let owner = owners[ObjectIdentifier(component)] {
-                    sharedComponents[type(of: serializable).componentTypeName] = owner
-                } else {
-                    owners[ObjectIdentifier(component)] = entityId
-                    components.append(serializable)
-                }
+                components.append(serializable)
             }
             components.sort { type(of: $0).componentTypeName < type(of: $1).componentTypeName }
-            members.append(NexusSnapshot.Member(identifier: entityId, components: components, sharedComponents: sharedComponents))
+            members.append(NexusSnapshot.Member(identifier: entityId, components: components, sharedComponents: [:]))
         }
         return NexusSnapshot(members: members, entityIdGenerator: entityIdGenerator as? any PersistableEntityIdentifierGenerator)
     }

@@ -37,13 +37,13 @@ public protocol ComponentProvider: Sendable {
 
 // MARK: -
 
-/// This component provider always returns the same instance of the component. The instance
+/// This component provider always returns a copy of the same component value. The value
 /// is passed to the provider at initialisation.
 public final class ComponentInstanceProvider: @unchecked Sendable {
     private var instance: Component
 
     /// Initializer
-    /// - Parameter instance: The instance to return whenever a component is requested.
+    /// - Parameter instance: The component value to return a copy of whenever a component is requested.
     public init(instance: Component) {
         self.instance = instance
     }
@@ -52,9 +52,11 @@ public final class ComponentInstanceProvider: @unchecked Sendable {
 extension ComponentInstanceProvider: ComponentProvider {
     /// Used to compare this provider with others. Any provider that returns the same component
     /// instance will be regarded as equivalent.
-    /// - Returns:ObjectIdentifier of instance
+    ///
+    /// Components are values and have no identity, so the provider itself is the identity: two providers are equivalent only if they are the same object.
+    /// - Returns: ObjectIdentifier of this provider
     public var identifier: AnyHashable {
-        ObjectIdentifier(instance)
+        ObjectIdentifier(self)
     }
 
     /// Used to request a component from this provider
@@ -94,8 +96,11 @@ extension ComponentTypeProvider: ComponentProvider {
 
 // MARK: -
 
-/// This component provider always returns the same instance of the component. The instance
-/// is created when first required and is of the type passed in to the initializer.
+/// This component provider creates a component value of the given type when first required and
+/// returns a copy of that same value to every requester.
+///
+/// Components are value types: each entity receives its own copy, unlike in 1.x where all entities shared one instance.
+/// The name is kept for source compatibility.
 public final class ComponentSingletonProvider: @unchecked Sendable {
     private lazy var instance: Component = componentType.init()
 
@@ -109,15 +114,14 @@ public final class ComponentSingletonProvider: @unchecked Sendable {
 }
 
 extension ComponentSingletonProvider: ComponentProvider {
-    /// Used to compare this provider with others. Any provider that returns the same single
-    /// instance will be regarded as equivalent.
-    /// - Returns: ObjectIdentifier of the single instance
+    /// Used to compare this provider with others. Only the same provider object is regarded as equivalent.
+    /// - Returns: ObjectIdentifier of this provider
     public var identifier: AnyHashable {
-        ObjectIdentifier(instance)
+        ObjectIdentifier(self)
     }
 
     /// Used to request a component from this provider
-    /// - Returns: The single instance
+    /// - Returns: A copy of the single value
     public func getComponent() -> Component {
         instance
     }

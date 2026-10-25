@@ -10,7 +10,7 @@ import SwiftDiagnostics
 extension ComponentMacro {
     /// Diagnostics emitted by `@Component`.
     enum DiagnosticKind: String, DiagnosticMessage {
-        case requiresFinalClass
+        case requiresValueType
         case unsupportedLazyProperty
         case unsupportedPattern
         case unsupportedExcludingArgument
@@ -19,8 +19,8 @@ extension ComponentMacro {
 
         var message: String {
             switch self {
-            case .requiresFinalClass:
-                "@Component can only be applied to a final class"
+            case .requiresValueType:
+                "@Component requires a value type (struct or enum); classes are not supported"
 
             case .unsupportedLazyProperty:
                 "@Component does not support lazy properties"

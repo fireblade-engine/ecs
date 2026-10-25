@@ -238,4 +238,55 @@ let benchmarks: @Sendable () -> Void = {
             blackHole(family.count)
         }
     }
+
+    // MARK: Iteration only
+
+    // The benchmarks above build their nexus inside the measured closure, so setup dominates their time and malloc counts.
+    // These variants build the nexus first and measure the iteration alone: the malloc count is the allocations of the
+    // iteration itself, which is 0 when iterating allocates nothing per entity.
+    func iterationOnly(_ name: String, prepare: @escaping @Sendable (Nexus) -> () -> Void) {
+        Benchmark(name) { benchmark in
+            let nexus = setUpNexus()
+            let iterate = prepare(nexus)
+            benchmark.startMeasurement()
+            for _ in benchmark.scaledIterations {
+                iterate()
+            }
+            benchmark.stopMeasurement()
+        }
+    }
+
+    iterationOnly("IterOnlyEntities") { nexus in
+        let family = nexus.family(requires: Position.self, excludesAll: Party.self)
+        return { family.entities.forEach { (entity: Entity) in blackHole(entity) } }
+    }
+
+    iterationOnly("IterOnlyOneComponent") { nexus in
+        let family = nexus.family(requires: Position.self, excludesAll: Party.self)
+        return { family.forEach { (position: Position) in blackHole(position) } }
+    }
+
+    iterationOnly("IterOnlyEntityOneComponent") { nexus in
+        let family = nexus.family(requires: Position.self, excludesAll: Party.self)
+        return { family.entityAndComponents.forEach { (entity: Entity, position: Position) in blackHole(entity); blackHole(position) } }
+    }
+
+    iterationOnly("IterOnlyTwoComponents") { nexus in
+        let family = nexus.family(requiresAll: Position.self, Velocity.self, excludesAll: Party.self)
+        return { family.forEach { (position: Position, velocity: Velocity) in blackHole(position); blackHole(velocity) } }
+    }
+
+    iterationOnly("IterOnlyEntityTwoComponents") { nexus in
+        let family = nexus.family(requiresAll: Position.self, Velocity.self, excludesAll: Party.self)
+        return { family.entityAndComponents.forEach { (entity: Entity, position: Position, velocity: Velocity) in
+            blackHole(entity); blackHole(position); blackHole(velocity)
+        } }
+    }
+
+    iterationOnly("IterOnlyThreeComponents") { nexus in
+        let family = nexus.family(requiresAll: Position.self, Velocity.self, Name.self, excludesAll: Party.self)
+        return { family.forEach { (position: Position, velocity: Velocity, name: Name) in
+            blackHole(position); blackHole(velocity); blackHole(name)
+        } }
+    }
 }

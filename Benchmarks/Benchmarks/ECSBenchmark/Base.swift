@@ -7,16 +7,16 @@
 
 import FirebladeECS
 
-final class EmptyComponent: Component, @unchecked Sendable {}
+struct EmptyComponent: Component, Sendable {}
 
-final class Name: Component, @unchecked Sendable {
+struct Name: Component, Sendable {
     var name: String
     init(name: String) {
         self.name = name
     }
 }
 
-final class Position: Component, @unchecked Sendable {
+struct Position: Component, Sendable {
     var x: Int
     var y: Int
     init(x: Int, y: Int) {
@@ -25,21 +25,21 @@ final class Position: Component, @unchecked Sendable {
     }
 }
 
-final class Velocity: Component, @unchecked Sendable {
+struct Velocity: Component, Sendable {
     var a: Float
     init(a: Float) {
         self.a = a
     }
 }
 
-final class Party: Component, @unchecked Sendable {
+struct Party: Component, Sendable {
     var partying: Bool
     init(partying: Bool) {
         self.partying = partying
     }
 }
 
-final class Color: Component, @unchecked Sendable {
+struct Color: Component, Sendable {
     var r: UInt8 = 0
     var g: UInt8 = 0
     var b: UInt8 = 0
@@ -53,14 +53,15 @@ class ExampleSystem {
     }
 
     func update(deltaT _: Double) {
-        for (position, velocity) in family {
-            position.x *= 2
-            velocity.a *= 2
+        // iteration yields copies: writes go through the entity
+        for entity in family.entities {
+            entity.modify(Position.self) { $0.x *= 2 }
+            entity.modify(Velocity.self) { $0.a *= 2 }
         }
     }
 }
 
-final class SingleGameState: SingleComponent, @unchecked Sendable {
+struct SingleGameState: SingleComponent, Sendable {
     var shouldQuit: Bool = false
     var playerHealth: Int = 67
 }

@@ -15,6 +15,12 @@ extension Nexus {
         /// Adding and removing components is O(1) and moves no other data.
         case sparseSet
 
+        /// One table per component set, a column per component type in every table, an index from entity to table and row.
+        ///
+        /// Iterating a family walks the columns of its tables linearly. Adding or removing a component moves the
+        /// entity's row to another table.
+        case archetype
+
         /// The storage ``Nexus/init(storage:)`` uses by default.
         public static let `default` = StorageKind.sparseSet
     }
@@ -23,11 +29,14 @@ extension Nexus {
     @usableFromInline
     enum Backend {
         case sparseSet(SparseSetStorage)
+        case archetype(ArchetypeStorage)
 
         init(_ kind: StorageKind) {
             switch kind {
             case .sparseSet:
                 self = .sparseSet(SparseSetStorage())
+            case .archetype:
+                self = .archetype(ArchetypeStorage())
             }
         }
     }
@@ -57,12 +66,16 @@ extension Nexus.Backend {
         switch self {
         case let .sparseSet(storage):
             storage.entityCount
+        case let .archetype(storage):
+            storage.entityCount
         }
     }
 
     @inlinable var totalComponentCount: Int {
         switch self {
         case let .sparseSet(storage):
+            storage.totalComponentCount
+        case let .archetype(storage):
             storage.totalComponentCount
         }
     }
@@ -71,6 +84,8 @@ extension Nexus.Backend {
         switch self {
         case let .sparseSet(storage):
             storage.entities.livingIds
+        case let .archetype(storage):
+            storage.entities.livingIds
         }
     }
 
@@ -78,6 +93,8 @@ extension Nexus.Backend {
     func insertEntity(_ entityId: EntityIdentifier) {
         switch self {
         case let .sparseSet(storage):
+            storage.insertEntity(entityId)
+        case let .archetype(storage):
             storage.insertEntity(entityId)
         }
     }
@@ -88,6 +105,8 @@ extension Nexus.Backend {
         switch self {
         case let .sparseSet(storage):
             storage.destroyEntity(entityId)
+        case let .archetype(storage):
+            storage.destroyEntity(entityId)
         }
     }
 
@@ -95,6 +114,8 @@ extension Nexus.Backend {
     func isAlive(_ entityId: EntityIdentifier) -> Bool {
         switch self {
         case let .sparseSet(storage):
+            storage.isAlive(entityId)
+        case let .archetype(storage):
             storage.isAlive(entityId)
         }
     }
@@ -104,6 +125,8 @@ extension Nexus.Backend {
         switch self {
         case let .sparseSet(storage):
             storage.entities.current(at: index)
+        case let .archetype(storage):
+            storage.entities.current(at: index)
         }
     }
 
@@ -112,6 +135,8 @@ extension Nexus.Backend {
         switch self {
         case let .sparseSet(storage):
             storage.removeAll()
+        case let .archetype(storage):
+            storage.removeAll()
         }
     }
 
@@ -119,6 +144,8 @@ extension Nexus.Backend {
     func set<C: Component>(_ component: C, at componentIndex: Int, for entityId: EntityIdentifier) {
         switch self {
         case let .sparseSet(storage):
+            storage.set(component, at: componentIndex, for: entityId)
+        case let .archetype(storage):
             storage.set(component, at: componentIndex, for: entityId)
         }
     }
@@ -133,6 +160,8 @@ extension Nexus.Backend {
         switch self {
         case let .sparseSet(storage):
             try storage.modify(type, for: entityId, body)
+        case let .archetype(storage):
+            try storage.modify(type, for: entityId, body)
         }
     }
 
@@ -140,6 +169,8 @@ extension Nexus.Backend {
     func beginAccess<C: Component>(_ type: C.Type, for entityId: EntityIdentifier) -> UnsafeMutablePointer<C>? {
         switch self {
         case let .sparseSet(storage):
+            storage.beginAccess(type, for: entityId)
+        case let .archetype(storage):
             storage.beginAccess(type, for: entityId)
         }
     }
@@ -149,6 +180,8 @@ extension Nexus.Backend {
         switch self {
         case let .sparseSet(storage):
             storage.endAccess(componentIndex)
+        case let .archetype(storage):
+            storage.endAccess(componentIndex)
         }
     }
 
@@ -156,6 +189,8 @@ extension Nexus.Backend {
     func discardMovedOut<C: Component>(_ type: C.Type, for entityId: EntityIdentifier) {
         switch self {
         case let .sparseSet(storage):
+            storage.discardMovedOut(type, for: entityId)
+        case let .archetype(storage):
             storage.discardMovedOut(type, for: entityId)
         }
     }
@@ -165,6 +200,8 @@ extension Nexus.Backend {
         switch self {
         case let .sparseSet(storage):
             storage.withComponents(of: type, body)
+        case let .archetype(storage):
+            storage.withComponents(of: type, body)
         }
     }
 
@@ -172,6 +209,8 @@ extension Nexus.Backend {
     func get<C: Component>(_ type: C.Type, at componentIndex: Int, for entityId: EntityIdentifier) -> C? {
         switch self {
         case let .sparseSet(storage):
+            storage.get(type, at: componentIndex, for: entityId)
+        case let .archetype(storage):
             storage.get(type, at: componentIndex, for: entityId)
         }
     }
@@ -186,6 +225,8 @@ extension Nexus.Backend {
         switch self {
         case let .sparseSet(storage):
             storage.unsafeGet(type, at: componentIndex, for: entityId)
+        case let .archetype(storage):
+            storage.unsafeGet(type, at: componentIndex, for: entityId)
         }
     }
 
@@ -199,6 +240,8 @@ extension Nexus.Backend {
         switch self {
         case let .sparseSet(storage):
             storage.hasStorage(for: componentIndex)
+        case let .archetype(storage):
+            storage.hasStorage(for: componentIndex)
         }
     }
 
@@ -206,6 +249,8 @@ extension Nexus.Backend {
     func has(componentIndex: Int, for entityId: EntityIdentifier) -> Bool {
         switch self {
         case let .sparseSet(storage):
+            storage.has(componentIndex: componentIndex, for: entityId)
+        case let .archetype(storage):
             storage.has(componentIndex: componentIndex, for: entityId)
         }
     }
@@ -215,6 +260,8 @@ extension Nexus.Backend {
         switch self {
         case let .sparseSet(storage):
             storage.entities.mask(of: entityId)
+        case let .archetype(storage):
+            storage.entities.mask(of: entityId)
         }
     }
 
@@ -222,6 +269,8 @@ extension Nexus.Backend {
     func componentIndices(of entityId: EntityIdentifier) -> [Int] {
         switch self {
         case let .sparseSet(storage):
+            storage.componentIndices(of: entityId)
+        case let .archetype(storage):
             storage.componentIndices(of: entityId)
         }
     }
@@ -231,6 +280,8 @@ extension Nexus.Backend {
         switch self {
         case let .sparseSet(storage):
             storage.componentCount(of: entityId)
+        case let .archetype(storage):
+            storage.componentCount(of: entityId)
         }
     }
 
@@ -239,6 +290,8 @@ extension Nexus.Backend {
         switch self {
         case let .sparseSet(storage):
             storage.indexByIdentifier[identifier]
+        case let .archetype(storage):
+            storage.indexByIdentifier[identifier]
         }
     }
 
@@ -246,6 +299,8 @@ extension Nexus.Backend {
     func identifier(ofComponentIndex componentIndex: Int) -> ComponentIdentifier? {
         switch self {
         case let .sparseSet(storage):
+            storage.identifier(ofComponentIndex: componentIndex)
+        case let .archetype(storage):
             storage.identifier(ofComponentIndex: componentIndex)
         }
     }
@@ -256,6 +311,8 @@ extension Nexus.Backend {
         switch self {
         case let .sparseSet(storage):
             storage.remove(componentIndex: componentIndex, from: entityId)
+        case let .archetype(storage):
+            storage.remove(componentIndex: componentIndex, from: entityId)
         }
     }
 
@@ -263,6 +320,8 @@ extension Nexus.Backend {
     func anyComponent(componentIndex: Int, for entityId: EntityIdentifier) -> (any Component)? {
         switch self {
         case let .sparseSet(storage):
+            storage.anyComponent(componentIndex: componentIndex, for: entityId)
+        case let .archetype(storage):
             storage.anyComponent(componentIndex: componentIndex, for: entityId)
         }
     }

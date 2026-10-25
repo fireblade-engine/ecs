@@ -23,7 +23,7 @@ private struct Tag300: Component, Sendable {
 @Suite struct NexusStorageTests {
     @Test func defaultStorageIsTheSparseSet() {
         #expect(Nexus.StorageKind.default == .sparseSet)
-        #expect(Nexus.StorageKind.allCases == [.sparseSet])
+        #expect(Nexus.StorageKind.allCases == [.sparseSet, .archetype])
     }
 
     @Test(arguments: Nexus.StorageKind.allCases)

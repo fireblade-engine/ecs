@@ -117,12 +117,34 @@ single.modify { $0.value = x }       // in place, delivers ComponentModified
 single.set(GameState(value: x))      // replaces the component, delivers ComponentReplaced
 ```
 
+### The state machine is a separate product
+
+The state machine moved out of `FirebladeECS` into the optional `FirebladeFSM` product, like the macros in `FirebladeECSMacros`. This keeps the core library small; the code is unchanged and the type names are the same.
+
+Add the product to your target and import it next to `FirebladeECS` in every file that uses `EntityStateMachine`, `EntityState`, `StateComponentMapping` or a component provider:
+
+```swift
+// Package.swift
+.target(name: "YourTarget",
+        dependencies: [
+            .product(name: "FirebladeECS", package: "ecs"),
+            .product(name: "FirebladeFSM", package: "ecs")
+        ])
+```
+
+```swift
+import FirebladeECS
+import FirebladeFSM
+```
+
+`DefaultInitializable` and `ComponentInitializable` stay in `FirebladeECS`, because the entity subscripts use them.
+
 ### State machine providers
 
-``ComponentProvider/getComponent()`` returns a component value that the machine stores through ``Entity/set(_:)-(Component)``.
+`ComponentProvider.getComponent()` returns a component value that the machine stores through ``Entity/set(_:)-(Component)``.
 
-- ``ComponentSingletonProvider`` creates its value on first use and hands a copy of it to every entity. It used to hand the same instance to every entity, so a change through one entity was visible on all. Now each entity owns its copy. The name is kept for source compatibility; ComponentValueProvider would describe it better and may replace it.
-- Values have no identity, so a provider is identified by the provider object: ``ComponentInstanceProvider/identifier`` and ``ComponentSingletonProvider/identifier`` are unique per provider. When an entity changes state, a component stays only if both states share the same provider object (`withProvider(_:)`). Two ``ComponentInstanceProvider``s holding equal values are different providers and the component is removed and added again.
+- `ComponentSingletonProvider` creates its value on first use and hands a copy of it to every entity. It used to hand the same instance to every entity, so a change through one entity was visible on all. Now each entity owns its copy. The name is kept for source compatibility; ComponentValueProvider would describe it better and may replace it.
+- Values have no identity, so a provider is identified by the provider object: `ComponentInstanceProvider.identifier` and `ComponentSingletonProvider.identifier` are unique per provider. When an entity changes state, a component stays only if both states share the same provider object (`withProvider(_:)`). Two `ComponentInstanceProvider`s holding equal values are different providers and the component is removed and added again.
 
 ### Removed API
 

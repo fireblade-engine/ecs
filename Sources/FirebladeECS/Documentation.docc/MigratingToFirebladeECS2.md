@@ -64,3 +64,12 @@ There is no storage protocol: the set of storages is closed, so each storage com
 - Every component type has a dense ``Component/componentIndex``. Plain conformances get it lazily, in order of first use and shared by all nexuses of the process. There is no limit on the number of component types.
 - Public API that returned or took component storage internals is unchanged. ``ManagedContiguousArray`` is no longer used by ``Nexus``; it stays available until it is removed.
 - The components an entity iterates, and the components of a snapshot or clone, come in ``Component/componentIndex`` order now instead of hash order.
+
+### Events
+
+- ``NexusEventDelegate`` has a new requirement ``NexusEventDelegate/subscribedEvents`` with a default implementation returning ``NexusEventMask/structural``. Existing delegates compile and receive the same events as before.
+- Return ``NexusEventMask/valueChanges`` (or ``NexusEventMask/all``) to opt in to ``ComponentReplaced``, ``ComponentModified`` and ``ComponentsModified``. The nexus reads the mask when the delegate is assigned, so assign the delegate again after changing it.
+- ``NexusEvent`` is an open protocol and new events can appear in any release. Add a `default:` case to every `switch` over events.
+- Structural events are always delivered, whatever the mask says.
+
+See <doc:ReactingToNexusEvents>.

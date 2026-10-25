@@ -164,12 +164,15 @@ DOC
             echo "        case let .archetype(archetype):"
             echo "            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }"
             echo "            let query = archetype.matchingTables(filter)"
+            # the component indices are resolved once per call, not per table
+            for ((i = 1; i <= r; i++)); do echo "            let rIndex$i = R$i.componentIndex"; done
+            for ((i = 1; i <= w; i++)); do echo "            let wIndex$i = W$i.componentIndex"; done
             echo "            archetype.lockDepth += 1"
-            for ((i = 1; i <= w; i++)); do echo "            archetype.beginWrite(W$i.componentIndex)"; done
-            for ((i = 1; i <= r; i++)); do echo "            archetype.requireReadable(R$i.componentIndex)"; done
+            for ((i = 1; i <= w; i++)); do echo "            archetype.beginWrite(wIndex$i)"; done
+            for ((i = 1; i <= r; i++)); do echo "            archetype.requireReadable(rIndex$i)"; done
             if ((w > 0)); then echo "            var visited = 0"; fi
             echo "            defer {"
-            for ((i = 1; i <= w; i++)); do echo "                archetype.endWrite(W$i.componentIndex)"; done
+            for ((i = 1; i <= w; i++)); do echo "                archetype.endWrite(wIndex$i)"; done
             echo "                archetype.lockDepth -= 1"
             if ((w > 0)); then
                 echo "                if visited > 0 {"
@@ -181,8 +184,8 @@ DOC
             echo "                try entry._withUnsafeGuaranteedRef { table in"
             echo "                    let count = table.entities.count"
             echo "                    guard count > 0 else { return }"
-            for ((i = 1; i <= r; i++)); do echo "                    let rBase$i = table.base(R$i.self, at: R$i.componentIndex)"; done
-            for ((i = 1; i <= w; i++)); do echo "                    let wBase$i = table.base(W$i.self, at: W$i.componentIndex)"; done
+            for ((i = 1; i <= r; i++)); do echo "                    let rBase$i = table.base(R$i.self, at: rIndex$i)"; done
+            for ((i = 1; i <= w; i++)); do echo "                    let wBase$i = table.base(W$i.self, at: wIndex$i)"; done
             echo "                    for row in 0 ..< count {"
             if ((w > 0)); then echo "                        visited += 1"; fi
             echo "                        try body($(join ', ' "${rowArgs[@]}"))"

@@ -43,11 +43,12 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let wIndex1 = W1.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
+            archetype.beginWrite(wIndex1)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
+                archetype.endWrite(wIndex1)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -57,7 +58,7 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let wBase1 = table.base(W1.self, at: W1.componentIndex)
+                    let wBase1 = table.base(W1.self, at: wIndex1)
                     for row in 0 ..< count {
                         visited += 1
                         try body(&wBase1[row])
@@ -112,13 +113,15 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let wIndex1 = W1.componentIndex
+            let wIndex2 = W2.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            archetype.beginWrite(W2.componentIndex)
+            archetype.beginWrite(wIndex1)
+            archetype.beginWrite(wIndex2)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
-                archetype.endWrite(W2.componentIndex)
+                archetype.endWrite(wIndex1)
+                archetype.endWrite(wIndex2)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -129,8 +132,8 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let wBase1 = table.base(W1.self, at: W1.componentIndex)
-                    let wBase2 = table.base(W2.self, at: W2.componentIndex)
+                    let wBase1 = table.base(W1.self, at: wIndex1)
+                    let wBase2 = table.base(W2.self, at: wIndex2)
                     for row in 0 ..< count {
                         visited += 1
                         try body(&wBase1[row], &wBase2[row])
@@ -193,15 +196,18 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let wIndex1 = W1.componentIndex
+            let wIndex2 = W2.componentIndex
+            let wIndex3 = W3.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            archetype.beginWrite(W2.componentIndex)
-            archetype.beginWrite(W3.componentIndex)
+            archetype.beginWrite(wIndex1)
+            archetype.beginWrite(wIndex2)
+            archetype.beginWrite(wIndex3)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
-                archetype.endWrite(W2.componentIndex)
-                archetype.endWrite(W3.componentIndex)
+                archetype.endWrite(wIndex1)
+                archetype.endWrite(wIndex2)
+                archetype.endWrite(wIndex3)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -213,9 +219,9 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let wBase1 = table.base(W1.self, at: W1.componentIndex)
-                    let wBase2 = table.base(W2.self, at: W2.componentIndex)
-                    let wBase3 = table.base(W3.self, at: W3.componentIndex)
+                    let wBase1 = table.base(W1.self, at: wIndex1)
+                    let wBase2 = table.base(W2.self, at: wIndex2)
+                    let wBase3 = table.base(W3.self, at: wIndex3)
                     for row in 0 ..< count {
                         visited += 1
                         try body(&wBase1[row], &wBase2[row], &wBase3[row])
@@ -286,17 +292,21 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let wIndex1 = W1.componentIndex
+            let wIndex2 = W2.componentIndex
+            let wIndex3 = W3.componentIndex
+            let wIndex4 = W4.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            archetype.beginWrite(W2.componentIndex)
-            archetype.beginWrite(W3.componentIndex)
-            archetype.beginWrite(W4.componentIndex)
+            archetype.beginWrite(wIndex1)
+            archetype.beginWrite(wIndex2)
+            archetype.beginWrite(wIndex3)
+            archetype.beginWrite(wIndex4)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
-                archetype.endWrite(W2.componentIndex)
-                archetype.endWrite(W3.componentIndex)
-                archetype.endWrite(W4.componentIndex)
+                archetype.endWrite(wIndex1)
+                archetype.endWrite(wIndex2)
+                archetype.endWrite(wIndex3)
+                archetype.endWrite(wIndex4)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -309,10 +319,10 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let wBase1 = table.base(W1.self, at: W1.componentIndex)
-                    let wBase2 = table.base(W2.self, at: W2.componentIndex)
-                    let wBase3 = table.base(W3.self, at: W3.componentIndex)
-                    let wBase4 = table.base(W4.self, at: W4.componentIndex)
+                    let wBase1 = table.base(W1.self, at: wIndex1)
+                    let wBase2 = table.base(W2.self, at: wIndex2)
+                    let wBase3 = table.base(W3.self, at: wIndex3)
+                    let wBase4 = table.base(W4.self, at: wIndex4)
                     for row in 0 ..< count {
                         visited += 1
                         try body(&wBase1[row], &wBase2[row], &wBase3[row], &wBase4[row])
@@ -355,8 +365,9 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
             archetype.lockDepth += 1
-            archetype.requireReadable(R1.componentIndex)
+            archetype.requireReadable(rIndex1)
             defer {
                 archetype.lockDepth -= 1
             }
@@ -364,7 +375,7 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rBase1 = table.base(R1.self, at: R1.componentIndex)
+                    let rBase1 = table.base(R1.self, at: rIndex1)
                     for row in 0 ..< count {
                         try body(rBase1[row])
                     }
@@ -449,12 +460,14 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let wIndex1 = W1.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            archetype.requireReadable(R1.componentIndex)
+            archetype.beginWrite(wIndex1)
+            archetype.requireReadable(rIndex1)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
+                archetype.endWrite(wIndex1)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -464,8 +477,8 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rBase1 = table.base(R1.self, at: R1.componentIndex)
-                    let wBase1 = table.base(W1.self, at: W1.componentIndex)
+                    let rBase1 = table.base(R1.self, at: rIndex1)
+                    let wBase1 = table.base(W1.self, at: wIndex1)
                     for row in 0 ..< count {
                         visited += 1
                         try body(rBase1[row], &wBase1[row])
@@ -526,14 +539,17 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let wIndex1 = W1.componentIndex
+            let wIndex2 = W2.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            archetype.beginWrite(W2.componentIndex)
-            archetype.requireReadable(R1.componentIndex)
+            archetype.beginWrite(wIndex1)
+            archetype.beginWrite(wIndex2)
+            archetype.requireReadable(rIndex1)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
-                archetype.endWrite(W2.componentIndex)
+                archetype.endWrite(wIndex1)
+                archetype.endWrite(wIndex2)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -544,9 +560,9 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rBase1 = table.base(R1.self, at: R1.componentIndex)
-                    let wBase1 = table.base(W1.self, at: W1.componentIndex)
-                    let wBase2 = table.base(W2.self, at: W2.componentIndex)
+                    let rBase1 = table.base(R1.self, at: rIndex1)
+                    let wBase1 = table.base(W1.self, at: wIndex1)
+                    let wBase2 = table.base(W2.self, at: wIndex2)
                     for row in 0 ..< count {
                         visited += 1
                         try body(rBase1[row], &wBase1[row], &wBase2[row])
@@ -615,16 +631,20 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let wIndex1 = W1.componentIndex
+            let wIndex2 = W2.componentIndex
+            let wIndex3 = W3.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            archetype.beginWrite(W2.componentIndex)
-            archetype.beginWrite(W3.componentIndex)
-            archetype.requireReadable(R1.componentIndex)
+            archetype.beginWrite(wIndex1)
+            archetype.beginWrite(wIndex2)
+            archetype.beginWrite(wIndex3)
+            archetype.requireReadable(rIndex1)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
-                archetype.endWrite(W2.componentIndex)
-                archetype.endWrite(W3.componentIndex)
+                archetype.endWrite(wIndex1)
+                archetype.endWrite(wIndex2)
+                archetype.endWrite(wIndex3)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -636,10 +656,10 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rBase1 = table.base(R1.self, at: R1.componentIndex)
-                    let wBase1 = table.base(W1.self, at: W1.componentIndex)
-                    let wBase2 = table.base(W2.self, at: W2.componentIndex)
-                    let wBase3 = table.base(W3.self, at: W3.componentIndex)
+                    let rBase1 = table.base(R1.self, at: rIndex1)
+                    let wBase1 = table.base(W1.self, at: wIndex1)
+                    let wBase2 = table.base(W2.self, at: wIndex2)
+                    let wBase3 = table.base(W3.self, at: wIndex3)
                     for row in 0 ..< count {
                         visited += 1
                         try body(rBase1[row], &wBase1[row], &wBase2[row], &wBase3[row])
@@ -716,18 +736,23 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let wIndex1 = W1.componentIndex
+            let wIndex2 = W2.componentIndex
+            let wIndex3 = W3.componentIndex
+            let wIndex4 = W4.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            archetype.beginWrite(W2.componentIndex)
-            archetype.beginWrite(W3.componentIndex)
-            archetype.beginWrite(W4.componentIndex)
-            archetype.requireReadable(R1.componentIndex)
+            archetype.beginWrite(wIndex1)
+            archetype.beginWrite(wIndex2)
+            archetype.beginWrite(wIndex3)
+            archetype.beginWrite(wIndex4)
+            archetype.requireReadable(rIndex1)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
-                archetype.endWrite(W2.componentIndex)
-                archetype.endWrite(W3.componentIndex)
-                archetype.endWrite(W4.componentIndex)
+                archetype.endWrite(wIndex1)
+                archetype.endWrite(wIndex2)
+                archetype.endWrite(wIndex3)
+                archetype.endWrite(wIndex4)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -740,11 +765,11 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rBase1 = table.base(R1.self, at: R1.componentIndex)
-                    let wBase1 = table.base(W1.self, at: W1.componentIndex)
-                    let wBase2 = table.base(W2.self, at: W2.componentIndex)
-                    let wBase3 = table.base(W3.self, at: W3.componentIndex)
-                    let wBase4 = table.base(W4.self, at: W4.componentIndex)
+                    let rBase1 = table.base(R1.self, at: rIndex1)
+                    let wBase1 = table.base(W1.self, at: wIndex1)
+                    let wBase2 = table.base(W2.self, at: wIndex2)
+                    let wBase3 = table.base(W3.self, at: wIndex3)
+                    let wBase4 = table.base(W4.self, at: wIndex4)
                     for row in 0 ..< count {
                         visited += 1
                         try body(rBase1[row], &wBase1[row], &wBase2[row], &wBase3[row], &wBase4[row])
@@ -793,9 +818,11 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let rIndex2 = R2.componentIndex
             archetype.lockDepth += 1
-            archetype.requireReadable(R1.componentIndex)
-            archetype.requireReadable(R2.componentIndex)
+            archetype.requireReadable(rIndex1)
+            archetype.requireReadable(rIndex2)
             defer {
                 archetype.lockDepth -= 1
             }
@@ -803,8 +830,8 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rBase1 = table.base(R1.self, at: R1.componentIndex)
-                    let rBase2 = table.base(R2.self, at: R2.componentIndex)
+                    let rBase1 = table.base(R1.self, at: rIndex1)
+                    let rBase2 = table.base(R2.self, at: rIndex2)
                     for row in 0 ..< count {
                         try body(rBase1[row], rBase2[row])
                     }
@@ -862,13 +889,16 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let rIndex2 = R2.componentIndex
+            let wIndex1 = W1.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            archetype.requireReadable(R1.componentIndex)
-            archetype.requireReadable(R2.componentIndex)
+            archetype.beginWrite(wIndex1)
+            archetype.requireReadable(rIndex1)
+            archetype.requireReadable(rIndex2)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
+                archetype.endWrite(wIndex1)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -878,9 +908,9 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rBase1 = table.base(R1.self, at: R1.componentIndex)
-                    let rBase2 = table.base(R2.self, at: R2.componentIndex)
-                    let wBase1 = table.base(W1.self, at: W1.componentIndex)
+                    let rBase1 = table.base(R1.self, at: rIndex1)
+                    let rBase2 = table.base(R2.self, at: rIndex2)
+                    let wBase1 = table.base(W1.self, at: wIndex1)
                     for row in 0 ..< count {
                         visited += 1
                         try body(rBase1[row], rBase2[row], &wBase1[row])
@@ -947,15 +977,19 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let rIndex2 = R2.componentIndex
+            let wIndex1 = W1.componentIndex
+            let wIndex2 = W2.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            archetype.beginWrite(W2.componentIndex)
-            archetype.requireReadable(R1.componentIndex)
-            archetype.requireReadable(R2.componentIndex)
+            archetype.beginWrite(wIndex1)
+            archetype.beginWrite(wIndex2)
+            archetype.requireReadable(rIndex1)
+            archetype.requireReadable(rIndex2)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
-                archetype.endWrite(W2.componentIndex)
+                archetype.endWrite(wIndex1)
+                archetype.endWrite(wIndex2)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -966,10 +1000,10 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rBase1 = table.base(R1.self, at: R1.componentIndex)
-                    let rBase2 = table.base(R2.self, at: R2.componentIndex)
-                    let wBase1 = table.base(W1.self, at: W1.componentIndex)
-                    let wBase2 = table.base(W2.self, at: W2.componentIndex)
+                    let rBase1 = table.base(R1.self, at: rIndex1)
+                    let rBase2 = table.base(R2.self, at: rIndex2)
+                    let wBase1 = table.base(W1.self, at: wIndex1)
+                    let wBase2 = table.base(W2.self, at: wIndex2)
                     for row in 0 ..< count {
                         visited += 1
                         try body(rBase1[row], rBase2[row], &wBase1[row], &wBase2[row])
@@ -1044,17 +1078,22 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let rIndex2 = R2.componentIndex
+            let wIndex1 = W1.componentIndex
+            let wIndex2 = W2.componentIndex
+            let wIndex3 = W3.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            archetype.beginWrite(W2.componentIndex)
-            archetype.beginWrite(W3.componentIndex)
-            archetype.requireReadable(R1.componentIndex)
-            archetype.requireReadable(R2.componentIndex)
+            archetype.beginWrite(wIndex1)
+            archetype.beginWrite(wIndex2)
+            archetype.beginWrite(wIndex3)
+            archetype.requireReadable(rIndex1)
+            archetype.requireReadable(rIndex2)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
-                archetype.endWrite(W2.componentIndex)
-                archetype.endWrite(W3.componentIndex)
+                archetype.endWrite(wIndex1)
+                archetype.endWrite(wIndex2)
+                archetype.endWrite(wIndex3)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -1066,11 +1105,11 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rBase1 = table.base(R1.self, at: R1.componentIndex)
-                    let rBase2 = table.base(R2.self, at: R2.componentIndex)
-                    let wBase1 = table.base(W1.self, at: W1.componentIndex)
-                    let wBase2 = table.base(W2.self, at: W2.componentIndex)
-                    let wBase3 = table.base(W3.self, at: W3.componentIndex)
+                    let rBase1 = table.base(R1.self, at: rIndex1)
+                    let rBase2 = table.base(R2.self, at: rIndex2)
+                    let wBase1 = table.base(W1.self, at: wIndex1)
+                    let wBase2 = table.base(W2.self, at: wIndex2)
+                    let wBase3 = table.base(W3.self, at: wIndex3)
                     for row in 0 ..< count {
                         visited += 1
                         try body(rBase1[row], rBase2[row], &wBase1[row], &wBase2[row], &wBase3[row])
@@ -1153,19 +1192,25 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let rIndex2 = R2.componentIndex
+            let wIndex1 = W1.componentIndex
+            let wIndex2 = W2.componentIndex
+            let wIndex3 = W3.componentIndex
+            let wIndex4 = W4.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            archetype.beginWrite(W2.componentIndex)
-            archetype.beginWrite(W3.componentIndex)
-            archetype.beginWrite(W4.componentIndex)
-            archetype.requireReadable(R1.componentIndex)
-            archetype.requireReadable(R2.componentIndex)
+            archetype.beginWrite(wIndex1)
+            archetype.beginWrite(wIndex2)
+            archetype.beginWrite(wIndex3)
+            archetype.beginWrite(wIndex4)
+            archetype.requireReadable(rIndex1)
+            archetype.requireReadable(rIndex2)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
-                archetype.endWrite(W2.componentIndex)
-                archetype.endWrite(W3.componentIndex)
-                archetype.endWrite(W4.componentIndex)
+                archetype.endWrite(wIndex1)
+                archetype.endWrite(wIndex2)
+                archetype.endWrite(wIndex3)
+                archetype.endWrite(wIndex4)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -1178,12 +1223,12 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rBase1 = table.base(R1.self, at: R1.componentIndex)
-                    let rBase2 = table.base(R2.self, at: R2.componentIndex)
-                    let wBase1 = table.base(W1.self, at: W1.componentIndex)
-                    let wBase2 = table.base(W2.self, at: W2.componentIndex)
-                    let wBase3 = table.base(W3.self, at: W3.componentIndex)
-                    let wBase4 = table.base(W4.self, at: W4.componentIndex)
+                    let rBase1 = table.base(R1.self, at: rIndex1)
+                    let rBase2 = table.base(R2.self, at: rIndex2)
+                    let wBase1 = table.base(W1.self, at: wIndex1)
+                    let wBase2 = table.base(W2.self, at: wIndex2)
+                    let wBase3 = table.base(W3.self, at: wIndex3)
+                    let wBase4 = table.base(W4.self, at: wIndex4)
                     for row in 0 ..< count {
                         visited += 1
                         try body(rBase1[row], rBase2[row], &wBase1[row], &wBase2[row], &wBase3[row], &wBase4[row])
@@ -1238,10 +1283,13 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let rIndex2 = R2.componentIndex
+            let rIndex3 = R3.componentIndex
             archetype.lockDepth += 1
-            archetype.requireReadable(R1.componentIndex)
-            archetype.requireReadable(R2.componentIndex)
-            archetype.requireReadable(R3.componentIndex)
+            archetype.requireReadable(rIndex1)
+            archetype.requireReadable(rIndex2)
+            archetype.requireReadable(rIndex3)
             defer {
                 archetype.lockDepth -= 1
             }
@@ -1249,9 +1297,9 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rBase1 = table.base(R1.self, at: R1.componentIndex)
-                    let rBase2 = table.base(R2.self, at: R2.componentIndex)
-                    let rBase3 = table.base(R3.self, at: R3.componentIndex)
+                    let rBase1 = table.base(R1.self, at: rIndex1)
+                    let rBase2 = table.base(R2.self, at: rIndex2)
+                    let rBase3 = table.base(R3.self, at: rIndex3)
                     for row in 0 ..< count {
                         try body(rBase1[row], rBase2[row], rBase3[row])
                     }
@@ -1315,14 +1363,18 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let rIndex2 = R2.componentIndex
+            let rIndex3 = R3.componentIndex
+            let wIndex1 = W1.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            archetype.requireReadable(R1.componentIndex)
-            archetype.requireReadable(R2.componentIndex)
-            archetype.requireReadable(R3.componentIndex)
+            archetype.beginWrite(wIndex1)
+            archetype.requireReadable(rIndex1)
+            archetype.requireReadable(rIndex2)
+            archetype.requireReadable(rIndex3)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
+                archetype.endWrite(wIndex1)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -1332,10 +1384,10 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rBase1 = table.base(R1.self, at: R1.componentIndex)
-                    let rBase2 = table.base(R2.self, at: R2.componentIndex)
-                    let rBase3 = table.base(R3.self, at: R3.componentIndex)
-                    let wBase1 = table.base(W1.self, at: W1.componentIndex)
+                    let rBase1 = table.base(R1.self, at: rIndex1)
+                    let rBase2 = table.base(R2.self, at: rIndex2)
+                    let rBase3 = table.base(R3.self, at: rIndex3)
+                    let wBase1 = table.base(W1.self, at: wIndex1)
                     for row in 0 ..< count {
                         visited += 1
                         try body(rBase1[row], rBase2[row], rBase3[row], &wBase1[row])
@@ -1408,16 +1460,21 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let rIndex2 = R2.componentIndex
+            let rIndex3 = R3.componentIndex
+            let wIndex1 = W1.componentIndex
+            let wIndex2 = W2.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            archetype.beginWrite(W2.componentIndex)
-            archetype.requireReadable(R1.componentIndex)
-            archetype.requireReadable(R2.componentIndex)
-            archetype.requireReadable(R3.componentIndex)
+            archetype.beginWrite(wIndex1)
+            archetype.beginWrite(wIndex2)
+            archetype.requireReadable(rIndex1)
+            archetype.requireReadable(rIndex2)
+            archetype.requireReadable(rIndex3)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
-                archetype.endWrite(W2.componentIndex)
+                archetype.endWrite(wIndex1)
+                archetype.endWrite(wIndex2)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -1428,11 +1485,11 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rBase1 = table.base(R1.self, at: R1.componentIndex)
-                    let rBase2 = table.base(R2.self, at: R2.componentIndex)
-                    let rBase3 = table.base(R3.self, at: R3.componentIndex)
-                    let wBase1 = table.base(W1.self, at: W1.componentIndex)
-                    let wBase2 = table.base(W2.self, at: W2.componentIndex)
+                    let rBase1 = table.base(R1.self, at: rIndex1)
+                    let rBase2 = table.base(R2.self, at: rIndex2)
+                    let rBase3 = table.base(R3.self, at: rIndex3)
+                    let wBase1 = table.base(W1.self, at: wIndex1)
+                    let wBase2 = table.base(W2.self, at: wIndex2)
                     for row in 0 ..< count {
                         visited += 1
                         try body(rBase1[row], rBase2[row], rBase3[row], &wBase1[row], &wBase2[row])
@@ -1513,18 +1570,24 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let rIndex2 = R2.componentIndex
+            let rIndex3 = R3.componentIndex
+            let wIndex1 = W1.componentIndex
+            let wIndex2 = W2.componentIndex
+            let wIndex3 = W3.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            archetype.beginWrite(W2.componentIndex)
-            archetype.beginWrite(W3.componentIndex)
-            archetype.requireReadable(R1.componentIndex)
-            archetype.requireReadable(R2.componentIndex)
-            archetype.requireReadable(R3.componentIndex)
+            archetype.beginWrite(wIndex1)
+            archetype.beginWrite(wIndex2)
+            archetype.beginWrite(wIndex3)
+            archetype.requireReadable(rIndex1)
+            archetype.requireReadable(rIndex2)
+            archetype.requireReadable(rIndex3)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
-                archetype.endWrite(W2.componentIndex)
-                archetype.endWrite(W3.componentIndex)
+                archetype.endWrite(wIndex1)
+                archetype.endWrite(wIndex2)
+                archetype.endWrite(wIndex3)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -1536,12 +1599,12 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rBase1 = table.base(R1.self, at: R1.componentIndex)
-                    let rBase2 = table.base(R2.self, at: R2.componentIndex)
-                    let rBase3 = table.base(R3.self, at: R3.componentIndex)
-                    let wBase1 = table.base(W1.self, at: W1.componentIndex)
-                    let wBase2 = table.base(W2.self, at: W2.componentIndex)
-                    let wBase3 = table.base(W3.self, at: W3.componentIndex)
+                    let rBase1 = table.base(R1.self, at: rIndex1)
+                    let rBase2 = table.base(R2.self, at: rIndex2)
+                    let rBase3 = table.base(R3.self, at: rIndex3)
+                    let wBase1 = table.base(W1.self, at: wIndex1)
+                    let wBase2 = table.base(W2.self, at: wIndex2)
+                    let wBase3 = table.base(W3.self, at: wIndex3)
                     for row in 0 ..< count {
                         visited += 1
                         try body(rBase1[row], rBase2[row], rBase3[row], &wBase1[row], &wBase2[row], &wBase3[row])
@@ -1630,20 +1693,27 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let rIndex2 = R2.componentIndex
+            let rIndex3 = R3.componentIndex
+            let wIndex1 = W1.componentIndex
+            let wIndex2 = W2.componentIndex
+            let wIndex3 = W3.componentIndex
+            let wIndex4 = W4.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            archetype.beginWrite(W2.componentIndex)
-            archetype.beginWrite(W3.componentIndex)
-            archetype.beginWrite(W4.componentIndex)
-            archetype.requireReadable(R1.componentIndex)
-            archetype.requireReadable(R2.componentIndex)
-            archetype.requireReadable(R3.componentIndex)
+            archetype.beginWrite(wIndex1)
+            archetype.beginWrite(wIndex2)
+            archetype.beginWrite(wIndex3)
+            archetype.beginWrite(wIndex4)
+            archetype.requireReadable(rIndex1)
+            archetype.requireReadable(rIndex2)
+            archetype.requireReadable(rIndex3)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
-                archetype.endWrite(W2.componentIndex)
-                archetype.endWrite(W3.componentIndex)
-                archetype.endWrite(W4.componentIndex)
+                archetype.endWrite(wIndex1)
+                archetype.endWrite(wIndex2)
+                archetype.endWrite(wIndex3)
+                archetype.endWrite(wIndex4)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -1656,13 +1726,13 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rBase1 = table.base(R1.self, at: R1.componentIndex)
-                    let rBase2 = table.base(R2.self, at: R2.componentIndex)
-                    let rBase3 = table.base(R3.self, at: R3.componentIndex)
-                    let wBase1 = table.base(W1.self, at: W1.componentIndex)
-                    let wBase2 = table.base(W2.self, at: W2.componentIndex)
-                    let wBase3 = table.base(W3.self, at: W3.componentIndex)
-                    let wBase4 = table.base(W4.self, at: W4.componentIndex)
+                    let rBase1 = table.base(R1.self, at: rIndex1)
+                    let rBase2 = table.base(R2.self, at: rIndex2)
+                    let rBase3 = table.base(R3.self, at: rIndex3)
+                    let wBase1 = table.base(W1.self, at: wIndex1)
+                    let wBase2 = table.base(W2.self, at: wIndex2)
+                    let wBase3 = table.base(W3.self, at: wIndex3)
+                    let wBase4 = table.base(W4.self, at: wIndex4)
                     for row in 0 ..< count {
                         visited += 1
                         try body(rBase1[row], rBase2[row], rBase3[row], &wBase1[row], &wBase2[row], &wBase3[row], &wBase4[row])
@@ -1723,11 +1793,15 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let rIndex2 = R2.componentIndex
+            let rIndex3 = R3.componentIndex
+            let rIndex4 = R4.componentIndex
             archetype.lockDepth += 1
-            archetype.requireReadable(R1.componentIndex)
-            archetype.requireReadable(R2.componentIndex)
-            archetype.requireReadable(R3.componentIndex)
-            archetype.requireReadable(R4.componentIndex)
+            archetype.requireReadable(rIndex1)
+            archetype.requireReadable(rIndex2)
+            archetype.requireReadable(rIndex3)
+            archetype.requireReadable(rIndex4)
             defer {
                 archetype.lockDepth -= 1
             }
@@ -1735,10 +1809,10 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rBase1 = table.base(R1.self, at: R1.componentIndex)
-                    let rBase2 = table.base(R2.self, at: R2.componentIndex)
-                    let rBase3 = table.base(R3.self, at: R3.componentIndex)
-                    let rBase4 = table.base(R4.self, at: R4.componentIndex)
+                    let rBase1 = table.base(R1.self, at: rIndex1)
+                    let rBase2 = table.base(R2.self, at: rIndex2)
+                    let rBase3 = table.base(R3.self, at: rIndex3)
+                    let rBase4 = table.base(R4.self, at: rIndex4)
                     for row in 0 ..< count {
                         try body(rBase1[row], rBase2[row], rBase3[row], rBase4[row])
                     }
@@ -1808,15 +1882,20 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let rIndex2 = R2.componentIndex
+            let rIndex3 = R3.componentIndex
+            let rIndex4 = R4.componentIndex
+            let wIndex1 = W1.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            archetype.requireReadable(R1.componentIndex)
-            archetype.requireReadable(R2.componentIndex)
-            archetype.requireReadable(R3.componentIndex)
-            archetype.requireReadable(R4.componentIndex)
+            archetype.beginWrite(wIndex1)
+            archetype.requireReadable(rIndex1)
+            archetype.requireReadable(rIndex2)
+            archetype.requireReadable(rIndex3)
+            archetype.requireReadable(rIndex4)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
+                archetype.endWrite(wIndex1)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -1826,11 +1905,11 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rBase1 = table.base(R1.self, at: R1.componentIndex)
-                    let rBase2 = table.base(R2.self, at: R2.componentIndex)
-                    let rBase3 = table.base(R3.self, at: R3.componentIndex)
-                    let rBase4 = table.base(R4.self, at: R4.componentIndex)
-                    let wBase1 = table.base(W1.self, at: W1.componentIndex)
+                    let rBase1 = table.base(R1.self, at: rIndex1)
+                    let rBase2 = table.base(R2.self, at: rIndex2)
+                    let rBase3 = table.base(R3.self, at: rIndex3)
+                    let rBase4 = table.base(R4.self, at: rIndex4)
+                    let wBase1 = table.base(W1.self, at: wIndex1)
                     for row in 0 ..< count {
                         visited += 1
                         try body(rBase1[row], rBase2[row], rBase3[row], rBase4[row], &wBase1[row])
@@ -1909,17 +1988,23 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let rIndex2 = R2.componentIndex
+            let rIndex3 = R3.componentIndex
+            let rIndex4 = R4.componentIndex
+            let wIndex1 = W1.componentIndex
+            let wIndex2 = W2.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            archetype.beginWrite(W2.componentIndex)
-            archetype.requireReadable(R1.componentIndex)
-            archetype.requireReadable(R2.componentIndex)
-            archetype.requireReadable(R3.componentIndex)
-            archetype.requireReadable(R4.componentIndex)
+            archetype.beginWrite(wIndex1)
+            archetype.beginWrite(wIndex2)
+            archetype.requireReadable(rIndex1)
+            archetype.requireReadable(rIndex2)
+            archetype.requireReadable(rIndex3)
+            archetype.requireReadable(rIndex4)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
-                archetype.endWrite(W2.componentIndex)
+                archetype.endWrite(wIndex1)
+                archetype.endWrite(wIndex2)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -1930,12 +2015,12 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rBase1 = table.base(R1.self, at: R1.componentIndex)
-                    let rBase2 = table.base(R2.self, at: R2.componentIndex)
-                    let rBase3 = table.base(R3.self, at: R3.componentIndex)
-                    let rBase4 = table.base(R4.self, at: R4.componentIndex)
-                    let wBase1 = table.base(W1.self, at: W1.componentIndex)
-                    let wBase2 = table.base(W2.self, at: W2.componentIndex)
+                    let rBase1 = table.base(R1.self, at: rIndex1)
+                    let rBase2 = table.base(R2.self, at: rIndex2)
+                    let rBase3 = table.base(R3.self, at: rIndex3)
+                    let rBase4 = table.base(R4.self, at: rIndex4)
+                    let wBase1 = table.base(W1.self, at: wIndex1)
+                    let wBase2 = table.base(W2.self, at: wIndex2)
                     for row in 0 ..< count {
                         visited += 1
                         try body(rBase1[row], rBase2[row], rBase3[row], rBase4[row], &wBase1[row], &wBase2[row])
@@ -2022,19 +2107,26 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let rIndex2 = R2.componentIndex
+            let rIndex3 = R3.componentIndex
+            let rIndex4 = R4.componentIndex
+            let wIndex1 = W1.componentIndex
+            let wIndex2 = W2.componentIndex
+            let wIndex3 = W3.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            archetype.beginWrite(W2.componentIndex)
-            archetype.beginWrite(W3.componentIndex)
-            archetype.requireReadable(R1.componentIndex)
-            archetype.requireReadable(R2.componentIndex)
-            archetype.requireReadable(R3.componentIndex)
-            archetype.requireReadable(R4.componentIndex)
+            archetype.beginWrite(wIndex1)
+            archetype.beginWrite(wIndex2)
+            archetype.beginWrite(wIndex3)
+            archetype.requireReadable(rIndex1)
+            archetype.requireReadable(rIndex2)
+            archetype.requireReadable(rIndex3)
+            archetype.requireReadable(rIndex4)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
-                archetype.endWrite(W2.componentIndex)
-                archetype.endWrite(W3.componentIndex)
+                archetype.endWrite(wIndex1)
+                archetype.endWrite(wIndex2)
+                archetype.endWrite(wIndex3)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -2046,13 +2138,13 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rBase1 = table.base(R1.self, at: R1.componentIndex)
-                    let rBase2 = table.base(R2.self, at: R2.componentIndex)
-                    let rBase3 = table.base(R3.self, at: R3.componentIndex)
-                    let rBase4 = table.base(R4.self, at: R4.componentIndex)
-                    let wBase1 = table.base(W1.self, at: W1.componentIndex)
-                    let wBase2 = table.base(W2.self, at: W2.componentIndex)
-                    let wBase3 = table.base(W3.self, at: W3.componentIndex)
+                    let rBase1 = table.base(R1.self, at: rIndex1)
+                    let rBase2 = table.base(R2.self, at: rIndex2)
+                    let rBase3 = table.base(R3.self, at: rIndex3)
+                    let rBase4 = table.base(R4.self, at: rIndex4)
+                    let wBase1 = table.base(W1.self, at: wIndex1)
+                    let wBase2 = table.base(W2.self, at: wIndex2)
+                    let wBase3 = table.base(W3.self, at: wIndex3)
                     for row in 0 ..< count {
                         visited += 1
                         try body(rBase1[row], rBase2[row], rBase3[row], rBase4[row], &wBase1[row], &wBase2[row], &wBase3[row])
@@ -2147,21 +2239,29 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let rIndex2 = R2.componentIndex
+            let rIndex3 = R3.componentIndex
+            let rIndex4 = R4.componentIndex
+            let wIndex1 = W1.componentIndex
+            let wIndex2 = W2.componentIndex
+            let wIndex3 = W3.componentIndex
+            let wIndex4 = W4.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            archetype.beginWrite(W2.componentIndex)
-            archetype.beginWrite(W3.componentIndex)
-            archetype.beginWrite(W4.componentIndex)
-            archetype.requireReadable(R1.componentIndex)
-            archetype.requireReadable(R2.componentIndex)
-            archetype.requireReadable(R3.componentIndex)
-            archetype.requireReadable(R4.componentIndex)
+            archetype.beginWrite(wIndex1)
+            archetype.beginWrite(wIndex2)
+            archetype.beginWrite(wIndex3)
+            archetype.beginWrite(wIndex4)
+            archetype.requireReadable(rIndex1)
+            archetype.requireReadable(rIndex2)
+            archetype.requireReadable(rIndex3)
+            archetype.requireReadable(rIndex4)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
-                archetype.endWrite(W2.componentIndex)
-                archetype.endWrite(W3.componentIndex)
-                archetype.endWrite(W4.componentIndex)
+                archetype.endWrite(wIndex1)
+                archetype.endWrite(wIndex2)
+                archetype.endWrite(wIndex3)
+                archetype.endWrite(wIndex4)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -2174,14 +2274,14 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rBase1 = table.base(R1.self, at: R1.componentIndex)
-                    let rBase2 = table.base(R2.self, at: R2.componentIndex)
-                    let rBase3 = table.base(R3.self, at: R3.componentIndex)
-                    let rBase4 = table.base(R4.self, at: R4.componentIndex)
-                    let wBase1 = table.base(W1.self, at: W1.componentIndex)
-                    let wBase2 = table.base(W2.self, at: W2.componentIndex)
-                    let wBase3 = table.base(W3.self, at: W3.componentIndex)
-                    let wBase4 = table.base(W4.self, at: W4.componentIndex)
+                    let rBase1 = table.base(R1.self, at: rIndex1)
+                    let rBase2 = table.base(R2.self, at: rIndex2)
+                    let rBase3 = table.base(R3.self, at: rIndex3)
+                    let rBase4 = table.base(R4.self, at: rIndex4)
+                    let wBase1 = table.base(W1.self, at: wIndex1)
+                    let wBase2 = table.base(W2.self, at: wIndex2)
+                    let wBase3 = table.base(W3.self, at: wIndex3)
+                    let wBase4 = table.base(W4.self, at: wIndex4)
                     for row in 0 ..< count {
                         visited += 1
                         try body(rBase1[row], rBase2[row], rBase3[row], rBase4[row], &wBase1[row], &wBase2[row], &wBase3[row], &wBase4[row])

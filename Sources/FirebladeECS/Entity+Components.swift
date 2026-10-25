@@ -47,9 +47,10 @@ extension Entity {
         }
         let reads = (repeat get((each R).self).unsafelyUnwrapped)
         let pointers = (repeat nexus.beginModify((each W).self, for: identifier).unsafelyUnwrapped)
-        var written = (repeat (each pointers).pointee)
+        var written = (repeat Self.load(each pointers))
         func finish() {
-            _ = (repeat Self.store(each written, to: each pointers))
+            let final = written
+            _ = (repeat Self.store(each final, to: each pointers))
             _ = (repeat nexus.endModify((each W).self, for: identifier))
         }
         do {
@@ -60,6 +61,11 @@ extension Entity {
         }
         finish()
         return true
+    }
+
+    @usableFromInline
+    static func load<T: Component>(_ pointer: UnsafeMutablePointer<T>) -> T {
+        pointer.pointee
     }
 
     @usableFromInline

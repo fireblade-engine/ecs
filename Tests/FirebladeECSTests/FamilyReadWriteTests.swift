@@ -61,7 +61,9 @@ private func makeNexus(count: Int) -> Nexus {
         }
         #expect(seen.sorted() == [1, 3, 5, 7, 9])
         #expect(nexus.family(requiresAll: Comp2.self, excludesAll: Marker.self).allSatisfy { $0.value == -1 })
-        #expect(nexus.family(requiresAll: Comp2.self, Marker.self).allSatisfy { $0.0.value >= 0 })
+        for (comp, _) in nexus.family(requiresAll: Comp2.self, Marker.self) {
+            #expect(comp.value >= 0)
+        }
     }
 
     @Test func familyOverSubsetOfAStorageTouchesOnlyMembers() {
@@ -90,7 +92,9 @@ private func makeNexus(count: Int) -> Nexus {
         family.forEach(writing: Comp1.self, Comp2.self, Comp3.self, Comp4.self) { a, b, c, d in
             a.value = 1; b.value = 2; c.value = 3; d.value = 4
         }
-        #expect(family.allSatisfy { $0.0.value == 1 && $0.1.value == 2 && $0.2.value == 3 && $0.3.value == 4 })
+        for (a, b, c, d) in family {
+            #expect(a.value == 1 && b.value == 2 && c.value == 3 && d.value == 4)
+        }
     }
 
     @Test func fourReadsAndFourWrites() {
@@ -125,7 +129,9 @@ private func makeNexus(count: Int) -> Nexus {
             #expect(w1.value == r3.value)
             w2.value = 7
         }
-        #expect(family.allSatisfy { $0.4.value == 7 })
+        for (_, _, _, _, e) in family {
+            #expect(e.value == 7)
+        }
     }
 
     @Test func parameterPackFallbackReadsAndWrites() {
@@ -155,7 +161,9 @@ private func makeNexus(count: Int) -> Nexus {
             visited += 1
         }
         #expect(visited == 6)
-        #expect(family.allSatisfy { $0.6.value == $0.0.value && $0.7.value == $0.4.value + 100 })
+        for (c1, _, _, _, c5, _, c7, c8) in family {
+            #expect(c7.value == c1.value && c8.value == c5.value + 100)
+        }
     }
 
     @Test func oneModifiedEventPerWrittenTypeAndPass() throws {
@@ -212,7 +220,9 @@ private func makeNexus(count: Int) -> Nexus {
         // structural changes and nested writes work again
         nexus.createEntity(with: Comp1(99), Comp2(99))
         family.forEach(writing: Comp2.self) { $0.value = 5 }
-        #expect(family.allSatisfy { $0.1.value == 5 })
+        for (_, c2) in family {
+            #expect(c2.value == 5)
+        }
     }
 
     @Test func readsOfOtherTypesAndNestedReadPassesAreAllowed() {

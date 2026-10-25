@@ -81,12 +81,20 @@ extension Family {
                 let key = entry.key
                 let readValues = (repeat Self.value(of: each reads, at: key))
                 let writePointers = (repeat Self.address(in: each writes, at: key))
-                var written = (repeat (each writePointers).pointee)
-                defer {
-                    _ = (repeat Self.store(each written, to: each writePointers))
-                }
+                var written = (repeat Self.load(each writePointers))
                 visited += 1
-                try body(&written, repeat each readValues)
+                // the write back uses an immutable copy: a pack expansion over a `var` tuple is an l-value (crashes SILGen on 6.2)
+                func writeBack() {
+                    let final = written
+                    _ = (repeat Self.store(each final, to: each writePointers))
+                }
+                do {
+                    try body(&written, repeat each readValues)
+                } catch {
+                    writeBack()
+                    throw error
+                }
+                writeBack()
             }
         }
     }
@@ -103,6 +111,11 @@ extension Family {
         let slot = storage.slot(of: key)
         precondition(slot >= 0, "member without a required component")
         return storage.base + slot
+    }
+
+    @inlinable
+    static func load<T: Component>(_ pointer: UnsafeMutablePointer<T>) -> T {
+        pointer.pointee
     }
 
     @inlinable

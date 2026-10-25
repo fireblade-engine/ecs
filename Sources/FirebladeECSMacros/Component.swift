@@ -49,7 +49,7 @@ import FirebladeECS
 )
 public macro Component(excluding: ComponentMacroFeatures = []) = #externalMacro(module: "FirebladeECSMacrosImpl", type: "ComponentMacro")
 
-/// Excludes a stored property of a ``Component(excluding:)`` class from serialization and inspection.
+/// Excludes a stored property of a ``Component(excluding:)`` struct from serialization and inspection.
 ///
 /// Ignored properties are still cloned and must have a default value.
 @attached(peer)

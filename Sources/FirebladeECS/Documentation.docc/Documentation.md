@@ -23,6 +23,7 @@ For a more detailed example of FirebladeECS in action, see the [Fireblade ECS De
 - <doc:SavingAndLoadingScenes>
 - <doc:ReactingToNexusEvents>
 - <doc:ReadingAndWritingComponents>
+- <doc:ChoosingAStorage>
 - <doc:MigratingToFirebladeECS2>
 - ``Nexus``
 - ``NexusEvent``

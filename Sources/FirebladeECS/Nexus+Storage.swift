@@ -8,7 +8,9 @@
 extension Nexus {
     /// The storage a ``Nexus`` keeps its entities and components in.
     ///
-    /// The set of storages is closed: a nexus owns exactly one and switches on it once per call.
+    /// The set of storages is closed: a nexus owns exactly one and switches on it once per call. Both offer the same API
+    /// and observable behavior; ``Nexus/StorageKind/archetype`` iterates families faster and ``Nexus/StorageKind/sparseSet``
+    /// changes the component set of an entity faster. See <doc:ChoosingAStorage>.
     public enum StorageKind: CaseIterable, Sendable {
         /// One dense array per component type, a paged sparse index per type, a bitset per entity.
         ///

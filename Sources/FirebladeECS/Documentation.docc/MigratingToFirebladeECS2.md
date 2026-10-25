@@ -57,10 +57,10 @@ Component properties of type ``EntityIdentifier`` are encoded as 64 bit raw valu
 
 ### Component storage
 
-A ``Nexus`` keeps its components in a storage chosen at creation, ``Nexus/init(storage:)``. ``Nexus/StorageKind/sparseSet`` is the only storage so far and the default, so `Nexus()` works as before.
+A ``Nexus`` keeps its components in a storage chosen at creation, ``Nexus/init(storage:)``: ``Nexus/StorageKind/sparseSet`` (the default, so `Nexus()` works as before) or ``Nexus/StorageKind/archetype``. See <doc:ChoosingAStorage>.
 There is no storage protocol: the set of storages is closed, so each storage compiles to concrete code.
 
-- Components are stored per type in one dense array with a paged sparse index, and each entity holds a bitset of its component types. Adding, removing and looking up a component touches one type's data only.
+- The sparse-set storage stores components per type in one dense array with a paged sparse index, and each entity holds a bitset of its component types. Adding, removing and looking up a component touches one type's data only. The archetype storage stores entities with the same component types together in a table with a column per type.
 - Every component type has a dense ``Component/componentIndex``. Plain conformances get it lazily, in order of first use and shared by all nexuses of the process. There is no limit on the number of component types.
 - Public API that returned or took component storage internals is unchanged. ``ManagedContiguousArray`` is no longer used by ``Nexus``; it stays available until it is removed.
 - The components an entity iterates, and the components of a snapshot or clone, come in ``Component/componentIndex`` order now instead of hash order.

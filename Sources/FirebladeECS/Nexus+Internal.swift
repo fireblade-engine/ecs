@@ -25,7 +25,7 @@ extension Nexus {
     /// - Parameters:
     ///   - components: The components to assign.
     ///   - entityId: The identifier of the entity.
-    /// - Returns: `true` if all assignments were successful, `false` otherwise (e.g., if a component of the same type is already assigned).
+    /// - Returns: `true` if all assignments were successful, `false` if the entity identifier is stale. A component of a type the entity already has is replaced.
     @usableFromInline
     @discardableResult
     func assign(components: some Collection<Component>, to entityId: EntityIdentifier) -> Bool {
@@ -50,7 +50,7 @@ extension Nexus {
         return true
     }
 
-    /// Assigns multiple components to an entity, stopping at the first one that collides.
+    /// Assigns multiple components to an entity, replacing components of types it already has.
     ///
     /// - Parameters:
     ///   - components: The components to assign.
@@ -83,26 +83,29 @@ extension Nexus {
         return true
     }
 
-    /// Inserts a component instance into the storage of its type and notifies the delegate.
+    /// Inserts a component instance into the storage of its type, or replaces the one the entity has.
+    ///
+    /// Delivers ``ComponentAdded`` for a new component and ``ComponentReplaced`` (to delegates subscribed to value
+    /// changes) when it replaced one. Either way the entity ends up with exactly this value.
     ///
     /// - Parameters:
-    ///   - component: The component instance. Its dynamic type selects the storage.
+    ///   - component: The component instance. Its type selects the storage.
     ///   - entityId: The identifier of the living entity.
-    /// - Returns: `false` if the entity already has a component of the type.
+    /// - Returns: `true`, the entity has the component afterwards.
     @usableFromInline
     func insert<C: Component>(_ component: C, _ entityId: EntityIdentifier) -> Bool {
         let componentIndex = C.componentIndex
-        // test if component is already assigned
-        guard !backend.has(componentIndex: componentIndex, for: entityId) else {
-            delegate?.nexusNonFatalError("ComponentAdd collision: \(entityId) already has a component \(component)")
-            return false
-        }
-        if !backend.hasStorage(for: componentIndex) {
+        let replaces = backend.has(componentIndex: componentIndex, for: entityId)
+        if !replaces, !backend.hasStorage(for: componentIndex) {
             registerOnFirstAssignment(C.self)
         }
-        // adds the component to its storage and the component type to the entity's component set
+        // adds the component to its storage and the component type to the entity's component set, or overwrites it
         backend.set(component, at: componentIndex, for: entityId)
-        delegate?.nexusEvent(ComponentAdded(component: C.identifier, toEntity: entityId))
+        if replaces {
+            emitReplaced(C.self, for: entityId)
+        } else {
+            delegate?.nexusEvent(ComponentAdded(component: C.identifier, toEntity: entityId))
+        }
         return true
     }
 

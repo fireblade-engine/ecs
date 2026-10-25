@@ -89,10 +89,11 @@ public struct Entity {
         nexus.count(components: identifier) > 0
     }
 
-    /// Adds one or more components to this entity.
+    /// Sets one or more components of this entity: adds new ones and replaces existing ones.
     ///
-    /// If the entity already has a component of the same type, it keeps that instance and the nexus delegate
-    /// receives a non-fatal error.
+    /// If the entity already has a component of the same type, that component is replaced and a
+    /// ``ComponentReplaced`` event is delivered to delegates subscribed to ``NexusEventMask/valueChanges``.
+    /// Adding a new component delivers ``ComponentAdded``. Setting a component of a destroyed entity does nothing.
     /// - Parameter components: one or more components.
     /// - Returns: This entity (for chaining).
     /// - Complexity: O(C * M) where C is the number of components and M is the number of families.
@@ -102,10 +103,11 @@ public struct Entity {
         return self
     }
 
-    /// Adds a single component to this entity.
+    /// Sets a component of this entity: adds it, or replaces the one of the same type.
     ///
-    /// If the entity already has a component of the same type, it keeps that instance and the nexus delegate
-    /// receives a non-fatal error.
+    /// If the entity already has a component of the same type, that component is replaced and a
+    /// ``ComponentReplaced`` event is delivered to delegates subscribed to ``NexusEventMask/valueChanges``.
+    /// Adding a new component delivers ``ComponentAdded``. Setting a component of a destroyed entity does nothing.
     /// - Parameter component: a component.
     /// - Returns: This entity (for chaining).
     /// - Complexity: O(M) where M is the number of families.
@@ -115,10 +117,11 @@ public struct Entity {
         return self
     }
 
-    /// Adds a collection of components to this entity.
+    /// Sets a collection of components of this entity: adds new ones and replaces existing ones.
     ///
-    /// If the entity already has a component of the same type, it keeps that instance and the nexus delegate
-    /// receives a non-fatal error.
+    /// If the entity already has a component of the same type, that component is replaced and a
+    /// ``ComponentReplaced`` event is delivered to delegates subscribed to ``NexusEventMask/valueChanges``.
+    /// Adding a new component delivers ``ComponentAdded``. Setting a component of a destroyed entity does nothing.
     /// - Parameter components: The components to set.
     /// - Returns: This entity (for chaining).
     /// - Complexity: O(C + M) where C is the number of components and M is the number of families.

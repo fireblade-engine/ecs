@@ -25,12 +25,12 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### 💻 Installing
 
-Fireblade ECS is available for all platforms that support [Swift 6.1](https://swift.org/) and higher and the [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager).
+Fireblade ECS is available for all platforms that support [Swift 6.2](https://swift.org/) and higher and the [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager).
 
 Extend the following lines in your `Package.swift` file or use it to create a new project.
 
 ```swift
-// swift-tools-version:6.1
+// swift-tools-version:6.2
 
 import PackageDescription
 

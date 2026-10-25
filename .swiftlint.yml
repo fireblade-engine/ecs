@@ -5,7 +5,7 @@ excluded:
   - Tests
   - Sources/FirebladeECS/Generated
   - Sources/FirebladeECS/UnorderedSparseSet.swift
-  - Sources/FirebladeECS/FSM.swift
+  - Sources/FirebladeFSM/FSM.swift
 identifier_name:
   excluded:
     - id

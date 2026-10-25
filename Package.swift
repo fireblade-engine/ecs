@@ -55,6 +55,8 @@ let package = Package(
     products: [
         .library(name: "FirebladeECS",
                  targets: ["FirebladeECS"]),
+        .library(name: "FirebladeFSM",
+                 targets: ["FirebladeFSM"]),
         .library(name: "FirebladeECSMacros",
                  targets: ["FirebladeECSMacros"])
     ],
@@ -66,6 +68,9 @@ let package = Package(
     ],
     targets: [
         .target(name: "FirebladeECS",
+                swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
+        .target(name: "FirebladeFSM",
+                dependencies: ["FirebladeECS"],
                 swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
         .target(name: "FirebladeECSMacrosSupport",
                 dependencies: [

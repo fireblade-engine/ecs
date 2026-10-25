@@ -26,7 +26,9 @@ extension FamilyTraitsMacro {
         /// The spelled component types that must be absent.
         let excluding: [String]
 
-        var required: [String] { reading + writing }
+        var required: [String] {
+            reading + writing
+        }
     }
 
     /// The three argument groups in declaration order.
@@ -39,24 +41,7 @@ extension FamilyTraitsMacro {
             return (nil, [Diagnostic(node: attribute, message: DiagnosticKind.requiresStruct)])
         }
         var diagnostics: [Diagnostic] = []
-        var groups: [String: [(name: String, node: ExprSyntax)]] = [:]
-        if case let .argumentList(arguments) = attribute.arguments {
-            // Unlabeled arguments continue the group of the preceding labeled one (variadic parameters).
-            var current = ""
-            for argument in arguments {
-                if let label = argument.label?.text {
-                    current = label
-                }
-                guard argumentLabels.contains(current) else {
-                    continue
-                }
-                guard let name = metatypeName(argument.expression) else {
-                    diagnostics.append(Diagnostic(node: argument.expression, message: DiagnosticKind.expectsMetatype))
-                    continue
-                }
-                groups[current, default: []].append((name, argument.expression))
-            }
-        }
+        let groups = collectGroups(attribute, diagnostics: &diagnostics)
         let reading = groups["reading"] ?? []
         let writing = groups["writing"] ?? []
         let excluding = groups["excluding"] ?? []
@@ -64,20 +49,7 @@ extension FamilyTraitsMacro {
         if reading.isEmpty, writing.isEmpty, diagnostics.isEmpty {
             diagnostics.append(Diagnostic(node: attribute, message: DiagnosticKind.requiresComponents))
         }
-        var seen = Set<String>()
-        for entry in reading + writing + excluding {
-            if !seen.insert(entry.name).inserted {
-                let written = writing.contains { $0.name == entry.name }
-                let kind: DiagnosticKind = if written, reading.contains(where: { $0.name == entry.name }) {
-                    .readAndWrittenType
-                } else if excluding.contains(where: { $0.name == entry.name }), reading.contains(where: { $0.name == entry.name }) || written {
-                    .requiredAndExcludedType
-                } else {
-                    .duplicateType
-                }
-                diagnostics.append(Diagnostic(node: entry.node, message: kind))
-            }
-        }
+        diagnostics.append(contentsOf: duplicates(reading: reading, writing: writing, excluding: excluding))
         guard diagnostics.isEmpty else {
             return (nil, diagnostics)
         }
@@ -89,6 +61,51 @@ extension FamilyTraitsMacro {
             excluding: excluding.map(\.name)
         )
         return (analyzed, diagnostics)
+    }
+
+    typealias Entry = (name: String, node: ExprSyntax)
+
+    /// Groups the metatype arguments by label; unlabeled arguments continue the group of the preceding labeled one.
+    private static func collectGroups(_ attribute: AttributeSyntax, diagnostics: inout [Diagnostic]) -> [String: [Entry]] {
+        var groups: [String: [Entry]] = [:]
+        guard case let .argumentList(arguments) = attribute.arguments else {
+            return groups
+        }
+        var current = ""
+        for argument in arguments {
+            if let label = argument.label?.text {
+                current = label
+            }
+            guard argumentLabels.contains(current) else {
+                continue
+            }
+            guard let name = metatypeName(argument.expression) else {
+                diagnostics.append(Diagnostic(node: argument.expression, message: DiagnosticKind.expectsMetatype))
+                continue
+            }
+            groups[current, default: []].append((name, argument.expression))
+        }
+        return groups
+    }
+
+    /// Diagnoses every type that is listed more than once, across and within the groups.
+    private static func duplicates(reading: [Entry], writing: [Entry], excluding: [Entry]) -> [Diagnostic] {
+        var seen = Set<String>()
+        var diagnostics: [Diagnostic] = []
+        for entry in reading + writing + excluding where !seen.insert(entry.name).inserted {
+            let isRead = reading.contains { $0.name == entry.name }
+            let isWritten = writing.contains { $0.name == entry.name }
+            let isExcluded = excluding.contains { $0.name == entry.name }
+            let kind: DiagnosticKind = if isRead, isWritten {
+                .readAndWrittenType
+            } else if isExcluded, isRead || isWritten {
+                .requiredAndExcludedType
+            } else {
+                .duplicateType
+            }
+            diagnostics.append(Diagnostic(node: entry.node, message: kind))
+        }
+        return diagnostics
     }
 
     /// The spelled type of a `Type.self` expression, or `nil` for anything else.

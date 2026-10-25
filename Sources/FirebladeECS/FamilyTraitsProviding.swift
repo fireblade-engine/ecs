@@ -76,22 +76,35 @@ public protocol FamilyTraitsProviding {
 
 extension FamilyTraitsProviding {
     /// The number of members.
-    @inlinable public var count: Int { family.count }
+    @inlinable public var count: Int {
+        family.count
+    }
 
     /// Whether the family has no members.
-    @inlinable public var isEmpty: Bool { family.isEmpty }
+    @inlinable public var isEmpty: Bool {
+        family.isEmpty
+    }
 
     /// The member entities.
-    @inlinable public var entities: Bound.Entities { family.entities }
+    @inlinable public var entities: Bound.Entities {
+        family.entities
+    }
 
     /// Whether the entity is currently a member.
-    @inlinable public func isMember(_ entity: Entity) -> Bool { family.isMember(entity) }
+    @inlinable
+    public func isMember(_ entity: Entity) -> Bool {
+        family.isMember(entity)
+    }
 
     /// All required components are read.
-    public static var readComponents: Set<ComponentIdentifier> { traits.requiresAll }
+    public static var readComponents: Set<ComponentIdentifier> {
+        traits.requiresAll
+    }
 
     /// No component is written.
-    public static var writeComponents: Set<ComponentIdentifier> { [] }
+    public static var writeComponents: Set<ComponentIdentifier> {
+        []
+    }
 
     /// A lazily assigned process-wide index.
     public static var familyIndex: Int {

@@ -72,6 +72,9 @@ extension Nexus {
             while storages.count <= index {
                 storages.append(nil)
             }
+            // Components are value types: a class would alias its storage slot and bypass change tracking. The macro
+            // rejects classes at compile time, a hand-written conformance is only caught here, in debug builds.
+            assert(!(C.self is AnyClass), "component type \(C.self) is a class; components must be structs or enums")
             let storage = ComponentStorage<C>()
             storages[index] = storage
             indexByIdentifier[storage.identifier] = index

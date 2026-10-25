@@ -13,8 +13,8 @@ import Testing
 // so each trap is a free function.
 #if os(macOS) || os(Linux) || os(Windows)
 
-    private func makeNexus() -> Nexus {
-        let nexus = Nexus()
+    private func makeNexus(_ storage: Nexus.StorageKind) -> Nexus {
+        let nexus = Nexus(storage: storage)
         for number in 0 ..< 3 {
             nexus.createEntity(with: Comp1(number), Comp2(number))
         }
@@ -30,168 +30,256 @@ import Testing
     }
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    private func creatingAnEntityInAWriteSpanTrapsBody() {
-        let nexus = makeNexus()
+    private func creatingAnEntityInAWriteSpanTrapsBody(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         nexus.componentSpan(writing: Comp1.self) { _ in nexus.createEntity(with: Comp3(1)) }
     }
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    private func creatingAnEntityInAReadSpanTrapsBody() {
-        let nexus = makeNexus()
+    private func creatingAnEntityInAReadSpanTrapsBody(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         nexus.componentSpan(reading: Comp1.self) { _ in nexus.createEntity() }
     }
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    private func removingAComponentInAReadSpanTrapsBody() {
-        let nexus = makeNexus()
+    private func removingAComponentInAReadSpanTrapsBody(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         let entity = nexus.family(requires: Comp2.self).entities.first { _ in true }
         nexus.componentSpan(reading: Comp1.self) { _ in entity?.remove(Comp2.self) }
     }
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    private func nestedWriteSpanTrapsBody() {
-        let nexus = makeNexus()
+    private func nestedWriteSpanTrapsBody(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         nexus.componentSpan(writing: Comp1.self) { _ in
             nexus.componentSpan(writing: Comp1.self) { _ in }
         }
     }
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    private func readSpanOfAWrittenTypeTrapsBody() {
-        let nexus = makeNexus()
+    private func readSpanOfAWrittenTypeTrapsBody(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         nexus.componentSpan(writing: Comp1.self) { _ in
             nexus.componentSpan(reading: Comp1.self) { _ in }
         }
     }
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    private func writeSpanOfAReadTypeTrapsBody() {
-        let nexus = makeNexus()
+    private func writeSpanOfAReadTypeTrapsBody(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         nexus.componentSpan(reading: Comp1.self) { _ in
             nexus.componentSpan(writing: Comp1.self) { _ in }
         }
     }
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    private func readingAWrittenTypeThroughAnEntityTrapsBody() {
-        let nexus = makeNexus()
+    private func readingAWrittenTypeThroughAnEntityTrapsBody(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         let entity = nexus.family(requires: Comp1.self).entities.first { _ in true }
         nexus.componentSpan(writing: Comp1.self) { _ in _ = entity?.get(Comp1.self) }
     }
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    private func modifyingAReadTypeTrapsBody() {
-        let nexus = makeNexus()
+    private func modifyingAReadTypeTrapsBody(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         let entity = nexus.family(requires: Comp1.self).entities.first { _ in true }
         nexus.componentSpan(reading: Comp1.self) { _ in entity?.modify(Comp1.self) { $0.value = 1 } }
     }
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    private func familySpanReadingAndWritingTheSameTypeTrapsBody() {
-        let nexus = makeNexus()
+    private func familySpanReadingAndWritingTheSameTypeTrapsBody(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self)
         family.forEachComponentSpan(reading: Comp1.self, writing: Comp1.self) { _, _ in }
     }
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    private func familySpanStructuralChangeTrapsBody() {
-        let nexus = makeNexus()
+    private func familySpanStructuralChangeTrapsBody(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self)
         family.forEachComponentSpan(reading: Comp1.self, writing: Comp2.self) { _, _ in nexus.createEntity() }
     }
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    private func familySpanTypeNotRequiredTrapsBody() {
-        let nexus = makeNexus()
+    private func familySpanTypeNotRequiredTrapsBody(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self)
         family.forEachComponentSpan(reading: Comp3.self) { _ in }
     }
 
     @Suite struct ComponentSpanTrapTests {
         @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-        @Test func creatingAnEntityInAWriteSpanTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                creatingAnEntityInAWriteSpanTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func creatingAnEntityInAWriteSpanTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    creatingAnEntityInAWriteSpanTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    creatingAnEntityInAWriteSpanTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "structural change")
         }
 
         @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-        @Test func creatingAnEntityInAReadSpanTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                creatingAnEntityInAReadSpanTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func creatingAnEntityInAReadSpanTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    creatingAnEntityInAReadSpanTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    creatingAnEntityInAReadSpanTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "structural change")
         }
 
         @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-        @Test func removingAComponentInAReadSpanTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                removingAComponentInAReadSpanTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func removingAComponentInAReadSpanTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    removingAComponentInAReadSpanTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    removingAComponentInAReadSpanTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "structural change")
         }
 
         @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-        @Test func nestedWriteSpanTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                nestedWriteSpanTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func nestedWriteSpanTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    nestedWriteSpanTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    nestedWriteSpanTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "nested write access")
         }
 
         @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-        @Test func readSpanOfAWrittenTypeTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                readSpanOfAWrittenTypeTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func readSpanOfAWrittenTypeTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    readSpanOfAWrittenTypeTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    readSpanOfAWrittenTypeTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "during a write access")
         }
 
         @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-        @Test func writeSpanOfAReadTypeTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                writeSpanOfAReadTypeTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func writeSpanOfAReadTypeTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    writeSpanOfAReadTypeTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    writeSpanOfAReadTypeTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "during a read span")
         }
 
         @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-        @Test func readingAWrittenTypeThroughAnEntityTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                readingAWrittenTypeThroughAnEntityTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func readingAWrittenTypeThroughAnEntityTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    readingAWrittenTypeThroughAnEntityTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    readingAWrittenTypeThroughAnEntityTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "during a write access")
         }
 
         @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-        @Test func modifyingAReadTypeTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                modifyingAReadTypeTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func modifyingAReadTypeTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    modifyingAReadTypeTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    modifyingAReadTypeTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "during a read span")
         }
 
         @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-        @Test func familySpanReadingAndWritingTheSameTypeTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                familySpanReadingAndWritingTheSameTypeTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func familySpanReadingAndWritingTheSameTypeTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    familySpanReadingAndWritingTheSameTypeTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    familySpanReadingAndWritingTheSameTypeTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "write access")
         }
 
         @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-        @Test func familySpanStructuralChangeTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                familySpanStructuralChangeTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func familySpanStructuralChangeTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    familySpanStructuralChangeTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    familySpanStructuralChangeTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "structural change")
         }
 
         @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-        @Test func familySpanTypeNotRequiredTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                familySpanTypeNotRequiredTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func familySpanTypeNotRequiredTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    familySpanTypeNotRequiredTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    familySpanTypeNotRequiredTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "not required by the family")
         }

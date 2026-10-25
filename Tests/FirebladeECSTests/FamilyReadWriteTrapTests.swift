@@ -12,8 +12,8 @@ import Testing
 // unavailable on iOS, tvOS, watchOS and WebAssembly. Exit test bodies cannot capture context, so each trap is a free function.
 #if os(macOS) || os(Linux) || os(Windows)
 
-    private func family() -> (Nexus, Family<Comp1, Comp2>) {
-        let nexus = Nexus()
+    private func family(_ storage: Nexus.StorageKind) -> (Nexus, Family<Comp1, Comp2>) {
+        let nexus = Nexus(storage: storage)
         for number in 0 ..< 3 {
             nexus.createEntity(with: Comp1(number), Comp2(number), Comp3(number))
         }
@@ -28,114 +28,178 @@ import Testing
         #endif
     }
 
-    private func creatingAnEntityTrapsBody() {
-        let (nexus, family) = family()
+    private func creatingAnEntityTrapsBody(_ storage: Nexus.StorageKind) {
+        let (nexus, family) = family(storage)
         defer { withExtendedLifetime(nexus) {} }
         family.forEach(reading: Comp1.self, writing: Comp2.self) { _, _ in nexus.createEntity() }
     }
 
-    private func addingAComponentTrapsBody() {
-        let (nexus, family) = family()
+    private func addingAComponentTrapsBody(_ storage: Nexus.StorageKind) {
+        let (nexus, family) = family(storage)
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity()
         family.forEach(reading: Comp1.self) { _ in entity.set(Comp4(1)) }
     }
 
-    private func readingAWrittenTypeThroughTheNexusTrapsBody() {
-        let (nexus, family) = family()
+    private func readingAWrittenTypeThroughTheNexusTrapsBody(_ storage: Nexus.StorageKind) {
+        let (nexus, family) = family(storage)
         defer { withExtendedLifetime(nexus) {} }
         family.forEach(writing: Comp2.self) { _ in
             _ = family.entities.first { _ in true }?.get(Comp2.self)
         }
     }
 
-    private func readingAndWritingTheSameTypeTrapsBody() {
-        let (nexus, family) = family()
+    private func readingAndWritingTheSameTypeTrapsBody(_ storage: Nexus.StorageKind) {
+        let (nexus, family) = family(storage)
         defer { withExtendedLifetime(nexus) {} }
         family.forEach(reading: Comp1.self, writing: Comp1.self) { _, _ in }
     }
 
-    private func writingTheSameTypeTwiceTrapsBody() {
-        let (nexus, family) = family()
+    private func writingTheSameTypeTwiceTrapsBody(_ storage: Nexus.StorageKind) {
+        let (nexus, family) = family(storage)
         defer { withExtendedLifetime(nexus) {} }
         family.forEach(writing: Comp1.self, Comp1.self) { _, _ in }
     }
 
-    private func nestedWriteOfTheSameTypeTrapsBody() {
-        let (nexus, family) = family()
+    private func nestedWriteOfTheSameTypeTrapsBody(_ storage: Nexus.StorageKind) {
+        let (nexus, family) = family(storage)
         defer { withExtendedLifetime(nexus) {} }
         family.forEach(writing: Comp1.self) { _ in
             family.forEach(writing: Comp1.self) { _ in }
         }
     }
 
-    private func nestedReadOfAWrittenTypeTrapsBody() {
-        let (nexus, family) = family()
+    private func nestedReadOfAWrittenTypeTrapsBody(_ storage: Nexus.StorageKind) {
+        let (nexus, family) = family(storage)
         defer { withExtendedLifetime(nexus) {} }
         family.forEach(writing: Comp1.self) { _ in
             family.forEach(reading: Comp1.self) { _ in }
         }
     }
 
-    private func typeNotRequiredByTheFamilyTrapsBody() {
-        let (nexus, family) = family()
+    private func typeNotRequiredByTheFamilyTrapsBody(_ storage: Nexus.StorageKind) {
+        let (nexus, family) = family(storage)
         defer { withExtendedLifetime(nexus) {} }
         family.forEach(reading: Comp3.self) { _ in }
     }
 
     @Suite struct FamilyReadWriteTrapTests {
-        @Test func creatingAnEntityTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                creatingAnEntityTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func creatingAnEntityTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    creatingAnEntityTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    creatingAnEntityTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "structural change")
         }
 
-        @Test func addingAComponentTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                addingAComponentTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func addingAComponentTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    addingAComponentTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    addingAComponentTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "structural change")
         }
 
-        @Test func readingAWrittenTypeThroughTheNexusTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                readingAWrittenTypeThroughTheNexusTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func readingAWrittenTypeThroughTheNexusTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    readingAWrittenTypeThroughTheNexusTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    readingAWrittenTypeThroughTheNexusTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "during a write access")
         }
 
-        @Test func readingAndWritingTheSameTypeTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                readingAndWritingTheSameTypeTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func readingAndWritingTheSameTypeTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    readingAndWritingTheSameTypeTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    readingAndWritingTheSameTypeTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "during a write access")
         }
 
-        @Test func writingTheSameTypeTwiceTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                writingTheSameTypeTwiceTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func writingTheSameTypeTwiceTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    writingTheSameTypeTwiceTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    writingTheSameTypeTwiceTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "nested write access")
         }
 
-        @Test func nestedWriteOfTheSameTypeTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                nestedWriteOfTheSameTypeTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func nestedWriteOfTheSameTypeTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    nestedWriteOfTheSameTypeTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    nestedWriteOfTheSameTypeTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "nested write access")
         }
 
-        @Test func nestedReadOfAWrittenTypeTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                nestedReadOfAWrittenTypeTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func nestedReadOfAWrittenTypeTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    nestedReadOfAWrittenTypeTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    nestedReadOfAWrittenTypeTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "during a write access")
         }
 
-        @Test func typeNotRequiredByTheFamilyTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                typeNotRequiredByTheFamilyTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func typeNotRequiredByTheFamilyTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    typeNotRequiredByTheFamilyTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    typeNotRequiredByTheFamilyTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "not required by the family")
         }

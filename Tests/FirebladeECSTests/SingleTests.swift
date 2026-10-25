@@ -16,8 +16,8 @@ private final class SingleEventRecorder: NexusEventDelegate, @unchecked Sendable
 }
 
 @Suite struct SingleTests {
-    @Test func singleCreation() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func singleCreation(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let single = nexus.single(SingleGameState.self)
         #expect(single.nexus === nexus)
         #expect(single.traits.requiresAll.count == 1)
@@ -30,8 +30,8 @@ private final class SingleEventRecorder: NexusEventDelegate, @unchecked Sendable
         #expect(single.traits == traits)
     }
 
-    @Test func singleReuse() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func singleReuse(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let singleA = nexus.single(SingleGameState.self)
 
         let singleB = nexus.single(SingleGameState.self)
@@ -42,16 +42,16 @@ private final class SingleEventRecorder: NexusEventDelegate, @unchecked Sendable
         #expect(singleA == singleB)
     }
 
-    @Test func singleEntityAndComponentCreation() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func singleEntityAndComponentCreation(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let single = nexus.single(SingleGameState.self)
         let gameState = SingleGameState()
         #expect(single.component.shouldQuit == gameState.shouldQuit)
         #expect(single.component.playerHealth == gameState.playerHealth)
     }
 
-    @Test func singleCreationOnExistingFamilyMember() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func singleCreationOnExistingFamilyMember(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         _ = nexus.createEntity(with: Position(x: 1, y: 2))
         let singleGame = SingleGameState()
         _ = nexus.createEntity(with: singleGame)
@@ -59,24 +59,24 @@ private final class SingleEventRecorder: NexusEventDelegate, @unchecked Sendable
         #expect(single.component == singleGame)
     }
 
-    @Test func singleEntityAccess() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func singleEntityAccess(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let single = nexus.single(SingleGameState.self)
         let entity = single.entity
         #expect(entity.nexus === nexus)
         #expect(entity.identifier == single.entityId)
     }
 
-    @Test func singleComponentIsACopy() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func singleComponentIsACopy(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let single = nexus.single(SingleGameState.self)
         var copy = single.component
         copy.playerHealth = 1
         #expect(single.component.playerHealth != 1)
     }
 
-    @Test func singleSetReplacesComponent() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func singleSetReplacesComponent(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let single = nexus.single(SingleGameState.self)
         var state = single.component
         state.playerHealth = 7
@@ -86,15 +86,15 @@ private final class SingleEventRecorder: NexusEventDelegate, @unchecked Sendable
         #expect(single.entity[SingleGameState.self] == state)
     }
 
-    @Test func singleModifyWritesInPlace() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func singleModifyWritesInPlace(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let single = nexus.single(SingleGameState.self)
         single.modify { $0.playerHealth = 3 }
         #expect(single.component.playerHealth == 3)
     }
 
-    @Test func singleSetAndModifyDeliverEvents() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func singleSetAndModifyDeliverEvents(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let single = nexus.single(SingleGameState.self)
         let recorder = SingleEventRecorder()
         nexus.delegate = recorder

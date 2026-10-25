@@ -19,8 +19,8 @@ import Testing
         #expect(t1.hashValue == t2.hashValue)
     }
 
-    @Test func traitMatching() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func traitMatching(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let a = nexus.createEntity()
         a.set(Position(x: 1, y: 2))
         a.set(Name(name: "myName"))

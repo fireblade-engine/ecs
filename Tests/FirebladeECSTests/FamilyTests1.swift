@@ -11,8 +11,8 @@ import Foundation
 
 @Suite struct FamilyTests1 {
 
-    @Test func memberCreation() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func memberCreation(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let family = nexus.family(requiresAll: Comp1.self)
         #expect(family.isEmpty)
         let entity = family.createMember(with: Comp1(1))
@@ -22,8 +22,8 @@ import Foundation
         #expect(entity.has(Comp1.self))
     }
 
-    @Test func componentIteration() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func componentIteration(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let family = nexus.family(requiresAll: Comp1.self)
         #expect(family.isEmpty)
         
@@ -42,8 +42,8 @@ import Foundation
         #expect(i == count)
     }
 
-    @Test func familyEncoding() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func familyEncoding(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         let family = nexus.family(requiresAll: Comp1.self)
         #expect(family.isEmpty)
         

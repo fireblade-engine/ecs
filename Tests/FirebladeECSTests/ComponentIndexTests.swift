@@ -27,9 +27,9 @@ private struct ConcurrentlyIndexed: Component, Sendable {}
         #expect(indices.allSatisfy { $0 >= 0 && $0 < Nexus.ComponentIndexRegistry.shared.count })
     }
 
-    @Test func indicesAreProcessWide() {
-        let first = Nexus()
-        let second = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func indicesAreProcessWide(_ storage: Nexus.StorageKind) {
+        let first = Nexus(storage: storage)
+        let second = Nexus(storage: storage)
         first.createEntity().set(IndexA())
         second.createEntity().set(IndexB())
         second.createEntity().set(IndexA())

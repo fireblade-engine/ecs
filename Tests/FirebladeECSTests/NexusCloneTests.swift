@@ -51,8 +51,8 @@ struct CloneChildren: CloneableComponent, Sendable {
 }
 
 @Suite struct NexusCloneTests {
-    @Test func cloneEntityCopiesValuesAndSharesReferences() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func cloneEntityCopiesValuesAndSharesReferences(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         let payload = SharedPayload()
         let source = nexus.createEntity(with: CloneValue(value: 3, payload: payload))
 
@@ -73,8 +73,8 @@ struct CloneChildren: CloneableComponent, Sendable {
         #expect(clone.get(CloneValue.self)?.value == 4)
     }
 
-    @Test func cloneEntityRemapsSelfReferenceAndKeepsExternal() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func cloneEntityRemapsSelfReferenceAndKeepsExternal(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         let external = nexus.createEntity()
         let source = nexus.createEntity()
         source.set(CloneParent(parent: external), CloneChildren(children: [external, source], self_: source.identifier))
@@ -88,8 +88,8 @@ struct CloneChildren: CloneableComponent, Sendable {
         #expect(children.self_ == clone.identifier)
     }
 
-    @Test func cloneEntitiesRemapsReferencesWithinGroup() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func cloneEntitiesRemapsReferencesWithinGroup(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         let root = nexus.createEntity()
         let child = nexus.createEntity(with: CloneParent(parent: root))
         root.set(CloneChildren(children: [child], self_: root.identifier))
@@ -105,14 +105,14 @@ struct CloneChildren: CloneableComponent, Sendable {
         #expect(clonedParent.parent == clones[0])
     }
 
-    @Test func cloneIntoTargetRemapsAllReferences() throws {
-        let source = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func cloneIntoTargetRemapsAllReferences(_ storage: Nexus.StorageKind) throws {
+        let source = Nexus(storage: storage)
         let root = source.createEntity()
         let child = source.createEntity(with: CloneParent(parent: root), CloneValue(value: 1, payload: SharedPayload()))
         root.set(CloneChildren(children: [child], self_: root.identifier))
         source.createEntity()
 
-        let target = Nexus()
+        let target = Nexus(storage: storage)
         let mapping = try source.clone(into: target)
 
         #expect(target.numEntities == 3)
@@ -125,8 +125,8 @@ struct CloneChildren: CloneableComponent, Sendable {
         #expect(target.family(requires: CloneParent.self).count == 1)
     }
 
-    @Test func nonCloneableComponentThrowsWithoutSideEffects() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func nonCloneableComponentThrowsWithoutSideEffects(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let cloneable = nexus.createEntity(with: CloneValue(value: 1, payload: SharedPayload()))
         let plain = nexus.createEntity(with: Position(x: 1, y: 2))
 
@@ -135,15 +135,15 @@ struct CloneChildren: CloneableComponent, Sendable {
         }
         #expect(nexus.numEntities == 2)
 
-        let target = Nexus()
+        let target = Nexus(storage: storage)
         #expect(throws: ComponentCloneError.notCloneable(typeName: "FirebladeECSTests.Position")) {
             try nexus.clone(into: target)
         }
         #expect(target.numEntities == 0)
     }
 
-    @Test func unknownEntityThrows() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func unknownEntityThrows(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let entity = nexus.createEntity()
         nexus.destroy(entity: entity)
         #expect(throws: ComponentCloneError.unknownEntity(entity.identifier)) {
@@ -151,8 +151,8 @@ struct CloneChildren: CloneableComponent, Sendable {
         }
     }
 
-    @Test func cloneContextIdentityForUnmappedValues() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func cloneContextIdentityForUnmappedValues(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let context = ComponentCloneContext(nexus: nexus, mapping: [1: 5])
         #expect(context.clone(42) == 42)
         #expect(context.clone("text") == "text")

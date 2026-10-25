@@ -53,8 +53,8 @@ struct InspectedTransform: InspectableComponent, RegistrableComponent, Sendable 
         #expect(component.name == "transform")
     }
 
-    @Test func typeErasedInspection() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func typeErasedInspection(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         let entity = nexus.createEntity(with: InspectedTransform())
         let component = try #require(entity.makeComponentsIterator().first(where: { _ in true }))
         let inspectable = try #require(component as? any InspectableComponent)

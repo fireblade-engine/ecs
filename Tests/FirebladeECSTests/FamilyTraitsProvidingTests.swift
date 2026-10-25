@@ -43,8 +43,8 @@ private struct Plain: FamilyTraitsProviding {
 }
 
 @Suite struct FamilyTraitsProvidingTests {
-    @Test func boundFamilyTracksMembership() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func boundFamilyTracksMembership(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let movers = Movers(in: nexus)
         #expect(movers.isEmpty)
         let entity = nexus.createEntity(with: Comp1(1), Comp2(2))
@@ -56,8 +56,8 @@ private struct Plain: FamilyTraitsProviding {
         #expect(!movers.isMember(entity))
     }
 
-    @Test func familyIsCachedPerNexus() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func familyIsCachedPerNexus(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         _ = Movers(in: nexus)
         let families = nexus.numFamilies
         _ = Movers(in: nexus)
@@ -66,9 +66,9 @@ private struct Plain: FamilyTraitsProviding {
         #expect(Movers(in: nexus).family == nexus.family(requiresAll: Comp1.self, Comp2.self, excludesAll: Frozen.self))
     }
 
-    @Test func sameDeclarationBindsToAnotherNexus() {
-        let first = Nexus()
-        let second = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func sameDeclarationBindsToAnotherNexus(_ storage: Nexus.StorageKind) {
+        let first = Nexus(storage: storage)
+        let second = Nexus(storage: storage)
         first.createEntity(with: Comp1(1), Comp2(2))
         #expect(Movers(in: first).count == 1)
         #expect(Movers(in: second).count == 0)
@@ -95,8 +95,8 @@ private struct Plain: FamilyTraitsProviding {
         #expect(traits(Movers.self) == nexusTraits)
     }
 
-    @Test func clearRebindsTheFamily() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func clearRebindsTheFamily(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         _ = Movers(in: nexus)
         nexus.createEntity(with: Comp1(1), Comp2(2))
         nexus.clear()
@@ -105,8 +105,8 @@ private struct Plain: FamilyTraitsProviding {
         #expect(Movers(in: nexus).count == 1)
     }
 
-    @Test func plainConformanceUsesLazyIndex() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func plainConformanceUsesLazyIndex(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         nexus.createEntity(with: Comp3(3))
         #expect(Plain(in: nexus).count == 1)
     }

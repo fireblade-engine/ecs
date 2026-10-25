@@ -35,8 +35,8 @@ struct ConflictingVelocity: RegistrableComponent, Sendable {
         #expect(RenamedVelocity.stableIdentifier != RegisteredPosition.stableIdentifier)
     }
 
-    @Test func explicitRegistration() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func explicitRegistration(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         #expect(!nexus.isRegistered(RegisteredPosition.self))
 
         let record = try nexus.register(RegisteredPosition.self)
@@ -50,28 +50,28 @@ struct ConflictingVelocity: RegistrableComponent, Sendable {
         #expect(nexus.componentType(named: "Unknown") == nil)
     }
 
-    @Test func registrationViaStaticMethod() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func registrationViaStaticMethod(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         try RenamedVelocity.register(in: nexus)
         #expect(nexus.isRegistered(RenamedVelocity.self))
         #expect(nexus.componentType(named: "Velocity")?.isDefaultInitializable == false)
     }
 
-    @Test func registeringSequenceIsSortedByName() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func registeringSequenceIsSortedByName(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         try nexus.register([RegisteredPosition.self, RenamedVelocity.self])
         #expect(nexus.registeredComponentTypes.map(\.typeName) == ["FirebladeECSTests.RegisteredPosition", "Velocity"])
     }
 
-    @Test func reRegistrationIsNoOp() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func reRegistrationIsNoOp(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         try nexus.register(RegisteredPosition.self)
         try nexus.register(RegisteredPosition.self)
         #expect(nexus.registeredComponentTypes.count == 1)
     }
 
-    @Test func duplicateTypeNameThrows() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func duplicateTypeNameThrows(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         try nexus.register(RenamedVelocity.self)
         #expect(throws: ComponentRegistryError.duplicateTypeName("Velocity")) {
             try nexus.register(ConflictingVelocity.self)
@@ -79,34 +79,34 @@ struct ConflictingVelocity: RegistrableComponent, Sendable {
         #expect(!nexus.isRegistered(ConflictingVelocity.self))
     }
 
-    @Test func registersOnFirstAssignment() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func registersOnFirstAssignment(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         nexus.createEntity(with: RegisteredPosition())
         #expect(nexus.isRegistered(RegisteredPosition.self))
     }
 
-    @Test func plainComponentsAreNotRegistered() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func plainComponentsAreNotRegistered(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         nexus.createEntity(with: Position(x: 1, y: 2))
         #expect(!nexus.isRegistered(Position.self))
         #expect(nexus.registeredComponentTypes.isEmpty)
     }
 
-    @Test func registrySurvivesClear() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func registrySurvivesClear(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         try nexus.register(RegisteredPosition.self)
         nexus.clear()
         #expect(nexus.isRegistered(RegisteredPosition.self))
     }
 
-    @Test func autoRegistrationConflictReportsNonFatalError() {
+    @Test(arguments: Nexus.StorageKind.allCases) func autoRegistrationConflictReportsNonFatalError(_ storage: Nexus.StorageKind) {
         final class Recorder: NexusEventDelegate, @unchecked Sendable {
             var errors: [String] = []
             func nexusEvent(_: NexusEvent) {}
             func nexusNonFatalError(_ message: String) { errors.append(message) }
         }
         let recorder = Recorder()
-        let nexus = Nexus()
+        let nexus = Nexus(storage: storage)
         nexus.delegate = recorder
         nexus.createEntity(with: RenamedVelocity())
         nexus.createEntity(with: ConflictingVelocity())

@@ -72,8 +72,8 @@ private final class Recorder: NexusEventDelegate, @unchecked Sendable {
     }
 }
 
-private func makeNexus() -> Nexus {
-    let nexus = Nexus()
+private func makeNexus(_ storage: Nexus.StorageKind) -> Nexus {
+    let nexus = Nexus(storage: storage)
     nexus.assertsOnStaleHandles = false
     return nexus
 }
@@ -81,8 +81,8 @@ private func makeNexus() -> Nexus {
 @Suite struct MutationTests {
     // MARK: modify
 
-    @Test func modifyChangesInPlaceAndLosesNoWrites() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func modifyChangesInPlaceAndLosesNoWrites(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity(with: Counter())
         for _ in 0..<1000 {
@@ -93,8 +93,8 @@ private func makeNexus() -> Nexus {
         #expect(entity.get(Counter.self)?.value == 3000)
     }
 
-    @Test func modifyOfMissingComponentReturnsFalseAndSkipsBody() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func modifyOfMissingComponentReturnsFalseAndSkipsBody(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity()
@@ -104,8 +104,8 @@ private func makeNexus() -> Nexus {
         #expect(!entity.has(Health.self))
     }
 
-    @Test func modifyDefaultEvaluatesDefaultOnlyWhenMissing() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func modifyDefaultEvaluatesDefaultOnlyWhenMissing(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity()
@@ -122,8 +122,8 @@ private func makeNexus() -> Nexus {
         #expect(entity.get(Health.self)?.hp == 9)
     }
 
-    @Test func modifyOfDestroyedEntityIsANoOp() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func modifyOfDestroyedEntityIsANoOp(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         let stale = nexus.createEntity(with: Health())
         stale.destroy()
@@ -138,8 +138,8 @@ private func makeNexus() -> Nexus {
         #expect(nexus.numComponents == 0)
     }
 
-    @Test func modifyRethrowsAndStillReportsTheChange() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func modifyRethrowsAndStillReportsTheChange(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         let recorder = Recorder()
         let entity = nexus.createEntity(with: Health())
@@ -158,8 +158,8 @@ private func makeNexus() -> Nexus {
 
     // MARK: subscripts
 
-    @Test func optionalSubscriptReadsACopyAndNeverInserts() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func optionalSubscriptReadsACopyAndNeverInserts(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity()
@@ -170,8 +170,8 @@ private func makeNexus() -> Nexus {
         #expect(entity.numComponents == 0)
     }
 
-    @Test func optionalSubscriptMutatesInPlace() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func optionalSubscriptMutatesInPlace(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity(with: Health())
@@ -185,8 +185,8 @@ private func makeNexus() -> Nexus {
         #expect(!entity.has(Health.self))
     }
 
-    @Test func optionalSubscriptAssigningNilThroughInoutRemoves() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func optionalSubscriptAssigningNilThroughInoutRemoves(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         let recorder = Recorder()
         let entity = nexus.createEntity(with: Health(), Counter())
@@ -206,8 +206,8 @@ private func makeNexus() -> Nexus {
         #expect(entity.get(Counter.self)?.value == 0)
     }
 
-    @Test func optionalSubscriptAssigningAValueThroughInoutToAMissingComponentAdds() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func optionalSubscriptAssigningAValueThroughInoutToAMissingComponentAdds(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity()
@@ -216,8 +216,8 @@ private func makeNexus() -> Nexus {
         #expect(entity.get(Health.self)?.hp == 4)
     }
 
-    @Test func defaultSubscriptReadsWithoutInserting() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func defaultSubscriptReadsWithoutInserting(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity()
@@ -225,8 +225,8 @@ private func makeNexus() -> Nexus {
         #expect(!entity.has(Counter.self))
     }
 
-    @Test func defaultSubscriptInsertsWhenMutating() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func defaultSubscriptInsertsWhenMutating(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity()
@@ -236,8 +236,8 @@ private func makeNexus() -> Nexus {
         #expect(entity.get(Counter.self)?.value == 2)
     }
 
-    @Test func defaultSubscriptEvaluatesDefaultOnlyWhenNeeded() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func defaultSubscriptEvaluatesDefaultOnlyWhenNeeded(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity(with: Counter())
@@ -251,8 +251,8 @@ private func makeNexus() -> Nexus {
         #expect(made == 0)
     }
 
-    @Test func defaultSubscriptOfDestroyedEntityDoesNotInsert() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func defaultSubscriptOfDestroyedEntityDoesNotInsert(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         let stale = nexus.createEntity()
         stale.destroy()
@@ -264,8 +264,8 @@ private func makeNexus() -> Nexus {
 
     // MARK: key paths
 
-    @Test func writableKeyPathChangesTheStoredComponent() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func writableKeyPathChangesTheStoredComponent(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity(with: Health())
@@ -278,8 +278,8 @@ private func makeNexus() -> Nexus {
         #expect(entity[\Health.armor] == nil)
     }
 
-    @Test func writableKeyPathAddsADefaultComponent() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func writableKeyPathAddsADefaultComponent(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         let recorder = Recorder()
         nexus.delegate = recorder
@@ -290,8 +290,8 @@ private func makeNexus() -> Nexus {
         #expect(entity.set(value: 4, for: \Health.hp))
     }
 
-    @Test func writableKeyPathOnDestroyedEntityReturnsFalse() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func writableKeyPathOnDestroyedEntityReturnsFalse(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         let stale = nexus.createEntity()
         stale.destroy()
@@ -301,8 +301,8 @@ private func makeNexus() -> Nexus {
 
     // MARK: set and remove
 
-    @Test func setReplacesAnExistingComponent() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func setReplacesAnExistingComponent(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity(with: Health(hp: 1))
@@ -312,8 +312,8 @@ private func makeNexus() -> Nexus {
         #expect(entity.numComponents == 1)
     }
 
-    @Test func removeReturnsWhetherAComponentWasRemoved() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func removeReturnsWhetherAComponentWasRemoved(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity(with: Health())
@@ -324,8 +324,8 @@ private func makeNexus() -> Nexus {
         #expect(!entity.remove(Health.identifier))
     }
 
-    @Test func removeOfDestroyedEntityReturnsFalse() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func removeOfDestroyedEntityReturnsFalse(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         let stale = nexus.createEntity(with: Health())
         stale.destroy()
@@ -334,8 +334,8 @@ private func makeNexus() -> Nexus {
 
     // MARK: events
 
-    @Test func eventsPerOperation() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func eventsPerOperation(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         let recorder = Recorder()
         nexus.delegate = recorder
@@ -367,13 +367,13 @@ private func makeNexus() -> Nexus {
         #expect(recorder.names.count == 9)
     }
 
-    @Test func subscribingToStructuralEventsOnlyHidesValueChanges() {
+    @Test(arguments: Nexus.StorageKind.allCases) func subscribingToStructuralEventsOnlyHidesValueChanges(_ storage: Nexus.StorageKind) {
         final class Structural: NexusEventDelegate, @unchecked Sendable {
             var count = 0
             func nexusEvent(_: NexusEvent) { count += 1 }
             func nexusNonFatalError(_: String) {}
         }
-        let nexus = makeNexus()
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         let delegate = Structural()
         nexus.delegate = delegate
@@ -388,8 +388,8 @@ private func makeNexus() -> Nexus {
 
     // MARK: components(_:writing:)
 
-    @Test func componentsReadsCopiesAndWritesInPlace() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func componentsReadsCopiesAndWritesInPlace(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity(with: Position(x: 2, y: 3), Speed(dx: 1, dy: 1))
@@ -401,8 +401,8 @@ private func makeNexus() -> Nexus {
         #expect(entity.get(Speed.self)?.dy == 4)
     }
 
-    @Test func componentsWritesSeveralComponents() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func componentsWritesSeveralComponents(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity(with: Position(x: 0, y: 0), Speed(dx: 1, dy: 2), Health())
@@ -420,8 +420,8 @@ private func makeNexus() -> Nexus {
         #expect(entity.get(Position.self)?.x == 5)
     }
 
-    @Test func componentsWithAMissingComponentDoesNothing() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func componentsWithAMissingComponentDoesNothing(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         let recorder = Recorder()
         let entity = nexus.createEntity(with: Position(x: 1, y: 1))
@@ -433,8 +433,8 @@ private func makeNexus() -> Nexus {
         #expect(recorder.names.isEmpty)
     }
 
-    @Test func componentsEmitsModifiedPerWrittenComponent() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func componentsEmitsModifiedPerWrittenComponent(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         let recorder = Recorder()
         let entity = nexus.createEntity(with: Position(x: 1, y: 1), Speed(dx: 0, dy: 0))
@@ -445,8 +445,8 @@ private func makeNexus() -> Nexus {
         #expect(recorder.names == ["modified", "modified", "modified"])
     }
 
-    @Test func componentsOfDestroyedEntityReturnsFalse() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func componentsOfDestroyedEntityReturnsFalse(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         let stale = nexus.createEntity(with: Position(x: 1, y: 1), Speed(dx: 0, dy: 0))
         stale.destroy()
@@ -457,8 +457,8 @@ private func makeNexus() -> Nexus {
 
     /// The 2.0 contract: `get` is a copy, so changing a `var` copy never changes the entity; only `set` and
     /// `modify` do.
-    @Test func valueCopyIsDetached() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func valueCopyIsDetached(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity(with: Health())
@@ -471,8 +471,8 @@ private func makeNexus() -> Nexus {
 
     /// The hazard of plain iteration: the loop variables are copies, so `for var` compiles and silently changes nothing.
     /// Writes go through `modify`, `set` or the subscripts of the entity.
-    @Test func mutatingTheLoopVariableOfAFamilyChangesNothing() {
-        let nexus = makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func mutatingTheLoopVariableOfAFamilyChangesNothing(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage)
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity(with: Speed(dx: 1, dy: 2))
         let family = nexus.family(requires: Speed.self)
@@ -501,116 +501,180 @@ private func makeNexus() -> Nexus {
         #endif
     }
 
-    private func addingInsideModifyTrapsBody() {
-        let nexus = Nexus()
+    private func addingInsideModifyTrapsBody(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity(with: Health(), Counter())
         entity.modify(Health.self) { _ in entity.set(Speed(dx: 0, dy: 0)) }
     }
 
-    private func removingInsideModifyTrapsBody() {
-        let nexus = Nexus()
+    private func removingInsideModifyTrapsBody(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity(with: Health(), Counter())
         entity.modify(Health.self) { _ in entity.remove(Counter.self) }
     }
 
-    private func replacingInsideModifyTrapsBody() {
-        let nexus = Nexus()
+    private func replacingInsideModifyTrapsBody(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity(with: Health(), Counter())
         entity.modify(Health.self) { _ in entity.set(Counter()) }
     }
 
-    private func destroyingInsideModifyTrapsBody() {
-        let nexus = Nexus()
+    private func destroyingInsideModifyTrapsBody(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity(with: Health())
         entity.modify(Health.self) { _ in entity.destroy() }
     }
 
-    private func creatingInsideSubscriptModifyTrapsBody() {
-        let nexus = Nexus()
+    private func creatingInsideSubscriptModifyTrapsBody(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity(with: Health())
         func create(_ health: inout Health?) { entity.createEntity() }
         create(&entity[Health.self])
     }
 
-    private func readingTheModifiedComponentTrapsBody() {
-        let nexus = Nexus()
+    private func readingTheModifiedComponentTrapsBody(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity(with: Health())
         entity.modify(Health.self) { _ in _ = entity.get(Health.self) }
     }
 
-    private func nestedModifyOfTheSameTypeTrapsBody() {
-        let nexus = Nexus()
+    private func nestedModifyOfTheSameTypeTrapsBody(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity(with: Health())
         entity.modify(Health.self) { _ in entity.modify(Health.self) { _ in } }
     }
 
-    private func writingTheSameTypeTwiceTrapsBody() {
-        let nexus = Nexus()
+    private func writingTheSameTypeTwiceTrapsBody(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         defer { withExtendedLifetime(nexus) {} }
         let entity = nexus.createEntity(with: Health())
         entity.components(writing: Health.self, Health.self) { _, _ in }
     }
 
     @Suite struct MutationTrapTests {
-        @Test func addingInsideModifyTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                addingInsideModifyTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func addingInsideModifyTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    addingInsideModifyTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    addingInsideModifyTrapsBody(.archetype)
+                }
             }
             trapMessage(result, "structural change")
         }
 
-        @Test func removingInsideModifyTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                removingInsideModifyTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func removingInsideModifyTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    removingInsideModifyTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    removingInsideModifyTrapsBody(.archetype)
+                }
             }
             trapMessage(result, "structural change")
         }
 
-        @Test func replacingInsideModifyTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                replacingInsideModifyTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func replacingInsideModifyTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    replacingInsideModifyTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    replacingInsideModifyTrapsBody(.archetype)
+                }
             }
             trapMessage(result, "structural change")
         }
 
-        @Test func destroyingInsideModifyTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                destroyingInsideModifyTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func destroyingInsideModifyTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    destroyingInsideModifyTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    destroyingInsideModifyTrapsBody(.archetype)
+                }
             }
             trapMessage(result, "structural change")
         }
 
-        @Test func creatingInsideSubscriptModifyTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                creatingInsideSubscriptModifyTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func creatingInsideSubscriptModifyTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    creatingInsideSubscriptModifyTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    creatingInsideSubscriptModifyTrapsBody(.archetype)
+                }
             }
             trapMessage(result, "structural change")
         }
 
-        @Test func readingTheModifiedComponentTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                readingTheModifiedComponentTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func readingTheModifiedComponentTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    readingTheModifiedComponentTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    readingTheModifiedComponentTrapsBody(.archetype)
+                }
             }
             trapMessage(result, "during a write access")
         }
 
-        @Test func nestedModifyOfTheSameTypeTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                nestedModifyOfTheSameTypeTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func nestedModifyOfTheSameTypeTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    nestedModifyOfTheSameTypeTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    nestedModifyOfTheSameTypeTrapsBody(.archetype)
+                }
             }
             trapMessage(result, "nested write access")
         }
 
-        @Test func writingTheSameTypeTwiceTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                writingTheSameTypeTwiceTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func writingTheSameTypeTwiceTraps(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    writingTheSameTypeTwiceTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    writingTheSameTypeTwiceTrapsBody(.archetype)
+                }
             }
             trapMessage(result, "nested write access")
         }

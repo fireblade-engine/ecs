@@ -16,16 +16,24 @@ import Testing
     private final class ClassComponent: Component, @unchecked Sendable {}
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    private func addingAClassComponentAssertsBody() {
-        let nexus = Nexus()
+    private func addingAClassComponentAssertsBody(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         nexus.createEntity(with: ClassComponent())
     }
 
     @Suite struct ComponentClassTrapTests {
         @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-        @Test func addingAClassComponentAsserts() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                addingAClassComponentAssertsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func addingAClassComponentAsserts(_ storage: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch storage {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    addingAClassComponentAssertsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    addingAClassComponentAssertsBody(.archetype)
+                }
             }
             let stderr = String(decoding: result?.standardErrorContent ?? [], as: UTF8.self)
             #expect(stderr.contains("components must be structs or enums"))

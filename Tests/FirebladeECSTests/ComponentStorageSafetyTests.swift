@@ -27,8 +27,8 @@ import Testing
         static let componentIndex = 2_000_000
     }
 
-    private func populated() -> (Nexus.SparseSetStorage, EntityIdentifier) {
-        let storage = Nexus.SparseSetStorage()
+    private func populated(_ kind: Nexus.StorageKind) -> (Nexus.Backend, EntityIdentifier) {
+        let storage = Nexus.Backend(kind)
         let entity = EntityIdentifier(index: 1, generation: 0)
         storage.insertEntity(entity)
         storage.set(Position(x: 0, y: 0), for: entity)
@@ -44,128 +44,208 @@ import Testing
         #endif
     }
 
-    private func structuralChangeDuringModifyTrapsBody() {
-        let (storage, entity) = populated()
+    private func structuralChangeDuringModifyTrapsBody(_ kind: Nexus.StorageKind) {
+        let (storage, entity) = populated(kind)
         _ = storage.modify(Position.self, for: entity) { _ in storage.set(Comp1(1), for: entity) }
     }
 
-    private func destroyDuringModifyTrapsBody() {
-        let (storage, entity) = populated()
+    private func destroyDuringModifyTrapsBody(_ kind: Nexus.StorageKind) {
+        let (storage, entity) = populated(kind)
         _ = storage.modify(Position.self, for: entity) { _ in storage.destroyEntity(entity) }
     }
 
-    private func structuralChangeDuringBulkAccessTrapsBody() {
-        let (storage, entity) = populated()
-        storage.withComponents(of: Position.self) { _, _ in storage.remove(Name.self, from: entity) }
+    private func structuralChangeDuringBulkAccessTrapsBody(_ kind: Nexus.StorageKind) {
+        let (storage, entity) = populated(kind)
+        storage.withComponents(of: Position.self) { _, _ in storage.remove(componentIndex: Name.componentIndex, from: entity) }
     }
 
-    private func modifyInsideModifyOfTheSameTypeTrapsBody() {
-        let (storage, entity) = populated()
+    private func modifyInsideModifyOfTheSameTypeTrapsBody(_ kind: Nexus.StorageKind) {
+        let (storage, entity) = populated(kind)
         _ = storage.modify(Position.self, for: entity) { _ in
             _ = storage.modify(Position.self, for: entity) { _ in }
         }
     }
 
-    private func getInsideWriteOfTheSameTypeTrapsBody() {
-        let (storage, entity) = populated()
+    private func getInsideWriteOfTheSameTypeTrapsBody(_ kind: Nexus.StorageKind) {
+        let (storage, entity) = populated(kind)
         _ = storage.modify(Position.self, for: entity) { _ in _ = storage.get(Position.self, for: entity) }
     }
 
-    private func bulkAccessInsideWriteOfTheSameTypeTrapsBody() {
-        let (storage, _) = populated()
+    private func bulkAccessInsideWriteOfTheSameTypeTrapsBody(_ kind: Nexus.StorageKind) {
+        let (storage, _) = populated(kind)
         storage.withComponents(of: Position.self) { _, _ in storage.withComponents(of: Position.self) { _, _ in } }
     }
 
-    private func twoTypesSharingAComponentIndexTrapBody() {
-        let storage = Nexus.SparseSetStorage()
+    private func twoTypesSharingAComponentIndexTrapBody(_ kind: Nexus.StorageKind) {
+        let storage = Nexus.Backend(kind)
         let entity = EntityIdentifier(index: 1, generation: 0)
         storage.insertEntity(entity)
         storage.set(TwinA(), for: entity)
         _ = storage.get(TwinB.self, for: entity)
     }
 
-    private func componentIndexAboveTheLimitTrapsBody() {
-        let (storage, entity) = populated()
+    private func componentIndexAboveTheLimitTrapsBody(_ kind: Nexus.StorageKind) {
+        let (storage, entity) = populated(kind)
         storage.set(TooHigh(), for: entity)
     }
 
-    private func settingOnADeadEntityTrapsBody() {
-        let (storage, entity) = populated()
+    private func settingOnADeadEntityTrapsBody(_ kind: Nexus.StorageKind) {
+        let (storage, entity) = populated(kind)
         storage.set(Comp1(1), for: EntityIdentifier(index: entity.index, generation: 1))
     }
 
-    private func insertingAnOccupiedSlotTrapsBody() {
-        let (storage, entity) = populated()
+    private func insertingAnOccupiedSlotTrapsBody(_ kind: Nexus.StorageKind) {
+        let (storage, entity) = populated(kind)
         storage.insertEntity(EntityIdentifier(index: entity.index, generation: 1))
     }
 
     @Suite struct ComponentStorageSafetyTests {
-        @Test func structuralChangeDuringModifyTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                structuralChangeDuringModifyTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func structuralChangeDuringModifyTraps(_ kind: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch kind {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    structuralChangeDuringModifyTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    structuralChangeDuringModifyTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "structural change")
         }
 
-        @Test func destroyDuringModifyTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                destroyDuringModifyTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func destroyDuringModifyTraps(_ kind: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch kind {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    destroyDuringModifyTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    destroyDuringModifyTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "structural change")
         }
 
-        @Test func structuralChangeDuringBulkAccessTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                structuralChangeDuringBulkAccessTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func structuralChangeDuringBulkAccessTraps(_ kind: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch kind {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    structuralChangeDuringBulkAccessTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    structuralChangeDuringBulkAccessTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "structural change")
         }
 
-        @Test func modifyInsideModifyOfTheSameTypeTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                modifyInsideModifyOfTheSameTypeTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func modifyInsideModifyOfTheSameTypeTraps(_ kind: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch kind {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    modifyInsideModifyOfTheSameTypeTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    modifyInsideModifyOfTheSameTypeTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "nested write access")
         }
 
-        @Test func getInsideWriteOfTheSameTypeTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                getInsideWriteOfTheSameTypeTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func getInsideWriteOfTheSameTypeTraps(_ kind: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch kind {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    getInsideWriteOfTheSameTypeTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    getInsideWriteOfTheSameTypeTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "during a write access")
         }
 
-        @Test func bulkAccessInsideWriteOfTheSameTypeTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                bulkAccessInsideWriteOfTheSameTypeTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func bulkAccessInsideWriteOfTheSameTypeTraps(_ kind: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch kind {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    bulkAccessInsideWriteOfTheSameTypeTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    bulkAccessInsideWriteOfTheSameTypeTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "nested write access")
         }
 
-        @Test func twoTypesSharingAComponentIndexTrap() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                twoTypesSharingAComponentIndexTrapBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func twoTypesSharingAComponentIndexTrap(_ kind: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch kind {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    twoTypesSharingAComponentIndexTrapBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    twoTypesSharingAComponentIndexTrapBody(.archetype)
+                }
             }
             expectTrapMessage(result, "used by two component types")
         }
 
-        @Test func componentIndexAboveTheLimitTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                componentIndexAboveTheLimitTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func componentIndexAboveTheLimitTraps(_ kind: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch kind {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    componentIndexAboveTheLimitTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    componentIndexAboveTheLimitTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "out of range")
         }
 
-        @Test func settingOnADeadEntityTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                settingOnADeadEntityTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func settingOnADeadEntityTraps(_ kind: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch kind {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    settingOnADeadEntityTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    settingOnADeadEntityTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "dead entity")
         }
 
-        @Test func insertingAnOccupiedSlotTraps() async {
-            let result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
-                insertingAnOccupiedSlotTrapsBody()
+        @Test(arguments: Nexus.StorageKind.allCases) func insertingAnOccupiedSlotTraps(_ kind: Nexus.StorageKind) async {
+            let result: ExitTest.Result?
+            switch kind {
+            case .sparseSet:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    insertingAnOccupiedSlotTrapsBody(.sparseSet)
+                }
+            case .archetype:
+                result = await #expect(processExitsWith: .failure, observing: [\.standardErrorContent]) {
+                    insertingAnOccupiedSlotTrapsBody(.archetype)
+                }
             }
             expectTrapMessage(result, "is in use")
         }

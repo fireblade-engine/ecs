@@ -17,16 +17,16 @@ import Testing
         #expect(try JSONDecoder().decode(EntityIdentifier.self, from: data) == identifier)
     }
 
-    @Test func entityEncodesAsIdentifier() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func entityEncodesAsIdentifier(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         nexus.createEntity()
         let entity = nexus.createEntity()
         let data = try JSONEncoder().encode(entity)
         #expect(String(decoding: data, as: UTF8.self) == "\(entity.identifier.index)")
     }
 
-    @Test func entityDecodesThroughResolver() throws {
-        let target = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func entityDecodesThroughResolver(_ storage: Nexus.StorageKind) throws {
+        let target = Nexus(storage: storage)
         let first = target.createEntity()
         let second = target.createEntity()
         let resolver = EntityReferenceResolver(nexus: target, mapping: [7: second.identifier, 8: first.identifier])
@@ -43,9 +43,9 @@ import Testing
         }
     }
 
-    @Test func entityDecodingUnmappedIdentifierThrows() {
+    @Test(arguments: Nexus.StorageKind.allCases) func entityDecodingUnmappedIdentifierThrows(_ storage: Nexus.StorageKind) {
         let decoder = JSONDecoder()
-        decoder.userInfo[.nexusEntityResolver] = EntityReferenceResolver(nexus: Nexus(), mapping: [:])
+        decoder.userInfo[.nexusEntityResolver] = EntityReferenceResolver(nexus: Nexus(storage: storage), mapping: [:])
         #expect(throws: EntityReferenceError.unresolved(3)) {
             try decoder.decode(Entity.self, from: Data("3".utf8))
         }
@@ -61,13 +61,13 @@ import Testing
         }
     }
 
-    @Test func resolverBoundAfterCreationResolves() throws {
+    @Test(arguments: Nexus.StorageKind.allCases) func resolverBoundAfterCreationResolves(_ storage: Nexus.StorageKind) throws {
         // A decoding entry point that creates its own nexus binds the resolver supplied via userInfo.
         let resolver = EntityReferenceResolver(mapping: [:])
         let decoder = JSONDecoder()
         decoder.userInfo[.nexusEntityResolver] = resolver
 
-        let target = Nexus()
+        let target = Nexus(storage: storage)
         let entity = target.createEntity()
         resolver.bind(to: target)
         resolver.map(9, to: entity.identifier)

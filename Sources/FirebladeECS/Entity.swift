@@ -12,6 +12,9 @@
 ///  Components can be assigned to an entity to give it behavior or functionality.
 ///  An entity creates the relationship between all it's assigned components.
 ///
+/// Read a copy with ``get(_:)``, replace with ``set(_:)-(Component)`` and change in place with ``modify(_:_:)``,
+/// see <doc:ReadingAndWritingComponents>.
+///
 /// - Important: An entity does not keep its ``Nexus`` alive. Using an entity after its nexus is deallocated is
 ///   undefined behavior.
 public struct Entity {

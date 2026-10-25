@@ -19,8 +19,8 @@ public final class S2Nexus {
         case sparseSet
         case archetype
 
-        /// The storage chosen by the S2 benchmarks.
-        public static let `default` = StorageKind.sparseSet
+        /// The storage the corrected S2 benchmarks favor (see Spikes/S2/REPORT.md); `.sparseSet` is the churn-heavy choice.
+        public static let `default` = StorageKind.archetype
     }
 
     @usableFromInline

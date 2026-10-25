@@ -279,6 +279,38 @@ private struct Tag300: Component, Sendable {
         nexus.clear()
         #expect(archetype.tableCount == 1)
     }
+
+    @Test func archetypeFamilyQueriesAreCachedAndExtendedByNewTables() throws {
+        let nexus = Nexus(storage: .archetype)
+        guard case let .archetype(archetype) = nexus.backend else {
+            Issue.record("expected the archetype storage")
+            return
+        }
+        nexus.createEntity(with: Comp1(1))
+        let family = nexus.family(requires: Comp1.self)
+        func visit() -> Int {
+            var count = 0
+            family.forEach(reading: Comp1.self) { _ in count += 1 }
+            return count
+        }
+        // creating the family lists its tables, so the first pass has nothing left to build
+        #expect(archetype.queryCache.count == 1)
+        let query = try #require(archetype.queryCache.values.first)
+        let matching = query.tables.count
+        #expect(matching == 1)
+        #expect(visit() == 1)
+        #expect(archetype.queryCache.values.first === query)
+        #expect(visit() == 1)
+        // the second pass reuses the query instead of scanning the tables again
+        #expect(archetype.queryCache.count == 1)
+        #expect(archetype.queryCache.values.first === query)
+        #expect(query.tables.count == matching)
+        // a new component set creates a table, which the next pass adds to the query
+        nexus.createEntity(with: Comp1(2), Comp2(2))
+        #expect(visit() == 2)
+        #expect(archetype.queryCache.values.first === query)
+        #expect(query.tables.count > matching)
+    }
 }
 
 /// Records the counts of ``ComponentsModified`` events.

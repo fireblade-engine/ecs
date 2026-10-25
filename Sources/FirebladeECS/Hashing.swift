@@ -75,7 +75,7 @@ extension EntityComponentHash {
     /// - Returns: A combined hash value.
     /// - Complexity: O(1)
     static func compose(entityId: EntityIdentifier, componentTypeHash: ComponentTypeHash) -> EntityComponentHash {
-        let entityIdSwapped = UInt(entityId.id).byteSwapped // needs to be 64 bit
+        let entityIdSwapped = UInt(truncatingIfNeeded: entityId.rawValue).byteSwapped // needs to be 64 bit to keep the generation
         let componentTypeHashUInt = UInt(bitPattern: componentTypeHash)
         let hashUInt: UInt = componentTypeHashUInt ^ entityIdSwapped
         return Int(bitPattern: hashUInt)
@@ -88,7 +88,7 @@ extension EntityComponentHash {
     /// - Returns: The extracted component type hash.
     /// - Complexity: O(1)
     static func decompose(_ hash: EntityComponentHash, with entityId: EntityIdentifier) -> ComponentTypeHash {
-        let entityIdSwapped = UInt(entityId.id).byteSwapped
+        let entityIdSwapped = UInt(truncatingIfNeeded: entityId.rawValue).byteSwapped
         let entityIdSwappedInt = Int(bitPattern: entityIdSwapped)
         return hash ^ entityIdSwappedInt
     }
@@ -101,7 +101,7 @@ extension EntityComponentHash {
     /// - Complexity: O(1)
     static func decompose(_ hash: EntityComponentHash, with componentTypeHash: ComponentTypeHash) -> EntityIdentifier {
         let entityId: Int = (hash ^ componentTypeHash).byteSwapped
-        return EntityIdentifier(UInt32(truncatingIfNeeded: entityId))
+        return EntityIdentifier(rawValue: UInt64(truncatingIfNeeded: entityId))
     }
 }
 

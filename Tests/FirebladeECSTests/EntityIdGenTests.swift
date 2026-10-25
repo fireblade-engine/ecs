@@ -23,7 +23,7 @@ import Testing
     @Test func linearIncrement() {
         let gen = DefaultEntityIdGenerator()
         for i in 0..<1_000_000 {
-            #expect(gen.nextId() == EntityIdentifier(EntityIdentifier.Identifier(i)))
+            #expect(gen.nextId() == EntityIdentifier(index: UInt32(i), generation: 1))
         }
     }
 
@@ -43,7 +43,7 @@ import Testing
         #expect(gen.nextId() == 12)
 
         for i in 13...303 {
-            #expect(gen.nextId() == EntityIdentifier(EntityIdentifier.Identifier(i)))
+            #expect(gen.nextId() == EntityIdentifier(index: UInt32(i), generation: 1))
         }
 
         // 304 is in use already.
@@ -70,7 +70,7 @@ import Testing
         #expect(gen.nextId() == 1)
         #expect(gen.nextId() == 2)
 
-        gen.markUnused(entityId: EntityIdentifier(1))
+        gen.markUnused(entityId: EntityIdentifier(index: 1, generation: 1))
 
         #expect(gen.nextId() == 1)
         #expect(gen.nextId() == 3)

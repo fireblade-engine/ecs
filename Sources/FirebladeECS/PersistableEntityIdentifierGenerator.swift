@@ -37,8 +37,8 @@ extension LinearIncrementingEntityIdGenerator: PersistableEntityIdentifierGenera
     /// - Complexity: O(N) where N is the number of recycled identifiers.
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let nextFreshId = try container.decode(EntityIdentifier.Identifier.self, forKey: .nextFreshId)
-        let recycled = try container.decode([EntityIdentifier.Identifier].self, forKey: .recycled)
+        let nextFreshId = try container.decode(EntityIdentifier.Index.self, forKey: .nextFreshId)
+        let recycled = try container.decode([EntityIdentifier.Index].self, forKey: .recycled)
         guard recycled.allSatisfy({ $0 < nextFreshId }) else {
             throw DecodingError.dataCorruptedError(forKey: .recycled,
                                                    in: container,

@@ -132,7 +132,7 @@ extension Nexus {
         @usableFromInline
         init(nexus: Nexus) {
             // Sorting makes the order deterministic instead of following the per-process hash seed.
-            var iter = nexus.componentIdsByEntity.keys.sorted { $0.id < $1.id }.makeIterator()
+            var iter = nexus.componentIdsByEntity.keys.sorted { $0.index < $1.index }.makeIterator()
             iterator = AnyIterator {
                 guard let entityId = iter.next() else {
                     return nil

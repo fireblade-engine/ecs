@@ -87,7 +87,7 @@ extension Nexus {
             componentsByType[componentId] = ManagedContiguousArray<Component>()
             registerOnFirstAssignment(type(of: component))
         }
-        componentsByType[componentId]?.insert(component, at: entityId.index)
+        componentsByType[componentId]?.insert(component, at: Int(entityId.index))
     }
 
     /// Associates a component type with an entity.
@@ -124,7 +124,7 @@ extension Nexus {
             return
         }
 
-        familyMembersByTraits[traits] = UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>()
+        familyMembersByTraits[traits] = UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Index>()
         update(familyMembership: traits)
     }
 
@@ -134,7 +134,7 @@ extension Nexus {
     func update(familyMembership traits: FamilyTraitSet) {
         // FIXME: iterating all entities is costly for many entities
         // Sorting makes the member order deterministic instead of following the per-process hash seed.
-        for entityId in componentIdsByEntity.keys.sorted(by: { $0.id < $1.id }) {
+        for entityId in componentIdsByEntity.keys.sorted(by: { $0.index < $1.index }) {
             update(membership: traits, for: entityId)
         }
     }
@@ -180,7 +180,7 @@ extension Nexus {
     ///   - entityId: The identifier of the entity.
     ///   - traits: The traits defining the family.
     func add(entityWithId entityId: EntityIdentifier, toFamilyWithTraits traits: FamilyTraitSet) {
-        familyMembersByTraits[traits].unsafelyUnwrapped.insert(entityId, at: entityId.id)
+        familyMembersByTraits[traits].unsafelyUnwrapped.insert(entityId, at: entityId.index)
     }
 
     /// Removes an entity from a family.
@@ -189,6 +189,6 @@ extension Nexus {
     ///   - entityId: The identifier of the entity.
     ///   - traits: The traits defining the family.
     func remove(entityWithId entityId: EntityIdentifier, fromFamilyWithTraits traits: FamilyTraitSet) {
-        familyMembersByTraits[traits].unsafelyUnwrapped.remove(at: entityId.id)
+        familyMembersByTraits[traits].unsafelyUnwrapped.remove(at: entityId.index)
     }
 }

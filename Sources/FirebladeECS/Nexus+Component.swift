@@ -22,7 +22,7 @@ extension Nexus {
         guard let uniforms = componentsByType[componentId] else {
             return false
         }
-        return uniforms.contains(entityId.index)
+        return uniforms.contains(Int(entityId.index))
     }
 
     /// Returns the number of components assigned to a specific entity.
@@ -137,10 +137,10 @@ extension Nexus {
     /// - Complexity: O(1)
     @inlinable
     final func component(_ componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
-        guard let uniformComponents = componentsByType[componentId], uniformComponents.contains(entityId.index) else {
+        guard let uniformComponents = componentsByType[componentId], uniformComponents.contains(Int(entityId.index)) else {
             return nil
         }
-        return uniformComponents.get(at: entityId.index)
+        return uniformComponents.get(at: Int(entityId.index))
     }
 
     /// Retrieves a typed component for a given entity using the component type's identifier.
@@ -162,7 +162,7 @@ extension Nexus {
     @inlinable
     final func unsafeComponent(_ componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component {
         let uniformComponents = componentsByType[componentId].unsafelyUnwrapped
-        return uniformComponents.get(unsafeAt: entityId.index)
+        return uniformComponents.get(unsafeAt: Int(entityId.index))
     }
 
     /// Retrieves a typed component for a given entity, without checking that it exists.
@@ -195,7 +195,7 @@ extension Nexus {
     @discardableResult
     public final func remove(component componentId: ComponentIdentifier, from entityId: EntityIdentifier) -> Bool {
         // delete component instance
-        componentsByType[componentId]?.remove(at: entityId.index)
+        componentsByType[componentId]?.remove(at: Int(entityId.index))
         // un-assign component from entity
         componentIdsByEntity[entityId]?.remove(componentId)
 

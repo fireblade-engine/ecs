@@ -11,9 +11,9 @@ import Testing
 
 @Suite struct EntityCodingTests {
     @Test func entityIdentifierRoundTrip() throws {
-        let identifier = EntityIdentifier(42)
+        let identifier = EntityIdentifier(index: 42, generation: 1)
         let data = try JSONEncoder().encode(identifier)
-        #expect(String(decoding: data, as: UTF8.self) == "42")
+        #expect(String(decoding: data, as: UTF8.self) == "\(identifier.index)")
         #expect(try JSONDecoder().decode(EntityIdentifier.self, from: data) == identifier)
     }
 
@@ -22,7 +22,7 @@ import Testing
         nexus.createEntity()
         let entity = nexus.createEntity()
         let data = try JSONEncoder().encode(entity)
-        #expect(String(decoding: data, as: UTF8.self) == "\(entity.identifier.id)")
+        #expect(String(decoding: data, as: UTF8.self) == "\(entity.identifier.index)")
     }
 
     @Test func entityDecodesThroughResolver() throws {

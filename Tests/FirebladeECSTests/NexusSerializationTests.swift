@@ -44,7 +44,7 @@ struct SerialScene: Codable {
 struct NonPersistableEntityIdGenerator: EntityIdentifierGenerator, @unchecked Sendable {
     final class Storage {
         var stack: [EntityIdentifier]
-        var next: EntityIdentifier.Identifier = 0
+        var next: EntityIdentifier.Index = 0
 
         init(stack: [EntityIdentifier]) {
             self.stack = stack
@@ -55,7 +55,7 @@ struct NonPersistableEntityIdGenerator: EntityIdentifierGenerator, @unchecked Se
 
     init<EntityIds>(startProviding initialEntityIds: EntityIds) where EntityIds: BidirectionalCollection, EntityIds.Element == EntityIdentifier {
         storage = Storage(stack: Array(initialEntityIds))
-        storage.next = (initialEntityIds.map(\.id).max() ?? 0) + (initialEntityIds.isEmpty ? 0 : 1)
+        storage.next = (initialEntityIds.map(\.index).max() ?? 0) + (initialEntityIds.isEmpty ? 0 : 1)
     }
 
     func nextId() -> EntityIdentifier {
@@ -63,7 +63,7 @@ struct NonPersistableEntityIdGenerator: EntityIdentifierGenerator, @unchecked Se
             return id
         }
         defer { storage.next += 1 }
-        return EntityIdentifier(storage.next)
+        return EntityIdentifier(index: storage.next, generation: 1)
     }
 
     func markUnused(entityId: EntityIdentifier) {

@@ -15,12 +15,12 @@ import Testing
 
         let e0 = nexus.createEntity()
 
-        #expect(e0.identifier.id == 0)
+        #expect(e0.identifier.index == 0)
         #expect(nexus.numEntities == 1)
 
         let e1 = nexus.createEntity(with: Name(name: "Entity 1"))
 
-        #expect(e1.identifier.id == 1)
+        #expect(e1.identifier.index == 1)
         #expect(nexus.numEntities == 2)
         #expect(!nexus.debugDescription.isEmpty)
     }
@@ -31,14 +31,14 @@ import Testing
         let e1 = nexus.createEntity(with: Name(name: "Entity 1"))
         #expect(nexus.numEntities == 2)
 
-        let e1Fetched = nexus.entity(from: EntityIdentifier(1))
-        #expect(nexus.exists(entity: EntityIdentifier(1)))
-        #expect(e1Fetched.identifier.id == 1)
+        let e1Fetched = nexus.entity(from: EntityIdentifier(index: 1, generation: 1))
+        #expect(nexus.exists(entity: EntityIdentifier(index: 1, generation: 1)))
+        #expect(e1Fetched.identifier.index == 1)
 
         #expect(nexus.destroy(entity: e1))
         #expect(!nexus.destroy(entity: e1))
 
-        #expect(!nexus.exists(entity: EntityIdentifier(1)))
+        #expect(!nexus.exists(entity: EntityIdentifier(index: 1, generation: 1)))
 
         #expect(nexus.numEntities == 1)
 

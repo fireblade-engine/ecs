@@ -10,7 +10,7 @@
 /// An entity identifier generator provides new entity identifiers on entity creation.
 /// It also allows entity ids to be marked as unused (to be re-usable).
 ///
-/// You should strive to keep entity ids tightly packed around `EntityIdentifier.Identifier.min` since it has an influence on the underlying memory layout.
+/// You should strive to keep entity ids tightly packed around `EntityIdentifier.Index.min` since it has an influence on the underlying memory layout.
 public protocol EntityIdentifierGenerator: Sendable {
     /// Initialize the generator providing entity ids to begin with when creating new entities.
     ///
@@ -45,7 +45,7 @@ public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
     /// Internal storage for entity identifiers.
     @usableFromInline
     final class Storage: @unchecked Sendable {
-        @usableFromInline var stack: [EntityIdentifier.Identifier]
+        @usableFromInline var stack: [EntityIdentifier.Index]
         @usableFromInline var count: Int {
             stack.count
         }
@@ -54,7 +54,7 @@ public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
         /// - Parameter initialEntityIds: Identifiers to start with.
         @usableFromInline
         init<EntityIds>(startProviding initialEntityIds: EntityIds) where EntityIds: BidirectionalCollection, EntityIds.Element == EntityIdentifier {
-            let initialInUse: [EntityIdentifier.Identifier] = initialEntityIds.map(\.id)
+            let initialInUse: [EntityIdentifier.Index] = initialEntityIds.map(\.index)
             guard let maxInUseValue = initialInUse.max() else {
                 stack = [0]
                 return
@@ -77,17 +77,17 @@ public struct LinearIncrementingEntityIdGenerator: EntityIdentifierGenerator {
         @usableFromInline
         func nextId() -> EntityIdentifier {
             guard stack.count == 1 else {
-                return EntityIdentifier(stack.removeLast())
+                return EntityIdentifier(index: stack.removeLast(), generation: 1)
             }
             defer { stack[0] += 1 }
-            return EntityIdentifier(stack[0])
+            return EntityIdentifier(index: stack[0], generation: 1)
         }
 
         /// Marks an identifier as unused.
         /// - Parameter entityId: The identifier to recycle.
         @usableFromInline
         func markUnused(entityId: EntityIdentifier) {
-            stack.append(entityId.id)
+            stack.append(entityId.index)
         }
     }
 

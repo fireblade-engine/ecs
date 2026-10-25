@@ -57,7 +57,7 @@ Component properties of type ``EntityIdentifier`` are encoded as 64 bit raw valu
 
 ### Component storage
 
-A ``Nexus`` keeps its components in a storage chosen at creation, ``Nexus/init(storage:)``: ``Nexus/StorageKind/sparseSet`` (the default, so `Nexus()` works as before) or ``Nexus/StorageKind/archetype``. See <doc:ChoosingAStorage>.
+A ``Nexus`` keeps its components in a storage chosen at creation, ``Nexus/init(storage:)``: ``Nexus/StorageKind/archetype`` (the default, so `Nexus()` uses it) or ``Nexus/StorageKind/sparseSet``, the storage of Fireblade 1.x. Pass `Nexus(storage: .sparseSet)` for workloads dominated by heavy add and remove churn, where the sparse set is about 2.3 times faster. The API and its observable behavior are the same, except for iteration order, which is not a contract. See <doc:ChoosingAStorage>.
 There is no storage protocol: the set of storages is closed, so each storage compiles to concrete code.
 
 - The sparse-set storage stores components per type in one dense array with a paged sparse index, and each entity holds a bitset of its component types. Adding, removing and looking up a component touches one type's data only. The archetype storage stores entities with the same component types together in a table with a column per type.

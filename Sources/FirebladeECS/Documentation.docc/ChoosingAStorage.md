@@ -7,12 +7,13 @@ Pick the sparse-set or the archetype storage for a ``Nexus``, and know what chan
 A ``Nexus`` keeps its entities and components in one of two storages, chosen when it is created:
 
 ```swift
-let nexus = Nexus(storage: .archetype)   // or .sparseSet
+let nexus = Nexus()                       // the default, same as Nexus(storage: .archetype)
+let churning = Nexus(storage: .sparseSet) // for heavy add/remove churn
 ```
 
 Both storages offer the same API with the same observable behavior: generational entity identifiers, events, the structural lock and its traps, families, `forEach(reading:writing:)`, spans, snapshots, cloning and the entity state machine. Every test of the package runs against both. What differs is where the components live in memory, and with it what is cheap.
 
-``Nexus/StorageKind/default`` is ``Nexus/StorageKind/sparseSet`` for now. There is no storage protocol: the set of storages is closed, and a nexus switches on its storage once per call, so each storage compiles to concrete code.
+``Nexus/StorageKind/default`` is ``Nexus/StorageKind/archetype``, so `Nexus()` uses it. Choose ``Nexus/StorageKind/sparseSet`` explicitly for workloads dominated by heavy component add and remove churn (see <doc:ChoosingAStorage#Which-storage-to-pick>). There is no storage protocol: the set of storages is closed, and a nexus switches on its storage once per call, so each storage compiles to concrete code.
 
 ### The sparse-set storage
 
@@ -54,6 +55,21 @@ Fireblade 1.x needed 480 μs for the plain iteration of one component and 1 220 
 - Changing the component set of an entity costs about twice as much on the archetype storage: the whole row moves. An entity that changes its component set less than once in a few frames is far ahead on iteration; a world that toggles a component on most entities every frame is better off with the sparse set.
 - Plain `for` iteration and random access cost the same on both: they look every component up per entity.
 - Entity creation and destruction are a bit slower on the archetype storage, because the row of every component moves with the entity.
+
+### Which storage to pick
+
+The default is the archetype storage: it iterates faster, and iteration is what most worlds spend their time on. Measured with 10 000 entities (wall clock p50 per pass):
+
+| Case | Sparse set | Archetype |
+| :-- | --: | --: |
+| `forEach`, 1 read | 13 μs | 10 μs |
+| `forEach`, 2 reads and 1 write | 24 μs | 11 μs |
+| 2 reads over 100 000 entities in shuffled order | 227 μs | 27 μs |
+| Plain `for` over a family | about equal | about equal |
+| Add and remove a component on every entity | 1x | about 2.3x slower |
+| Create and destroy entities | 1x | about 1.45x slower |
+
+The trade-off: the archetype storage buys iteration speed with the cost of moving a row whenever the component set of an entity changes. Prefer ``Nexus/StorageKind/sparseSet`` when the workload is dominated by heavy add and remove churn, for example toggling a component on most entities every frame. This matches flecs, where sparse components are the opt-in trait for components that are added and removed often.
 
 ### Differences you can observe
 

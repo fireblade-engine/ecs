@@ -4,7 +4,7 @@ Update code for the changes in FirebladeECS 2.
 
 ## Overview
 
-FirebladeECS 2 is a breaking release. This article lists the changes of the entity identifiers, one section per change.
+FirebladeECS 2 is a breaking release. This article lists the changes, one section per change.
 
 ### Entity identifiers carry a generation
 
@@ -54,3 +54,13 @@ Generators conforming to ``PersistableEntityIdentifierGenerator`` must persist t
 
 ``NexusSnapshot/formatVersion`` is 3. Snapshots of format versions 1 and 2 still load, see <doc:SavingAndLoadingScenes>.
 Component properties of type ``EntityIdentifier`` are encoded as 64 bit raw values now.
+
+### Component storage
+
+A ``Nexus`` keeps its components in a storage chosen at creation, ``Nexus/init(storage:)``. ``Nexus/StorageKind/sparseSet`` is the only storage so far and the default, so `Nexus()` works as before.
+There is no storage protocol: the set of storages is closed, so each storage compiles to concrete code.
+
+- Components are stored per type in one dense array with a paged sparse index, and each entity holds a bitset of its component types. Adding, removing and looking up a component touches one type's data only.
+- Every component type has a dense ``Component/componentIndex``. Plain conformances get it lazily, in order of first use and shared by all nexuses of the process. There is no limit on the number of component types.
+- Public API that returned or took component storage internals is unchanged. ``ManagedContiguousArray`` is no longer used by ``Nexus``; it stays available until it is removed.
+- The components an entity iterates, and the components of a snapshot or clone, come in ``Component/componentIndex`` order now instead of hash order.

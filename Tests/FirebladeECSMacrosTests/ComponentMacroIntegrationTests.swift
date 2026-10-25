@@ -96,6 +96,15 @@ struct MacroDeclaredInit {
         #expect(!MacroRenamed.componentProperties[0].isWritable)
     }
 
+    @Test func inspectionWritesToStructs() {
+        var transform = MacroTransform()
+        #expect(MacroTransform.componentProperties[0].set(4.0, on: &transform))
+        #expect(transform.position == 4)
+        var renamed = MacroRenamed()
+        #expect(!MacroRenamed.componentProperties[0].set(2, on: &renamed))
+        #expect(renamed.version == 1)
+    }
+
     @Test func cloneIntoRemapsReferencesAndCopiesIgnoredProperties() throws {
         let source = Nexus()
         let root = source.createEntity()

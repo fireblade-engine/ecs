@@ -99,9 +99,9 @@ import Testing
         #expect(component1 == component2)
     }
 
-    @Test func entitiesGetIndependentCopiesOfTheValue() {
+    @Test(arguments: Nexus.StorageKind.allCases) func entitiesGetIndependentCopiesOfTheValue(_ storage: Nexus.StorageKind) {
         // 1.x handed the one shared instance to every entity; now each entity owns its copy
-        let nexus = Nexus()
+        let nexus = Nexus(storage: storage)
         let provider = ComponentSingletonProvider(type: MockComponent.self)
         let entity1 = nexus.createEntity().set(provider.getComponent())
         let entity2 = nexus.createEntity().set(provider.getComponent())
@@ -358,8 +358,8 @@ import Testing
 // MARK: -
 
 @Suite struct EntityStateMachineTests {
-    @Test func enterStateAddsStatesComponents() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func enterStateAddsStatesComponents(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let entity = nexus.createEntity()
         let fsm = EntityStateMachine<String>(entity: entity)
         let state = EntityState()
@@ -370,8 +370,8 @@ import Testing
         #expect(entity.get(MockComponent.self) == component)
     }
 
-    @Test func enterSecondStateAddsSecondStatesComponents() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func enterSecondStateAddsSecondStatesComponents(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let entity = nexus.createEntity()
         let fsm = EntityStateMachine<String>(entity: entity)
         let state1 = EntityState()
@@ -388,8 +388,8 @@ import Testing
         #expect(entity.get(MockComponent2.self) == component2)
     }
 
-    @Test func enterSecondStateRemovesFirstStatesComponents() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func enterSecondStateRemovesFirstStatesComponents(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let entity = nexus.createEntity()
         let fsm = EntityStateMachine<String>(entity: entity)
         let state1 = EntityState()
@@ -407,8 +407,8 @@ import Testing
         #expect(!entity.has(MockComponent.self))
     }
 
-    @Test func enterSecondStateDoesNotRemoveOverlappingComponents() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func enterSecondStateDoesNotRemoveOverlappingComponents(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let entity = nexus.createEntity()
         let fsm = EntityStateMachine<String>(entity: entity)
         class EventDelegate: NexusEventDelegate, @unchecked Sendable {
@@ -442,8 +442,8 @@ import Testing
         #expect(entity.get(MockComponent.self) == component1)
     }
 
-    @Test func enterSecondStateRemovesDifferentComponentsOfSameType() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func enterSecondStateRemovesDifferentComponentsOfSameType(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let entity = nexus.createEntity()
         let fsm = EntityStateMachine<String>(entity: entity)
         let state1 = EntityState()
@@ -463,8 +463,8 @@ import Testing
         #expect(entity.get(MockComponent.self) == component3)
     }
 
-    @Test func createStateAddsState() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func createStateAddsState(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let entity = nexus.createEntity()
         let fsm = EntityStateMachine<String>(entity: entity)
         let state = fsm.createState(name: "test")
@@ -474,8 +474,8 @@ import Testing
         #expect(entity.get(MockComponent.self) == component)
     }
 
-    @Test func createStateDoesNotChangeState() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func createStateDoesNotChangeState(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let entity = nexus.createEntity()
         let fsm = EntityStateMachine<String>(entity: entity)
         let state = fsm.createState(name: "test")
@@ -484,8 +484,8 @@ import Testing
         #expect(entity.get(MockComponent.self) == nil)
     }
 
-    @Test func callChangeStateWithSameNameLeavesEntityComponentsIntact() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func callChangeStateWithSameNameLeavesEntityComponentsIntact(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let entity = nexus.createEntity()
         let fsm = EntityStateMachine<String>(entity: entity)
         let state = fsm.createState(name: "test")
@@ -502,7 +502,7 @@ import Testing
         #expect(entity.get(MockComponent2.self) == component2)
     }
 
-    @Test func getsDeinitedWhileBeingStronglyReferencedByComponentAssignedToEntity() {
+    @Test(arguments: Nexus.StorageKind.allCases) func getsDeinitedWhileBeingStronglyReferencedByComponentAssignedToEntity(_ storage: Nexus.StorageKind) {
         struct Marker: Component, Sendable {
             let fsm: EntityStateMachine<String>
             init(fsm: EntityStateMachine<String>) {
@@ -510,7 +510,7 @@ import Testing
             }
         }
 
-        let nexus = Nexus()
+        let nexus = Nexus(storage: storage)
         var entity: Entity? = nexus.createEntity()
         var markerComponent: Marker? = Marker(fsm: EntityStateMachine<String>(entity: entity!))
         entity?.set(markerComponent!)

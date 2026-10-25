@@ -9,8 +9,8 @@ import FirebladeECS
 import Testing
 
 @Suite struct NexusEventDelegateTests {
-    @Test func eventEntityCreated() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func eventEntityCreated(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         var entityCreatedEvents: [EntityCreated] = []
         let delegateTester = DelegateTester(onEvent: { event in
             switch event {
@@ -30,8 +30,8 @@ import Testing
         #expect(entityCreatedEvents.count == 101)
     }
     
-    @Test func eventEntityDestroyed() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func eventEntityDestroyed(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         var events: [EntityDestroyed] = []
         let delegateTester = DelegateTester(onEvent: { event in
             switch event {
@@ -55,8 +55,8 @@ import Testing
         #expect(events.count == 100)
     }
     
-    @Test func eventComponentAdded() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func eventComponentAdded(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         var componentsAddedEvents: [ComponentAdded] = []
         var entityCreatedEvents: [EntityCreated] = []
         let delegateTester = DelegateTester(onEvent: { event in
@@ -84,8 +84,8 @@ import Testing
         #expect(entityCreatedEvents.count == 2)
     }
     
-    @Test func eventComponentRemoved() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func eventComponentRemoved(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         var events: [ComponentRemoved] = []
         let delegateTester = DelegateTester(onEvent: { event in
             switch event {
@@ -123,8 +123,8 @@ import Testing
         
     }
     
-    @Test func familyMemeberAdded() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func familyMemeberAdded(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         var eventsFamilyMemberRemoved: [FamilyMemberRemoved] = []
         var eventsComponentRemoved: [ComponentRemoved] = []
         var eventsEntityDestroyed: [EntityDestroyed] = []
@@ -166,8 +166,8 @@ import Testing
         #expect(eventsEntityDestroyed.count == 3)
     }
     
-    @Test func familyMemberRemoved() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func familyMemberRemoved(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         var eventsMemberAdded: [FamilyMemberAdded] = []
         var eventsComponentAdded: [ComponentAdded] = []
         var eventsEntityCreated: [EntityCreated] = []

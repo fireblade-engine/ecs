@@ -32,8 +32,8 @@ import Testing
         #expect(max.generation == UInt32.max)
     }
 
-    @Test func allComponentsOfEntity() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func allComponentsOfEntity(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
 
         let pos = Position(x: 1, y: 2)
         let name = Name(name: "Hello")
@@ -51,8 +51,8 @@ import Testing
         #expect(allComponents.compactMap { $0 as? Velocity } == [vel])
     }
 
-    @Test func entityEquality() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func entityEquality(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
 
         let entityA = nexus.createEntity()
         let entityB = nexus.createEntity()
@@ -61,8 +61,8 @@ import Testing
         #expect(entityA != entityB)
     }
 
-    @Test func removeAllComponentsFromEntity() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func removeAllComponentsFromEntity(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
 
         let entity = nexus.createEntity(with: Position(x: 1, y: 2), Name(name: "MyEntity"))
         #expect(entity.numComponents == 2)
@@ -94,8 +94,8 @@ import Testing
         #expect(generator.count == 1)
     }
 
-    @Test func entitySubscripts() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func entitySubscripts(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let pos = Position(x: 12, y: 45)
         let name = Name(name: "SomeName")
         let entity = nexus.createEntity(with: pos, name)
@@ -147,16 +147,16 @@ import Testing
         #expect(entity[\Comp1.value] == 12)
     }
 
-    @Test func componentsIteration() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func componentsIteration(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let entity = nexus.createEntity()
         #expect(Array(entity.makeComponentsIterator()).isEmpty)
         entity.set(Position())
         #expect(Array(entity.makeComponentsIterator()).count == 1)
     }
 
-    @Test func setAndGet() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func setAndGet(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let entity = nexus.createEntity()
         #expect(entity.get(Position.self) == nil)
 
@@ -171,8 +171,8 @@ import Testing
         #expect(entity.has(Color.self))
     }
 
-    @Test func setValueThroughWritableKeyPath() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func setValueThroughWritableKeyPath(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         let entity = nexus.createEntity()
         let keyPath: WritableKeyPath<Position, Int> = \.x
 
@@ -187,8 +187,8 @@ import Testing
         #expect(entity.get(Position.self)?.x == 4)
     }
 
-    @Test func entityCreationIntrinsic() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func entityCreationIntrinsic(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let entity = nexus.createEntity()
 
         let secondEntity = entity.createEntity()
@@ -206,8 +206,8 @@ import Testing
         #expect(nexus.numComponents == 2)
     }
 
-    @Test func entityDescriptions() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func entityDescriptions(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let entt = nexus.createEntity()
         #expect(!entt.description.isEmpty)
         #expect(!entt.debugDescription.isEmpty)

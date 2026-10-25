@@ -43,8 +43,8 @@ private final class DestroyOnAdd: NexusEventDelegate, @unchecked Sendable {
 }
 
 @Suite(.serialized) struct ComponentStorageReentrancyTests {
-    @Test func deinitReAddingTheSameTypeKeepsMaskAndStorageInSync() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func deinitReAddingTheSameTypeKeepsMaskAndStorageInSync(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let entity = nexus.createEntity(with: Reentrant(), Position(x: 1, y: 1))
         DeinitHook.onDeinit = { entity.set(Reentrant()) }
         entity.remove(Reentrant.self)
@@ -60,8 +60,8 @@ private final class DestroyOnAdd: NexusEventDelegate, @unchecked Sendable {
         #expect(nexus.numComponents == 1)
     }
 
-    @Test func deinitReAddingDuringDestroyLeavesNoTrace() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func deinitReAddingDuringDestroyLeavesNoTrace(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         nexus.assertsOnStaleHandles = false
         let family = nexus.family(requires: Reentrant.self)
         let entity = nexus.createEntity(with: Reentrant())
@@ -74,8 +74,8 @@ private final class DestroyOnAdd: NexusEventDelegate, @unchecked Sendable {
         #expect(family.count == 0)
     }
 
-    @Test func deinitReAddingDuringClearDoesNotCrash() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func deinitReAddingDuringClearDoesNotCrash(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         nexus.assertsOnStaleHandles = false
         let entity = nexus.createEntity(with: Reentrant())
         DeinitHook.onDeinit = { entity.set(Reentrant()) }
@@ -84,8 +84,8 @@ private final class DestroyOnAdd: NexusEventDelegate, @unchecked Sendable {
         #expect(nexus.numComponents == 0)
     }
 
-    @Test func destroyingMembersDuringFamilyIterationSkipsThem() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func destroyingMembersDuringFamilyIterationSkipsThem(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let entities = (0 ..< 10).map { nexus.createEntity(with: Position(x: $0, y: $0)) }
         let family = nexus.family(requires: Position.self)
         var visited = 0
@@ -99,8 +99,8 @@ private final class DestroyOnAdd: NexusEventDelegate, @unchecked Sendable {
         #expect(family.count == 0)
     }
 
-    @Test func clearingTheNexusDuringFamilyIterationSkipsMembers() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func clearingTheNexusDuringFamilyIterationSkipsMembers(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         for index in 0 ..< 10 {
             nexus.createEntity(with: Position(x: index, y: index))
         }
@@ -114,8 +114,8 @@ private final class DestroyOnAdd: NexusEventDelegate, @unchecked Sendable {
         #expect(visited == 1)
     }
 
-    @Test func slotReuseDuringIterationNeverYieldsAnotherEntitysComponent() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func slotReuseDuringIterationNeverYieldsAnotherEntitysComponent(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let first = nexus.createEntity(with: Position(x: 1, y: 1))
         let second = nexus.createEntity(with: Position(x: 2, y: 2))
         let family = nexus.family(requires: Position.self)
@@ -130,8 +130,8 @@ private final class DestroyOnAdd: NexusEventDelegate, @unchecked Sendable {
         #expect(first.get(Position.self)?.x == 1)
     }
 
-    @Test func delegateDestroyingTheEntityDuringAssignDoesNotTrap() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func delegateDestroyingTheEntityDuringAssignDoesNotTrap(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         nexus.assertsOnStaleHandles = false
         let delegate = DestroyOnAdd()
         delegate.nexus = nexus
@@ -148,9 +148,9 @@ private final class DestroyOnAdd: NexusEventDelegate, @unchecked Sendable {
         nexus.delegate = nil
     }
 
-    @Test func existentialComponentsAreStoredUnderTheirDynamicType() {
+    @Test(arguments: Nexus.StorageKind.allCases) func existentialComponentsAreStoredUnderTheirDynamicType(_ storage: Nexus.StorageKind) {
         // `Component.identifier` of the value, and with it the storage, is that of the dynamic type.
-        let nexus = Nexus()
+        let nexus = Nexus(storage: storage)
         let erased: Component = Position(x: 4, y: 5)
         let entity = nexus.createEntity()
         entity.set(erased)
@@ -159,9 +159,9 @@ private final class DestroyOnAdd: NexusEventDelegate, @unchecked Sendable {
         #expect(nexus.get(components: entity.identifier) == [Position.identifier])
     }
 
-    @Test func familyOrderIsDeterministicAfterSwapRemoveChurn() {
+    @Test(arguments: Nexus.StorageKind.allCases) func familyOrderIsDeterministicAfterSwapRemoveChurn(_ storage: Nexus.StorageKind) {
         func run() -> [Int] {
-            let nexus = Nexus()
+            let nexus = Nexus(storage: storage)
             let entities = (0 ..< 64).map { nexus.createEntity(with: Position(x: $0, y: 0)) }
             let family = nexus.family(requires: Position.self)
             for index in stride(from: 0, to: 64, by: 3) {
@@ -177,7 +177,7 @@ private final class DestroyOnAdd: NexusEventDelegate, @unchecked Sendable {
         #expect(Set(first) == Set((0 ..< 64).filter { $0 % 3 != 0 || $0 % 6 == 0 }))
 
         // a family created after the churn lists its members in entity order
-        let nexus = Nexus()
+        let nexus = Nexus(storage: storage)
         let entities = (0 ..< 64).map { nexus.createEntity(with: Position(x: $0, y: 0)) }
         for index in stride(from: 0, to: 64, by: 3) {
             entities[index].remove(Position.self)
@@ -186,8 +186,8 @@ private final class DestroyOnAdd: NexusEventDelegate, @unchecked Sendable {
         #expect(late.map(\.x) == (0 ..< 64).filter { $0 % 3 != 0 })
     }
 
-    @Test func snapshotsWithAbsurdEntityIndicesAreRejected() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func snapshotsWithAbsurdEntityIndicesAreRejected(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         try nexus.register([SerialPosition.self])
         let json = #"{"formatVersion":3,"entities":[{"id":4294967295,"components":{"Position":{"x":1,"y":2}}}]}"#
         var decoder = JSONDecoder()

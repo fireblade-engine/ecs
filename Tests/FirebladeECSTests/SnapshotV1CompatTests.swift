@@ -29,8 +29,8 @@ import Testing
     ]}
     """#
 
-    private func makeNexus() throws -> Nexus {
-        let nexus = Nexus()
+    private func makeNexus(_ storage: Nexus.StorageKind) throws -> Nexus {
+        let nexus = Nexus(storage: storage)
         try nexus.register(Self.componentTypes)
         return nexus
     }
@@ -40,8 +40,8 @@ import Testing
         try nexus.restoreSnapshot(from: Data(json.utf8), using: &decoder)
     }
 
-    @Test func version1KeepsIdentifiersExceptReservedIndex() throws {
-        let nexus = try makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func version1KeepsIdentifiersExceptReservedIndex(_ storage: Nexus.StorageKind) throws {
+        let nexus = try makeNexus(storage)
         try restore(Self.version1, into: nexus)
 
         #expect(nexus.numEntities == 2)
@@ -56,8 +56,8 @@ import Testing
         #expect(nexus.createEntity().identifier == EntityIdentifier(index: 3, generation: 0))
     }
 
-    @Test func version2RestoresGeneratorStateWithGenerationZero() throws {
-        let nexus = try makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func version2RestoresGeneratorStateWithGenerationZero(_ storage: Nexus.StorageKind) throws {
+        let nexus = try makeNexus(storage)
         try restore(Self.version2, into: nexus)
 
         let kept = try #require(nexus.entity(EntityIdentifier(index: 2, generation: 0)))
@@ -71,8 +71,8 @@ import Testing
         #expect(nexus.createEntity().identifier == EntityIdentifier(index: 4, generation: 0))
     }
 
-    @Test func version2ImportsAsNewEntities() throws {
-        let nexus = try makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func version2ImportsAsNewEntities(_ storage: Nexus.StorageKind) throws {
+        let nexus = try makeNexus(storage)
         nexus.createEntity()
         var decoder = JSONDecoder()
         let mapping = try nexus.decodeSnapshot(from: Data(Self.version2.utf8), using: &decoder)
@@ -84,8 +84,8 @@ import Testing
         #expect(imported.get(SerialTarget.self)?.target == importedZero.identifier)
     }
 
-    @Test func unknownLegacyFieldsAreIgnoredAndOldCurrentVersionsEncodeAsVersion3() throws {
-        let nexus = try makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func unknownLegacyFieldsAreIgnoredAndOldCurrentVersionsEncodeAsVersion3(_ storage: Nexus.StorageKind) throws {
+        let nexus = try makeNexus(storage)
         try restore(Self.version2, into: nexus)
         var encoder = JSONEncoder()
         let data = try nexus.encodeSnapshot(using: &encoder, handling: .throwError)
@@ -95,8 +95,8 @@ import Testing
         #expect(!json.contains(#""recycled":"#))
     }
 
-    @Test func version3RoundTripKeepsGenerations() throws {
-        let source = try makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func version3RoundTripKeepsGenerations(_ storage: Nexus.StorageKind) throws {
+        let source = try makeNexus(storage)
         let first = source.createEntity(with: SerialPosition(x: 1, y: 1))
         source.destroy(entity: first)
         let reused = source.createEntity(with: SerialPosition(x: 2, y: 2))
@@ -109,7 +109,7 @@ import Testing
         let data = try source.encodeSnapshot(using: &encoder, handling: .throwError)
         #expect(String(decoding: data, as: UTF8.self).contains(#""formatVersion":3"#))
 
-        let restored = try makeNexus()
+        let restored = try makeNexus(storage)
         var decoder = JSONDecoder()
         try restored.restoreSnapshot(from: data, using: &decoder)
 
@@ -123,8 +123,8 @@ import Testing
         #expect(restored.createEntity().identifier == source.createEntity().identifier)
     }
 
-    @Test func version3RejectsReservedIndex() throws {
-        let nexus = try makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func version3RejectsReservedIndex(_ storage: Nexus.StorageKind) throws {
+        let nexus = try makeNexus(storage)
         let json = #"{"formatVersion":3,"entities":[{"id":4294967296,"components":{}}]}"#
         #expect(throws: DecodingError.self) {
             try restore(json, into: nexus)
@@ -132,8 +132,8 @@ import Testing
         #expect(nexus.numEntities == 0)
     }
 
-    @Test func version3IdentifierIsTheRawValue() throws {
-        let nexus = try makeNexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func version3IdentifierIsTheRawValue(_ storage: Nexus.StorageKind) throws {
+        let nexus = try makeNexus(storage)
         let json = #"{"formatVersion":3,"entities":[{"id":8589934595,"components":{"Health":{"value":5}}}]}"#
         try restore(json, into: nexus)
         let entity = try #require(nexus.entity(EntityIdentifier(index: 3, generation: 2)))

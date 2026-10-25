@@ -51,8 +51,8 @@ private final class DefaultDelegate: NexusEventDelegate, @unchecked Sendable {
         #expect(NexusEventMask.all == [.structural, .valueChanges])
     }
 
-    @Test func structuralMaskDeliversStructuralOnly() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func structuralMaskDeliversStructuralOnly(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let recorder = Recorder(mask: .structural)
         nexus.delegate = recorder
         let entity = nexus.createEntity()
@@ -64,8 +64,8 @@ private final class DefaultDelegate: NexusEventDelegate, @unchecked Sendable {
         #expect(recorder.events[1] is ComponentAdded)
     }
 
-    @Test func valueChangesMaskDeliversModified() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func valueChangesMaskDeliversModified(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         let recorder = Recorder(mask: .valueChanges)
         nexus.delegate = recorder
         let entity = nexus.createEntity()
@@ -79,8 +79,8 @@ private final class DefaultDelegate: NexusEventDelegate, @unchecked Sendable {
         #expect(nexus.backend.get(Health.self, for: entity.identifier)?.points == 1)
     }
 
-    @Test func allMaskDeliversEverything() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func allMaskDeliversEverything(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let recorder = Recorder(mask: .all)
         nexus.delegate = recorder
         let entity = nexus.createEntity()
@@ -89,8 +89,8 @@ private final class DefaultDelegate: NexusEventDelegate, @unchecked Sendable {
         #expect(recorder.events.map { String(describing: type(of: $0)) } == ["EntityCreated", "ComponentAdded", "ComponentModified"])
     }
 
-    @Test func modifyDefaultEmitsAddedThenModified() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func modifyDefaultEmitsAddedThenModified(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         let recorder = Recorder(mask: .all)
         let entity = nexus.createEntity()
         nexus.delegate = recorder
@@ -108,8 +108,8 @@ private final class DefaultDelegate: NexusEventDelegate, @unchecked Sendable {
         #expect(recorder.events[2] is ComponentModified)
     }
 
-    @Test func bulkWriteEmitsOneEventPerPass() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func bulkWriteEmitsOneEventPerPass(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         let recorder = Recorder(mask: .valueChanges)
         for _ in 0..<5 {
             nexus.createEntity().set(Health())
@@ -130,8 +130,8 @@ private final class DefaultDelegate: NexusEventDelegate, @unchecked Sendable {
         #expect(recorder.events.count == 1)
     }
 
-    @Test func eventsCarryGenerationalIdentifiers() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func eventsCarryGenerationalIdentifiers(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         let recorder = Recorder(mask: .all)
         nexus.delegate = recorder
         let old = nexus.createEntity()
@@ -146,8 +146,8 @@ private final class DefaultDelegate: NexusEventDelegate, @unchecked Sendable {
         #expect(modified.entityId.generation == reused.identifier.generation)
     }
 
-    @Test func defaultPathNeverCallsTheDelegateOnWrites() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func defaultPathNeverCallsTheDelegateOnWrites(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let recorder = Recorder()
         nexus.delegate = recorder
         #expect(recorder.subscriptionReads == 1)
@@ -163,8 +163,8 @@ private final class DefaultDelegate: NexusEventDelegate, @unchecked Sendable {
         #expect(!nexus.deliversValueChanges)
     }
 
-    @Test func reassigningTheDelegateAppliesANewSubscription() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func reassigningTheDelegateAppliesANewSubscription(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let recorder = Recorder()
         nexus.delegate = recorder
         #expect(!nexus.deliversValueChanges)
@@ -175,8 +175,8 @@ private final class DefaultDelegate: NexusEventDelegate, @unchecked Sendable {
         #expect(nexus.deliversValueChanges)
     }
 
-    @Test func settingExistingComponentEmitsReplacedNotAdded() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func settingExistingComponentEmitsReplacedNotAdded(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let recorder = Recorder(mask: .all)
         let entity = nexus.createEntity()
         entity.set(Health())

@@ -9,8 +9,8 @@ import FirebladeECS
 import Testing
 
 @Suite struct EntityCreationTests {
-    @Test func createEntityOneComponent() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func createEntityOneComponent(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         let entity = nexus.createEntity {
             Position(x: 1, y: 2)
         }
@@ -23,8 +23,8 @@ import Testing
         #expect(nexus.numFamilies == 0)
     }
 
-    @Test func createEntityMultipleComponents() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func createEntityMultipleComponents(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
 
         let entity = nexus.createEntity {
             Position(x: 1, y: 2)
@@ -41,8 +41,8 @@ import Testing
         #expect(nexus.numFamilies == 0)
     }
 
-    @Test func bulkCreateEntitiesOneComponent() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func bulkCreateEntitiesOneComponent(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
 
         let entities = nexus.createEntities(count: 100) { ctx in
             Velocity(a: Float(ctx.index))
@@ -56,8 +56,8 @@ import Testing
         #expect(nexus.numFamilies == 0)
     }
 
-    @Test func bulkCreateEntitiesMultipleComponents() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func bulkCreateEntitiesMultipleComponents(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
 
         let entities = nexus.createEntities(count: 100) { ctx in
             Position(x: ctx.index, y: ctx.index)

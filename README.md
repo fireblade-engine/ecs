@@ -229,7 +229,7 @@ let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
 
 ### 🧩 Component Macro
 
-The `FirebladeECSMacros` product provides the `@Component` macro. It turns a `final class` into a component and implements a set of component protocols from its stored properties, so you don't have to write that code by hand:
+The `FirebladeECSMacros` product provides the `@Component` macro. It turns a `struct` or `enum` into a component and implements a set of component protocols from its stored properties, so you don't have to write that code by hand:
 
 | Protocol | Generated | Enables |
 | --- | --- | --- |
@@ -251,14 +251,14 @@ Add the product to your target:
 import FirebladeECSMacros
 
 @Component
-final class Transform: @unchecked Sendable {
+struct Transform {
     var position: SIMD3<Float> = .zero
-    var parent: Entity?
+    var parent: EntityIdentifier?
     @ComponentIgnored var cachedMatrix: [Float] = []  // still cloned, but not serialized or inspected
 }
 
 @Component(excluding: .serializable)  // runtime-only component
-final class RenderHandle: @unchecked Sendable {
+struct RenderHandle: @unchecked Sendable {
     var handle: Int = 0
 }
 

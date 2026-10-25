@@ -91,7 +91,7 @@ The entity API separates reading a copy, replacing and changing in place, see <d
 
 ### Components are value types
 
-``Component`` no longer requires `AnyObject`. Declare components as structs or enums; classes still work, but the nexus stores them like any other value. A component with a handle that is not `Sendable` conforms with `@unchecked Sendable`. The `@Component` macro still only accepts classes until a later release.
+``Component`` no longer requires `AnyObject`. Declare components as structs or enums; classes still work, but the nexus stores them like any other value. A component with a handle that is not `Sendable` conforms with `@unchecked Sendable`. The `@Component` macro accepts structs and enums only, see below.
 
 ```swift
 // before
@@ -127,3 +127,19 @@ single.set(GameState(value: x))      // replaces the component, delivers Compone
 ### Spans
 
 New API, nothing to migrate. ``Nexus/componentSpan(reading:_:)``, ``Nexus/componentSpan(writing:_:)`` and ``Family/forEachComponentSpan(reading:writing:_:)`` hand out the components of a type as a `Span` or `MutableSpan` inside a closure: zero copy, bounds checked and unable to escape. The APIs are available on macOS 26, iOS 26, tvOS 26, watchOS 26 and visionOS 26; the package keeps its lower deployment targets, so guard calls with `if #available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)`. While the closure runs, structural changes and conflicting reads or writes stop the process with a message. See <doc:ReadingAndWritingComponents>.
+
+### The component macro requires value types
+
+`@Component` rejects classes with an error; change `final class` to `struct` (or `enum`) and drop `@unchecked Sendable` where the stored properties are `Sendable`. Structs keep their memberwise initializer, and the macro stores `componentIndex` in a `static let`. See <doc:ComponentMacro>.
+
+A stored property of type `Entity` (also optional, array, set or dictionary value) is an error with a fix-it that replaces it by ``EntityIdentifier``. Resolve it with ``Nexus/entity(_:)`` when you need the entity.
+
+```swift
+// before
+@Component final class Link { var target: Entity? }
+
+// after
+@Component struct Link { var target: EntityIdentifier? }
+```
+
+``ComponentProperty/set(_:on:)`` writes an inspected property of a component copy.

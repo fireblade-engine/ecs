@@ -98,7 +98,7 @@ extension Entity {
     ///
     /// The restrictions of ``modify(_:_:)`` apply to the code that runs while the component is accessed in place.
     ///
-    /// - Note: Components that are still classes (currently the ones declared with `@Component`) are reached through their
+    /// - Note: Components that are classes (hand-written, the macro rejects them) are reached through their
     ///   reference: assigning a property (`entity[Health.self]?.hp = 1`) only reads the reference, takes no write access and
     ///   delivers no ``ComponentModified`` event. Use ``modify(_:_:)`` for that. Value type components always take the in place access.
     /// - Complexity: O(1) for get and in place access, O(M) for adding or removing where M is the number of families.

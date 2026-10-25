@@ -104,7 +104,7 @@ Prefer ``Nexus/componentSpan(reading:_:)`` for passes over all components of a t
 ### Copies and the var hazard
 
 `get` returns a copy. For a value type component, `var health = entity.get(Health.self)!; health.hp -= 10` changes the copy and nothing else.
-Write it back with `set`, or change the component in place with `modify`. Components declared with `@Component` are classes until the macro supports structs. A copy of a class component still refers to the stored instance and the change is visible, but write code as if it were a value type.
+Write it back with `set`, or change the component in place with `modify`.
 
 Iterating a family hands out copies as well. `for var position in family { position.x += 1 }` compiles and changes nothing. Write through the entity inside the loop, for example with ``Entity/modify(_:_:)`` or ``Entity/set(_:)-(Component)``.
 

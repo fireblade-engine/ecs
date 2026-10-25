@@ -95,3 +95,34 @@ public struct Tag: Component {
     }
     sum = total
 }
+
+// MARK: forEachComponentSpan (macOS 26 and later)
+
+@available(macOS 26, *)
+@inline(never) public func site_ForEachSpan_1R(_ family: Family<Position, Velocity>, _ sum: inout Int) {
+    var total = 0
+    family.forEachComponentSpan(reading: Position.self) { positions in
+        for index in positions.indices {
+            total &+= positions[index].x
+        }
+    }
+    sum = total
+}
+
+@available(macOS 26, *)
+@inline(never) public func site_ForEachSpan_1R1W(_ family: Family<Position, Velocity>, _ sum: inout Int) {
+    family.forEachComponentSpan(reading: Velocity.self, writing: Position.self) { velocities, positions in
+        for index in positions.indices {
+            positions[index].x &+= velocities[index].dx
+        }
+    }
+}
+
+@available(macOS 26, *)
+@inline(never) public func site_ForEachSpan_2R1W(_ family: Family<Position, Velocity, Health>, _ sum: inout Int) {
+    family.forEachComponentSpan(reading: Velocity.self, Health.self, writing: Position.self) { velocities, healths, positions in
+        for index in positions.indices {
+            positions[index].x &+= velocities[index].dx &+ healths[index].points
+        }
+    }
+}

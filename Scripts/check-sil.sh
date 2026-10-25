@@ -4,6 +4,10 @@
 # the loops of the specialized code: no heap allocation, no existential, no witness_method, no key path, and no call
 # to a function that was not inlined or specialized into the module of the call site.
 #
+# A call site switches on the storage once, so its SIL holds the loops of both storages: the sparse-set loop over the
+# members and the archetype loops over tables and rows. Both are checked together. The "arch" column counts the loop
+# instructions that touch an archetype table or column; a site whose loops do not reach the archetype code fails.
+#
 # Usage: Scripts/check-sil.sh        (builds FirebladeECS in release first; exits 1 if a loop violates a rule)
 #
 #   SIL_OUT=<dir>   output directory (default: $TMPDIR/ecs-sil)
@@ -41,6 +45,9 @@ COUNTERS = [
     ("keypath", r"\bkeypath\b|swift_getKeyPath|getKeyPath"),
     ("allocObject", r"swift_allocObject|allocObject"),
 ]
+# not a violation: proves that the archetype loops are part of the analysis
+ARCHETYPE = r"ArchetypeTable|ArchetypeStorage"
+
 TERMINATOR = re.compile(r"^\s+(br|cond_br|switch_enum|switch_enum_addr|switch_value|try_apply|checked_cast_br|dynamic_method_br|yield)\b")
 
 
@@ -86,7 +93,7 @@ def callees(lines):
 
 def count(lines):
     body = "\n".join(lines)
-    return [len(re.findall(pattern, body)) for _, pattern in COUNTERS]
+    return [len(re.findall(pattern, body)) for _, pattern in COUNTERS] + [len(re.findall(ARCHETYPE, body))]
 
 
 def analyze(root):
@@ -120,17 +127,18 @@ def analyze(root):
     return count(loop_lines), count(all_lines), sorted(set(external)), loop_blocks
 
 
-print("%-34s" % "site" + "".join("%12s" % c[0] for c in COUNTERS) + "%7s%9s%7s" % ("calls", "all:wit", "loop"))
+print("%-34s" % "site" + "".join("%12s" % c[0] for c in COUNTERS) + "%7s%9s%7s%7s" % ("calls", "all:wit", "loop", "arch"))
 failed = False
 for name in sorted(funcs):
     found = re.search(r"(site_[A-Za-z0-9_]+?)yy\d", name)
     if not found or "Tf" in name or "Tg" in name or "TA" in name:
         continue
     loop_counts, all_counts, external, loop_size = analyze(name)
-    print("%-34s" % found.group(1) + "".join("%12d" % c for c in loop_counts) + "%7d%9d%7d" % (len(external), all_counts[3], loop_size))
+    violations, archetype_lines = loop_counts[:-1], loop_counts[-1]
+    print("%-34s" % found.group(1) + "".join("%12d" % c for c in violations) + "%7d%9d%7d%7d" % (len(external), all_counts[3], loop_size, archetype_lines))
     for callee in external:
         print("      loop calls @" + callee)
-    if loop_size == 0 or any(loop_counts) or external:
+    if loop_size == 0 or any(violations) or archetype_lines == 0 or external:
         failed = True
 print("SIL: " + sys.argv[1])
 sys.exit(1 if failed else 0)

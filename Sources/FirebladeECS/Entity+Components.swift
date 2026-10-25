@@ -31,9 +31,13 @@ extension Entity {
     /// - The written components are copied out of the nexus into the tuple and back after `body` returned. A
     ///   ``ComponentModified`` event is delivered for each written component after the write access ended.
     ///
+    /// Specialization is disabled for this slow path: the Swift 6.4 SIL GenericSpecializer crashes on it in release builds
+    /// (`TypeSubstituter.transformPackElementType`).
+    ///
     /// - Returns: `false` if this entity is destroyed or lacks one of the components; `body` is not called then.
     @discardableResult
     @_disfavoredOverload
+    @_semantics("optimize.sil.specialize.generic.never")
     public func components<each R: Component, each W: Component>(
         _ rTypes: repeat (each R).Type,
         writing wTypes: repeat (each W).Type,
@@ -64,11 +68,13 @@ extension Entity {
     }
 
     @usableFromInline
+    @_semantics("optimize.sil.specialize.generic.never")
     static func load<T: Component>(_ pointer: UnsafeMutablePointer<T>) -> T {
         pointer.pointee
     }
 
     @usableFromInline
+    @_semantics("optimize.sil.specialize.generic.never")
     static func store<T: Component>(_ value: T, to pointer: UnsafeMutablePointer<T>) {
         pointer.pointee = value
     }

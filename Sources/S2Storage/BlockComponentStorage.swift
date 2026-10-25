@@ -38,9 +38,9 @@ public struct BlockView<C: Component> {
 /// pays one extra indirection per element lookup. Elements are initialized and deinitialized by hand, so
 /// non-trivial fields (`String`, `Array`) are released exactly once: on removal, on replacement and in `deinit`.
 public final class BlockComponentStorage<C: Component>: AnyComponentStorage {
-    @usableFromInline var blocks: UnsafeMutablePointer<UnsafeMutablePointer<C>?>
-    @usableFromInline var blockTableCapacity = 4
-    @usableFromInline var allocatedBlocks = 0
+    @exclusivity(unchecked) @usableFromInline var blocks: UnsafeMutablePointer<UnsafeMutablePointer<C>?>
+    @exclusivity(unchecked) @usableFromInline var blockTableCapacity = 4
+    @exclusivity(unchecked) @usableFromInline var allocatedBlocks = 0
 
     override public init() {
         blocks = .allocate(capacity: blockTableCapacity)
@@ -75,6 +75,7 @@ public final class BlockComponentStorage<C: Component>: AnyComponentStorage {
         sparse.slot(of: index)
     }
 
+    @inlinable
     func insert(_ component: C, for index: UInt32) {
         let slot = ids.count
         let block = slot >> BlockLayout.shift
@@ -88,7 +89,8 @@ public final class BlockComponentStorage<C: Component>: AnyComponentStorage {
         ids.append(index)
     }
 
-    private func growTableIfNeeded() {
+    @usableFromInline
+    func growTableIfNeeded() {
         guard allocatedBlocks == blockTableCapacity else {
             return
         }
@@ -107,6 +109,12 @@ public final class BlockComponentStorage<C: Component>: AnyComponentStorage {
     }
 
     override public func remove(_ index: UInt32) -> Bool {
+        removeSwap(index)
+    }
+
+    /// Typed, inlinable swap-remove (see `ComponentStorage.removeSwap`).
+    @inlinable
+    func removeSwap(_ index: UInt32) -> Bool {
         let slot = sparse.slot(of: index)
         guard slot >= 0 else {
             return false

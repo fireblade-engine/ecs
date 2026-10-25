@@ -15,15 +15,15 @@
 /// - Random access (`get`) is two array reads (location, column) after the mask test.
 public final class ArchetypeStorage: NexusStorageProviding {
     @usableFromInline struct Location {
-        var table: Int32
-        var row: Int32
+        @usableFromInline var table: Int32
+        @usableFromInline var row: Int32
     }
 
-    @usableFromInline var entities = EntityTable()
-    @usableFromInline var locations = ContiguousArray<Location>()
-    @usableFromInline var tables = ContiguousArray<ArchetypeTable>()
+    @exclusivity(unchecked) @usableFromInline var entities = EntityTable()
+    @exclusivity(unchecked) @usableFromInline var locations = ContiguousArray<Location>()
+    @exclusivity(unchecked) @usableFromInline var tables = ContiguousArray<ArchetypeTable>()
     var tableIndex: [ComponentMask: Int] = [:]
-    @usableFromInline var lockDepth = 0
+    @exclusivity(unchecked) @usableFromInline var lockDepth = 0
 
     public required init() {
         tables.append(ArchetypeTable(mask: ComponentMask(), columns: []))
@@ -64,6 +64,7 @@ public final class ArchetypeStorage: NexusStorageProviding {
 
     /// Moves the row of `entity` into `target`. Columns that exist in both tables are moved; columns only in
     /// the source are dropped. Columns only in the target must be appended by the caller afterwards.
+    @usableFromInline
     func move(_ entity: EntityID, to targetIndex: Int) {
         let location = locations[Int(entity.index)]
         let source = tables[Int(location.table)]
@@ -85,6 +86,7 @@ public final class ArchetypeStorage: NexusStorageProviding {
         locations[Int(entity.index)] = Location(table: Int32(targetIndex), row: Int32(newRow))
     }
 
+    @usableFromInline
     func tableAfterAdding<C: Component>(_: C.Type, to sourceIndex: Int) -> Int {
         let source = tables[sourceIndex]
         let cached = source.edge(source.addEdges, C.componentIndex)
@@ -159,29 +161,32 @@ public final class ArchetypeStorage: NexusStorageProviding {
 
     // MARK: Typed component access
 
+    @inlinable
     public func set<C: Component>(_ component: C, for entity: EntityID) {
         requireUnlocked()
         precondition(entities.isAlive(entity), "set on a dead entity")
         precondition(C.componentIndex >= 0 && C.componentIndex < ComponentMask.capacity, "component index out of range")
         let location = locations[Int(entity.index)]
         if let column = tables[Int(location.table)].column(C.self) {
-            column.items[Int(location.row)] = component
+            column[Int(location.row)] = component
             return
         }
         let target = tableAfterAdding(C.self, to: Int(location.table))
         move(entity, to: target)
-        tables[target].column(C.self).unsafelyUnwrapped.items.append(component)
+        tables[target].column(C.self).unsafelyUnwrapped.append(component)
         entities.insert(C.componentIndex, into: entity)
     }
 
+    @inlinable
     public func get<C: Component>(_: C.Type, for entity: EntityID) -> C? {
         guard entities.isAlive(entity) else {
             return nil
         }
         let location = locations[Int(entity.index)]
-        return tables[Int(location.table)].column(C.self)?.items[Int(location.row)]
+        return tables[Int(location.table)].column(C.self)?[Int(location.row)]
     }
 
+    @inlinable
     public func modify<C: Component>(_: C.Type, for entity: EntityID, _ body: (inout C) -> Void) -> Bool {
         guard entities.isAlive(entity) else {
             return false
@@ -192,15 +197,17 @@ public final class ArchetypeStorage: NexusStorageProviding {
         }
         lockDepth += 1
         defer { lockDepth -= 1 }
-        body(&column.items[Int(location.row)])
+        body(&column[Int(location.row)])
         return true
     }
 
+    @inlinable
     @discardableResult
     public func remove<C: Component>(_: C.Type, from entity: EntityID) -> Bool {
         remove(componentIndex: C.componentIndex, from: entity)
     }
 
+    @inlinable
     public func has<C: Component>(_: C.Type, for entity: EntityID) -> Bool {
         entities.mask(of: entity).contains(C.componentIndex)
     }
@@ -376,9 +383,7 @@ public final class ArchetypeStorage: NexusStorageProviding {
                 continue
             }
             table.entities.withUnsafeBufferPointer { ids in
-                column.items.withUnsafeMutableBufferPointer { components in
-                    body(ids, components)
-                }
+                body(ids, UnsafeMutableBufferPointer(start: column.base, count: column.count))
             }
         }
     }

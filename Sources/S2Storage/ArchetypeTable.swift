@@ -33,18 +33,64 @@ public class AnyColumn {
 }
 
 /// One component type's values of an archetype table; row `i` belongs to `ArchetypeTable.entities[i]`.
+///
+/// The values live in a hand-managed buffer, so moving a row between tables is a single
+/// `moveInitialize` per column instead of three generic `ContiguousArray` operations (`swapAt`,
+/// `removeLast`, `append`) that run unspecialized behind the class's virtual methods. Elements are
+/// initialized and deinitialized by hand; `deinit` releases the live ones.
 public final class Column<C: Component>: AnyColumn {
-    @usableFromInline var items = ContiguousArray<C>()
+    /// Address of row 0; dangling (never dereferenced) while `capacity` is 0.
+    @exclusivity(unchecked) @usableFromInline var base: UnsafeMutablePointer<C>
+    @exclusivity(unchecked) @usableFromInline var count = 0
+    @exclusivity(unchecked) @usableFromInline var capacity = 0
 
     override public init() {
+        base = UnsafeMutablePointer<C>(bitPattern: MemoryLayout<C>.alignment).unsafelyUnwrapped
         super.init()
     }
 
-    /// The address of row 0. Only valid while the table is not modified, which the storage guarantees for
-    /// the duration of an iteration. Requires at least one row.
+    deinit {
+        base.deinitialize(count: count)
+        if capacity > 0 {
+            base.deallocate()
+        }
+    }
+
     @inlinable
-    var base: UnsafeMutablePointer<C> {
-        items.withUnsafeMutableBufferPointer { $0.baseAddress.unsafelyUnwrapped }
+    subscript(row: Int) -> C {
+        unsafeAddress { UnsafePointer(base + row) }
+        unsafeMutableAddress { base + row }
+    }
+
+    @inlinable
+    func append(_ value: C) {
+        if count == capacity {
+            grow()
+        }
+        (base + count).initialize(to: value)
+        count += 1
+    }
+
+    @usableFromInline
+    func grow() {
+        let newCapacity = max(8, capacity * 2)
+        let newBase = UnsafeMutablePointer<C>.allocate(capacity: newCapacity)
+        newBase.moveInitialize(from: base, count: count)
+        if capacity > 0 {
+            base.deallocate()
+        }
+        base = newBase
+        capacity = newCapacity
+    }
+
+    /// Fills the hole at `row` (already deinitialized or moved out) with the last row.
+    @inlinable
+    func fillHole(_ row: Int) {
+        let last = count - 1
+        if row != last {
+            (base + row).moveInitialize(from: base + last, count: 1)
+        }
+        count = last
     }
 
     override func makeEmpty() -> AnyColumn {
@@ -52,31 +98,29 @@ public final class Column<C: Component>: AnyColumn {
     }
 
     override func swapRemove(_ row: Int) {
-        let last = items.count - 1
-        if row != last {
-            items.swapAt(row, last)
-        }
-        items.removeLast()
+        (base + row).deinitialize(count: 1)
+        fillHole(row)
     }
 
     override func moveAppend(from other: AnyColumn, row: Int) {
         let source = unsafeDowncast(other, to: Column<C>.self)
-        let last = source.items.count - 1
-        if row != last {
-            source.items.swapAt(row, last)
+        if count == capacity {
+            grow()
         }
-        items.append(source.items.removeLast())
+        (base + count).moveInitialize(from: source.base + row, count: 1)
+        count += 1
+        source.fillHole(row)
     }
 
     override func anyValue(at row: Int) -> any Component {
-        items[row]
+        self[row]
     }
 
     override func assign(any component: any Component, at row: Int) -> Bool {
         guard let typed = component as? C else {
             return false
         }
-        items[row] = typed
+        self[row] = typed
         return true
     }
 }
@@ -85,14 +129,14 @@ public final class Column<C: Component>: AnyColumn {
 public final class ArchetypeTable {
     public let mask: ComponentMask
     /// The entity index of every row.
-    @usableFromInline var entities = ContiguousArray<UInt32>()
+    @exclusivity(unchecked) @usableFromInline var entities = ContiguousArray<UInt32>()
     /// Indexed by component index; `nil` for components not in `mask`.
-    @usableFromInline var columns: ContiguousArray<AnyColumn?>
+    @exclusivity(unchecked) @usableFromInline var columns: ContiguousArray<AnyColumn?>
     /// The component indices in `mask`, ascending.
     let columnIndices: [Int]
     /// Cached transitions: `addEdges[c]` is the table after adding component `c`, `-1` when unknown.
-    var addEdges = ContiguousArray<Int32>()
-    var removeEdges = ContiguousArray<Int32>()
+    @exclusivity(unchecked) var addEdges = ContiguousArray<Int32>()
+    @exclusivity(unchecked) var removeEdges = ContiguousArray<Int32>()
 
     init(mask: ComponentMask, columns: [(Int, AnyColumn)]) {
         self.mask = mask

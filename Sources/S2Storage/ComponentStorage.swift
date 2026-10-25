@@ -8,7 +8,7 @@
 ///
 /// Removal swaps the last element into the freed slot, so it is O(1) and keeps the array dense.
 public final class ComponentStorage<C: Component>: AnyComponentStorage {
-    @usableFromInline var dense = ContiguousArray<C>()
+    @exclusivity(unchecked) @usableFromInline var dense = ContiguousArray<C>()
 
     override public init() {
         super.init()
@@ -26,6 +26,7 @@ public final class ComponentStorage<C: Component>: AnyComponentStorage {
         sparse.slot(of: index)
     }
 
+    @inlinable
     func insert(_ component: C, for index: UInt32) {
         sparse.set(index, slot: dense.count)
         dense.append(component)
@@ -33,6 +34,13 @@ public final class ComponentStorage<C: Component>: AnyComponentStorage {
     }
 
     override public func remove(_ index: UInt32) -> Bool {
+        removeSwap(index)
+    }
+
+    /// Typed, inlinable swap-remove; the provider's typed `remove` calls this so the work is specialized
+    /// in the client instead of running through the generic class's unspecialized virtual method.
+    @inlinable
+    func removeSwap(_ index: UInt32) -> Bool {
         let slot = sparse.slot(of: index)
         guard slot >= 0 else {
             return false

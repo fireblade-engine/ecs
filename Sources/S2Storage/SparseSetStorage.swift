@@ -13,11 +13,11 @@
 ///   through their sparse indices: one lookup per extra component and entity.
 /// - Random access (`get`) is a sparse lookup plus an array read.
 public final class SparseSetStorage: NexusStorageProviding {
-    @usableFromInline var entities = EntityTable()
+    @exclusivity(unchecked) @usableFromInline var entities = EntityTable()
     /// Indexed by `Component.componentIndex`; `nil` until the type is first used.
-    @usableFromInline var storages = ContiguousArray<AnyComponentStorage?>()
+    @exclusivity(unchecked) @usableFromInline var storages = ContiguousArray<AnyComponentStorage?>()
     /// Greater than zero while a scoped access or iteration runs; structural changes trap then.
-    @usableFromInline var lockDepth = 0
+    @exclusivity(unchecked) @usableFromInline var lockDepth = 0
 
     public required init() {}
 
@@ -32,6 +32,7 @@ public final class SparseSetStorage: NexusStorageProviding {
         return unsafeDowncast(storage, to: ComponentStorage<C>.self)
     }
 
+    @usableFromInline
     func storage<C: Component>(creating _: C.Type) -> ComponentStorage<C> {
         if let storage = existing(C.self) {
             return storage
@@ -80,6 +81,7 @@ public final class SparseSetStorage: NexusStorageProviding {
 
     // MARK: Typed component access
 
+    @inlinable
     public func set<C: Component>(_ component: C, for entity: EntityID) {
         requireUnlocked()
         precondition(entities.isAlive(entity), "set on a dead entity")
@@ -93,6 +95,7 @@ public final class SparseSetStorage: NexusStorageProviding {
         }
     }
 
+    @inlinable
     public func get<C: Component>(_: C.Type, for entity: EntityID) -> C? {
         guard let storage = existing(C.self) else {
             return nil
@@ -101,6 +104,7 @@ public final class SparseSetStorage: NexusStorageProviding {
         return slot >= 0 ? storage.dense[slot] : nil
     }
 
+    @inlinable
     public func modify<C: Component>(_: C.Type, for entity: EntityID, _ body: (inout C) -> Void) -> Bool {
         guard let storage = existing(C.self) else {
             return false
@@ -115,11 +119,18 @@ public final class SparseSetStorage: NexusStorageProviding {
         return true
     }
 
+    @inlinable
     @discardableResult
     public func remove<C: Component>(_: C.Type, from entity: EntityID) -> Bool {
-        remove(componentIndex: C.componentIndex, from: entity)
+        requireUnlocked()
+        guard let storage = existing(C.self), storage.removeSwap(entity.index) else {
+            return false
+        }
+        entities.remove(C.componentIndex, from: entity)
+        return true
     }
 
+    @inlinable
     public func has<C: Component>(_: C.Type, for entity: EntityID) -> Bool {
         entities.mask(of: entity).contains(C.componentIndex)
     }
@@ -330,8 +341,8 @@ public final class SparseSetStorage: NexusStorageProviding {
 /// Hoisted per-type state of a parameter-pack iteration over a sparse-set storage.
 public struct SparseCursor<C: Component> {
     @usableFromInline let owner: AnyComponentStorage?
-    @usableFromInline let base: UnsafeMutablePointer<C>?
-    @usableFromInline let view: SparseIndexView?
+    @usableFromInline let base: UnsafeMutablePointer<C>
+    @usableFromInline let view: SparseIndexView
 
     @inlinable
     init(_ storage: ComponentStorage<C>?) {
@@ -341,8 +352,8 @@ public struct SparseCursor<C: Component> {
             view = storage.sparse.view
         } else {
             owner = nil
-            base = nil
-            view = nil
+            base = UnsafeMutablePointer<C>(bitPattern: MemoryLayout<C>.alignment).unsafelyUnwrapped
+            view = SparseIndexView(table: .init(bitPattern: 8).unsafelyUnwrapped, capacity: 0)
         }
     }
 
@@ -361,14 +372,12 @@ public struct SparseCursor<C: Component> {
 
     @inlinable
     static func check(_ cursor: Self, _ id: UInt32, _ member: inout Bool) {
-        if member, let view = cursor.view {
-            member = view.slot(of: id) >= 0
-        }
+        member = member && cursor.view.slot(of: id) >= 0
     }
 
     /// Only called after `check` found the entity in this storage.
     @inlinable
     func value(_ id: UInt32) -> C {
-        base.unsafelyUnwrapped[view.unsafelyUnwrapped.slot(of: id)]
+        base[view.slot(of: id)]
     }
 }

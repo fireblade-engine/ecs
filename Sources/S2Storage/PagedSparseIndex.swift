@@ -16,8 +16,8 @@ public final class PagedSparseIndex {
     /// The number of slots per page (4096 slots of 4 bytes: 16 KiB).
     public static let pageSize = 1 << pageShift
 
-    @usableFromInline var table: UnsafeMutablePointer<UnsafeMutablePointer<Int32>?>
-    @usableFromInline var tableCapacity: Int
+    @exclusivity(unchecked) @usableFromInline var table: UnsafeMutablePointer<UnsafeMutablePointer<Int32>?>
+    @exclusivity(unchecked) @usableFromInline var tableCapacity: Int
 
     public init() {
         tableCapacity = 4

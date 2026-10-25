@@ -55,12 +55,12 @@ public struct EntityTable {
         return true
     }
 
-    @usableFromInline
+    @inlinable
     mutating func insert(_ componentIndex: Int, into entity: EntityID) {
         masks[Int(entity.index)].insert(componentIndex)
     }
 
-    @usableFromInline
+    @inlinable
     mutating func remove(_ componentIndex: Int, from entity: EntityID) {
         masks[Int(entity.index)].remove(componentIndex)
     }

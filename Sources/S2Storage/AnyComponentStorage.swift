@@ -10,7 +10,7 @@
 /// `unsafeDowncast` after looking it up by component index.
 public class AnyComponentStorage {
     /// Dense, hole-free list of the entity indices that have this component; position equals dense slot.
-    @usableFromInline final var ids = ContiguousArray<UInt32>()
+    @exclusivity(unchecked) @usableFromInline final var ids = ContiguousArray<UInt32>()
     public final let sparse = PagedSparseIndex()
 
     init() {}

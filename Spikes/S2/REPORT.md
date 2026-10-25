@@ -59,8 +59,8 @@ Notes on the cases:
   entities carry four other components. Per operation: sparse 12 ns, block 10 ns, archetype 115 ns.
 - Fragmentation: C0, C1 and a different subset of 16 tag types per entity (1,024 distinct sets). Sparse set is
   unaffected; archetype visits 1,024 tables with about ten rows each.
-- Packs (D7 fallback, 8 to 20 reads) are 20 to 40x slower than per-arity code on sparse set (145 to 363 ns per
-  entity) and 4 to 14x on archetype. The optimizer lowers pack expansions to dynamic pack loops over
+- Packs (D7 fallback, 8 to 20 reads) cost 145 to 363 ns per entity on sparse set: an 8-read pack is 42x slower
+  than the 4-read per-arity overload, on archetype 8x.  The optimizer lowers pack expansions to dynamic pack loops over
   metadata, which matches S1. The per-arity overloads must cover the common cases; the pack path is a correctness
   fallback only.
 - **Allocations per entity during iteration: 0** for every storage and arity (1R, 4R, 1R1W, 20R pack, fragmented).
@@ -72,7 +72,7 @@ Notes on the cases:
 ### BlockSparseSet (block-allocated dense array)
 
 1,024-element blocks allocated by hand (`UnsafeMutablePointer<C>` per block, manual initialize/deinitialize, block
-table reached through a hoisted pointer). It matches the `ContiguousArray` variant on reads, is 25 to 30% slower
+table reached through a hoisted pointer). It matches the `ContiguousArray` variant on reads, is about 30% slower
 on writes (extra indirection per element, no flat base pointer), 20% faster on churn (no array growth checks)
 and 20% slower on random `get`. It has stable element addresses and never copies on growth, which the benchmarks
 do not reward. **Not recommended**: no win that survives, more unsafe code (the conformance suite does cover

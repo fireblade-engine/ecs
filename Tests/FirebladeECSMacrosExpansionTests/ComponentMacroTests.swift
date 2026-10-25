@@ -26,6 +26,8 @@ import Testing
                 public var linear: Double = 0
                 public var target: EntityIdentifier?
 
+                public static let componentIndex: Int = Self.registeredComponentIndex
+
                 public init() {
                 }
             }
@@ -106,6 +108,8 @@ import Testing
                     x = 0
                     y = 0
                 }
+
+                static let componentIndex: Int = Self.registeredComponentIndex
             }
 
             extension Mixed: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.CloneableComponent, FirebladeECS.InspectableComponent {
@@ -154,6 +158,8 @@ import Testing
                 var shield: Int!
                 var regeneration: Optional<Double> = nil
                 var onChange: (() -> Void)? = nil
+
+                package static let componentIndex: Int = Self.registeredComponentIndex
             }
 
             extension Health: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.SerializableComponent {
@@ -188,6 +194,8 @@ import Testing
             """,
             expandedSource: """
             struct Tag {
+
+                static let componentIndex: Int = Self.registeredComponentIndex
             }
 
             extension Tag: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.CloneableComponent, FirebladeECS.SerializableComponent, FirebladeECS.InspectableComponent, FirebladeECS.DefaultInitializable {
@@ -245,6 +253,8 @@ import Testing
                 func clone(context: ComponentCloneContext) -> Custom {
                     Custom(value: value)
                 }
+
+                static let componentIndex: Int = Self.registeredComponentIndex
             }
 
             extension Custom: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.CloneableComponent, FirebladeECS.SerializableComponent {
@@ -272,6 +282,8 @@ import Testing
                 init() {
                     count = 0
                 }
+
+                static let componentIndex: Int = Self.registeredComponentIndex
             }
 
             extension Counter: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.DefaultInitializable {
@@ -293,6 +305,8 @@ import Testing
             expandedSource: """
             struct Point {
                 var x: Double = 0
+
+                static let componentIndex: Int = Self.registeredComponentIndex
             }
 
             extension Point: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.DefaultInitializable {
@@ -319,6 +333,8 @@ import Testing
                     self.x = x
                 }
 
+                static let componentIndex: Int = Self.registeredComponentIndex
+
                 init() {
                 }
             }
@@ -340,6 +356,8 @@ import Testing
             expandedSource: """
             public struct Point {
                 public var x: Double
+
+                public static let componentIndex: Int = Self.registeredComponentIndex
             }
 
             extension Point: FirebladeECS.Component, FirebladeECS.RegistrableComponent {
@@ -380,6 +398,8 @@ import Testing
             enum Phase: Codable {
                 case idle
                 case running(Int)
+
+                static let componentIndex: Int = Self.registeredComponentIndex
             }
 
             extension Phase: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.CloneableComponent, FirebladeECS.SerializableComponent, FirebladeECS.InspectableComponent {
@@ -414,6 +434,8 @@ import Testing
                 var (a, b): (Int, Int) = (0, 0)
                 var inferred = 1
                 var transient: Int
+
+                static let componentIndex: Int = Self.registeredComponentIndex
             }
 
             extension Broken: FirebladeECS.Component, FirebladeECS.RegistrableComponent {
@@ -443,6 +465,8 @@ import Testing
             expandedSource: """
             struct Untyped {
                 var inferred = 1
+
+                static let componentIndex: Int = Self.registeredComponentIndex
             }
 
             extension Untyped: FirebladeECS.Component, FirebladeECS.RegistrableComponent, FirebladeECS.DefaultInitializable {
@@ -485,6 +509,8 @@ import Testing
                 var fine: EntityIdentifier?
                 var alias: EntityAlias
                 var x, y: Entity
+
+                static let componentIndex: Int = Self.registeredComponentIndex
             }
 
             extension Links: FirebladeECS.Component, FirebladeECS.RegistrableComponent {

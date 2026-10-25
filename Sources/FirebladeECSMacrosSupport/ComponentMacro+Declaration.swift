@@ -61,6 +61,7 @@ extension ComponentMacro.Declaration {
         var cloning = false
         var codable = false
         var componentProperties = false
+        var componentIndex = false
     }
 }
 
@@ -266,6 +267,8 @@ extension ComponentMacro.Declaration {
                 declared.codable = true
             } else if let variable = decl.as(VariableDeclSyntax.self), declares(variable, named: "componentProperties") {
                 declared.componentProperties = true
+            } else if let variable = decl.as(VariableDeclSyntax.self), declares(variable, named: "componentIndex") {
+                declared.componentIndex = true
             }
         }
         return declared

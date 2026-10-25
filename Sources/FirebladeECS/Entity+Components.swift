@@ -31,11 +31,12 @@ extension Entity {
     /// - The written components are copied out of the nexus into the tuple and back after `body` returned. A
     ///   ``ComponentModified`` event is delivered for each written component after the write access ended.
     ///
+    /// Specialization is disabled for this slow path: the Swift 6.4 SIL GenericSpecializer crashes on it in release builds
+    /// (`TypeSubstituter.transformPackElementType`).
+    ///
     /// - Returns: `false` if this entity is destroyed or lacks one of the components; `body` is not called then.
     @discardableResult
     @_disfavoredOverload
-    // Swift 6.4 crashes in the SIL GenericSpecializer (TypeSubstituter::transformPackElementType) when it specializes this
-    // pack code for concrete types in release builds. This is the slow path, so keep it generic.
     @_semantics("optimize.sil.specialize.generic.never")
     public func components<each R: Component, each W: Component>(
         _ rTypes: repeat (each R).Type,

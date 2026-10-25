@@ -6,6 +6,49 @@
 //
 
 extension Entity {
+    // MARK: Modify in place
+
+    /// Changes a component of this entity in place.
+    ///
+    /// `body` gets the component stored in the nexus, not a copy: with value type components the change is
+    /// visible right away and nothing is written back. A ``ComponentModified`` event is delivered afterwards to
+    /// delegates subscribed to ``NexusEventMask/valueChanges``.
+    ///
+    /// `body` must not add or remove components or entities of the same nexus, and must not read or modify the
+    /// component being modified: the nexus stops the process with a message if it does.
+    /// If `body` throws, the error is rethrown after the event.
+    ///
+    /// - Parameters:
+    ///   - type: The type of the component to change.
+    ///   - body: Changes the component.
+    /// - Returns: `false` if this entity has no component of the type or is destroyed (a destroyed entity also
+    ///   triggers an assertion failure in debug builds); `body` is not called then.
+    /// - Complexity: O(1)
+    @inlinable
+    @discardableResult
+    public func modify<C: Component>(_ type: C.Type, _ body: (inout C) throws -> Void) rethrows -> Bool {
+        try nexus.modify(type, for: identifier, body)
+    }
+
+    /// Changes a component of this entity in place, adding a default first if the entity has none.
+    ///
+    /// `makeDefault` is evaluated only when the component is missing. Then ``ComponentAdded`` is delivered, and
+    /// ``ComponentModified`` after `body` ran. Nothing is inserted into a destroyed entity: the call does nothing
+    /// and triggers an assertion failure in debug builds.
+    ///
+    /// The restrictions of ``modify(_:_:)`` apply to `body`.
+    /// - Parameters:
+    ///   - type: The type of the component to change.
+    ///   - makeDefault: The component to add if the entity has none.
+    ///   - body: Changes the component.
+    /// - Complexity: O(1) if the component exists, O(M) otherwise where M is the number of families.
+    @inlinable
+    public func modify<C: Component>(_ type: C.Type, default makeDefault: @autoclosure () -> C, _ body: (inout C) throws -> Void) rethrows {
+        try nexus.modify(type, default: makeDefault(), for: identifier, body)
+    }
+
+    // MARK: Read
+
     /// Retrieves a component of the specified type assigned to this entity.
     /// - Returns: The component instance if found; otherwise, `nil`.
     /// - Complexity: O(1)

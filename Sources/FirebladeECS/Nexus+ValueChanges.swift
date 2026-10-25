@@ -35,28 +35,37 @@ extension Nexus {
     // MARK: Writes
 
     /// Changes the component of an entity in place and emits ``ComponentModified`` afterwards.
+    ///
+    /// If `body` throws, the error propagates after the event: the component may have been changed already.
     /// - Returns: `false` if the handle is stale or the entity has no such component.
     @usableFromInline
     @discardableResult
-    final func modify<C: Component>(_ type: C.Type, for entityId: EntityIdentifier, _ body: (inout C) -> Void) -> Bool {
+    final func modify<C: Component>(_ type: C.Type, for entityId: EntityIdentifier, _ body: (inout C) throws -> Void) rethrows -> Bool {
         guard isAlive(entityId) else {
             reportStaleHandle(entityId)
             return false
         }
-        guard backend.modify(type, for: entityId, body) else {
-            return false
+        var ran = false
+        defer {
+            // after the write access ended, so a delegate may read the component
+            if ran {
+                emitModified(type, for: entityId)
+            }
         }
-        emitModified(type, for: entityId)
-        return true
+        return try backend.modify(type, for: entityId) {
+            ran = true
+            try body(&$0)
+        }
     }
 
     /// Changes the component of an entity in place, adding `default` first if the entity has none.
     ///
-    /// A missing component emits ``ComponentAdded``, then ``ComponentModified``.
-    /// - Returns: `false` if the handle is stale.
+    /// A missing component emits ``ComponentAdded``, then ``ComponentModified``. The default is evaluated only
+    /// when the component is missing.
+    /// - Returns: `false` if the handle is stale; nothing is inserted then.
     @usableFromInline
     @discardableResult
-    final func modify<C: Component>(_ type: C.Type, default makeDefault: @autoclosure () -> C, for entityId: EntityIdentifier, _ body: (inout C) -> Void) -> Bool {
+    final func modify<C: Component>(_ type: C.Type, default makeDefault: @autoclosure () -> C, for entityId: EntityIdentifier, _ body: (inout C) throws -> Void) rethrows -> Bool {
         guard isAlive(entityId) else {
             reportStaleHandle(entityId)
             return false
@@ -66,8 +75,12 @@ extension Nexus {
                 return false
             }
             update(familyMembership: entityId)
+            // a delegate notified about the addition may have destroyed the entity
+            guard isAlive(entityId) else {
+                return false
+            }
         }
-        return modify(type, for: entityId, body)
+        return try modify(type, for: entityId, body)
     }
 
     /// Gives `body` write access to all components of a type as contiguous buffers and emits one

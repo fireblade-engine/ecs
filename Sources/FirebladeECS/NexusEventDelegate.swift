@@ -26,6 +26,8 @@ public protocol NexusEventDelegate: AnyObject, Sendable {
     var subscribedEvents: NexusEventMask { get }
 }
 
-public extension NexusEventDelegate {
-    var subscribedEvents: NexusEventMask { .structural }
+extension NexusEventDelegate {
+    public var subscribedEvents: NexusEventMask {
+        .structural
+    }
 }

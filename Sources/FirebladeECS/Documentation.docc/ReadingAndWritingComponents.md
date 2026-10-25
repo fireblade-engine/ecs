@@ -72,7 +72,7 @@ movers.forEachComponentSpan(reading: Velocity.self, writing: Position.self) { ve
 }
 ```
 
-- ``Nexus/componentSpan(reading:_:)`` and ``Nexus/componentSpan(writing:_:)`` view every component of one type, in storage order.
+- ``Nexus/componentSpan(reading:_:)`` and ``Nexus/componentSpan(writing:_:)`` view every component of one type, in storage order. On the archetype storage they view a copy when entities with different component sets have the type, see <doc:ChoosingAStorage>.
 - ``Family/forEachComponentSpan(reading:writing:_:)`` visits the members of a family in batches. Overloads exist for 0 to 2 read and 0 to 2 written types.
 - A span exists only inside the closure. `Span` is `~Escapable`, so storing it in a variable outside the closure or returning it does not compile (`var leaked: Span<Position>?; nexus.componentSpan(reading: Position.self) { leaked = $0 }` is an error). This is what makes it safe: no span can outlive the storage it views. Returning a span from a property would need the experimental `@lifetime` attribute, so there is none.
 - `Span` is not a `Sequence`: loop over `indices`, and use `span[i]`, which is bounds checked.
@@ -82,7 +82,7 @@ movers.forEachComponentSpan(reading: Velocity.self, writing: Position.self) { ve
 
 #### Batches of a family
 
-The sparse set storage keeps every component type in its own array. The components of the members of a family are consecutive in all involved arrays only as long as nothing was removed: removing a component moves the last component of that type into the gap. ``Family/forEachComponentSpan(reading:writing:_:)`` therefore passes a *batch*: a maximal run of members whose components are consecutive in every involved array. The spans view the storage directly (nothing is copied or allocated), so the batch size depends on the history of the nexus: one batch for entities created together, shorter ones after churn, one element at the worst. Write the closure so that it is correct for any batch size. Storages that keep the columns aligned (archetype tables, owning groups) will pass one batch per table.
+The sparse set storage keeps every component type in its own array. The components of the members of a family are consecutive in all involved arrays only as long as nothing was removed: removing a component moves the last component of that type into the gap. ``Family/forEachComponentSpan(reading:writing:_:)`` therefore passes a *batch*: a maximal run of members whose components are consecutive in every involved array. The spans view the storage directly (nothing is copied or allocated), so the batch size depends on the history of the nexus: one batch for entities created together, shorter ones after churn, one element at the worst. Write the closure so that it is correct for any batch size. The archetype storage keeps the columns of a table aligned and passes exactly one batch per matching table, see <doc:ChoosingAStorage>.
 
 Spans pay off when the batch is large: ``Nexus/componentSpan(reading:_:)`` over a whole type is about 3 times faster than ``Family/forEach(reading:writing:_:)`` in the benchmarks (10 000 entities, see below). The family batches are not faster on the sparse set storage: finding the batches costs one lookup per member and component type, as much as `forEach`.
 

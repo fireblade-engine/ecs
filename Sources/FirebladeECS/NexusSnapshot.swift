@@ -10,14 +10,14 @@
 /// A snapshot references the live component instances and entity identifier generator of the nexus. Encode it right after creation.
 ///
 /// The encoded form starts with the ``formatVersion`` and lists all entities in ascending identifier order,
-/// each with its original identifier and its components keyed by their stable ``RegistrableComponent/componentTypeName``:
+/// each with its original identifier (the raw value, here with generation 0) and its components keyed by their stable ``RegistrableComponent/componentTypeName``:
 /// ```json
 /// {
-///   "formatVersion": 2,
-///   "entityIdGenerator": { "nextFreshId": 2, "recycled": [] },
+///   "formatVersion": 3,
+///   "entityIdGenerator": { "nextFreshId": 3, "recycledIds": [] },
 ///   "entities": [
-///     { "id": 0, "components": { "MyGame.Position": { "x": 1, "y": 2 } } },
-///     { "id": 1, "components": {}, "sharedComponents": { "MyGame.Position": 0 } }
+///     { "id": 1, "components": { "MyGame.Position": { "x": 1, "y": 2 } } },
+///     { "id": 2, "components": {}, "sharedComponents": { "MyGame.Position": 1 } }
 ///   ]
 /// }
 /// ```
@@ -28,12 +28,19 @@
 /// Version history:
 /// - 1: Entities and their components.
 /// - 2: Adds `entityIdGenerator` and `sharedComponents`.
+/// - 3: Entity identifiers are encoded as 64 bit raw values holding the slot index and generation.
+///   The generator state lists recycled identifiers as `recycledIds`.
+///
+/// Snapshots of versions 1 and 2 still load. Their identifiers decode with generation 0.
+/// The slot index 0 is reserved and never used for entities, so an entity with index 0 in an older snapshot
+/// gets a fresh identifier when the snapshot is restored, and references to it are remapped to that identifier.
+/// All other entities keep their identifiers.
 public struct NexusSnapshot {
     /// The version of the encoded snapshot format written by this library.
     ///
     /// Additions to the format increase the version.
     /// Decoding accepts all versions up to this one and rejects snapshots with a newer version.
-    public static let formatVersion: UInt = 2
+    public static let formatVersion: UInt = 3
 
     /// The entities of the snapshot in ascending identifier order.
     public let members: [Member]

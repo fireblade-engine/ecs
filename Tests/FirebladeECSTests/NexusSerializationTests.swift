@@ -44,7 +44,7 @@ struct SerialScene: Codable {
 struct NonPersistableEntityIdGenerator: EntityIdentifierGenerator, @unchecked Sendable {
     final class Storage {
         var stack: [EntityIdentifier]
-        var next: EntityIdentifier.Index = 0
+        var next: EntityIdentifier.Index = 1
 
         init(stack: [EntityIdentifier]) {
             self.stack = stack
@@ -55,7 +55,7 @@ struct NonPersistableEntityIdGenerator: EntityIdentifierGenerator, @unchecked Se
 
     init<EntityIds>(startProviding initialEntityIds: EntityIds) where EntityIds: BidirectionalCollection, EntityIds.Element == EntityIdentifier {
         storage = Storage(stack: Array(initialEntityIds))
-        storage.next = (initialEntityIds.map(\.index).max() ?? 0) + (initialEntityIds.isEmpty ? 0 : 1)
+        storage.next = (initialEntityIds.map(\.index).max() ?? 0) + 1
     }
 
     func nextId() -> EntityIdentifier {
@@ -63,7 +63,7 @@ struct NonPersistableEntityIdGenerator: EntityIdentifierGenerator, @unchecked Se
             return id
         }
         defer { storage.next += 1 }
-        return EntityIdentifier(index: storage.next, generation: 1)
+        return EntityIdentifier(index: storage.next, generation: 0)
     }
 
     func markUnused(entityId: EntityIdentifier) {
@@ -167,9 +167,9 @@ struct SerialFormat: CustomTestStringConvertible, @unchecked Sendable {
         #expect(restored.numComponents == source.nexus.numComponents)
         #expect(Set(restored.makeEntitiesIterator().map(\.identifier)) == [source.root.identifier, source.child.identifier, source.sibling.identifier])
 
-        let root = restored.entity(from: source.root.identifier)
-        let child = restored.entity(from: source.child.identifier)
-        let sibling = restored.entity(from: source.sibling.identifier)
+        let root = try #require(restored.entity(source.root.identifier))
+        let child = try #require(restored.entity(source.child.identifier))
+        let sibling = try #require(restored.entity(source.sibling.identifier))
         #expect(try #require(root.get(SerialPosition.self)).x == 1)
         #expect(try #require(child.get(SerialParent.self)).parent == root)
         #expect(try #require(child.get(SerialTarget.self)).target == root.identifier)
@@ -274,7 +274,8 @@ struct SerialFormat: CustomTestStringConvertible, @unchecked Sendable {
         try nexus.register(SerialHealth.self)
         var decoder = JSONDecoder()
         try nexus.restoreSnapshot(from: data, using: &decoder)
-        #expect(nexus.entity(from: 0).get(SerialHealth.self)?.value == 3)
+        // the entity with the reserved index 0 got a fresh identifier
+        #expect(try #require(nexus.entity(1)).get(SerialHealth.self)?.value == 3)
         #expect(nexus.componentType(named: "OldHealth")?.typeName == "Health")
 
         let snapshot = try nexus.makeSnapshot(handling: .throwError)
@@ -297,9 +298,12 @@ struct SerialFormat: CustomTestStringConvertible, @unchecked Sendable {
         var decoder = JSONDecoder()
         try nexus.restoreSnapshot(from: data, using: &decoder)
 
-        #expect(nexus.entity(from: 2).get(SerialHealth.self)?.value == 2)
-        #expect(nexus.createEntity().identifier == 1)
+        // the entity with the reserved index 0 got the lowest free identifier, all others keep theirs
+        #expect(try #require(nexus.entity(2)).get(SerialHealth.self)?.value == 2)
+        #expect(try #require(nexus.entity(1)).get(SerialHealth.self)?.value == 1)
+        #expect(nexus.numEntities == 2)
         #expect(nexus.createEntity().identifier == 3)
+        #expect(nexus.createEntity().identifier == 4)
     }
 
     @Test func restoreIntoNonEmptyNexusThrowsWithoutSideEffects() throws {
@@ -326,7 +330,7 @@ struct SerialFormat: CustomTestStringConvertible, @unchecked Sendable {
         }
         #expect(nexus.numEntities == 0)
         #expect(nexus.numComponents == 0)
-        #expect(nexus.createEntity().identifier == 0)
+        #expect(nexus.createEntity().identifier == 1)
     }
 
     @Test func missingSharedOwnerThrows() throws {
@@ -355,7 +359,7 @@ struct SerialFormat: CustomTestStringConvertible, @unchecked Sendable {
         source.entityIdGenerator = NonPersistableEntityIdGenerator(startProviding: [])
         source.createEntity()
         let kept = source.createEntity(with: SerialHealth(value: 4))
-        source.destroy(entity: source.entity(from: 0))
+        source.destroy(entity: try #require(source.entity(1)))
         var encoder = JSONEncoder()
         let data = try source.encodeSnapshot(using: &encoder, handling: .throwError)
         #expect(!String(decoding: data, as: UTF8.self).contains("entityIdGenerator"))
@@ -365,7 +369,7 @@ struct SerialFormat: CustomTestStringConvertible, @unchecked Sendable {
         try restored.register(SerialHealth.self)
         var decoder = JSONDecoder()
         try restored.restoreSnapshot(from: data, using: &decoder)
-        #expect(restored.entity(from: kept.identifier).get(SerialHealth.self)?.value == 4)
+        #expect(try #require(restored.entity(kept.identifier)).get(SerialHealth.self)?.value == 4)
         #expect(restored.entityIdGenerator is NonPersistableEntityIdGenerator)
     }
 

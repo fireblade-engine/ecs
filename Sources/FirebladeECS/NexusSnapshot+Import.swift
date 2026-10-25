@@ -11,7 +11,8 @@ extension NexusSnapshot {
     ///
     /// Creates all entities first, so that component properties referencing entities
     /// can be resolved regardless of their order in the snapshot.
-    /// If the resolver preserves identity, the entities keep their encoded identifiers.
+    /// If the resolver preserves identity, the entities keep their encoded identifiers,
+    /// except the entity with the reserved index 0 of a snapshot of format version 1 or 2, which gets a fresh identifier.
     struct Import: Decodable {
         /// Decodes the snapshot into the nexus of the resolver provided via `decoder.userInfo[.nexusEntityResolver]`.
         /// - Parameter decoder: The decoder to read data from.
@@ -36,8 +37,11 @@ extension NexusSnapshot {
             guard formatVersion <= NexusSnapshot.formatVersion else {
                 throw ComponentSerializationError.unsupportedFormatVersion(formatVersion)
             }
+            // Format versions before 3 encode 32 bit slot indices without generations.
+            resolver.decodesLegacyIdentifiers = formatVersion < 3
+            defer { resolver.decodesLegacyIdentifiers = false }
 
-            let sourceIds = try Self.decodeIdentifiers(from: container)
+            let sourceIds = try Self.decodeIdentifiers(from: container, isLegacy: formatVersion < 3)
             try Self.createEntities(sourceIds, in: nexus, resolver: resolver, container: container)
             let members = try Self.decodeMembers(from: container, in: nexus)
             for sourceId in sourceIds {
@@ -72,13 +76,23 @@ extension NexusSnapshot {
                 }
                 return
             }
-            try nexus.recreateEntities(withIdentifiers: sourceIds)
-            for sourceId in sourceIds {
+            // Index 0 is reserved. Entities of older snapshots that had it (decoded as the invalid identifier) get a fresh identifier.
+            let keptIds = sourceIds.filter { $0 != .invalid }
+            try nexus.recreateEntities(withIdentifiers: keptIds)
+            for sourceId in keptIds {
                 resolver.map(sourceId, to: sourceId)
             }
-            guard container.contains(.entityIdGenerator) else {
-                return
+            if container.contains(.entityIdGenerator) {
+                try installGeneratorState(from: container, in: nexus)
             }
+            // Created after the generator state is installed, so that the replacement identifier is reserved in the restored generator.
+            if sourceIds.contains(.invalid) {
+                resolver.map(.invalid, to: nexus.createEntity().identifier)
+            }
+        }
+
+        /// Replaces the generator of the nexus by the encoded state, if the generator is persistable.
+        private static func installGeneratorState(from container: KeyedDecodingContainer<CodingKeys>, in nexus: Nexus) throws {
             if let generatorType = type(of: nexus.entityIdGenerator) as? any PersistableEntityIdentifierGenerator.Type {
                 nexus.entityIdGenerator = try decode(generatorType, from: container, forKey: .entityIdGenerator)
             }
@@ -90,7 +104,7 @@ extension NexusSnapshot {
             var entities = try container.nestedUnkeyedContainer(forKey: .entities)
             while !entities.isAtEnd {
                 let member = try entities.nestedContainer(keyedBy: MemberCodingKeys.self)
-                let sourceId = try member.decode(EntityIdentifier.self, forKey: .id)
+                let sourceId = try member.decode(EntityIdentifier.Source.self, forKey: .id).value
                 let components = try member.nestedContainer(keyedBy: DynamicCodingKey.self, forKey: .components)
                 var memberComponents: [ComponentIdentifier: Component] = [:]
                 for key in components.allKeys.sorted(by: { $0.stringValue < $1.stringValue }) {
@@ -104,7 +118,7 @@ extension NexusSnapshot {
                 let shared = try member.nestedContainer(keyedBy: DynamicCodingKey.self, forKey: .sharedComponents)
                 var owners: [String: EntityIdentifier] = [:]
                 for key in shared.allKeys {
-                    owners[key.stringValue] = try shared.decode(EntityIdentifier.self, forKey: key)
+                    owners[key.stringValue] = try shared.decode(EntityIdentifier.Source.self, forKey: key).value
                 }
                 decoded.shared[sourceId] = owners
             }
@@ -114,14 +128,17 @@ extension NexusSnapshot {
         /// Decodes the identifiers of all entities of a snapshot.
         /// - Parameter container: The snapshot container.
         /// - Returns: The entity identifiers in snapshot order.
-        /// - Throws: A decoding error if an identifier is listed more than once.
-        private static func decodeIdentifiers(from container: KeyedDecodingContainer<CodingKeys>) throws -> [EntityIdentifier] {
+        /// - Throws: A decoding error if an identifier is listed more than once or uses the reserved index 0 in a non-legacy snapshot.
+        private static func decodeIdentifiers(from container: KeyedDecodingContainer<CodingKeys>, isLegacy: Bool) throws -> [EntityIdentifier] {
             var entities = try container.nestedUnkeyedContainer(forKey: .entities)
             var identifiers: [EntityIdentifier] = []
             var seen: Set<EntityIdentifier> = []
             while !entities.isAtEnd {
                 let member = try entities.nestedContainer(keyedBy: MemberCodingKeys.self)
-                let identifier = try member.decode(EntityIdentifier.self, forKey: .id)
+                let identifier = try member.decode(EntityIdentifier.Source.self, forKey: .id).value
+                guard isLegacy || identifier.index != 0 else {
+                    throw DecodingError.dataCorruptedError(forKey: .id, in: member, debugDescription: "Entity \(identifier) uses the reserved index 0.")
+                }
                 guard seen.insert(identifier).inserted else {
                     throw DecodingError.dataCorruptedError(forKey: .id, in: member, debugDescription: "Entity \(identifier) is listed more than once.")
                 }

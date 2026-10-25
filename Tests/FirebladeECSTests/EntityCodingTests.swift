@@ -11,7 +11,7 @@ import Testing
 
 @Suite struct EntityCodingTests {
     @Test func entityIdentifierRoundTrip() throws {
-        let identifier = EntityIdentifier(index: 42, generation: 1)
+        let identifier = EntityIdentifier(index: 42, generation: 0)
         let data = try JSONEncoder().encode(identifier)
         #expect(String(decoding: data, as: UTF8.self) == "\(identifier.index)")
         #expect(try JSONDecoder().decode(EntityIdentifier.self, from: data) == identifier)

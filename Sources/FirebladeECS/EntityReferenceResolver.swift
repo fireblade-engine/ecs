@@ -25,6 +25,9 @@ public final class EntityReferenceResolver {
     /// Indicates whether snapshot imports recreate entities with their encoded identifiers instead of creating new ones.
     var preservesIdentity = false
 
+    /// Indicates whether entity identifiers are decoded as 32 bit slot indices (snapshot format versions 1 and 2) instead of raw values.
+    var decodesLegacyIdentifiers = false
+
     /// Creates a new resolver that is not yet bound to a target nexus.
     /// - Parameter mapping: The initial mapping from source to target entity identifiers.
     public init(mapping: [EntityIdentifier: EntityIdentifier]) {

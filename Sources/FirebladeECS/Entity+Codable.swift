@@ -23,6 +23,6 @@ extension Entity: Codable {
         guard let resolver = decoder.userInfo[.nexusEntityResolver] as? EntityReferenceResolver else {
             throw EntityReferenceError.missingResolver
         }
-        self = try resolver.resolve(EntityIdentifier(from: decoder))
+        self = try resolver.resolve(EntityIdentifier.decodeSource(from: decoder))
     }
 }

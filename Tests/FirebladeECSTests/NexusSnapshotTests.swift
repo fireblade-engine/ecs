@@ -45,8 +45,8 @@ final class SerialParent: SerializableComponent, @unchecked Sendable {
         let data = try nexus.encodeSnapshot(using: &encoder, handling: .throwError)
 
         let json = String(decoding: data, as: UTF8.self)
-        let expected = #"{"entities":[{"components":{"Position":{"x":1,"y":2}},"id":0},"#
-            + #"{"components":{"Parent":{"parent":0}},"id":1}],"entityIdGenerator":{"nextFreshId":2,"recycledIds":[]},"formatVersion":2}"#
+        let expected = #"{"entities":[{"components":{"Position":{"x":1,"y":2}},"id":1},"#
+            + #"{"components":{"Parent":{"parent":1}},"id":2}],"entityIdGenerator":{"nextFreshId":3,"recycledIds":[]},"formatVersion":3}"#
         #expect(json == expected)
     }
 
@@ -123,9 +123,9 @@ final class SerialParent: SerializableComponent, @unchecked Sendable {
 
     @Test func newerFormatVersionThrowsWithoutSideEffects() throws {
         let nexus = Nexus()
-        let data = Data(#"{"formatVersion":3,"entities":[{"id":0,"components":{}}]}"#.utf8)
+        let data = Data(#"{"formatVersion":4,"entities":[{"id":0,"components":{}}]}"#.utf8)
         var decoder = JSONDecoder()
-        #expect(throws: ComponentSerializationError.unsupportedFormatVersion(3)) {
+        #expect(throws: ComponentSerializationError.unsupportedFormatVersion(4)) {
             try nexus.decodeSnapshot(from: data, using: &decoder)
         }
         #expect(nexus.numEntities == 0)
@@ -157,8 +157,8 @@ final class SerialParent: SerializableComponent, @unchecked Sendable {
         var encoder = makeEncoder()
         let data = try nexus.encodeSnapshot(using: &encoder, handling: .throwError)
         let json = String(decoding: data, as: UTF8.self)
-        let expected = #"{"entities":[{"components":{"Position":{"x":0,"y":0}},"id":0},{"components":{},"id":2},"#
-            + #"{"components":{"Position":{"x":3,"y":3}},"id":3}],"entityIdGenerator":{"nextFreshId":4,"recycledIds":[8589934593]},"formatVersion":2}"#
+        let expected = #"{"entities":[{"components":{"Position":{"x":0,"y":0}},"id":1},{"components":{},"id":3},"#
+            + #"{"components":{"Position":{"x":3,"y":3}},"id":4}],"entityIdGenerator":{"nextFreshId":5,"recycledIds":[4294967298]},"formatVersion":3}"#
         #expect(json == expected)
     }
 }

@@ -33,6 +33,25 @@ extension Nexus {
     }
 }
 
+extension Nexus {
+    /// The index of a component type, resolved once so that iterations do not ask the registry per entity.
+    @usableFromInline
+    struct ComponentCursor<C: Component>: Sendable {
+        @usableFromInline let index: Int
+
+        @usableFromInline
+        init() {
+            index = C.componentIndex
+        }
+    }
+
+    /// The component of a living entity, or `nil` if the identifier is stale or the entity has no such component.
+    @inlinable
+    final func component<C: Component>(_ cursor: ComponentCursor<C>, for entityId: EntityIdentifier) -> C? {
+        backend.get(C.self, at: cursor.index, for: entityId)
+    }
+}
+
 extension Nexus.Backend {
     @inlinable var entityCount: Int {
         switch self {
@@ -97,27 +116,42 @@ extension Nexus.Backend {
     }
 
     @inlinable
-    func set<C: Component>(_ component: C, for entityId: EntityIdentifier) {
+    func set<C: Component>(_ component: C, at componentIndex: Int, for entityId: EntityIdentifier) {
         switch self {
         case let .sparseSet(storage):
-            storage.set(component, for: entityId)
+            storage.set(component, at: componentIndex, for: entityId)
+        }
+    }
+
+    @inlinable
+    func set<C: Component>(_ component: C, for entityId: EntityIdentifier) {
+        set(component, at: C.componentIndex, for: entityId)
+    }
+
+    @inlinable
+    func get<C: Component>(_ type: C.Type, at componentIndex: Int, for entityId: EntityIdentifier) -> C? {
+        switch self {
+        case let .sparseSet(storage):
+            storage.get(type, at: componentIndex, for: entityId)
         }
     }
 
     @inlinable
     func get<C: Component>(_ type: C.Type, for entityId: EntityIdentifier) -> C? {
+        get(type, at: C.componentIndex, for: entityId)
+    }
+
+    @inlinable
+    func unsafeGet<C: Component>(_ type: C.Type, at componentIndex: Int, for entityId: EntityIdentifier) -> C {
         switch self {
         case let .sparseSet(storage):
-            storage.get(type, for: entityId)
+            storage.unsafeGet(type, at: componentIndex, for: entityId)
         }
     }
 
     @inlinable
     func unsafeGet<C: Component>(_ type: C.Type, for entityId: EntityIdentifier) -> C {
-        switch self {
-        case let .sparseSet(storage):
-            storage.unsafeGet(type, for: entityId)
-        }
+        unsafeGet(type, at: C.componentIndex, for: entityId)
     }
 
     @inlinable

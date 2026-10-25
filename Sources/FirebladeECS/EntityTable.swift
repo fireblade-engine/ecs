@@ -10,6 +10,10 @@ extension Nexus {
     ///
     /// Slots are addressed by `EntityIdentifier.index`; the identifiers themselves (and their generations) come from the
     /// nexus' ``EntityIdentifierGenerator``. A slot holds `EntityIdentifier.invalid` while it is free.
+    ///
+    /// The table is O(highest slot index ever used) in memory and `livingIds` is O(that index): it never shrinks while the nexus lives,
+    /// which is fine for generators that keep indices tightly packed, as the default generator does.
+    /// Restoring a snapshot rejects indices above `Nexus.maxRestoredEntityIndex`.
     @usableFromInline
     struct EntityTable {
         @usableFromInline var slots = ContiguousArray<EntityIdentifier>()

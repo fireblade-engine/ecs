@@ -16,6 +16,10 @@ extension Nexus {
     /// or an entity) while a scoped access runs, a second write access to a type that is being written, a read of a type
     /// that is being written, and two component types that share an index.
     ///
+    /// The scoped-access lock (`lockDepth`, `activeWrites`) guards `modify` and `withComponents`, which product code
+    /// does not call yet: with class components writes go through the references, and the scoped writing
+    /// iteration arrives with value-type components (PR 8/9). Until then only the tests exercise the traps.
+    ///
     /// Soundness of `@exclusivity(unchecked)`: the stored properties change only in structural changes and in the
     /// `beginWrite`/`endWrite`/`lockDepth` bookkeeping. Structural changes are blocked while a scoped access runs
     /// (`requireUnlocked`), storages are never removed while a scope is open, and a single thread uses a nexus at a time,
@@ -61,7 +65,7 @@ extension Nexus {
             if let storage = existing(C.self, at: index) {
                 return storage
             }
-            precondition(index >= 0, "component index \(index) is out of range")
+            precondition(index >= 0 && index < ComponentIndexRegistry.indexLimit, "component index \(index) is out of range")
             while storages.count <= index {
                 storages.append(nil)
             }
@@ -105,6 +109,8 @@ extension Nexus {
         }
 
         /// Removes all components of the entity and frees its slot.
+        ///
+        /// The removed components are released last, after the slot is free, so a `deinit` that re-enters sees consistent state.
         @usableFromInline
         @discardableResult
         func destroyEntity(_ entityId: EntityIdentifier) -> Bool {
@@ -112,10 +118,15 @@ extension Nexus {
             guard let mask = entities.mask(of: entityId) else {
                 return false
             }
+            var removed: [any Component] = []
             mask.forEachIndex { componentIndex in
-                _ = storages[componentIndex]?.remove(entityId.index)
+                if let component = storages[componentIndex]?.remove(entityId.index) {
+                    removed.append(component)
+                }
             }
-            return entities.remove(entityId)
+            let destroyed = entities.remove(entityId)
+            withExtendedLifetime(removed) {}
+            return destroyed
         }
 
         @inlinable
@@ -127,19 +138,21 @@ extension Nexus {
         @usableFromInline
         func removeAll() {
             requireUnlocked()
+            // Components are released last, so a `deinit` that re-enters sees the emptied storage.
+            let released = storages
             entities = EntityTable()
-            storages.removeAll()
+            storages = []
             indexByIdentifier.removeAll()
+            withExtendedLifetime(released) {}
         }
 
         // MARK: Typed component access
 
         /// Adds a component to a living entity, or replaces the one it has.
         @inlinable
-        func set<C: Component>(_ component: C, for entityId: EntityIdentifier) {
+        func set<C: Component>(_ component: C, at componentIndex: Int, for entityId: EntityIdentifier) {
             requireUnlocked()
             precondition(entities.isAlive(entityId), "set on a dead entity")
-            let componentIndex = C.componentIndex
             let storage = storage(creating: C.self, at: componentIndex)
             let slot = storage.slot(of: entityId.index)
             if slot >= 0 {
@@ -151,8 +164,12 @@ extension Nexus {
         }
 
         @inlinable
-        func get<C: Component>(_: C.Type, for entityId: EntityIdentifier) -> C? {
-            let componentIndex = C.componentIndex
+        func set<C: Component>(_ component: C, for entityId: EntityIdentifier) {
+            set(component, at: C.componentIndex, for: entityId)
+        }
+
+        @inlinable
+        func get<C: Component>(_: C.Type, at componentIndex: Int, for entityId: EntityIdentifier) -> C? {
             requireReadable(componentIndex)
             guard entities.isAlive(entityId), let storage = existing(C.self, at: componentIndex) else {
                 return nil
@@ -161,15 +178,29 @@ extension Nexus {
             return slot >= 0 ? storage[slot] : nil
         }
 
-        /// The component of an entity that must have it, without checking that the entity is alive.
         @inlinable
-        func unsafeGet<C: Component>(_: C.Type, for entityId: EntityIdentifier) -> C {
-            let componentIndex = C.componentIndex
+        func get<C: Component>(_ type: C.Type, for entityId: EntityIdentifier) -> C? {
+            get(type, at: C.componentIndex, for: entityId)
+        }
+
+        /// The component of a living entity that must have it.
+        ///
+        /// Checks the generation of the identifier and that the entity has the component: a stale identifier or a
+        /// missing component traps with a message instead of reading another entity's component.
+        @inlinable
+        func unsafeGet<C: Component>(_: C.Type, at componentIndex: Int, for entityId: EntityIdentifier) -> C {
             requireReadable(componentIndex)
-            let storage = existing(C.self, at: componentIndex).unsafelyUnwrapped
+            guard entities.isAlive(entityId), let storage = existing(C.self, at: componentIndex) else {
+                preconditionFailure("entity \(entityId) is not alive or has no component \(C.self)")
+            }
             let slot = storage.slot(of: entityId.index)
             precondition(slot >= 0, "entity \(entityId) has no component \(C.self)")
             return storage[slot]
+        }
+
+        @inlinable
+        func unsafeGet<C: Component>(_ type: C.Type, for entityId: EntityIdentifier) -> C {
+            unsafeGet(type, at: C.componentIndex, for: entityId)
         }
 
         /// Gives `body` write access to the component of an entity.
@@ -196,14 +227,21 @@ extension Nexus {
 
         @inlinable
         @discardableResult
-        func remove<C: Component>(_: C.Type, from entityId: EntityIdentifier) -> Bool {
+        func remove<C: Component>(_: C.Type, at componentIndex: Int, from entityId: EntityIdentifier) -> Bool {
             requireUnlocked()
-            let componentIndex = C.componentIndex
-            guard entities.isAlive(entityId), let storage = existing(C.self, at: componentIndex), storage.removeSwap(entityId.index) else {
+            guard entities.isAlive(entityId), let storage = existing(C.self, at: componentIndex), let removed = storage.removeSwap(entityId.index) else {
                 return false
             }
             entities.remove(componentIndex, from: entityId)
+            // released last: a `deinit` that re-enters sees the component gone from storage and entity
+            withExtendedLifetime(removed) {}
             return true
+        }
+
+        @inlinable
+        @discardableResult
+        func remove<C: Component>(_ type: C.Type, from entityId: EntityIdentifier) -> Bool {
+            remove(type, at: C.componentIndex, from: entityId)
         }
 
         /// Whether storage for the type exists.
@@ -250,8 +288,9 @@ extension Nexus {
             guard entities.mask(of: entityId)?.contains(componentIndex) == true, let storage = storages[componentIndex] else {
                 return false
             }
-            _ = storage.remove(entityId.index)
+            let removed = storage.remove(entityId.index)
             entities.remove(componentIndex, from: entityId)
+            withExtendedLifetime(removed) {}
             return true
         }
 

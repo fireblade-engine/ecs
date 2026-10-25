@@ -137,7 +137,13 @@ extension Nexus {
             update(familyMembership: entityId)
         }
 
+        // Releasing a removed component can run a `deinit` that adds components again. They go with the entity,
+        // so the entity must leave the families that the re-added components made it a member of.
         backend.destroyEntity(entityId)
+        for family in familyList where isMember(entity: entityId, inFamilyWithTraits: family.traits) {
+            remove(entityWithId: entityId, fromFamilyWithTraits: family.traits)
+            delegate?.nexusEvent(FamilyMemberRemoved(member: entityId, from: family.traits))
+        }
 
         entityIdGenerator.markUnused(entityId: entityId)
 

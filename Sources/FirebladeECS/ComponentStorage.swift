@@ -76,19 +76,20 @@ extension Nexus {
         }
 
         @usableFromInline
-        override func remove(_ index: UInt32) -> Bool {
+        override func remove(_ index: UInt32) -> (any Component)? {
             removeSwap(index)
         }
 
         /// Typed, inlinable swap-remove.
         ///
-        /// The removed value is moved out first and released last, after `ids`, the sparse index and the buffer are
-        /// consistent again, so a `deinit` that re-enters the storage sees a valid state.
+        /// The removed value is moved out first and returned, after `ids`, the sparse index and the buffer are
+        /// consistent again. The caller releases it only after it has updated its own state (the entity's component set),
+        /// so a `deinit` that re-enters the storage sees a consistent state.
         @inlinable
-        func removeSwap(_ index: UInt32) -> Bool {
+        func removeSwap(_ index: UInt32) -> C? {
             let slot = sparse.slot(of: index)
             guard slot >= 0 else {
-                return false
+                return nil
             }
             let last = ids.count - 1
             let removed = (base + slot).move()
@@ -99,8 +100,7 @@ extension Nexus {
             }
             ids.removeLast()
             sparse.clear(index)
-            withExtendedLifetime(removed) {}
-            return true
+            return removed
         }
 
         @usableFromInline

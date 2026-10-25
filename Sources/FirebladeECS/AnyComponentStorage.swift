@@ -43,8 +43,11 @@ extension Nexus {
 
         // swiftlint:disable unavailable_function
         /// Removes the component of the entity with this index by swapping the last slot into its place.
+        ///
+        /// - Returns: The removed component. The caller releases it last, after its own bookkeeping is consistent,
+        ///   because releasing can run arbitrary code (a `deinit`) that re-enters the nexus.
         @usableFromInline
-        func remove(_: UInt32) -> Bool {
+        func remove(_: UInt32) -> (any Component)? {
             fatalError("abstract")
         }
 

@@ -34,6 +34,9 @@ extension Entity {
     /// - Returns: `false` if this entity is destroyed or lacks one of the components; `body` is not called then.
     @discardableResult
     @_disfavoredOverload
+    // Swift 6.4 crashes in the SIL GenericSpecializer (TypeSubstituter::transformPackElementType) when it specializes this
+    // pack code for concrete types in release builds. This is the slow path, so keep it generic.
+    @_semantics("optimize.sil.specialize.generic.never")
     public func components<each R: Component, each W: Component>(
         _ rTypes: repeat (each R).Type,
         writing wTypes: repeat (each W).Type,
@@ -64,11 +67,13 @@ extension Entity {
     }
 
     @usableFromInline
+    @_semantics("optimize.sil.specialize.generic.never")
     static func load<T: Component>(_ pointer: UnsafeMutablePointer<T>) -> T {
         pointer.pointee
     }
 
     @usableFromInline
+    @_semantics("optimize.sil.specialize.generic.never")
     static func store<T: Component>(_ value: T, to pointer: UnsafeMutablePointer<T>) {
         pointer.pointee = value
     }

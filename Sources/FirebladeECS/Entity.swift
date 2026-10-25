@@ -11,9 +11,16 @@
 ///  It only consists of a unique id (EntityIdentifier).
 ///  Components can be assigned to an entity to give it behavior or functionality.
 ///  An entity creates the relationship between all it's assigned components.
+///
+/// - Important: An entity does not keep its ``Nexus`` alive. Using an entity after its nexus is deallocated is
+///   undefined behavior.
 public struct Entity {
     /// The Nexus managing this entity.
-    @usableFromInline unowned let nexus: Nexus
+    ///
+    /// An unchecked, non-owning reference: copying an entity costs no reference counting. An entity handle
+    /// must not be used after its nexus is deallocated; keep the nexus alive for as long as you use its entities.
+    /// (The same trade-off as flecs, whose `flecs::entity` holds a raw `world_t*`.)
+    @usableFromInline unowned(unsafe) let nexus: Nexus
 
     /// The unique entity identifier.
     public private(set) var identifier: EntityIdentifier

@@ -15,15 +15,17 @@ extension Nexus {
     ///   and a component is not serializable.
     /// - Complexity: O(E * C log C) where E is the number of entities and C the number of components per entity.
     public final func makeSnapshot(handling: NonSerializableComponentHandling) throws -> NexusSnapshot {
-        let entityIds = componentIdsByEntity.keys.sorted { $0.index < $1.index }
+        let entityIds = backend.livingEntityIds
         var owners: [ObjectIdentifier: EntityIdentifier] = [:]
         var members: [NexusSnapshot.Member] = []
         members.reserveCapacity(entityIds.count)
         for entityId in entityIds {
             var components: [any SerializableComponent] = []
             var sharedComponents: [String: EntityIdentifier] = [:]
-            for componentId in componentIdsByEntity[entityId, default: []] {
-                let component = unsafeComponent(componentId, for: entityId)
+            for componentIndex in backend.componentIndices(of: entityId) {
+                guard let component = backend.anyComponent(componentIndex: componentIndex, for: entityId) else {
+                    continue
+                }
                 guard let serializable = component as? any SerializableComponent else {
                     switch handling {
                     case .throwError:
@@ -141,7 +143,7 @@ extension Nexus {
             do {
                 try importSnapshot(from: data, using: &decoder, resolver: resolver)
             } catch {
-                for createdId in componentIdsByEntity.keys {
+                for createdId in backend.livingEntityIds {
                     destroy(entityId: createdId)
                 }
                 entityIdGenerator = previousGenerator

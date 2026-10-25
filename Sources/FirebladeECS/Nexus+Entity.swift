@@ -12,7 +12,7 @@ extension Nexus {
     @discardableResult
     public func createEntity() -> Entity {
         let entityId: EntityIdentifier = entityIdGenerator.nextId()
-        componentIdsByEntity[entityId] = []
+        backend.insertEntity(entityId)
         delegate?.nexusEvent(EntityCreated(entityId: entityId))
         return Entity(nexus: self, id: entityId)
     }
@@ -53,7 +53,7 @@ extension Nexus {
     /// The total number of entities managed by the Nexus.
     /// - Complexity: O(1)
     public var numEntities: Int {
-        componentIdsByEntity.keys.count
+        backend.entityCount
     }
 
     /// Creates an iterator over all entities in the nexus.
@@ -73,7 +73,7 @@ extension Nexus {
     /// - Returns: `true` if the generation of the identifier matches the current generation of its slot and the slot holds an entity; otherwise, `false`.
     /// - Complexity: O(1)
     public func isAlive(_ entityId: EntityIdentifier) -> Bool {
-        componentIdsByEntity.keys.contains(entityId)
+        backend.isAlive(entityId)
     }
 
     /// Checks if an entity exists in the Nexus.
@@ -128,7 +128,7 @@ extension Nexus {
     /// - Complexity: O(C * M) where C is the number of components and M is the number of families.
     @discardableResult
     public func destroy(entityId: EntityIdentifier) -> Bool {
-        guard componentIdsByEntity.keys.contains(entityId) else {
+        guard backend.isAlive(entityId) else {
             delegate?.nexusNonFatalError("EntityRemove failure: no entity \(entityId) to remove")
             return false
         }
@@ -137,9 +137,7 @@ extension Nexus {
             update(familyMembership: entityId)
         }
 
-        if let index = componentIdsByEntity.index(forKey: entityId) {
-            componentIdsByEntity.remove(at: index)
-        }
+        backend.destroyEntity(entityId)
 
         entityIdGenerator.markUnused(entityId: entityId)
 
@@ -159,8 +157,8 @@ extension Nexus {
         /// - Parameter nexus: The nexus to iterate over.
         @usableFromInline
         init(nexus: Nexus) {
-            // Sorting makes the order deterministic instead of following the per-process hash seed.
-            var iter = nexus.componentIdsByEntity.keys.sorted { $0.index < $1.index }.makeIterator()
+            // The identifiers ascend by slot index, so the order is deterministic.
+            var iter = nexus.backend.livingEntityIds.makeIterator()
             iterator = AnyIterator {
                 guard let entityId = iter.next() else {
                     return nil

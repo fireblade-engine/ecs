@@ -25,13 +25,18 @@ public struct Family<each C: Component> {
         self.nexus = nexus
 
         var requiredIdentifiers: [ComponentIdentifier] = []
-        // We iterate the pack to extract identifiers
+        var filter = Nexus.FamilyFilter()
+        // We iterate the pack to extract identifiers and indices
         _ = (repeat requiredIdentifiers.append((each C).identifier))
+        _ = (repeat filter.requires.insert((each C).componentIndex))
 
         let excludedIdentifiers = excludesAll.map { $0.identifier }
+        for excluded in excludesAll {
+            filter.excludes.insert(excluded.componentIndex)
+        }
 
         traits = FamilyTraitSet(requiresAll: Set(requiredIdentifiers), excludesAll: Set(excludedIdentifiers))
-        nexus.onFamilyInit(traits: traits)
+        nexus.onFamilyInit(traits: traits, filter: filter)
     }
 
     /// The set of entity identifiers that are members of this family.

@@ -9,7 +9,7 @@ extension Nexus {
     /// The total number of component instances managed by the Nexus.
     /// - Complexity: O(T) where T is the number of component types.
     public final var numComponents: Int {
-        componentsByType.reduce(0) { $0 + $1.value.count }
+        backend.totalComponentCount
     }
 
     /// Checks if a component with a given identifier is assigned to an entity.
@@ -19,7 +19,21 @@ extension Nexus {
     /// - Returns: `true` if the component is assigned to the entity; otherwise, `false`.
     /// - Complexity: O(1)
     public final func has(componentId: ComponentIdentifier, entityId: EntityIdentifier) -> Bool {
-        componentIdsByEntity[entityId]?.contains(componentId) ?? false
+        guard let componentIndex = backend.componentIndex(of: componentId) else {
+            return false
+        }
+        return backend.has(componentIndex: componentIndex, for: entityId)
+    }
+
+    /// Checks if a component with a given index is assigned to an entity.
+    /// - Parameters:
+    ///   - componentIndex: The ``Component/componentIndex`` of the component type.
+    ///   - entityId: The identifier of the entity.
+    /// - Returns: `true` if the component is assigned to the entity; otherwise, `false`.
+    /// - Complexity: O(1)
+    @inlinable
+    final func has(componentIndex: Int, entityId: EntityIdentifier) -> Bool {
+        backend.has(componentIndex: componentIndex, for: entityId)
     }
 
     /// Returns the number of components assigned to a specific entity.
@@ -27,7 +41,7 @@ extension Nexus {
     /// - Returns: The count of assigned components.
     /// - Complexity: O(1)
     public final func count(components entityId: EntityIdentifier) -> Int {
-        componentIdsByEntity[entityId]?.count ?? 0
+        backend.componentCount(of: entityId)
     }
 
     /// Assigns a component to an entity.
@@ -134,10 +148,10 @@ extension Nexus {
     /// - Complexity: O(1)
     @inlinable
     final func component(_ componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
-        guard let uniformComponents = componentsByType[componentId], uniformComponents.contains(Int(entityId.index)), isAlive(entityId) else {
+        guard let componentIndex = backend.componentIndex(of: componentId) else {
             return nil
         }
-        return uniformComponents.get(at: Int(entityId.index))
+        return backend.anyComponent(componentIndex: componentIndex, for: entityId)
     }
 
     /// Retrieves a typed component for a given entity using the component type's identifier.
@@ -146,7 +160,7 @@ extension Nexus {
     /// - Complexity: O(1)
     @inlinable
     final func component<C: Component>(for entityId: EntityIdentifier) -> C? {
-        component(C.identifier, for: entityId) as? C
+        backend.get(C.self, for: entityId)
     }
 
     /// Retrieves a component by its identifier for a given entity, without checking that it exists.
@@ -158,8 +172,8 @@ extension Nexus {
     /// - Complexity: O(1)
     @inlinable
     final func unsafeComponent(_ componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component {
-        let uniformComponents = componentsByType[componentId].unsafelyUnwrapped
-        return uniformComponents.get(unsafeAt: Int(entityId.index))
+        let componentIndex = backend.componentIndex(of: componentId).unsafelyUnwrapped
+        return backend.anyComponent(componentIndex: componentIndex, for: entityId).unsafelyUnwrapped
     }
 
     /// Retrieves a typed component for a given entity, without checking that it exists.
@@ -169,9 +183,7 @@ extension Nexus {
     /// - Complexity: O(1)
     @inlinable
     final func unsafeComponent<C: Component>(for entityId: EntityIdentifier) -> C {
-        let component: Component = unsafeComponent(C.identifier, for: entityId)
-        // components are guaranteed to be reference types so unsafeDowncast is applicable here
-        return unsafeDowncast(component, to: C.self)
+        backend.unsafeGet(C.self, for: entityId)
     }
 
     /// Retrieves all component identifiers assigned to a specific entity.
@@ -180,7 +192,10 @@ extension Nexus {
     /// - Complexity: O(1)
     @inlinable
     public final func get(components entityId: EntityIdentifier) -> Set<ComponentIdentifier>? {
-        componentIdsByEntity[entityId]
+        guard backend.isAlive(entityId) else {
+            return nil
+        }
+        return Set(backend.componentIndices(of: entityId).compactMap { backend.identifier(ofComponentIndex: $0) })
     }
 
     /// Removes a component from an entity.
@@ -195,10 +210,10 @@ extension Nexus {
             reportStaleHandle(entityId)
             return false
         }
-        // delete component instance
-        componentsByType[componentId]?.remove(at: Int(entityId.index))
-        // un-assign component from entity
-        componentIdsByEntity[entityId]?.remove(componentId)
+        // delete component instance and un-assign it from the entity
+        if let componentIndex = backend.componentIndex(of: componentId) {
+            backend.remove(componentIndex: componentIndex, from: entityId)
+        }
 
         update(familyMembership: entityId)
 
@@ -212,14 +227,16 @@ extension Nexus {
     /// - Complexity: O(C * M) where C is the number of components and M is the number of families.
     @discardableResult
     public final func removeAll(components entityId: EntityIdentifier) -> Bool {
-        guard let allComponents = get(components: entityId) else {
+        guard backend.isAlive(entityId) else {
             reportStaleHandle(entityId)
             return false
         }
-        var iter = allComponents.makeIterator()
         var removedAll = true
-        while let component = iter.next() {
-            removedAll = removedAll && remove(component: component, from: entityId)
+        for componentIndex in backend.componentIndices(of: entityId) {
+            guard let componentId = backend.identifier(ofComponentIndex: componentIndex) else {
+                continue
+            }
+            removedAll = remove(component: componentId, from: entityId) && removedAll
         }
         return removedAll
     }

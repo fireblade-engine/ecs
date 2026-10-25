@@ -129,6 +129,22 @@ extension Nexus.Backend {
     }
 
     @inlinable
+    func modify<C: Component>(_ type: C.Type, for entityId: EntityIdentifier, _ body: (inout C) -> Void) -> Bool {
+        switch self {
+        case let .sparseSet(storage):
+            storage.modify(type, for: entityId, body)
+        }
+    }
+
+    @inlinable
+    func withComponents<C: Component>(of type: C.Type, _ body: (UnsafeBufferPointer<UInt32>, UnsafeMutableBufferPointer<C>) -> Void) {
+        switch self {
+        case let .sparseSet(storage):
+            storage.withComponents(of: type, body)
+        }
+    }
+
+    @inlinable
     func get<C: Component>(_ type: C.Type, at componentIndex: Int, for entityId: EntityIdentifier) -> C? {
         switch self {
         case let .sparseSet(storage):

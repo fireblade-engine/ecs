@@ -21,9 +21,12 @@ private struct Tag300: Component, Sendable {
 }
 
 @Suite struct NexusStorageTests {
-    @Test func defaultStorageIsTheSparseSet() {
-        #expect(Nexus.StorageKind.default == .sparseSet)
+    @Test func defaultStorageIsTheArchetype() {
+        #expect(Nexus.StorageKind.default == .archetype)
         #expect(Nexus.StorageKind.allCases == [.sparseSet, .archetype])
+        if case .archetype = Nexus().backend {} else {
+            Issue.record("Nexus() does not use the archetype storage")
+        }
     }
 
     @Test(arguments: Nexus.StorageKind.allCases)

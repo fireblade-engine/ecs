@@ -86,15 +86,18 @@ extension Entity {
         (repeat get((each C).self))
     }
 
-    /// Get or set component instance by type via subscript.
+    // MARK: Subscripts
+
+    /// The component of a type: reads a copy, writes in place.
     ///
-    /// **Behavior:**
-    /// - If `Comp` is a component type that is currently *not* assigned to this entity,
-    ///   the new instance will be assigned to this entity.
-    /// - If `Comp` is already assinged to this entity nothing happens.
-    /// - If `Comp` is set to `nil` and an instance of `Comp` is assigned to this entity,
-    ///   `Comp` will be removed from this entity.
-    /// - Complexity: O(1) for get, O(M) for set where M is the number of families.
+    /// - Reading returns a copy (`nil` if missing) and never adds anything.
+    /// - Mutating through an optional chain, `entity[Position.self]?.x += 1`, changes the stored component in place
+    ///   and delivers ``ComponentModified``. Nothing happens if the component is missing.
+    /// - Assigning a value sets the component like ``set(_:)-(Component)`` does: adds it or replaces the existing one.
+    ///   Assigning `nil` removes it.
+    ///
+    /// The restrictions of ``modify(_:_:)`` apply to the code that runs while the component is accessed in place.
+    /// - Complexity: O(1) for get and in place access, O(M) for adding or removing where M is the number of families.
     @inlinable
     public subscript<Comp>(_ componentType: Comp.Type) -> Comp? where Comp: Component {
         get { self.get(componentType) }
@@ -103,10 +106,57 @@ extension Entity {
                 self.remove(Comp.self)
                 return
             }
-            if self.get(componentType) === newComponent {
+            self.set(newComponent)
+        }
+        nonmutating _modify {
+            guard let address = nexus.beginModify(Comp.self, for: identifier) else {
+                // missing component (or stale handle): changes of the temporary are only kept if it ends up non-nil
+                var missing: Comp?
+                yield &missing
+                if let added = missing {
+                    self.set(added)
+                }
                 return
             }
-            self.set(newComponent)
+            // the component moves into the optional while it is accessed and moves back afterwards
+            var moved: Comp? = address.move()
+            defer {
+                if let value = moved {
+                    address.initialize(to: value)
+                    nexus.endModify(Comp.self, for: identifier)
+                } else {
+                    nexus.endModifyDiscarding(Comp.self, for: identifier)
+                }
+            }
+            yield &moved
+        }
+    }
+
+    /// The component of a type, or a default if the entity has none; writes in place.
+    ///
+    /// Follows `Dictionary.subscript(_:default:)`: reading returns the default without adding anything,
+    /// mutating (`entity[Counter.self, default: Counter()].value += 1`) adds the default first if the component is
+    /// missing and then changes the stored component in place. `makeDefault` is evaluated only when needed.
+    /// Mutating the component of a destroyed entity changes a temporary instead and triggers an assertion failure
+    /// in debug builds. Assigning a value sets the component like ``set(_:)-(Component)``.
+    ///
+    /// The restrictions of ``modify(_:_:)`` apply to the code that runs while the component is accessed in place.
+    /// - Complexity: O(1) if the component exists, O(M) when it must be added where M is the number of families.
+    @inlinable
+    public subscript<Comp>(_ componentType: Comp.Type, default makeDefault: @autoclosure () -> Comp) -> Comp where Comp: Component {
+        get { self.get(componentType) ?? makeDefault() }
+        nonmutating set { self.set(newValue) }
+        nonmutating _modify {
+            if !self.has(componentType), nexus.isAlive(identifier) {
+                self.set(makeDefault())
+            }
+            guard let address = nexus.beginModify(Comp.self, for: identifier) else {
+                var temporary = makeDefault()
+                yield &temporary
+                return
+            }
+            defer { nexus.endModify(Comp.self, for: identifier) }
+            yield &address.pointee
         }
     }
 
@@ -151,24 +201,17 @@ extension Entity {
     /// **Behavior:**
     /// - If `Comp` is a component type that is currently *not* assigned to this entity,
     ///   a new instance of `Comp` will be default initialized and `newValue` will be set at the given keyPath.
+    ///   The change is made in place in the nexus, also for value type components.
     ///
     /// - Parameters:
     ///   - newValue: The value to set.
     ///   - componentKeyPath: The `WritableKeyPath` to the property of the given component.
-    /// - Returns: Returns true if an action was performed, false otherwise.
+    /// - Returns: `true` if the value was set, `false` if this entity is destroyed.
     /// - Complexity: O(1) if component exists, O(M) otherwise where M is the number of families.
     @inlinable
     @discardableResult
     public func set<Comp, Value>(value newValue: Value, for componentKeyPath: WritableKeyPath<Comp, Value>) -> Bool where Comp: Component & DefaultInitializable {
-        guard var component = get(Comp.self) else {
-            var newInstance = Comp()
-            newInstance[keyPath: componentKeyPath] = newValue
-            return nexus.assign(component: newInstance, entityId: identifier)
-        }
-
-        // components are reference types, so this writes through to the assigned instance
-        component[keyPath: componentKeyPath] = newValue
-        return true
+        nexus.modify(Comp.self, default: Comp(), for: identifier) { $0[keyPath: componentKeyPath] = newValue }
     }
 
     /// Set the value of a component using the key path to the property in the component.
@@ -176,24 +219,17 @@ extension Entity {
     /// **Behavior:**
     /// - If `Comp` is a component type that is currently *not* assigned to this entity,
     ///   a new instance of `Comp` will be default initialized and `newValue` will be set at the given keyPath.
+    ///   The change is made in place in the nexus, also for value type components.
     ///
     /// - Parameters:
     ///   - newValue: The value to set.
     ///   - componentKeyPath: The `WritableKeyPath` to the property of the given component.
-    /// - Returns: Returns true if an action was performed, false otherwise.
+    /// - Returns: `true` if the value was set, `false` if this entity is destroyed.
     /// - Complexity: O(1) if component exists, O(M) otherwise where M is the number of families.
     @inlinable
     @discardableResult
     public func set<Comp, Value>(value newValue: Value?, for componentKeyPath: WritableKeyPath<Comp, Value?>) -> Bool where Comp: Component & DefaultInitializable {
-        guard var component = get(Comp.self) else {
-            var newInstance = Comp()
-            newInstance[keyPath: componentKeyPath] = newValue
-            return nexus.assign(component: newInstance, entityId: identifier)
-        }
-
-        // components are reference types, so this writes through to the assigned instance
-        component[keyPath: componentKeyPath] = newValue
-        return true
+        nexus.modify(Comp.self, default: Comp(), for: identifier) { $0[keyPath: componentKeyPath] = newValue }
     }
 
     /// Set the value of a component using the key path to the property in the component.
@@ -201,6 +237,7 @@ extension Entity {
     /// **Behavior:**
     /// - If `Comp` is a component type that is currently *not* assigned to this entity,
     ///   a new instance of `Comp` will be default initialized and `newValue` will be set at the given keyPath.
+    ///   The change is made in place in the nexus, also for value type components.
     /// - Complexity: O(1) for get. O(1) for set if component exists, O(M) otherwise.
     @inlinable
     public subscript<Comp, Value>(_ componentKeyPath: WritableKeyPath<Comp, Value>) -> Value where Comp: Component & DefaultInitializable {
@@ -213,6 +250,7 @@ extension Entity {
     /// **Behavior:**
     /// - If `Comp` is a component type that is currently *not* assigned to this entity,
     ///   a new instance of `Comp` will be default initialized and `newValue` will be set at the given keyPath.
+    ///   The change is made in place in the nexus, also for value type components.
     /// - Complexity: O(1) for get. O(1) for set if component exists, O(M) otherwise.
     @inlinable
     public subscript<Comp, Value>(_ componentKeyPath: WritableKeyPath<Comp, Value?>) -> Value? where Comp: Component & DefaultInitializable {

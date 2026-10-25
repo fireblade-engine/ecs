@@ -14,4 +14,18 @@ public protocol NexusEventDelegate: AnyObject, Sendable {
     /// Called when a non-fatal error occurs in the Nexus.
     /// - Parameter message: The error message.
     func nexusNonFatalError(_ message: String)
+
+    /// The events the delegate wants to receive, ``NexusEventMask/structural`` by default.
+    ///
+    /// Subscribe to value changes with ``NexusEventMask/valueChanges``. With the default mask a value write costs the
+    /// nexus one branch and nothing else.
+    ///
+    /// The nexus reads this property once, when the delegate is assigned to ``Nexus/delegate``. After changing the
+    /// subscription, assign the delegate again (`nexus.delegate = delegate`) to apply it. Structural events are always
+    /// delivered, see ``NexusEventMask/structural``.
+    var subscribedEvents: NexusEventMask { get }
+}
+
+public extension NexusEventDelegate {
+    var subscribedEvents: NexusEventMask { .structural }
 }

@@ -35,6 +35,11 @@ extension Nexus {
         }
         var iter = components.makeIterator()
         while let component = iter.next() {
+            // a delegate notified about the previous component may have destroyed the entity
+            guard isAlive(entityId) else {
+                delegate?.nexusNonFatalError("ComponentAdd failure: \(entityId) was destroyed while its components were assigned")
+                return false
+            }
             guard insert(component, entityId) else {
                 return false
             }
@@ -96,7 +101,7 @@ extension Nexus {
             registerOnFirstAssignment(C.self)
         }
         // adds the component to its storage and the component type to the entity's component set
-        backend.set(component, for: entityId)
+        backend.set(component, at: componentIndex, for: entityId)
         delegate?.nexusEvent(ComponentAdded(component: C.identifier, toEntity: entityId))
         return true
     }

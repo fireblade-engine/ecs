@@ -110,23 +110,32 @@ extension Family {
     public struct ComponentsIterator: IteratorProtocol {
         @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Index>.ElementIterator
         @usableFromInline unowned let nexus: Nexus
+        @usableFromInline let cursors: (repeat Nexus.ComponentCursor<each C>)
 
         /// Creates a new iterator for the given family.
         /// - Parameter family: The family to iterate over.
-        /// - Complexity: O(1)
+        /// - Complexity: O(R) where R is the number of required components.
         public init(family: Family<repeat each C>) {
             nexus = family.nexus
             memberIdsIterator = family.memberIds.makeIterator()
+            cursors = (repeat Nexus.ComponentCursor<each C>())
         }
 
         /// Advances to the next component collection and returns it, or `nil` if no next element exists.
+        ///
+        /// Members that were destroyed or lost a required component since the family was iterated from are skipped.
         /// - Returns: The next component collection in the sequence, or `nil`.
         /// - Complexity: O(R) where R is the number of required components.
         public mutating func next() -> (repeat each C)? {
-            guard let entityId: EntityIdentifier = memberIdsIterator.next() else {
-                return nil
+            while let entityId: EntityIdentifier = memberIdsIterator.next() {
+                let components = (repeat nexus.component(each cursors, for: entityId))
+                var complete = true
+                _ = (repeat complete = complete && (each components) != nil)
+                if complete {
+                    return (repeat (each components).unsafelyUnwrapped)
+                }
             }
-            return (repeat nexus.unsafeComponent(for: entityId) as (each C))
+            return nil
         }
     }
 }
@@ -184,25 +193,32 @@ extension Family {
     public struct EntityComponentIterator: IteratorProtocol {
         @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Index>.ElementIterator
         @usableFromInline unowned let nexus: Nexus
+        @usableFromInline let cursors: (repeat Nexus.ComponentCursor<each C>)
 
         /// Creates a new iterator for the given family.
         /// - Parameter family: The family to iterate over.
-        /// - Complexity: O(1)
+        /// - Complexity: O(R) where R is the number of required components.
         public init(family: Family<repeat each C>) {
             nexus = family.nexus
             memberIdsIterator = family.memberIds.makeIterator()
+            cursors = (repeat Nexus.ComponentCursor<each C>())
         }
 
         /// Advances to the next entity and components pair and returns it, or `nil` if no next element exists.
+        ///
+        /// Members that were destroyed or lost a required component since the family was iterated from are skipped.
         /// - Returns: The next entity and components pair in the sequence, or `nil`.
         /// - Complexity: O(R) where R is the number of required components.
         public mutating func next() -> (Entity, repeat each C)? {
-            guard let entityId = memberIdsIterator.next() else {
-                return nil
+            while let entityId = memberIdsIterator.next() {
+                let components = (repeat nexus.component(each cursors, for: entityId))
+                var complete = true
+                _ = (repeat complete = complete && (each components) != nil)
+                if complete {
+                    return (Entity(nexus: nexus, id: entityId), repeat (each components).unsafelyUnwrapped)
+                }
             }
-            let entity = Entity(nexus: nexus, id: entityId)
-            let components = (repeat nexus.unsafeComponent(for: entityId) as (each C))
-            return (entity, repeat each components)
+            return nil
         }
     }
 }

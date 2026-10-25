@@ -23,6 +23,8 @@ public struct Single<A: SingleComponent> {
     public let traits: FamilyTraitSet
     /// The entity identifier of the singleton entity.
     public let entityId: EntityIdentifier
+    /// The resolved component index, so that access does not ask the component registry.
+    @usableFromInline let cursor = Nexus.ComponentCursor<A>()
 }
 
 extension Single: Equatable {
@@ -41,13 +43,13 @@ extension Single: Equatable {
 extension Single where A: SingleComponent {
     /// The singleton component instance.
     ///
-    /// - Note: This property unsafely unwraps the component for performance, assuming the component always exists.
+    /// - Note: The component must exist, which the lifecycle of the singleton entity guarantees. Accessing it after the entity was destroyed traps.
     /// - Complexity: O(1)
     @inlinable public var component: A {
         // Since we guarantee that the component will always be present by managing the complete lifecycle of the entity
         // and component assignment we may unsafelyUnwrap here.
-        // Since components will always be of reference type (class) we may use unsafeDowncast here for performance reasons.
-        nexus.unsafeComponent(for: entityId)
+        // The lookup checks the generation of the identifier and traps with a message if the component is gone.
+        nexus.backend.unsafeGet(A.self, at: cursor.index, for: entityId)
     }
 
     /// The entity associated with this singleton component.

@@ -68,6 +68,8 @@ let package = Package(
         // Spike S2 (storage protocol, sparse-set and archetype storages). Self-contained.
         .target(name: "S2Storage",
                 swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
+        .executableTarget(name: "S2Bench",
+                          dependencies: ["S2Storage"]),
         .testTarget(name: "S2StorageTests",
                     dependencies: ["S2Storage"],
                     swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),

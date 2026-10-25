@@ -21,10 +21,12 @@ For a more detailed example of FirebladeECS in action, see the [Fireblade ECS De
 - <doc:GettingStartedWithFirebladeECS>
 - <doc:ComponentMacro>
 - <doc:SavingAndLoadingScenes>
+- <doc:ReactingToNexusEvents>
 - <doc:MigratingToFirebladeECS2>
 - ``Nexus``
 - ``NexusEvent``
 - ``NexusEventDelegate``
+- ``NexusEventMask``
 - ``Nexus/StorageKind``
 
 ### Entities
@@ -46,6 +48,9 @@ For a more detailed example of FirebladeECS in action, see the [Fireblade ECS De
 - ``Component``
 - ``ComponentAdded``
 - ``ComponentRemoved``
+- ``ComponentReplaced``
+- ``ComponentModified``
+- ``ComponentsModified``
 - ``ComponentProvider``
 - ``ComponentsBuilder-4co42``
 - ``ComponentsBuilder``

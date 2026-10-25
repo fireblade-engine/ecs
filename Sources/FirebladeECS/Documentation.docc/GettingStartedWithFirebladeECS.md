@@ -17,16 +17,22 @@ import PackageDescription
 let package = Package(
     name: "YourPackageName",
     dependencies: [
-        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "1.2.0")
+        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "2.0.0")
     ],
     targets: [
         .target(
             name: "YourTargetName",
-            dependencies: ["FirebladeECS"])
+            dependencies: [
+                .product(name: "FirebladeECS", package: "ecs")
+                // optional: .product(name: "FirebladeECSMacros", package: "ecs"),
+                //           .product(name: "FirebladeFSM", package: "ecs")
+            ])
     ]
 )
 
 ```
+
+Coming from FirebladeECS 1? Read <doc:MigratingToFirebladeECS2> first.
 
 This article introduces you to the key concepts of Fireblade ECS's API. 
 For a more detailed example, see the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo).
@@ -100,7 +106,7 @@ let family = nexus.family(requiresAll: Movement.self, PlayerInput.self,
 
 These entities are cached in the nexus for efficient access and iteration.
 Families conform to the [Sequence](https://developer.apple.com/documentation/swift/sequence) protocol so that members (components) 
-may be iterated and accessed like any other sequence in Swift.   
+may be iterated and accessed like any other sequence in Swift. Iteration yields copies; update components in place with `forEach(reading:writing:)`, see <doc:ReadingAndWritingComponents>.   
 Access a family's components directly on the family instance. To get family entities and access components at the same time call `family.entityAndComponents`.
 If you are only interested in a family's entities call `family.entities`.
 
@@ -110,22 +116,18 @@ class PlayerMovementSystem {
                               excludesAll: Texture.self)
 
     func update() {
+        // read-only iteration yields copies of the components
         family
             .forEach { (mov: Movement, input: PlayerInput) in
-            
-            // position & velocity component for the current entity
-            
-            // get properties
             _ = mov.position
-            _ = mov.velocity
-            
-            // iteration yields copies: to write, use `family.forEach(reading:writing:)` or the entity, e.g. `entity.modify(Movement.self) { ... }`
-            ...
-            
-            // current input command for the given entity
             _ = input.command
-            ...
-            
+        }
+    }
+
+    func move() {
+        // to write, state the access: reads arrive as copies, writes as `inout`
+        family.forEach(reading: PlayerInput.self, writing: Movement.self) { input, mov in
+            mov.position.x += input.command.dx
         }
     }
 

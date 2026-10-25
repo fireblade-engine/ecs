@@ -55,9 +55,7 @@ With the default mask a write to a component costs one branch on a flag the nexu
 
 ### Ordering
 
-Modifying a component that is missing, with a default value, delivers ``ComponentAdded`` and then ``ComponentModified``. Setting a component the entity does not have yet delivers ``ComponentAdded`` only, never ``ComponentReplaced``.
-
-In FirebladeECS 2.0 ``ComponentReplaced`` is part of the event set, but assigning a component the entity already has still reports a "ComponentAdd collision" to ``NexusEventDelegate/nexusNonFatalError(_:)`` and keeps the old component, as in FirebladeECS 1.
+Modifying a component that is missing, with a default value, delivers ``ComponentAdded`` and then ``ComponentModified``. Setting a component the entity does not have yet delivers ``ComponentAdded`` only, never ``ComponentReplaced``. Setting a component the entity already has replaces it and delivers ``ComponentReplaced`` to delegates that subscribed to ``NexusEventMask/valueChanges``.
 
 ### Comparison with flecs
 

@@ -21,12 +21,15 @@ All protocols can also be implemented by hand without the macro.
 
 ### Adding the product
 
-Add the product to your target. It re-exports `FirebladeECS`.
+Add the product to your target. It does not re-export `FirebladeECS`: add the `FirebladeECS` product too and import both modules in every file that uses `@Component`.
 
 ```swift
 .target(
     name: "YourTargetName",
-    dependencies: [.product(name: "FirebladeECSMacros", package: "ecs")])
+    dependencies: [
+        .product(name: "FirebladeECS", package: "ecs"),
+        .product(name: "FirebladeECSMacros", package: "ecs")
+    ])
 ```
 
 ### Declaring components

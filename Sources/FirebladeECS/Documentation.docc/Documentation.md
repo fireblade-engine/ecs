@@ -4,26 +4,46 @@ A lightweight, fast and easy to use Entity-Component System in Swift.
 
 ## Overview
 
-This is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component System](https://en.wikipedia.org/wiki/Entity_component_system) implementation in Swift. 
+FirebladeECS is a **dependency free**, **lightweight**, **fast** and **easy to use** [Entity-Component System](https://en.wikipedia.org/wiki/Entity_component_system) in Swift.
 An ECS comprises entities composed from components of data, with systems which operate on the components.
-
-Fireblade ECS is available for all platforms that support [Swift 6.2](https://swift.org/) and higher and the [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager).
 It is developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
 
-The optional `FirebladeECSMacros` product adds the `@Component` macro, which depends on [swift-syntax](https://github.com/swiftlang/swift-syntax). The optional `FirebladeFSM` product adds entity state machines, see the FirebladeFSM documentation. The core `FirebladeECS` library has no dependencies.
+Components are value types, structs or enums. Reading a component returns a copy; you change one with ``Entity/set(_:)-(Component)``, ``Entity/modify(_:_:)`` or, for many entities at once, ``Family/forEach(reading:writing:_:)``. Entity identifiers carry a generation, so a destroyed entity never matches a later one that reuses its slot. A ``Nexus`` stores components in an archetype storage by default, or in a sparse set, see <doc:ChoosingAStorage>.
 
-For a more detailed example of FirebladeECS in action, see the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo).
+```swift
+struct Position: Component { var x = 0.0, y = 0.0 }
+struct Velocity: Component { var dx = 0.0, dy = 0.0 }
+
+let nexus = Nexus()
+nexus.createEntity {
+    Position()
+    Velocity(dx: 1)
+}
+
+let movers = nexus.family(requiresAll: Position.self, Velocity.self)
+movers.forEach(reading: Velocity.self, writing: Position.self) { velocity, position in
+    position.x += velocity.dx
+}
+```
+
+FirebladeECS requires Swift 6.2 or later and ships three products:
+
+- `FirebladeECS` is the core library and has no dependencies.
+- `FirebladeECSMacros` adds the `@Component` and `@FamilyTraits` macros and depends on [swift-syntax](https://github.com/swiftlang/swift-syntax). It does not re-export `FirebladeECS`: import both modules.
+- `FirebladeFSM` adds entity state machines, see the FirebladeFSM documentation. Import it next to `FirebladeECS`.
+
+Upgrading from 1.x? Start with <doc:MigratingToFirebladeECS2>. For a more detailed example of FirebladeECS in action, see the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo).
 
 ## Topics
 
 ### Essentials
 
 - <doc:GettingStartedWithFirebladeECS>
-- <doc:ComponentMacro>
-- <doc:SavingAndLoadingScenes>
-- <doc:ReactingToNexusEvents>
 - <doc:ReadingAndWritingComponents>
+- <doc:ComponentMacro>
+- <doc:ReactingToNexusEvents>
 - <doc:ChoosingAStorage>
+- <doc:SavingAndLoadingScenes>
 - <doc:MigratingToFirebladeECS2>
 - ``Nexus``
 - ``NexusEvent``

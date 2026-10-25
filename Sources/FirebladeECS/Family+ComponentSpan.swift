@@ -55,11 +55,12 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let wIndex1 = W1.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
+            archetype.beginWrite(wIndex1)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
+                archetype.endWrite(wIndex1)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -69,7 +70,7 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W1.self, at: W1.componentIndex), count: count))
+                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W1.self, at: wIndex1), count: count))
                     visited += count
                     try body(&wSpan1)
                 }
@@ -131,13 +132,15 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let wIndex1 = W1.componentIndex
+            let wIndex2 = W2.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            archetype.beginWrite(W2.componentIndex)
+            archetype.beginWrite(wIndex1)
+            archetype.beginWrite(wIndex2)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
-                archetype.endWrite(W2.componentIndex)
+                archetype.endWrite(wIndex1)
+                archetype.endWrite(wIndex2)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -148,8 +151,8 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W1.self, at: W1.componentIndex), count: count))
-                    var wSpan2 = MutableSpan<W2>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W2.self, at: W2.componentIndex), count: count))
+                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W1.self, at: wIndex1), count: count))
+                    var wSpan2 = MutableSpan<W2>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W2.self, at: wIndex2), count: count))
                     visited += count
                     try body(&wSpan1, &wSpan2)
                 }
@@ -200,17 +203,18 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
             archetype.lockDepth += 1
-            let wasReading1 = archetype.beginRead(R1.componentIndex)
+            let wasReading1 = archetype.beginRead(rIndex1)
             defer {
-                archetype.endRead(R1.componentIndex, wasReading: wasReading1)
+                archetype.endRead(rIndex1, wasReading: wasReading1)
                 archetype.lockDepth -= 1
             }
             for entry in query.tables {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: table.base(R1.self, at: R1.componentIndex), count: count))
+                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: table.base(R1.self, at: rIndex1), count: count))
                     try body(rSpan1)
                 }
             }
@@ -304,13 +308,15 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let wIndex1 = W1.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            let wasReading1 = archetype.beginRead(R1.componentIndex)
+            archetype.beginWrite(wIndex1)
+            let wasReading1 = archetype.beginRead(rIndex1)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
-                archetype.endRead(R1.componentIndex, wasReading: wasReading1)
+                archetype.endWrite(wIndex1)
+                archetype.endRead(rIndex1, wasReading: wasReading1)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -320,8 +326,8 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: table.base(R1.self, at: R1.componentIndex), count: count))
-                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W1.self, at: W1.componentIndex), count: count))
+                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: table.base(R1.self, at: rIndex1), count: count))
+                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W1.self, at: wIndex1), count: count))
                     visited += count
                     try body(rSpan1, &wSpan1)
                 }
@@ -390,15 +396,18 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let wIndex1 = W1.componentIndex
+            let wIndex2 = W2.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            archetype.beginWrite(W2.componentIndex)
-            let wasReading1 = archetype.beginRead(R1.componentIndex)
+            archetype.beginWrite(wIndex1)
+            archetype.beginWrite(wIndex2)
+            let wasReading1 = archetype.beginRead(rIndex1)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
-                archetype.endWrite(W2.componentIndex)
-                archetype.endRead(R1.componentIndex, wasReading: wasReading1)
+                archetype.endWrite(wIndex1)
+                archetype.endWrite(wIndex2)
+                archetype.endRead(rIndex1, wasReading: wasReading1)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -409,9 +418,9 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: table.base(R1.self, at: R1.componentIndex), count: count))
-                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W1.self, at: W1.componentIndex), count: count))
-                    var wSpan2 = MutableSpan<W2>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W2.self, at: W2.componentIndex), count: count))
+                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: table.base(R1.self, at: rIndex1), count: count))
+                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W1.self, at: wIndex1), count: count))
+                    var wSpan2 = MutableSpan<W2>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W2.self, at: wIndex2), count: count))
                     visited += count
                     try body(rSpan1, &wSpan1, &wSpan2)
                 }
@@ -469,20 +478,22 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let rIndex2 = R2.componentIndex
             archetype.lockDepth += 1
-            let wasReading1 = archetype.beginRead(R1.componentIndex)
-            let wasReading2 = archetype.beginRead(R2.componentIndex)
+            let wasReading1 = archetype.beginRead(rIndex1)
+            let wasReading2 = archetype.beginRead(rIndex2)
             defer {
-                archetype.endRead(R1.componentIndex, wasReading: wasReading1)
-                archetype.endRead(R2.componentIndex, wasReading: wasReading2)
+                archetype.endRead(rIndex1, wasReading: wasReading1)
+                archetype.endRead(rIndex2, wasReading: wasReading2)
                 archetype.lockDepth -= 1
             }
             for entry in query.tables {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: table.base(R1.self, at: R1.componentIndex), count: count))
-                    let rSpan2 = Span<R2>(_unsafeElements: UnsafeBufferPointer(start: table.base(R2.self, at: R2.componentIndex), count: count))
+                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: table.base(R1.self, at: rIndex1), count: count))
+                    let rSpan2 = Span<R2>(_unsafeElements: UnsafeBufferPointer(start: table.base(R2.self, at: rIndex2), count: count))
                     try body(rSpan1, rSpan2)
                 }
             }
@@ -549,15 +560,18 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let rIndex2 = R2.componentIndex
+            let wIndex1 = W1.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            let wasReading1 = archetype.beginRead(R1.componentIndex)
-            let wasReading2 = archetype.beginRead(R2.componentIndex)
+            archetype.beginWrite(wIndex1)
+            let wasReading1 = archetype.beginRead(rIndex1)
+            let wasReading2 = archetype.beginRead(rIndex2)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
-                archetype.endRead(R1.componentIndex, wasReading: wasReading1)
-                archetype.endRead(R2.componentIndex, wasReading: wasReading2)
+                archetype.endWrite(wIndex1)
+                archetype.endRead(rIndex1, wasReading: wasReading1)
+                archetype.endRead(rIndex2, wasReading: wasReading2)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -567,9 +581,9 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: table.base(R1.self, at: R1.componentIndex), count: count))
-                    let rSpan2 = Span<R2>(_unsafeElements: UnsafeBufferPointer(start: table.base(R2.self, at: R2.componentIndex), count: count))
-                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W1.self, at: W1.componentIndex), count: count))
+                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: table.base(R1.self, at: rIndex1), count: count))
+                    let rSpan2 = Span<R2>(_unsafeElements: UnsafeBufferPointer(start: table.base(R2.self, at: rIndex2), count: count))
+                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W1.self, at: wIndex1), count: count))
                     visited += count
                     try body(rSpan1, rSpan2, &wSpan1)
                 }
@@ -645,17 +659,21 @@ extension Family {
         case let .archetype(archetype):
             guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
             let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let rIndex2 = R2.componentIndex
+            let wIndex1 = W1.componentIndex
+            let wIndex2 = W2.componentIndex
             archetype.lockDepth += 1
-            archetype.beginWrite(W1.componentIndex)
-            archetype.beginWrite(W2.componentIndex)
-            let wasReading1 = archetype.beginRead(R1.componentIndex)
-            let wasReading2 = archetype.beginRead(R2.componentIndex)
+            archetype.beginWrite(wIndex1)
+            archetype.beginWrite(wIndex2)
+            let wasReading1 = archetype.beginRead(rIndex1)
+            let wasReading2 = archetype.beginRead(rIndex2)
             var visited = 0
             defer {
-                archetype.endWrite(W1.componentIndex)
-                archetype.endWrite(W2.componentIndex)
-                archetype.endRead(R1.componentIndex, wasReading: wasReading1)
-                archetype.endRead(R2.componentIndex, wasReading: wasReading2)
+                archetype.endWrite(wIndex1)
+                archetype.endWrite(wIndex2)
+                archetype.endRead(rIndex1, wasReading: wasReading1)
+                archetype.endRead(rIndex2, wasReading: wasReading2)
                 archetype.lockDepth -= 1
                 if visited > 0 {
                     nexus.emitModified(W1.self, count: visited)
@@ -666,10 +684,10 @@ extension Family {
                 try entry._withUnsafeGuaranteedRef { table in
                     let count = table.entities.count
                     guard count > 0 else { return }
-                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: table.base(R1.self, at: R1.componentIndex), count: count))
-                    let rSpan2 = Span<R2>(_unsafeElements: UnsafeBufferPointer(start: table.base(R2.self, at: R2.componentIndex), count: count))
-                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W1.self, at: W1.componentIndex), count: count))
-                    var wSpan2 = MutableSpan<W2>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W2.self, at: W2.componentIndex), count: count))
+                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: table.base(R1.self, at: rIndex1), count: count))
+                    let rSpan2 = Span<R2>(_unsafeElements: UnsafeBufferPointer(start: table.base(R2.self, at: rIndex2), count: count))
+                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W1.self, at: wIndex1), count: count))
+                    var wSpan2 = MutableSpan<W2>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W2.self, at: wIndex2), count: count))
                     visited += count
                     try body(rSpan1, rSpan2, &wSpan1, &wSpan2)
                 }

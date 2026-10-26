@@ -25,6 +25,7 @@ For a more detailed example of FirebladeECS in action, see the [Fireblade ECS De
 - ``Nexus``
 - ``NexusEvent``
 - ``NexusEventDelegate``
+- ``Nexus/StorageKind``
 
 ### Entities
 

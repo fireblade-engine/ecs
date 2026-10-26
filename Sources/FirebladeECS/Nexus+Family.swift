@@ -19,10 +19,34 @@ extension Nexus {
     /// - Returns: `true` if the entity matches the traits.
     /// - Complexity: O(T) where T is the number of traits in the family.
     public func canBecomeMember(_ entity: Entity, in traits: FamilyTraitSet) -> Bool {
-        guard let componentIds = componentIdsByEntity[entity.identifier] else {
+        guard let mask = backend.componentMask(of: entity.identifier) else {
             return false
         }
-        return traits.isMatch(components: componentIds)
+        return filter(for: traits)?.accepts(mask) ?? false
+    }
+
+    /// The membership predicate of a family: the filter it was created with, or one resolved from the identifiers of the traits.
+    ///
+    /// Excluded components no storage knows of exclude nothing.
+    /// - Returns: The filter, or `nil` if a required component has no storage, so that no entity can match.
+    @usableFromInline
+    func filter(for traits: FamilyTraitSet) -> FamilyFilter? {
+        if let filter = familyFiltersByTraits[traits] {
+            return filter
+        }
+        var filter = FamilyFilter()
+        for identifier in traits.requiresAll {
+            guard let componentIndex = backend.componentIndex(of: identifier) else {
+                return nil
+            }
+            filter.requires.insert(componentIndex)
+        }
+        for identifier in traits.excludesAll {
+            if let componentIndex = backend.componentIndex(of: identifier) {
+                filter.excludes.insert(componentIndex)
+            }
+        }
+        return filter
     }
 
     /// Retrieves the members of a family defined by traits.

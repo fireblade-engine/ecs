@@ -47,7 +47,7 @@ extension Nexus {
     /// - Complexity: O(E * (C + M)) where E is the number of entities, C the number of components per entity and M the number of families.
     @discardableResult
     public final func clone(into target: Nexus) throws -> [EntityIdentifier: Entity] {
-        let sourceIds = componentIdsByEntity.keys.sorted { $0.index < $1.index }
+        let sourceIds = backend.livingEntityIds
         let mapping = try clone(entityIds: sourceIds, into: target)
         return mapping.mapValues { Entity(nexus: target, id: $0) }
     }
@@ -65,12 +65,14 @@ extension Nexus {
         var componentsBySource: [(EntityIdentifier, [any CloneableComponent])] = []
         var visited: Set<EntityIdentifier> = []
         for sourceId in sourceIds where visited.insert(sourceId).inserted {
-            guard let componentIds = componentIdsByEntity[sourceId] else {
+            guard backend.isAlive(sourceId) else {
                 throw ComponentCloneError.unknownEntity(sourceId)
             }
             var components: [any CloneableComponent] = []
-            for componentId in componentIds {
-                let component = unsafeComponent(componentId, for: sourceId)
+            for componentIndex in backend.componentIndices(of: sourceId) {
+                guard let component = backend.anyComponent(componentIndex: componentIndex, for: sourceId) else {
+                    continue
+                }
                 guard let cloneable = component as? any CloneableComponent else {
                     throw ComponentCloneError.notCloneable(typeName: String(reflecting: type(of: component)))
                 }

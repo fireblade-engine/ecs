@@ -20,4 +20,8 @@ public enum ComponentSerializationError: Error, Equatable, Sendable {
     ///
     /// The generator's `init(startProviding:)` must provide the given identifiers in last out order.
     case entityIdentifierMismatch(expected: EntityIdentifier, actual: EntityIdentifier)
+    /// A snapshot to restore contains an entity identifier with an absurdly high index (above 16,777,216).
+    ///
+    /// A nexus keeps per-entity data for every index up to the highest one, so such an index would allocate gigabytes.
+    case entityIndexOutOfRange(EntityIdentifier)
 }

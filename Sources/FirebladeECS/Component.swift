@@ -14,6 +14,11 @@ public protocol Component: AnyObject, Sendable {
 
     /// Unique, immutable identifier of this component type.
     var identifier: ComponentIdentifier { get }
+
+    /// The dense index of this component type, see ``Component/componentIndex``.
+    ///
+    /// Two component types must never share an index. A default implementation assigns indices lazily.
+    static var componentIndex: Int { get }
 }
 
 extension Component {

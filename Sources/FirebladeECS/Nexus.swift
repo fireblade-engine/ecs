@@ -6,20 +6,19 @@
 //
 
 public final class Nexus {
-    /// A map of component identifiers to their storage.
-    /// - Key: The component identifier (type).
-    /// - Value: A contiguous array of components of that type. New component instances are appended.
-    @usableFromInline final var componentsByType: [ComponentIdentifier: ManagedContiguousArray<Component>]
-
-    /// A map of entity identifiers to their assigned component identifiers.
-    /// - Key: The entity identifier (index).
-    /// - Value: A set of component identifiers associated with this entity.
-    @usableFromInline final var componentIdsByEntity: [EntityIdentifier: Set<ComponentIdentifier>]
+    /// The storage of this nexus: entities, their component bitsets and the component arrays.
+    @usableFromInline final let backend: Backend
 
     /// A map of family traits to the entities that match them.
     /// - Key: The family trait set (component types) that defines the family.
     /// - Value: A sparse set of entity identifiers that are members of this family.
     @usableFromInline final var familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Index>]
+
+    /// The membership predicates of the families, by their traits.
+    @usableFromInline final var familyFiltersByTraits: [FamilyTraitSet: FamilyFilter]
+
+    /// The families in creation order, so that membership updates visit them in a deterministic order without hashing.
+    @usableFromInline final var familyList: ContiguousArray<(traits: FamilyTraitSet, filter: FamilyFilter)>
 
     /// The component types known to this nexus.
     ///
@@ -46,33 +45,15 @@ public final class Nexus {
     /// The delegate for handling nexus events.
     public final weak var delegate: NexusEventDelegate?
 
-    /// Initializes a new Nexus with default settings.
-    public convenience init() {
-        self.init(componentsByType: [:],
-                  componentsByEntity: [:],
-                  entityIdGenerator: DefaultEntityIdGenerator(),
-                  familyMembersByTraits: [:],
-                  codingStrategy: DefaultCodingStrategy())
-    }
-
-    /// Initializes a new Nexus with the provided storage and strategies.
-    /// - Parameters:
-    ///   - componentsByType: The initial storage for components by type.
-    ///   - componentsByEntity: The initial mapping of entities to their components.
-    ///   - entityIdGenerator: The generator for entity identifiers.
-    ///   - familyMembersByTraits: The initial family membership storage.
-    ///   - codingStrategy: The strategy for encoding/decoding.
-    init(componentsByType: [ComponentIdentifier: ManagedContiguousArray<Component>],
-         componentsByEntity: [EntityIdentifier: Set<ComponentIdentifier>],
-         entityIdGenerator: EntityIdentifierGenerator,
-         familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Index>],
-         codingStrategy: CodingStrategy)
-    {
-        self.componentsByType = componentsByType
-        componentIdsByEntity = componentsByEntity
-        self.familyMembersByTraits = familyMembersByTraits
-        self.entityIdGenerator = entityIdGenerator
-        self.codingStrategy = codingStrategy
+    /// Initializes a new Nexus.
+    /// - Parameter storage: The storage to keep entities and components in. Defaults to ``StorageKind/default``.
+    public init(storage: StorageKind = .default) {
+        backend = Backend(storage)
+        familyMembersByTraits = [:]
+        familyFiltersByTraits = [:]
+        familyList = []
+        entityIdGenerator = DefaultEntityIdGenerator()
+        codingStrategy = DefaultCodingStrategy()
         componentRegistry = ComponentRegistry()
     }
 
@@ -84,9 +65,10 @@ public final class Nexus {
     ///
     /// This removes all components, entities, and family memberships.
     public final func clear() {
-        componentsByType.removeAll()
-        componentIdsByEntity.removeAll()
+        backend.removeAll()
         familyMembersByTraits.removeAll()
+        familyFiltersByTraits.removeAll()
+        familyList.removeAll()
     }
 }
 

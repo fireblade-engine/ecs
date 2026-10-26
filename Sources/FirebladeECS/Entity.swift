@@ -66,7 +66,7 @@ public struct Entity {
     /// - Parameter type: the component type.
     /// - Complexity: O(1)
     public func has(_ type: (some Component).Type) -> Bool {
-        has(type.identifier)
+        nexus.has(componentIndex: type.componentIndex, entityId: identifier)
     }
 
     /// Checks if a component with a given component identifier is assigned to this entity.
@@ -206,8 +206,11 @@ extension Entity {
         /// - Complexity: O(C) where C is the number of components.
         @usableFromInline
         init(nexus: Nexus, entityIdentifier: EntityIdentifier) {
-            iterator = nexus.get(components: entityIdentifier)?
-                .map { nexus.unsafeComponent($0, for: entityIdentifier) }
+            guard nexus.isAlive(entityIdentifier) else {
+                return
+            }
+            iterator = nexus.backend.componentIndices(of: entityIdentifier)
+                .compactMap { nexus.backend.anyComponent(componentIndex: $0, for: entityIdentifier) }
                 .makeIterator()
         }
 

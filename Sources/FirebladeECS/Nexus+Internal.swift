@@ -12,7 +12,7 @@ extension Nexus {
     /// - Parameter entityId: The stale identifier.
     @usableFromInline
     func reportStaleHandle(_ entityId: EntityIdentifier) {
-        let current = componentIdsByEntity.keys.first { $0.index == entityId.index }
+        let current = backend.currentEntity(atIndex: entityId.index)
         let message = "stale handle \(entityId), " + (current.map { "slot is at \($0)" } ?? "slot is free")
         delegate?.nexusNonFatalError(message)
         if assertsOnStaleHandles {
@@ -35,18 +35,14 @@ extension Nexus {
         }
         var iter = components.makeIterator()
         while let component = iter.next() {
-            let componentId = component.identifier
-            // test if component is already assigned
-            guard !has(componentId: componentId, entityId: entityId) else {
-                delegate?.nexusNonFatalError("ComponentAdd collision: \(entityId) already has a component \(component)")
+            // a delegate notified about the previous component may have destroyed the entity
+            guard isAlive(entityId) else {
+                delegate?.nexusNonFatalError("ComponentAdd failure: \(entityId) was destroyed while its components were assigned")
                 return false
             }
-
-            // add component instances to uniform component stores
-            insertComponentInstance(component, componentId, entityId)
-
-            // assigns the component id to the entity id
-            assign(componentId, entityId)
+            guard insert(component, entityId) else {
+                return false
+            }
         }
 
         // Update entity membership
@@ -78,51 +74,36 @@ extension Nexus {
             reportStaleHandle(entityId)
             return false
         }
-        let componentId = component.identifier
-
-        // test if component is already assigned
-        guard !has(componentId: componentId, entityId: entityId) else {
-            delegate?.nexusNonFatalError("ComponentAdd collision: \(entityId) already has a component \(component)")
+        guard insert(component, entityId) else {
             return false
         }
-
-        // add component instances to uniform component stores
-        insertComponentInstance(component, componentId, entityId)
-
-        // assigns the component id to the entity id
-        assign(componentId, entityId)
 
         // Update entity membership
         update(familyMembership: entityId)
         return true
     }
 
-    /// Inserts a component instance into the internal storage.
+    /// Inserts a component instance into the storage of its type and notifies the delegate.
     ///
     /// - Parameters:
-    ///   - component: The component instance.
-    ///   - componentId: The identifier of the component type.
-    ///   - entityId: The identifier of the entity.
+    ///   - component: The component instance. Its dynamic type selects the storage.
+    ///   - entityId: The identifier of the living entity.
+    /// - Returns: `false` if the entity already has a component of the type.
     @usableFromInline
-    func insertComponentInstance(_ component: Component, _ componentId: ComponentIdentifier, _ entityId: EntityIdentifier) {
-        if componentsByType[componentId] == nil {
-            componentsByType[componentId] = ManagedContiguousArray<Component>()
-            registerOnFirstAssignment(type(of: component))
+    func insert<C: Component>(_ component: C, _ entityId: EntityIdentifier) -> Bool {
+        let componentIndex = C.componentIndex
+        // test if component is already assigned
+        guard !backend.has(componentIndex: componentIndex, for: entityId) else {
+            delegate?.nexusNonFatalError("ComponentAdd collision: \(entityId) already has a component \(component)")
+            return false
         }
-        componentsByType[componentId]?.insert(component, at: Int(entityId.index))
-    }
-
-    /// Associates a component type with an entity.
-    ///
-    /// - Parameters:
-    ///   - componentId: The identifier of the component type.
-    ///   - entityId: The identifier of the entity.
-    @usableFromInline
-    func assign(_ componentId: ComponentIdentifier, _ entityId: EntityIdentifier) {
-        let (inserted, _) = componentIdsByEntity[entityId]!.insert(componentId)
-        if inserted {
-            delegate?.nexusEvent(ComponentAdded(component: componentId, toEntity: entityId))
+        if !backend.hasStorage(for: componentIndex) {
+            registerOnFirstAssignment(C.self)
         }
+        // adds the component to its storage and the component type to the entity's component set
+        backend.set(component, at: componentIndex, for: entityId)
+        delegate?.nexusEvent(ComponentAdded(component: C.identifier, toEntity: entityId))
+        return true
     }
 
     /// Updates family membership for a specific entity across all families.
@@ -132,55 +113,49 @@ extension Nexus {
     func update(familyMembership entityId: EntityIdentifier) {
         // FIXME: iterating all families is costly for many families
         // FIXME: this could be parallelized
-        var iter = familyMembersByTraits.keys.makeIterator()
-        while let traits = iter.next() {
-            update(membership: traits, for: entityId)
+        guard let mask = backend.componentMask(of: entityId) else {
+            // not alive - so skip
+            return
+        }
+        for family in familyList {
+            update(membership: family.traits, filter: family.filter, mask: mask, for: entityId)
         }
     }
 
     /// Called when a family is initialized to populate it with existing matching entities.
     ///
-    /// - Parameter traits: The traits defining the family.
-    func onFamilyInit(traits: FamilyTraitSet) {
+    /// - Parameters:
+    ///   - traits: The traits defining the family.
+    ///   - filter: The membership predicate of the family.
+    func onFamilyInit(traits: FamilyTraitSet, filter: FamilyFilter) {
         guard familyMembersByTraits[traits] == nil else {
             return
         }
 
         familyMembersByTraits[traits] = UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Index>()
-        update(familyMembership: traits)
-    }
-
-    /// Updates membership for a specific family across all entities.
-    ///
-    /// - Parameter traits: The traits defining the family.
-    func update(familyMembership traits: FamilyTraitSet) {
+        familyFiltersByTraits[traits] = filter
+        familyList.append((traits, filter))
         // FIXME: iterating all entities is costly for many entities
-        // Sorting makes the member order deterministic instead of following the per-process hash seed.
-        for entityId in componentIdsByEntity.keys.sorted(by: { $0.index < $1.index }) {
-            update(membership: traits, for: entityId)
+        // The identifiers ascend by slot index, which makes the member order deterministic instead of following a hash seed.
+        for entityId in backend.livingEntityIds {
+            if let mask = backend.componentMask(of: entityId) {
+                update(membership: traits, filter: filter, mask: mask, for: entityId)
+            }
         }
     }
 
     /// Updates membership for a specific family and entity.
     ///
-    /// Checks if the entity matches the family traits and adds/removes it accordingly.
+    /// Checks if the entity matches the family filter and adds/removes it accordingly.
     ///
     /// - Parameters:
     ///   - traits: The traits defining the family.
+    ///   - filter: The membership predicate of the family.
+    ///   - mask: The component set of the entity.
     ///   - entityId: The identifier of the entity.
-    func update(membership traits: FamilyTraitSet, for entityId: EntityIdentifier) {
-        guard let componentIds = componentIdsByEntity[entityId] else {
-            // no components - so skip
-            return
-        }
-
+    func update(membership traits: FamilyTraitSet, filter: FamilyFilter, mask: ComponentMask, for entityId: EntityIdentifier) {
         let isMember: Bool = isMember(entity: entityId, inFamilyWithTraits: traits)
-        if !isAlive(entityId), isMember {
-            remove(entityWithId: entityId, fromFamilyWithTraits: traits)
-            return
-        }
-
-        let isMatch: Bool = traits.isMatch(components: componentIds)
+        let isMatch: Bool = filter.accepts(mask)
 
         switch (isMatch, isMember) {
         case (true, false):

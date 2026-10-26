@@ -240,14 +240,14 @@ extension Entity: CustomStringConvertible {
     /// A textual representation of the entity.
     /// - Complexity: O(1)
     public var description: String {
-        "<Entity id:\(identifier.id)>"
+        "<Entity id:\(identifier)>"
     }
 }
 
 extension Entity: CustomDebugStringConvertible {
     /// A textual representation of the entity, suitable for debugging.
     public var debugDescription: String {
-        "<Entity id:\(identifier.id) numComponents:\(numComponents)>"
+        "<Entity id:\(identifier) numComponents:\(numComponents)>"
     }
 }
 

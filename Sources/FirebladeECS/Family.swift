@@ -38,7 +38,7 @@ public struct Family<each C: Component> {
     ///
     /// This property provides access to the underlying storage of family members managed by the `Nexus`.
     /// - Complexity: O(1)
-    @inlinable var memberIds: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier> {
+    @inlinable var memberIds: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Index> {
         nexus.members(withFamilyTraits: traits)
     }
 
@@ -103,7 +103,7 @@ extension Family: LazySequenceProtocol {}
 extension Family {
     /// An iterator over the component collections of family members.
     public struct ComponentsIterator: IteratorProtocol {
-        @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>.ElementIterator
+        @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Index>.ElementIterator
         @usableFromInline unowned let nexus: Nexus
 
         /// Creates a new iterator for the given family.
@@ -140,7 +140,7 @@ extension Family {
 
     /// An iterator over the entities in the family.
     public struct EntityIterator: IteratorProtocol {
-        @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>.ElementIterator
+        @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Index>.ElementIterator
         @usableFromInline unowned let nexus: Nexus
 
         /// Creates a new iterator for the given family.
@@ -177,7 +177,7 @@ extension Family {
 
     /// An iterator over both the entities and their components in the family.
     public struct EntityComponentIterator: IteratorProtocol {
-        @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>.ElementIterator
+        @usableFromInline var memberIdsIterator: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Index>.ElementIterator
         @usableFromInline unowned let nexus: Nexus
 
         /// Creates a new iterator for the given family.

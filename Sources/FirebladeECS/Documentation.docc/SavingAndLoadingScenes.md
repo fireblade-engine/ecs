@@ -4,7 +4,7 @@ Store a whole ``Nexus`` on disk and load it again with the same entities, compon
 
 ## Overview
 
-A nexus encodes as a ``NexusSnapshot``: every entity with its original identifier, the components conforming to ``SerializableComponent``, and the state of the entity identifier generator.
+A nexus encodes as a ``NexusSnapshot``: every entity with its original identifier (slot index and generation), the components conforming to ``SerializableComponent``, and the state of the entity identifier generator.
 The snapshot works with any `Codable` format, such as JSON, property lists or YAML.
 
 ### Make components serializable
@@ -69,7 +69,7 @@ var decoder = JSONDecoder()
 try restored.restoreSnapshot(from: data, using: &decoder)
 ```
 
-- ``Nexus/restoreSnapshot(from:using:)`` keeps the entity identifiers. It requires a nexus without entities and emits the usual entity and component events.
+- ``Nexus/restoreSnapshot(from:using:)`` keeps the entity identifiers, including their generations. It requires a nexus without entities and emits the usual entity and component events.
 - ``Nexus/decodeSnapshot(from:using:)`` adds the snapshot as new entities to a populated nexus, for example for prefabs, and returns the mapping from saved to new identifiers.
 
 Both roll back all changes if decoding fails.
@@ -104,10 +104,23 @@ For deterministic output, for example for scene files under version control, sor
 
 ### What a snapshot contains
 
-- Every entity, including entities without components, with its original identifier.
+- Every entity, including entities without components, with its original identifier. Identifiers of destroyed entities stay stale after loading.
 - Every serializable component. A component instance shared by several entities is stored once and shared again after loading.
-- The entity identifier generator state, if the generator conforms to ``PersistableEntityIdentifierGenerator``. ``LinearIncrementingEntityIdGenerator`` does.
+- The entity identifier generator state including the generations of recycled slots, if the generator conforms to ``PersistableEntityIdentifierGenerator``. ``LinearIncrementingEntityIdGenerator`` does.
 
 Not contained are components that are not serializable, families (they are derived from the components) and the nexus delegate.
 
 The format is versioned by ``NexusSnapshot/formatVersion``. Newer versions of FirebladeECS keep loading older snapshots and reject snapshots written by a newer version.
+
+### Load snapshots of older versions
+
+Format version 3 stores entity identifiers as 64 bit raw values holding the slot index and generation.
+Snapshots of format versions 1 and 2 (written by FirebladeECS 1.x) contain 32 bit indices only. They still load, with these rules:
+
+- Every identifier decodes with generation 0, the first generation of a slot.
+- The slot index 0 is reserved and never used for entities, so that ``EntityIdentifier/invalid`` is unique. An entity with index 0 in an older snapshot therefore gets a fresh identifier on loading. Entity references and ``EntityIdentifier`` properties pointing to it are remapped to that identifier.
+- ``Nexus/restoreSnapshot(from:using:)`` keeps the identifiers of all other entities. The remapped entity takes the next identifier of the restored generator, so it is not necessarily the first one the original nexus would have provided.
+- ``Nexus/decodeSnapshot(from:using:)`` lists the entity that had index 0 under ``EntityIdentifier/invalid`` in the returned mapping.
+- Generator state of older versions loads with its recycled indices at generation 0.
+
+Saving the loaded nexus writes format version 3.

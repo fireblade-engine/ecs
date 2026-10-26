@@ -29,8 +29,8 @@ extension Nexus {
     /// - Parameter traits: The family traits.
     /// - Returns: A set of entity identifiers.
     /// - Complexity: O(1)
-    public func members(withFamilyTraits traits: FamilyTraitSet) -> UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier> {
-        familyMembersByTraits[traits] ?? UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>()
+    public func members(withFamilyTraits traits: FamilyTraitSet) -> UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Index> {
+        familyMembersByTraits[traits] ?? UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Index>()
     }
 
     /// Checks if an entity is a member of a family.
@@ -60,7 +60,7 @@ extension Nexus {
     /// - Returns: `true` if the entity identifier is a member.
     /// - Complexity: O(1)
     public func isMember(entity entityId: EntityIdentifier, inFamilyWithTraits traits: FamilyTraitSet) -> Bool {
-        members(withFamilyTraits: traits).contains(entityId.id)
+        members(withFamilyTraits: traits).get(at: entityId.index) == entityId
     }
 
     /// Create a family of entities (aka members) having 1 required components.

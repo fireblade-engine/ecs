@@ -15,7 +15,7 @@ extension Nexus {
     ///   and a component is not serializable.
     /// - Complexity: O(E * C log C) where E is the number of entities and C the number of components per entity.
     public final func makeSnapshot(handling: NonSerializableComponentHandling) throws -> NexusSnapshot {
-        let entityIds = componentIdsByEntity.keys.sorted { $0.id < $1.id }
+        let entityIds = componentIdsByEntity.keys.sorted { $0.index < $1.index }
         var owners: [ObjectIdentifier: EntityIdentifier] = [:]
         var members: [NexusSnapshot.Member] = []
         members.reserveCapacity(entityIds.count)

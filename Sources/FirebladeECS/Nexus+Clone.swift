@@ -47,7 +47,7 @@ extension Nexus {
     /// - Complexity: O(E * (C + M)) where E is the number of entities, C the number of components per entity and M the number of families.
     @discardableResult
     public final func clone(into target: Nexus) throws -> [EntityIdentifier: Entity] {
-        let sourceIds = componentIdsByEntity.keys.sorted { $0.id < $1.id }
+        let sourceIds = componentIdsByEntity.keys.sorted { $0.index < $1.index }
         let mapping = try clone(entityIds: sourceIds, into: target)
         return mapping.mapValues { Entity(nexus: target, id: $0) }
     }

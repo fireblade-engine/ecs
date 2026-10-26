@@ -19,7 +19,7 @@ public final class Nexus {
     /// A map of family traits to the entities that match them.
     /// - Key: The family trait set (component types) that defines the family.
     /// - Value: A sparse set of entity identifiers that are members of this family.
-    @usableFromInline final var familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>]
+    @usableFromInline final var familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Index>]
 
     /// The component types known to this nexus.
     ///
@@ -37,6 +37,11 @@ public final class Nexus {
     /// Provide a custom implementation prior to encoding/decoding.
     /// Defaults to `DefaultCodingStrategy`.
     public final var codingStrategy: CodingStrategy
+
+    /// Indicates whether mutating an entity through a stale handle stops with an assertion failure in debug builds.
+    ///
+    /// Release builds only return `false` and report the problem to the delegate.
+    final var assertsOnStaleHandles = true
 
     /// The delegate for handling nexus events.
     public final weak var delegate: NexusEventDelegate?
@@ -60,7 +65,7 @@ public final class Nexus {
     init(componentsByType: [ComponentIdentifier: ManagedContiguousArray<Component>],
          componentsByEntity: [EntityIdentifier: Set<ComponentIdentifier>],
          entityIdGenerator: EntityIdentifierGenerator,
-         familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Identifier>],
+         familyMembersByTraits: [FamilyTraitSet: UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Index>],
          codingStrategy: CodingStrategy)
     {
         self.componentsByType = componentsByType

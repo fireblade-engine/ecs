@@ -72,6 +72,7 @@ import Testing
 
     @Test func removeAllFromDestroyedEntity() {
         let nexus = Nexus()
+        nexus.assertsOnStaleHandles = false
         let entity = nexus.createEntity()
         entity.destroy()
 

@@ -19,10 +19,7 @@ extension Nexus {
     /// - Returns: `true` if the component is assigned to the entity; otherwise, `false`.
     /// - Complexity: O(1)
     public final func has(componentId: ComponentIdentifier, entityId: EntityIdentifier) -> Bool {
-        guard let uniforms = componentsByType[componentId] else {
-            return false
-        }
-        return uniforms.contains(entityId.index)
+        componentIdsByEntity[entityId]?.contains(componentId) ?? false
     }
 
     /// Returns the number of components assigned to a specific entity.
@@ -39,7 +36,7 @@ extension Nexus {
     ///   - entity: The entity to assign the component to.
     /// - Returns: `true` if the assignment was successful.
     /// - Complexity: O(M) where M is the number of families.
-    @available(*, deprecated, message: "Use entity.set(_:) instead. Get the entity for an identifier with nexus.entity(from:).")
+    @available(*, deprecated, message: "Use entity.set(_:) instead. Get the entity for an identifier with nexus.entity(_:).")
     @discardableResult
     public final func assign(component: Component, to entity: Entity) -> Bool {
         let entityId: EntityIdentifier = entity.identifier
@@ -52,7 +49,7 @@ extension Nexus {
     ///   - entity: The entity to assign the components to.
     /// - Returns: `true` if all assignments were successful.
     /// - Complexity: O(C * M) where C is the number of components and M is the number of families.
-    @available(*, deprecated, message: "Use entity.set(_:) instead. Get the entity for an identifier with nexus.entity(from:).")
+    @available(*, deprecated, message: "Use entity.set(_:) instead. Get the entity for an identifier with nexus.entity(_:).")
     @discardableResult
     public final func assign<each C: Component>(components: repeat each C, to entity: Entity) -> Bool {
         assign(components: repeat each components, entityId: entity.identifier)
@@ -64,7 +61,7 @@ extension Nexus {
     ///   - entity: The entity to assign the components to.
     /// - Returns: `true` if all assignments were successful.
     /// - Complexity: O(C + M) where C is the number of components and M is the number of families.
-    @available(*, deprecated, message: "Use entity.set(_:) instead. Get the entity for an identifier with nexus.entity(from:).")
+    @available(*, deprecated, message: "Use entity.set(_:) instead. Get the entity for an identifier with nexus.entity(_:).")
     @discardableResult
     public final func assign(components: some Collection<Component>, to entity: Entity) -> Bool {
         assign(components: components, to: entity.identifier)
@@ -76,7 +73,7 @@ extension Nexus {
     ///   - entityId: The identifier of the entity.
     /// - Returns: The component instance if found; otherwise, `nil`.
     /// - Complexity: O(1)
-    @available(*, deprecated, message: "Use entity.get(_:) instead. Get the entity for an identifier with nexus.entity(from:).")
+    @available(*, deprecated, message: "Use entity.get(_:) instead. Get the entity for an identifier with nexus.entity(_:).")
     @inlinable
     public final func get(safe componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
         component(componentId, for: entityId)
@@ -90,7 +87,7 @@ extension Nexus {
     /// - Returns: The component instance.
     /// - Precondition: The component MUST be assigned to the entity.
     /// - Complexity: O(1)
-    @available(*, deprecated, message: "Use entity.get(_:) instead. Get the entity for an identifier with nexus.entity(from:).")
+    @available(*, deprecated, message: "Use entity.get(_:) instead. Get the entity for an identifier with nexus.entity(_:).")
     @inlinable
     public final func get(unsafe componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component {
         unsafeComponent(componentId, for: entityId)
@@ -102,7 +99,7 @@ extension Nexus {
     ///   - entityId: The identifier of the entity.
     /// - Returns: The cast component instance if found; otherwise, `nil`.
     /// - Complexity: O(1)
-    @available(*, deprecated, message: "Use entity.get(_:) instead. Get the entity for an identifier with nexus.entity(from:).")
+    @available(*, deprecated, message: "Use entity.get(_:) instead. Get the entity for an identifier with nexus.entity(_:).")
     @inlinable
     public final func get<C: Component>(safe componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> C? {
         component(componentId, for: entityId) as? C
@@ -112,7 +109,7 @@ extension Nexus {
     /// - Parameter entityId: The identifier of the entity.
     /// - Returns: The component instance if found; otherwise, `nil`.
     /// - Complexity: O(1)
-    @available(*, deprecated, message: "Use entity.get(_:) instead. Get the entity for an identifier with nexus.entity(from:).")
+    @available(*, deprecated, message: "Use entity.get(_:) instead. Get the entity for an identifier with nexus.entity(_:).")
     @inlinable
     public final func get<C: Component>(safe entityId: EntityIdentifier) -> C? {
         component(for: entityId)
@@ -123,7 +120,7 @@ extension Nexus {
     /// - Returns: The component instance.
     /// - Precondition: The component MUST be assigned to the entity.
     /// - Complexity: O(1)
-    @available(*, deprecated, message: "Use entity.get(_:) instead. Get the entity for an identifier with nexus.entity(from:).")
+    @available(*, deprecated, message: "Use entity.get(_:) instead. Get the entity for an identifier with nexus.entity(_:).")
     @inlinable
     public final func get<C: Component>(unsafe entityId: EntityIdentifier) -> C {
         unsafeComponent(for: entityId)
@@ -137,10 +134,10 @@ extension Nexus {
     /// - Complexity: O(1)
     @inlinable
     final func component(_ componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
-        guard let uniformComponents = componentsByType[componentId], uniformComponents.contains(entityId.index) else {
+        guard let uniformComponents = componentsByType[componentId], uniformComponents.contains(Int(entityId.index)), isAlive(entityId) else {
             return nil
         }
-        return uniformComponents.get(at: entityId.index)
+        return uniformComponents.get(at: Int(entityId.index))
     }
 
     /// Retrieves a typed component for a given entity using the component type's identifier.
@@ -162,7 +159,7 @@ extension Nexus {
     @inlinable
     final func unsafeComponent(_ componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component {
         let uniformComponents = componentsByType[componentId].unsafelyUnwrapped
-        return uniformComponents.get(unsafeAt: entityId.index)
+        return uniformComponents.get(unsafeAt: Int(entityId.index))
     }
 
     /// Retrieves a typed component for a given entity, without checking that it exists.
@@ -190,12 +187,16 @@ extension Nexus {
     /// - Parameters:
     ///   - componentId: The identifier of the component to remove.
     ///   - entityId: The identifier of the entity.
-    /// - Returns: `true` if the component was removed; otherwise, `false`.
+    /// - Returns: `true` if the component was removed; `false` if the entity identifier is stale or unknown.
     /// - Complexity: O(M) where M is the number of families.
     @discardableResult
     public final func remove(component componentId: ComponentIdentifier, from entityId: EntityIdentifier) -> Bool {
+        guard isAlive(entityId) else {
+            reportStaleHandle(entityId)
+            return false
+        }
         // delete component instance
-        componentsByType[componentId]?.remove(at: entityId.index)
+        componentsByType[componentId]?.remove(at: Int(entityId.index))
         // un-assign component from entity
         componentIdsByEntity[entityId]?.remove(componentId)
 
@@ -212,7 +213,7 @@ extension Nexus {
     @discardableResult
     public final func removeAll(components entityId: EntityIdentifier) -> Bool {
         guard let allComponents = get(components: entityId) else {
-            delegate?.nexusNonFatalError("clearing components form entity \(entityId) with no components")
+            reportStaleHandle(entityId)
             return false
         }
         var iter = allComponents.makeIterator()

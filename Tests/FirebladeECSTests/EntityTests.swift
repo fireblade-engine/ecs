@@ -10,16 +10,26 @@ import Testing
 
 @Suite struct EntityTests {
     @Test func entityIdentifierAndIndex() {
-        let min = EntityIdentifier(.min)
-        #expect(min.id == UInt32.min)
+        let min = EntityIdentifier(index: .min, generation: .min)
+        #expect(min.index == UInt32.min)
+        #expect(min.generation == UInt32.min)
+        #expect(min.rawValue == 0)
+        #expect(min == EntityIdentifier.invalid)
+        #expect(!min.isValid)
 
         let uRand = UInt32.random(in: UInt32.min...UInt32.max)
-        let rand = EntityIdentifier(uRand)
-        #expect(rand.id == uRand)
+        let gRand = UInt32.random(in: 1...UInt32.max)
+        let rand = EntityIdentifier(index: uRand, generation: gRand)
+        #expect(rand.index == uRand)
+        #expect(rand.generation == gRand)
+        #expect(rand.isValid)
+        #expect(EntityIdentifier(rawValue: rand.rawValue) == rand)
 
-        let max = EntityIdentifier(.max)
-        #expect(max == EntityIdentifier.invalid)
-        #expect(max.id == UInt32.max)
+        let max = EntityIdentifier(index: .max, generation: .max)
+        #expect(max.rawValue == UInt64.max)
+        #expect(max != EntityIdentifier.invalid)
+        #expect(max.index == UInt32.max)
+        #expect(max.generation == UInt32.max)
     }
 
     @Test func allComponentsOfEntity() {
@@ -70,7 +80,7 @@ import Testing
         #expect(generator.count == 1)
 
         for i in 10..<60 {
-            generator.markUnused(entityId: EntityIdentifier(UInt32(i)))
+            generator.markUnused(entityId: EntityIdentifier(index: UInt32(i), generation: 0))
         }
 
         #expect(generator.count == 51)

@@ -83,6 +83,25 @@ Mutating a destroyed entity returns `false` (or does nothing) and fails an asser
 
 An ``Entity`` holds its ``Nexus`` unowned and unchecked, so copying it costs no reference counting. It must not outlive its nexus.
 
+### Declaring a family as a type
+
+With the optional `FirebladeECSMacros` product, `@FamilyTraits` declares a family once, with its access, and binds it to any nexus:
+
+```swift
+@FamilyTraits(reading: Velocity.self, writing: Position.self, excluding: Frozen.self)
+struct Movers {}
+
+let movers = Movers(in: nexus)
+movers.forEach { velocity, position in position.x += velocity.dx }
+let previewMovers = Movers(in: previewNexus) // same declaration, another world
+```
+
+`Movers` has two roles. The type is the static declaration: ``FamilyTraitsProviding/traits``, ``FamilyTraitsProviding/readComponents`` and ``FamilyTraitsProviding/writeComponents`` need no nexus, so a scheduler can tell which systems conflict. A `Movers` value is that family bound to one nexus. Binding is a lookup in a per type cache of the nexus by ``FamilyTraitsProviding/familyIndex``, not a trait set hash, so create the value once and keep it in the system. Like an ``Entity``, it must not outlive its nexus.
+
+The generated `forEach` takes the read components first, then the written ones as `inout`, and calls the matching ``Family/forEach(reading:writing:_:)`` overload (the parameter pack fallback above 4 reads or 4 writes). Reading and writing the same type, an empty declaration, arguments that are not metatypes (`Position.self`) and attaching the macro to anything but a struct are compile time errors.
+
+The macro is sugar: conform to ``FamilyTraitsProviding`` by hand to get the same without swift-syntax, and ``Nexus/family(requiresAll:excludesAll:)`` keeps working.
+
 ### Prior art
 
 The API follows the flecs entity API:
@@ -92,3 +111,5 @@ The API follows the flecs entity API:
 - `ecs_get_mut` returns `NULL` if the component is missing: ``Entity/modify(_:_:)`` returns `false`, the optional subscript does nothing.
 - `query.each([](Position& p, const Velocity& v) {})` takes `const` references for reads and references for writes, and query terms carry the `in` and `inout` access modifiers ("Access modifiers" in the [flecs queries manual](https://github.com/SanderMertens/flecs/blob/master/docs/Queries.md)): ``Family/forEach(reading:writing:_:)`` states the same access with the `reading:` and `writing:` labels.
 - `flecs::entity` stores a raw `world_t*` and does not keep the world alive: `Entity` holds its nexus `unowned(unsafe)`.
+- A flecs query is built once, bound to a world and iterated many times (`world.query_builder<Position, const Velocity>().without<Frozen>().build()`), with `in` and `inout` access per term: `@FamilyTraits` declares the terms once and binds them to a nexus with ``FamilyTraitsProviding``.
+- Bevy's `Query<(&Velocity, &mut Position), Without<Frozen>>` is a system parameter whose read and write sets the scheduler uses to run non conflicting systems in parallel: ``FamilyTraitsProviding/readComponents`` and ``FamilyTraitsProviding/writeComponents`` expose the same sets statically.

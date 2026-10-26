@@ -13,7 +13,8 @@ import SwiftSyntaxMacros
 public struct FirebladeECSMacrosPlugin: CompilerPlugin {
     public let providingMacros: [Macro.Type] = [
         ComponentMacro.self,
-        ComponentIgnoredMacro.self
+        ComponentIgnoredMacro.self,
+        FamilyTraitsMacro.self
     ]
 
     public init() {}

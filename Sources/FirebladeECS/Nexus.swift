@@ -20,6 +20,12 @@ public final class Nexus {
     /// The families in creation order, so that membership updates visit them in a deterministic order without hashing.
     @usableFromInline final var familyList: ContiguousArray<(traits: FamilyTraitSet, filter: FamilyFilter)>
 
+    /// The families bound by ``FamilyTraitsProviding`` types, by ``FamilyTraitsProviding/familyIndex``.
+    ///
+    /// Holds a ``FamilyProtocol`` value per slot, created on first use. ``clear()`` drops them,
+    /// because a cleared nexus forgets the memberships a family was registered with.
+    @usableFromInline final var boundFamilies: [(any FamilyProtocol)?] = []
+
     /// The component types known to this nexus.
     ///
     /// Type knowledge outlives data: ``clear()`` does not remove registered types.
@@ -80,6 +86,7 @@ public final class Nexus {
         familyMembersByTraits.removeAll()
         familyFiltersByTraits.removeAll()
         familyList.removeAll()
+        boundFamilies.removeAll()
     }
 }
 

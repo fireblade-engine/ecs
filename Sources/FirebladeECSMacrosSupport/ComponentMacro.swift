@@ -8,7 +8,7 @@
 import SwiftSyntax
 import SwiftSyntaxMacros
 
-/// Implements component protocols for a final class from its stored properties.
+/// Implements component protocols for a struct or enum from its stored properties.
 public struct ComponentMacro {}
 
 extension ComponentMacro: MemberMacro {
@@ -25,17 +25,26 @@ extension ComponentMacro: MemberMacro {
         }
 
         var members: [DeclSyntax] = []
+        if !component.declaredMembers.componentIndex {
+            members.append("\(raw: component.accessModifier)static let componentIndex: Int = Self.registeredComponentIndex")
+        }
+        if component.needsDefaultInit {
+            members.append("\(raw: component.accessModifier)init() {}")
+        }
+        return members
+    }
+
+    /// Generates the members that live in an extension, so that a struct keeps its memberwise initializer.
+    private static func extensionMembers(_ component: Declaration) -> [DeclSyntax] {
+        var members: [DeclSyntax] = []
         if component.features.isCloneable, !component.declaredMembers.cloning {
             members.append(contentsOf: cloningMembers(component))
         }
-        if component.features.isSerializable, !component.declaredMembers.codable {
+        if component.features.isSerializable, !component.declaredMembers.codable, component.kind == .structure {
             members.append(contentsOf: codableMembers(component))
         }
         if component.features.isInspectable, !component.declaredMembers.componentProperties {
             members.append(inspectionMember(component))
-        }
-        if component.features.isDefaultInitializable, !component.declaredMembers.defaultInit {
-            members.append("\(raw: component.accessModifier)init() {}")
         }
         return members
     }
@@ -43,7 +52,7 @@ extension ComponentMacro: MemberMacro {
     /// Generates `init(cloning:context:)` and `clone(context:)`.
     private static func cloningMembers(_ component: Declaration) -> [DeclSyntax] {
         let access = component.accessModifier
-        let assignments = component.properties
+        let assignments = component.kind == .enumeration ? ["self = other"] : component.properties
             .filter(\.isCloned)
             .map { "self.\($0.name) = context.clone(other.\($0.name))" }
         return [
@@ -140,6 +149,7 @@ extension ComponentMacro: ExtensionMacro {
         guard let component = analyzed else {
             return []
         }
+        let members = extensionMembers(component)
 
         let missing = Set(protocols.compactMap { $0.trimmedDescription.split(separator: ".").last.map(String.init) })
         let features = component.features
@@ -156,9 +166,14 @@ extension ComponentMacro: ExtensionMacro {
         let conformances = candidates
             .filter { $0.isEnabled && missing.contains($0.name) }
             .map { "FirebladeECS.\($0.name)" }
-        guard !conformances.isEmpty else {
+        guard !conformances.isEmpty || !members.isEmpty else {
             return []
         }
-        return try [ExtensionDeclSyntax("extension \(type.trimmed): \(raw: conformances.joined(separator: ", ")) {}")]
+        let inheritance = conformances.isEmpty ? "" : ": \(conformances.joined(separator: ", "))"
+        return try [ExtensionDeclSyntax("extension \(type.trimmed)\(raw: inheritance)") {
+            for member in members {
+                MemberBlockItemSyntax(decl: member)
+            }
+        }]
     }
 }

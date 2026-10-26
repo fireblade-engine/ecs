@@ -108,4 +108,12 @@ public struct ComponentCloneContext {
     public func clone<Key>(_ entities: [Key: Entity]) -> [Key: Entity] {
         entities.mapValues { clone($0) }
     }
+
+    /// Remaps the entity identifier values of a dictionary to the identifiers of their clones.
+    /// - Parameter identifiers: The dictionary with source entity identifiers as values.
+    /// - Returns: A dictionary with the same keys and remapped identifiers.
+    /// - Complexity: O(N) where N is the number of entries.
+    public func clone<Key>(_ identifiers: [Key: EntityIdentifier]) -> [Key: EntityIdentifier] {
+        identifiers.mapValues { clone($0) }
+    }
 }

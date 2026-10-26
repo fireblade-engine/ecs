@@ -22,7 +22,7 @@ struct ImpliedConformanceKindHolder {
     @Test func componentConformanceSurvivesEarlierMemberLookup() {
         let holder = ImpliedConformanceKindHolder(kind: .second)
         nexus.createEntity(with: MacroImpliedConformance())
-        family.forEach { $0.kind = holder.kind }
+        family.forEach(writing: MacroImpliedConformance.self) { $0.kind = holder.kind }
         #expect(family.count == 1)
         #expect(family.allSatisfy { $0.kind == .second })
     }

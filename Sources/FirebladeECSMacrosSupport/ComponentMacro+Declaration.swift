@@ -9,12 +9,14 @@ import SwiftDiagnostics
 import SwiftSyntax
 
 extension ComponentMacro {
-    /// The analyzed declaration of a `@Component` class.
+    /// The analyzed declaration of a `@Component` struct or enum.
     struct Declaration {
         /// The access modifier for generated members, including a trailing space, or empty for internal.
         let accessModifier: String
-        /// The name of the class.
+        /// The name of the type.
         let typeName: String
+        /// Whether the type is a struct or an enum.
+        let kind: Kind
         /// The stored instance properties in declaration order.
         let properties: [ComponentMacro.StoredProperty]
         /// The features to implement.
@@ -25,6 +27,24 @@ extension ComponentMacro {
 }
 
 extension ComponentMacro.Declaration {
+    /// Whether the member macro has to generate `init()`.
+    ///
+    /// A struct with default values for every property gets an implicit `init()` and keeps its memberwise initializer.
+    /// The implicit one is internal and gone as soon as the struct declares an initializer, so those cases
+    /// get a generated one.
+    var needsDefaultInit: Bool {
+        guard features.isDefaultInitializable, !declaredMembers.defaultInit else {
+            return false
+        }
+        return kind == .structure && (declaredMembers.anyInit || !accessModifier.isEmpty)
+    }
+
+    /// The kind of value type.
+    enum Kind {
+        case structure
+        case enumeration
+    }
+
     /// The implementable features of a component.
     struct Features {
         var isCloneable = true
@@ -33,12 +53,15 @@ extension ComponentMacro.Declaration {
         var isDefaultInitializable = true
     }
 
-    /// Members relevant to generation that the class declares itself.
+    /// Members relevant to generation that the type declares itself.
     struct DeclaredMembers {
+        /// Whether the type declares any initializer, which suppresses the implicit ones of a struct.
+        var anyInit = false
         var defaultInit = false
         var cloning = false
         var codable = false
         var componentProperties = false
+        var componentIndex = false
     }
 }
 
@@ -46,18 +69,27 @@ extension ComponentMacro.Declaration {
     /// Analyzes a declaration annotated with `@Component`.
     ///
     /// Features whose requirements are not met are disabled.
-    /// - Returns: The analyzed declaration, or `nil` if the declaration is not a final class, and the diagnostics found.
+    /// - Returns: The analyzed declaration, or `nil` if the declaration is not a struct or enum, and the diagnostics found.
     static func analyze(_ declaration: some DeclGroupSyntax, attribute: AttributeSyntax) -> (Self?, [Diagnostic]) {
-        guard let classDecl = declaration.as(ClassDeclSyntax.self),
-              classDecl.modifiers.contains(where: { $0.name.tokenKind == .keyword(.final) })
-        else {
-            return (nil, [Diagnostic(node: attribute, message: ComponentMacro.DiagnosticKind.requiresFinalClass)])
+        let kind: Kind
+        let name: String
+        let modifiers: DeclModifierListSyntax
+        let memberBlock: MemberBlockSyntax
+        let inheritedTypes: [String]
+        if let structDecl = declaration.as(StructDeclSyntax.self) {
+            (kind, name, modifiers, memberBlock) = (.structure, structDecl.name.text, structDecl.modifiers, structDecl.memberBlock)
+            inheritedTypes = structDecl.inheritanceClause?.inheritedTypes.map(\.type.trimmedDescription) ?? []
+        } else if let enumDecl = declaration.as(EnumDeclSyntax.self) {
+            (kind, name, modifiers, memberBlock) = (.enumeration, enumDecl.name.text, enumDecl.modifiers, enumDecl.memberBlock)
+            inheritedTypes = enumDecl.inheritanceClause?.inheritedTypes.map(\.type.trimmedDescription) ?? []
+        } else {
+            return (nil, [Diagnostic(node: attribute, message: ComponentMacro.DiagnosticKind.requiresValueType)])
         }
 
         var diagnostics: [Diagnostic] = []
         var features = parseFeatures(attribute, diagnostics: &diagnostics)
-        let properties = collectStoredProperties(classDecl.memberBlock, diagnostics: &diagnostics)
-        let declaredMembers = collectDeclaredMembers(classDecl.memberBlock)
+        let properties = collectStoredProperties(memberBlock, diagnostics: &diagnostics)
+        let declaredMembers = collectDeclaredMembers(memberBlock)
 
         for property in properties where property.isIgnored && !property.hasDefaultValue {
             diagnostics.append(Diagnostic(node: property.node, message: ComponentMacro.DiagnosticKind.ignoredPropertyRequiresDefaultValue))
@@ -72,10 +104,17 @@ extension ComponentMacro.Declaration {
         if !declaredMembers.defaultInit, !properties.allSatisfy(\.hasDefaultValue) {
             features.isDefaultInitializable = false
         }
+        if kind == .enumeration {
+            // Enums have no stored properties to initialize and no synthesized coding without a declared conformance.
+            features.isDefaultInitializable = features.isDefaultInitializable && declaredMembers.defaultInit
+            let isCodable = inheritedTypes.contains { ["Codable", "Swift.Codable"].contains($0) }
+            features.isSerializable = features.isSerializable && (isCodable || declaredMembers.codable)
+        }
 
         let declaration = Self(
-            accessModifier: accessModifier(of: classDecl.modifiers),
-            typeName: classDecl.name.text,
+            accessModifier: accessModifier(of: modifiers),
+            typeName: name,
+            kind: kind,
             properties: properties,
             features: features,
             declaredMembers: declaredMembers
@@ -168,6 +207,9 @@ extension ComponentMacro.Declaration {
                 guard isStored(binding) else {
                     continue
                 }
+                if let annotated = binding.typeAnnotation?.type {
+                    diagnostics.append(contentsOf: ComponentMacro.StoredEntity.tokens(in: annotated).map(ComponentMacro.StoredEntity.diagnostic(for:)))
+                }
                 guard !isLazy else {
                     diagnostics.append(Diagnostic(node: binding, message: ComponentMacro.DiagnosticKind.unsupportedLazyProperty))
                     continue
@@ -207,6 +249,7 @@ extension ComponentMacro.Declaration {
         for member in memberBlock.members {
             let decl = member.decl
             if let initializer = decl.as(InitializerDeclSyntax.self) {
+                declared.anyInit = true
                 let labels = initializer.signature.parameterClause.parameters.map(\.firstName.text)
                 if labels.isEmpty {
                     declared.defaultInit = true
@@ -224,6 +267,8 @@ extension ComponentMacro.Declaration {
                 declared.codable = true
             } else if let variable = decl.as(VariableDeclSyntax.self), declares(variable, named: "componentProperties") {
                 declared.componentProperties = true
+            } else if let variable = decl.as(VariableDeclSyntax.self), declares(variable, named: "componentIndex") {
+                declared.componentIndex = true
             }
         }
         return declared

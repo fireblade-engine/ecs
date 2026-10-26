@@ -129,7 +129,7 @@ single.set(GameState(value: x))      // replaces the component, delivers Compone
 - `Nexus.get(safe:for:)`, `Nexus.get(unsafe:for:)`, `Nexus.get(safe:)` and `Nexus.get(unsafe:)` are removed. Resolve the entity with ``Nexus/entity(_:)`` and read the component with ``Entity/get(_:)``, which returns `nil` when the entity does not have it.
 - `ManagedContiguousArray` is removed. It was a container of the 1.x component storage and nothing in the package uses it any more.
 - `FirebladeECSMacros` no longer re-exports `FirebladeECS`. Add `import FirebladeECS` next to `import FirebladeECSMacros` in every file that uses the library types.
-- The `assign` methods stay deprecated: ``Entity/set(_:)`` replaces `Entity.assign` and `Nexus.assign`. The compiler suggests the rename.
+- The `assign` methods stay deprecated: ``Entity/set(_:)-(Component)`` replaces `Entity.assign` and `Nexus.assign`. The compiler suggests the rename.
 
 ```swift
 // before

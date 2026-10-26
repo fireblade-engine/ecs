@@ -43,4 +43,21 @@ extension Nexus.SparseSetStorage {
         storage.removeSwapMovedOut(entityId.index)
         entities.remove(componentIndex, from: entityId)
     }
+
+    /// Starts a read span of the type: it must not be written, and writing it traps until ``endRead(_:wasReading:)``.
+    /// - Returns: Whether the type was in a read span already (spans nest); hand it to ``endRead(_:wasReading:)``.
+    @inlinable
+    func beginRead(_ componentIndex: Int) -> Bool {
+        requireReadable(componentIndex)
+        let wasReading = activeReads.contains(componentIndex)
+        activeReads.insert(componentIndex)
+        return wasReading
+    }
+
+    @inlinable
+    func endRead(_ componentIndex: Int, wasReading: Bool) {
+        if !wasReading {
+            activeReads.remove(componentIndex)
+        }
+    }
 }

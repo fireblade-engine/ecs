@@ -202,8 +202,7 @@ let benchmarks: @Sendable () -> Void = {
                     _ = name
                     _ = color
                     _ = empty
-                }
-            )
+                })
         }
     }
 
@@ -325,6 +324,93 @@ let benchmarks: @Sendable () -> Void = {
         let family = nexus.family(requiresAll: Position.self, Velocity.self, Name.self, Color.self, excludesAll: Party.self)
         return { family.forEach(reading: Position.self, Velocity.self, Name.self, Color.self) { position, velocity, name, color in
             blackHole(position); blackHole(velocity); blackHole(name); blackHole(color)
+        } }
+    }
+
+    // Spans (macOS 26 and later): the same work as the forEach variants, over contiguous Span / MutableSpan.
+    // The churned variants rebuild every third Velocity, which scatters its dense array against the Position array:
+    // forEachComponentSpan then passes shorter batches.
+    @Sendable func churn(_ nexus: Nexus) {
+        let family = nexus.family(requiresAll: Position.self, Velocity.self, excludesAll: Party.self)
+        for (index, entity) in Array(family.entities).enumerated() where index.isMultiple(of: 3) {
+            entity.remove(Velocity.self)
+            entity.set(Velocity(a: 3.14))
+        }
+    }
+
+    iterationOnly("IterOnlyForEachWriteOne") { nexus in
+        let family = nexus.family(requires: Position.self, excludesAll: Party.self)
+        return { family.forEach(writing: Position.self) { position in position.x &+= 1 } }
+    }
+
+    iterationOnly("IterOnlyForEachReadWriteChurned") { nexus in
+        churn(nexus)
+        let family = nexus.family(requiresAll: Position.self, Velocity.self, excludesAll: Party.self)
+        return { family.forEach(reading: Velocity.self, writing: Position.self) { velocity, position in
+            position.x &+= Int(velocity.a)
+        } }
+    }
+
+    iterationOnly("IterOnlySpanReadOne") { nexus in
+        guard #available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *) else { return {} }
+        return { nexus.componentSpan(reading: Position.self) { positions in
+            var sum = 0
+            for index in positions.indices {
+                sum &+= positions[index].x
+            }
+            blackHole(sum)
+        } }
+    }
+
+    iterationOnly("IterOnlySpanWriteOne") { nexus in
+        guard #available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *) else { return {} }
+        return { nexus.componentSpan(writing: Position.self) { positions in
+            for index in positions.indices {
+                positions[index].x &+= 1
+            }
+        } }
+    }
+
+    iterationOnly("IterOnlyForEachSpanReadOne") { nexus in
+        guard #available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *) else { return {} }
+        let family = nexus.family(requires: Position.self, excludesAll: Party.self)
+        return { family.forEachComponentSpan(reading: Position.self) { positions in
+            var sum = 0
+            for index in positions.indices {
+                sum &+= positions[index].x
+            }
+            blackHole(sum)
+        } }
+    }
+
+    iterationOnly("IterOnlyForEachSpanWriteOne") { nexus in
+        guard #available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *) else { return {} }
+        let family = nexus.family(requires: Position.self, excludesAll: Party.self)
+        return { family.forEachComponentSpan(writing: Position.self) { positions in
+            for index in positions.indices {
+                positions[index].x &+= 1
+            }
+        } }
+    }
+
+    iterationOnly("IterOnlyForEachSpanReadWrite") { nexus in
+        guard #available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *) else { return {} }
+        let family = nexus.family(requiresAll: Position.self, Velocity.self, excludesAll: Party.self)
+        return { family.forEachComponentSpan(reading: Velocity.self, writing: Position.self) { velocities, positions in
+            for index in positions.indices {
+                positions[index].x &+= Int(velocities[index].a)
+            }
+        } }
+    }
+
+    iterationOnly("IterOnlyForEachSpanReadWriteChurned") { nexus in
+        guard #available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *) else { return {} }
+        churn(nexus)
+        let family = nexus.family(requiresAll: Position.self, Velocity.self, excludesAll: Party.self)
+        return { family.forEachComponentSpan(reading: Velocity.self, writing: Position.self) { velocities, positions in
+            for index in positions.indices {
+                positions[index].x &+= Int(velocities[index].a)
+            }
         } }
     }
 }

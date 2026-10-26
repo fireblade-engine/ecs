@@ -55,6 +55,52 @@ Overloads exist for 0 to 4 read and 0 to 4 written types. A parameter pack overl
 
 While the closure runs the nexus is locked like in ``Entity/modify(_:_:)``: structural changes (creating or destroying entities, adding or removing components, replacing a component with `set`) stop the process with a message, as do reading a written type through the nexus, writing a type twice and nesting a write of a written type. Collect structural changes and apply them after the call. A delegate subscribed to ``NexusEventMask/valueChanges`` receives one ``ComponentsModified`` per written type and call, not one event per member.
 
+### Spans: contiguous access to components
+
+The components of a type can be handed out (on macOS 26, iOS 26, tvOS 26, watchOS 26 and visionOS 26 and later, and on Linux, Windows and WebAssembly without a version check, since `Span` is part of the Swift 6.2 standard library) as a `Span` or `MutableSpan`: a bounds checked view of the storage itself, with no copy and no allocation.
+
+```swift
+nexus.componentSpan(reading: Position.self) { (positions: Span<Position>) in
+    for i in positions.indices { maxX = max(maxX, positions[i].x) }
+}
+nexus.componentSpan(writing: Velocity.self) { (velocities: inout MutableSpan<Velocity>) in
+    for i in velocities.indices { velocities[i].dx *= 0.98 }   // writes land in the storage
+}
+movers.forEachComponentSpan(reading: Velocity.self, writing: Position.self) { velocities, positions in
+    // same count and order in both spans: element i belongs to the same member
+    for i in positions.indices { positions[i].x += velocities[i].dx }
+}
+```
+
+- ``Nexus/componentSpan(reading:_:)`` and ``Nexus/componentSpan(writing:_:)`` view every component of one type, in storage order.
+- ``Family/forEachComponentSpan(reading:writing:_:)`` visits the members of a family in batches. Overloads exist for 0 to 2 read and 0 to 2 written types.
+- A span exists only inside the closure. `Span` is `~Escapable`, so storing it in a variable outside the closure or returning it does not compile (`var leaked: Span<Position>?; nexus.componentSpan(reading: Position.self) { leaked = $0 }` is an error). This is what makes it safe: no span can outlive the storage it views. Returning a span from a property would need the experimental `@lifetime` attribute, so there is none.
+- `Span` is not a `Sequence`: loop over `indices`, and use `span[i]`, which is bounds checked.
+- The nexus is locked while the closure runs, like in ``Entity/modify(_:_:)``. Structural changes (the closure creates an entity, adds or removes a component, replaces one with `set`) stop the process with a message; they would move the memory the span views. A type that is being written cannot be read or written again, and a type that is being read cannot be written. Other types can be read, and a type can be read by several spans at once. A write span is a trap, not a dangling write.
+- A write pass delivers one ``ComponentsModified`` per written type, not one event per component.
+- Empty storages pass empty spans.
+
+#### Batches of a family
+
+The sparse set storage keeps every component type in its own array. The components of the members of a family are consecutive in all involved arrays only as long as nothing was removed: removing a component moves the last component of that type into the gap. ``Family/forEachComponentSpan(reading:writing:_:)`` therefore passes a *batch*: a maximal run of members whose components are consecutive in every involved array. The spans view the storage directly (nothing is copied or allocated), so the batch size depends on the history of the nexus: one batch for entities created together, shorter ones after churn, one element at the worst. Write the closure so that it is correct for any batch size. Storages that keep the columns aligned (archetype tables, owning groups) will pass one batch per table.
+
+Spans pay off when the batch is large: ``Nexus/componentSpan(reading:_:)`` over a whole type is about 3 times faster than ``Family/forEach(reading:writing:_:)`` in the benchmarks (10 000 entities, see below). The family batches are not faster on the sparse set storage: finding the batches costs one lookup per member and component type, as much as `forEach`.
+
+| Benchmark (10 000 entities, release, Apple silicon) | Instructions (K) | Wall clock p50 (μs) |
+| :-- | --: | --: |
+| `forEach(writing: Position)` | 173 | 12 |
+| `componentSpan(writing: Position)` | 34 | 4.5 |
+| `forEach(reading: Position)` | 193 | 12 |
+| `componentSpan(reading: Position)` | 19 | 4.0 |
+| `forEachComponentSpan(writing: Position)` (one batch) | 237 | 18 |
+| `forEachComponentSpan(reading: Position)` (one batch) | 221 | 17 |
+| `forEach(reading: Velocity, writing: Position)` | 355 | 19 |
+| `forEachComponentSpan(reading: Velocity, writing: Position)` (one batch) | 445 | 28 |
+| `forEach(reading: Velocity, writing: Position)`, every third Velocity re-added | 355 | 19 |
+| `forEachComponentSpan(reading: Velocity, writing: Position)`, every third Velocity re-added | 678 | 38 |
+
+Prefer ``Nexus/componentSpan(reading:_:)`` for passes over all components of a type (sums, decay, integration of one value), and ``Family/forEach(reading:writing:_:)`` for families on this storage.
+
 ### Copies and the var hazard
 
 `get` returns a copy. For a value type component, `var health = entity.get(Health.self)!; health.hp -= 10` changes the copy and nothing else.
@@ -76,7 +122,7 @@ Mutating a destroyed entity returns `false` (or does nothing) and fails an asser
 
 - ``Entity/set(_:)-(Component)`` delivers ``ComponentAdded`` for a new component and ``ComponentReplaced`` when it replaces one.
 - ``Entity/modify(_:_:)`` and in place subscript access deliver ``ComponentModified``. Adding a missing default delivers ``ComponentAdded`` first.
-- ``Family/forEach(reading:writing:_:)`` delivers one ``ComponentsModified`` per written type after the pass.
+- ``Family/forEach(reading:writing:_:)``, ``Nexus/componentSpan(writing:_:)`` and ``Family/forEachComponentSpan(reading:writing:_:)`` deliver one ``ComponentsModified`` per written type after the pass.
 - ``ComponentReplaced`` and ``ComponentModified`` reach only delegates subscribed to ``NexusEventMask/valueChanges``.
 
 ### Entity lifetime
@@ -113,3 +159,4 @@ The API follows the flecs entity API:
 - `flecs::entity` stores a raw `world_t*` and does not keep the world alive: `Entity` holds its nexus `unowned(unsafe)`.
 - A flecs query is built once, bound to a world and iterated many times (`world.query_builder<Position, const Velocity>().without<Frozen>().build()`), with `in` and `inout` access per term: `@FamilyTraits` declares the terms once and binds them to a nexus with ``FamilyTraitsProviding``.
 - Bevy's `Query<(&Velocity, &mut Position), Without<Frozen>>` is a system parameter whose read and write sets the scheduler uses to run non conflicting systems in parallel: ``FamilyTraitsProviding/readComponents`` and ``FamilyTraitsProviding/writeComponents`` expose the same sets statically.
+- A flecs iterator hands out the component arrays of one table, valid only inside the iteration: `ecs_field(&it, Position, 0)` returns a `Position*` and `it.count` is the number of entities in the table; C++ has `it.field<Position>(0)` (the "Iterators" section of the [flecs queries manual](https://github.com/SanderMertens/flecs/blob/master/docs/Queries.md)). The outer loop runs over tables, the inner loop over the entities of the table. ``Family/forEachComponentSpan(reading:writing:_:)`` has the same two level shape, with a batch where flecs has a table, and the same scoping: the span is valid inside the closure. Swift's `~Escapable` makes the scoping a compile time rule instead of a convention.

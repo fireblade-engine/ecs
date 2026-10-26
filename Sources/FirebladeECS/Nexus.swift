@@ -63,7 +63,7 @@ public final class Nexus {
     final var deliversValueChanges = false
 
     /// Initializes a new Nexus.
-    /// - Parameter storage: The storage to keep entities and components in. Defaults to ``StorageKind/default``.
+    /// - Parameter storage: The storage to keep entities and components in. Defaults to ``StorageKind/default``, the archetype storage.
     public init(storage: StorageKind = .default) {
         backend = Backend(storage)
         familyMembersByTraits = [:]

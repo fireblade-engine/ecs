@@ -23,8 +23,8 @@ extension Nexus {
         /// entity's row to another table.
         case archetype
 
-        /// The storage ``Nexus/init(storage:)`` uses by default.
-        public static let `default` = StorageKind.sparseSet
+        /// The storage ``Nexus/init(storage:)`` uses by default: ``archetype``.
+        public static let `default` = StorageKind.archetype
     }
 
     /// The storage of a nexus. A closed enum instead of a protocol: every storage is concrete, so its code specializes.

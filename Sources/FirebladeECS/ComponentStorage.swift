@@ -103,6 +103,23 @@ extension Nexus {
             return removed
         }
 
+        /// Removes the slot of a component that was moved out of the buffer, without releasing it.
+        @inlinable
+        func removeSwapMovedOut(_ index: UInt32) {
+            let slot = sparse.slot(of: index)
+            guard slot >= 0 else {
+                return
+            }
+            let last = ids.count - 1
+            if slot != last {
+                (base + slot).moveInitialize(from: base + last, count: 1)
+                ids[slot] = ids[last]
+                sparse.set(ids[slot], slot: slot)
+            }
+            ids.removeLast()
+            sparse.clear(index)
+        }
+
         @usableFromInline
         override func anyComponent(for index: UInt32) -> (any Component)? {
             let slot = sparse.slot(of: index)

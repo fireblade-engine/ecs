@@ -73,3 +73,16 @@ There is no storage protocol: the set of storages is closed, so each storage com
 - Structural events are always delivered, whatever the mask says.
 
 See <doc:ReactingToNexusEvents>.
+
+### Entity API
+
+The entity API separates reading a copy, replacing and changing in place, see <doc:ReadingAndWritingComponents>.
+
+- ``Entity/remove(_:)-(ComponentIdentifier)`` and its siblings return `Bool` (discardable): `true` if a component was removed, `false` if the entity had none or is destroyed. They returned the entity for chaining before, so a chain like `entity.remove(A.self).remove(B.self)` no longer compiles. Remove one component per statement.
+- ``Entity/set(_:)-(Component)`` replaces a component the entity already has. It kept the existing component and reported a non-fatal error to the delegate before. Delegates subscribed to ``NexusEventMask/valueChanges`` receive ``ComponentReplaced``. The deprecated `assign` methods and `Nexus.assign` replace as well.
+- Removing a component the entity does not have delivers no ``ComponentRemoved`` event any more.
+- ``Entity/modify(_:_:)`` and ``Entity/modify(_:default:_:)`` change a component in place. The entity subscripts `entity[Position.self]?.x += 1` and `entity[Counter.self, default: Counter()].value += 1` do the same.
+- The key path subscripts and ``Entity/set(value:for:)-(_,WritableKeyPath<Comp,Value>)`` take `WritableKeyPath` and change the stored component in place. That works for value types, not only for classes (the 1.x implementation wrote to a copy, which only worked because components were classes).
+- ``Entity/components(_:_:writing:_:_:)-(_,_,_,_,_)`` and its siblings change several components at once.
+- ``Entity`` holds its ``Nexus`` as `unowned(unsafe)`: copying an entity costs no reference counting, but using an entity after its nexus was deallocated is undefined behavior. Keep the nexus alive as long as you use its entities. It was a checked `unowned` reference before, which trapped.
+- While a `modify` closure or an in place subscript access runs, adding or removing components or entities of the same nexus, and reading or modifying the same component type, stop the process with a message such as `structural change while a scoped access is running`. Do such changes after the closure.

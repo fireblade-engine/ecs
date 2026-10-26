@@ -32,28 +32,31 @@ import Testing
         #expect(members.isEmpty)
     }
 
-    @Test func componentCollision() {
+    @Test func settingExistingComponentReplaces() {
         let nexus = Nexus()
         let entity = nexus.createEntity()
         let pos = Position(x: 1, y: 2)
         entity.set(pos)
-        // Set another component of the same type -> collision, the first one is kept
-        entity.set(Position(x: 3, y: 4))
-        #expect(entity.get(Position.self) === pos)
+        // Set another component of the same type -> it replaces the first one
+        let replacement = Position(x: 3, y: 4)
+        entity.set(replacement)
+        #expect(entity.get(Position.self) === replacement)
         #expect(entity.numComponents == 1)
     }
 
-    @Test func componentCollisionMultiple() {
+    @Test func settingExistingComponentsReplacesMultiple() {
         let nexus = Nexus()
         let entity = nexus.createEntity()
         let pos = Position(x: 1, y: 2)
         let name = Name(name: "Test")
         let components: [Component] = [pos, name]
         entity.set(components)
-        // Set other components of the same types again -> collision, the first ones are kept
-        entity.set([Position(x: 3, y: 4), Name(name: "Other")] as [Component])
-        #expect(entity.get(Position.self) === pos)
-        #expect(entity.get(Name.self) === name)
+        // Set other components of the same types again -> they replace the first ones
+        let newPos = Position(x: 3, y: 4)
+        let newName = Name(name: "Other")
+        entity.set([newPos, newName] as [Component])
+        #expect(entity.get(Position.self) === newPos)
+        #expect(entity.get(Name.self) === newName)
         #expect(entity.numComponents == 2)
     }
 

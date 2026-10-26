@@ -175,13 +175,14 @@ private final class DefaultDelegate: NexusEventDelegate, @unchecked Sendable {
         #expect(nexus.deliversValueChanges)
     }
 
-    @Test func collisionKeepsReportingWithoutReplacedEvent() {
+    @Test func settingExistingComponentEmitsReplacedNotAdded() {
         let nexus = Nexus()
         let recorder = Recorder(mask: .all)
         let entity = nexus.createEntity()
         entity.set(Health())
         nexus.delegate = recorder
         entity.set(Health())
-        #expect(!recorder.events.contains { $0 is ComponentReplaced })
+        #expect(recorder.events.count == 1)
+        #expect(recorder.events.first is ComponentReplaced)
     }
 }

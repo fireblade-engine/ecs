@@ -129,10 +129,34 @@ extension Nexus.Backend {
     }
 
     @inlinable
-    func modify<C: Component>(_ type: C.Type, for entityId: EntityIdentifier, _ body: (inout C) -> Void) -> Bool {
+    func modify<C: Component>(_ type: C.Type, for entityId: EntityIdentifier, _ body: (inout C) throws -> Void) rethrows -> Bool {
         switch self {
         case let .sparseSet(storage):
-            storage.modify(type, for: entityId, body)
+            try storage.modify(type, for: entityId, body)
+        }
+    }
+
+    @inlinable
+    func beginAccess<C: Component>(_ type: C.Type, for entityId: EntityIdentifier) -> UnsafeMutablePointer<C>? {
+        switch self {
+        case let .sparseSet(storage):
+            storage.beginAccess(type, for: entityId)
+        }
+    }
+
+    @inlinable
+    func endAccess(_ componentIndex: Int) {
+        switch self {
+        case let .sparseSet(storage):
+            storage.endAccess(componentIndex)
+        }
+    }
+
+    @inlinable
+    func discardMovedOut<C: Component>(_ type: C.Type, for entityId: EntityIdentifier) {
+        switch self {
+        case let .sparseSet(storage):
+            storage.discardMovedOut(type, for: entityId)
         }
     }
 

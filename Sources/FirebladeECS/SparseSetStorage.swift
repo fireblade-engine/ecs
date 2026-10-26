@@ -206,7 +206,7 @@ extension Nexus {
         /// Gives `body` write access to the component of an entity.
         /// - Returns: `false` if the entity has no such component.
         @inlinable
-        func modify<C: Component>(_: C.Type, for entityId: EntityIdentifier, _ body: (inout C) -> Void) -> Bool {
+        func modify<C: Component>(_: C.Type, for entityId: EntityIdentifier, _ body: (inout C) throws -> Void) rethrows -> Bool {
             let componentIndex = C.componentIndex
             guard entities.isAlive(entityId), let storage = existing(C.self, at: componentIndex) else {
                 return false
@@ -221,7 +221,7 @@ extension Nexus {
                 lockDepth -= 1
                 endWrite(componentIndex)
             }
-            body(&storage[slot])
+            try body(&storage[slot])
             return true
         }
 

@@ -11,9 +11,19 @@
 ///  It only consists of a unique id (EntityIdentifier).
 ///  Components can be assigned to an entity to give it behavior or functionality.
 ///  An entity creates the relationship between all it's assigned components.
+///
+/// Read a copy with ``get(_:)``, replace with ``set(_:)-(Component)`` and change in place with ``modify(_:_:)``,
+/// see <doc:ReadingAndWritingComponents>.
+///
+/// - Important: An entity does not keep its ``Nexus`` alive. Using an entity after its nexus is deallocated is
+///   undefined behavior.
 public struct Entity {
     /// The Nexus managing this entity.
-    @usableFromInline unowned let nexus: Nexus
+    ///
+    /// An unchecked, non-owning reference: copying an entity costs no reference counting. An entity handle
+    /// must not be used after its nexus is deallocated; keep the nexus alive for as long as you use its entities.
+    /// (The same trade-off as flecs, whose `flecs::entity` holds a raw `world_t*`.)
+    @usableFromInline unowned(unsafe) let nexus: Nexus
 
     /// The unique entity identifier.
     public private(set) var identifier: EntityIdentifier
@@ -82,10 +92,11 @@ public struct Entity {
         nexus.count(components: identifier) > 0
     }
 
-    /// Adds one or more components to this entity.
+    /// Sets one or more components of this entity: adds new ones and replaces existing ones.
     ///
-    /// If the entity already has a component of the same type, it keeps that instance and the nexus delegate
-    /// receives a non-fatal error.
+    /// If the entity already has a component of the same type, that component is replaced and a
+    /// ``ComponentReplaced`` event is delivered to delegates subscribed to ``NexusEventMask/valueChanges``.
+    /// Adding a new component delivers ``ComponentAdded``. Setting a component of a destroyed entity does nothing.
     /// - Parameter components: one or more components.
     /// - Returns: This entity (for chaining).
     /// - Complexity: O(C * M) where C is the number of components and M is the number of families.
@@ -95,10 +106,11 @@ public struct Entity {
         return self
     }
 
-    /// Adds a single component to this entity.
+    /// Sets a component of this entity: adds it, or replaces the one of the same type.
     ///
-    /// If the entity already has a component of the same type, it keeps that instance and the nexus delegate
-    /// receives a non-fatal error.
+    /// If the entity already has a component of the same type, that component is replaced and a
+    /// ``ComponentReplaced`` event is delivered to delegates subscribed to ``NexusEventMask/valueChanges``.
+    /// Adding a new component delivers ``ComponentAdded``. Setting a component of a destroyed entity does nothing.
     /// - Parameter component: a component.
     /// - Returns: This entity (for chaining).
     /// - Complexity: O(M) where M is the number of families.
@@ -108,10 +120,11 @@ public struct Entity {
         return self
     }
 
-    /// Adds a collection of components to this entity.
+    /// Sets a collection of components of this entity: adds new ones and replaces existing ones.
     ///
-    /// If the entity already has a component of the same type, it keeps that instance and the nexus delegate
-    /// receives a non-fatal error.
+    /// If the entity already has a component of the same type, that component is replaced and a
+    /// ``ComponentReplaced`` event is delivered to delegates subscribed to ``NexusEventMask/valueChanges``.
+    /// Adding a new component delivers ``ComponentAdded``. Setting a component of a destroyed entity does nothing.
     /// - Parameter components: The components to set.
     /// - Returns: This entity (for chaining).
     /// - Complexity: O(C + M) where C is the number of components and M is the number of families.
@@ -149,29 +162,41 @@ public struct Entity {
         set(components)
     }
 
-    /// Remove a component from this entity.
-    /// - Parameter component: the component.
+    /// Removes the component of the same type as `component` from this entity.
+    /// - Parameter component: A component; only its type is used.
+    /// - Returns: `true` if the entity had such a component and it was removed, `false` if it was not there or the
+    ///   entity is destroyed (an assertion failure in debug builds).
     /// - Complexity: O(M) where M is the number of families.
     @discardableResult
-    public func remove(_ component: some Component) -> Entity {
+    public func remove(_ component: some Component) -> Bool {
         remove(component.identifier)
     }
 
-    /// Remove a component by type from this entity.
-    /// - Parameter compType: the component type.
+    /// Removes a component by type from this entity.
+    /// - Parameter compType: The component type.
+    /// - Returns: `true` if the entity had such a component and it was removed, `false` if it was not there or the
+    ///   entity is destroyed (an assertion failure in debug builds).
     /// - Complexity: O(M) where M is the number of families.
     @discardableResult
-    public func remove(_ compType: (some Component).Type) -> Entity {
+    public func remove(_ compType: (some Component).Type) -> Bool {
         remove(compType.identifier)
     }
 
-    /// Remove a component by id from this entity.
-    /// - Parameter compId: the component id.
+    /// Removes a component by id from this entity.
+    /// - Parameter compId: The component id.
+    /// - Returns: `true` if the entity had such a component and it was removed, `false` if it was not there or the
+    ///   entity is destroyed (an assertion failure in debug builds).
     /// - Complexity: O(M) where M is the number of families.
     @discardableResult
-    public func remove(_ compId: ComponentIdentifier) -> Entity {
-        nexus.remove(component: compId, from: identifier)
-        return self
+    public func remove(_ compId: ComponentIdentifier) -> Bool {
+        guard nexus.isAlive(identifier) else {
+            nexus.reportStaleHandle(identifier)
+            return false
+        }
+        guard has(compId) else {
+            return false
+        }
+        return nexus.remove(component: compId, from: identifier)
     }
 
     /// Remove all components from this entity.

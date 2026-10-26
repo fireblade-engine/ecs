@@ -10,7 +10,7 @@ import Testing
 
 final class SharedPayload: @unchecked Sendable {}
 
-final class CloneValue: CloneableComponent, @unchecked Sendable {
+struct CloneValue: CloneableComponent, Sendable {
     var value: Int
     let payload: SharedPayload
 
@@ -24,7 +24,7 @@ final class CloneValue: CloneableComponent, @unchecked Sendable {
     }
 }
 
-final class CloneParent: CloneableComponent, @unchecked Sendable {
+struct CloneParent: CloneableComponent, Sendable {
     var parent: Entity?
 
     init(parent: Entity?) {
@@ -36,7 +36,7 @@ final class CloneParent: CloneableComponent, @unchecked Sendable {
     }
 }
 
-final class CloneChildren: CloneableComponent, @unchecked Sendable {
+struct CloneChildren: CloneableComponent, Sendable {
     var children: [Entity]
     var self_: EntityIdentifier
 
@@ -61,13 +61,16 @@ final class CloneChildren: CloneableComponent, @unchecked Sendable {
         #expect(clone != source)
         #expect(nexus.numEntities == 2)
         let original = try #require(source.get(CloneValue.self))
-        let cloned = try #require(clone.get(CloneValue.self))
-        #expect(cloned !== original)
+        var cloned = try #require(clone.get(CloneValue.self))
         #expect(cloned.value == 3)
         #expect(cloned.payload === payload)
 
-        cloned.value = 4
+        // the clone is an independent copy
+        clone.modify(CloneValue.self) { $0.value = 4 }
+        cloned.value = 5
+        #expect(source.get(CloneValue.self)?.value == original.value)
         #expect(original.value == 3)
+        #expect(clone.get(CloneValue.self)?.value == 4)
     }
 
     @Test func cloneEntityRemapsSelfReferenceAndKeepsExternal() throws {

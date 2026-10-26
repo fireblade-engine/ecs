@@ -124,9 +124,9 @@ import Testing
 
         let (rPos, rName, rVel) = entity.get(components: Position.self, Name.self, Velocity.self)
 
-        #expect(rPos === pos)
-        #expect(rName === name)
-        #expect(rVel === vel)
+        #expect(rPos == pos)
+        #expect(rName == name)
+        #expect(rVel == vel)
     }
 
     @Test func componentUniqueness() {
@@ -141,14 +141,19 @@ import Testing
         b.set(Position(x: 0, y: 0))
         c.set(Position(x: 0, y: 0))
 
-        let pA: Position? = a.get()
-        let pB: Position? = b.get()
+        // reading returns a copy: changing it changes neither the stored component nor the component of another entity
+        var copy: Position? = a.get()
+        copy?.x = 23
+        #expect(a.get(Position.self) == Position(x: 0, y: 0))
 
-        pA?.x = 23
-        pA?.y = 32
+        a.modify(Position.self) {
+            $0.x = 23
+            $0.y = 32
+        }
 
-        #expect(pB?.x != pA?.x)
-        #expect(pB?.y != pA?.y)
+        #expect(a.get(Position.self) == Position(x: 23, y: 32))
+        #expect(b.get(Position.self) == Position(x: 0, y: 0))
+        #expect(c.get(Position.self) == Position(x: 0, y: 0))
     }
 
     @Test func entityIteration() {

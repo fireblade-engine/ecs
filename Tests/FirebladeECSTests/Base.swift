@@ -7,15 +7,15 @@
 
 import FirebladeECS
 
-class EmptyComponent: Component, @unchecked Sendable {
+struct EmptyComponent: Equatable, Component, Sendable {
 }
 
-final class Optionals: Component, DefaultInitializable, @unchecked Sendable {
+struct Optionals: Equatable, Component, DefaultInitializable, Sendable {
     var int: Int?
     var float: Float?
     var string: String?
 
-    convenience init() {
+    init() {
         self.init(nil, nil, nil)
     }
 
@@ -25,64 +25,57 @@ final class Optionals: Component, DefaultInitializable, @unchecked Sendable {
         self.string = string
     }
 }
-extension Optionals: Equatable {
-    static func == (lhs: Optionals, rhs: Optionals) -> Bool {
-        lhs.int == rhs.int &&
-            lhs.float == rhs.float &&
-            lhs.string == rhs.string
-    }
-}
 
-final class Name: Component, DefaultInitializable, @unchecked Sendable {
+struct Name: Equatable, Component, DefaultInitializable, Sendable {
     var name: String
     init(name: String) {
         self.name = name
     }
 
-    convenience init() {
+    init() {
         self.init(name: "")
     }
 }
 extension Name: Codable { }
 
-final class Comp1: Component, @unchecked Sendable, Codable {
+struct Comp1: Equatable, Component, Sendable, Codable {
     var value: Int
     init(_ value: Int) { self.value = value }
 }
-final class Comp2: Component, @unchecked Sendable, Codable {
+struct Comp2: Equatable, Component, Sendable, Codable {
     var value: Int
     init(_ value: Int) { self.value = value }
 }
-final class Comp3: Component, @unchecked Sendable, Codable {
+struct Comp3: Equatable, Component, Sendable, Codable {
     var value: Int
     init(_ value: Int) { self.value = value }
 }
-final class Comp4: Component, @unchecked Sendable, Codable {
+struct Comp4: Equatable, Component, Sendable, Codable {
     var value: Int
     init(_ value: Int) { self.value = value }
 }
-final class Comp5: Component, @unchecked Sendable, Codable {
+struct Comp5: Equatable, Component, Sendable, Codable {
     var value: Int
     init(_ value: Int) { self.value = value }
 }
-final class Comp6: Component, @unchecked Sendable, Codable {
+struct Comp6: Equatable, Component, Sendable, Codable {
     var value: Int
     init(_ value: Int) { self.value = value }
 }
-final class Comp7: Component, @unchecked Sendable, Codable {
+struct Comp7: Equatable, Component, Sendable, Codable {
     var value: Int
     init(_ value: Int) { self.value = value }
 }
-final class Comp8: Component, @unchecked Sendable, Codable {
+struct Comp8: Equatable, Component, Sendable, Codable {
     var value: Int
     init(_ value: Int) { self.value = value }
 }
 
-final class Position: Component, DefaultInitializable, @unchecked Sendable {
+struct Position: Equatable, Component, DefaultInitializable, Sendable {
     var x: Int
     var y: Int
 
-    convenience init() {
+    init() {
         self.init(x: 0, y: 0)
     }
 
@@ -93,19 +86,19 @@ final class Position: Component, DefaultInitializable, @unchecked Sendable {
 }
 extension Position: Codable { }
 
-final class Velocity: Component, DefaultInitializable, @unchecked Sendable {
+struct Velocity: Equatable, Component, DefaultInitializable, Sendable {
     var a: Float
 
     init(a: Float) {
         self.a = a
     }
 
-    convenience init() {
+    init() {
         self.init(a: 0)
     }
 }
 
-final class Party: Component, @unchecked Sendable {
+struct Party: Equatable, Component, Sendable {
     var partying: Bool
 
     init(partying: Bool) {
@@ -114,7 +107,7 @@ final class Party: Component, @unchecked Sendable {
 }
 extension Party: Codable { }
 
-final class Color: Component, @unchecked Sendable {
+struct Color: Equatable, Component, Sendable {
     var r: UInt8
     var g: UInt8
     var b: UInt8
@@ -127,7 +120,7 @@ final class Color: Component, @unchecked Sendable {
 }
 extension Color: Codable { }
 
-class Index: Component, @unchecked Sendable {
+struct Index: Equatable, Component, Sendable {
     var index: Int
 
     init(index: Int) {
@@ -135,7 +128,7 @@ class Index: Component, @unchecked Sendable {
     }
 }
 
-final class MyComponent: Component, Codable, @unchecked Sendable {
+struct MyComponent: Equatable, Component, Codable, Sendable {
     var name: String
     var flag: Bool
 
@@ -145,7 +138,7 @@ final class MyComponent: Component, Codable, @unchecked Sendable {
     }
 }
 
-final class YourComponent: Component, @unchecked Sendable {
+struct YourComponent: Equatable, Component, Sendable {
     var number: Float
 
     init(number: Float) {
@@ -155,7 +148,7 @@ final class YourComponent: Component, @unchecked Sendable {
 extension YourComponent: Decodable { }
 extension YourComponent: Encodable { }
 
-final class SingleGameState: SingleComponent, @unchecked Sendable {
+struct SingleGameState: SingleComponent, Equatable {
     var shouldQuit: Bool = false
     var playerHealth: Int = 67
 }
@@ -168,9 +161,10 @@ class ExampleSystem {
     }
 
     func update(deltaT: Double) {
-        family.forEach { (position: Position, velocity: Velocity) in
-            position.x *= 2
-            velocity.a *= 2
+        // iteration yields copies, writes go through the entity
+        for entity in family.entities {
+            entity.modify(Position.self) { $0.x *= 2 }
+            entity.modify(Velocity.self) { $0.a *= 2 }
         }
     }
 }
@@ -184,12 +178,13 @@ class ColorSystem {
     }
 
     func update() {
-        colors
-            .forEach { (color: Color) in
-                color.r = 1
-                color.g = 2
-                color.b = 3
+        for entity in colors.entities {
+            entity.modify(Color.self) {
+                $0.r = 1
+                $0.g = 2
+                $0.b = 3
             }
+        }
     }
 }
 
@@ -207,16 +202,11 @@ class PositionSystem {
     }
 
     func update() {
-        positions
-            .forEach { [unowned self](pos: Position) in
-                let deltaX: Double = self.velocity * ((self.randNorm() * 2) - 1)
-                let deltaY: Double = self.velocity * ((self.randNorm() * 2) - 1)
-                let x = pos.x + Int(deltaX)
-                let y = pos.y + Int(deltaY)
-
-                pos.x = x
-                pos.y = y
-            }
+        for (entity, pos) in positions.entityAndComponents {
+            let deltaX: Double = velocity * ((randNorm() * 2) - 1)
+            let deltaY: Double = velocity * ((randNorm() * 2) - 1)
+            entity.set(Position(x: pos.x + Int(deltaX), y: pos.y + Int(deltaY)))
+        }
     }
 }
 

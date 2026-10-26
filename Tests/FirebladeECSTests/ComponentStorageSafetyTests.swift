@@ -14,16 +14,16 @@ import Testing
 #if os(macOS) || os(Linux) || os(Windows)
 
     /// Two component types that claim the same dense index: a programming error the storage must catch.
-    private final class TwinA: Component, @unchecked Sendable {
+    private struct TwinA: Component, Sendable {
         static let componentIndex = 5000
     }
 
-    private final class TwinB: Component, @unchecked Sendable {
+    private struct TwinB: Component, Sendable {
         static let componentIndex = 5000
     }
 
     /// A hand-assigned index above the limit of 1,048,576.
-    private final class TooHigh: Component, @unchecked Sendable {
+    private struct TooHigh: Component, Sendable {
         static let componentIndex = 2_000_000
     }
 

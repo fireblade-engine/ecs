@@ -8,7 +8,11 @@
 /// **Component**
 ///
 /// A component represents the raw data for one aspect of an entity.
-public protocol Component: AnyObject, Sendable {
+///
+/// Components are value types (structs or enums). The nexus stores them by value, reading one returns a copy and
+/// writes go through ``Entity/set(_:)-(Component)``, ``Entity/modify(_:_:)`` or the entity subscripts. Components with
+/// handles that are not `Sendable` conform with `@unchecked Sendable`.
+public protocol Component: Sendable {
     /// Unique, immutable identifier of this component type.
     static var identifier: ComponentIdentifier { get }
 

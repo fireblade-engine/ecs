@@ -8,10 +8,10 @@
 import Testing
 @testable import FirebladeECS
 
-private final class IndexA: Component, @unchecked Sendable {}
-private final class IndexB: Component, @unchecked Sendable {}
-private final class IndexC: Component, @unchecked Sendable {}
-private final class ConcurrentlyIndexed: Component, @unchecked Sendable {}
+private struct IndexA: Component, Sendable {}
+private struct IndexB: Component, Sendable {}
+private struct IndexC: Component, Sendable {}
+private struct ConcurrentlyIndexed: Component, Sendable {}
 
 @Suite struct ComponentIndexTests {
     @Test func plainConformancesGetStableIndices() {

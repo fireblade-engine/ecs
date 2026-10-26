@@ -63,7 +63,7 @@ import Testing
         let kept = try #require(nexus.entity(EntityIdentifier(index: 2, generation: 0)))
         // the recycled indices 1 and 3 are provided in last out order; the entity of index 0 took 3
         let replacement = try #require(nexus.entity(EntityIdentifier(index: 3, generation: 0)))
-        #expect(kept.get(SerialPosition.self) === replacement.get(SerialPosition.self))
+        #expect(kept.get(SerialPosition.self) == replacement.get(SerialPosition.self))
         #expect(kept.get(SerialParent.self)?.parent == replacement)
         #expect(kept.get(SerialTarget.self)?.target == replacement.identifier)
 

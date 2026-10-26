@@ -9,30 +9,38 @@ import Testing
 @testable import FirebladeECS
 
 /// Components with hand-assigned indices around the old limit of 256, and far above it.
-private final class AtIndex255: Component, @unchecked Sendable {
+private struct AtIndex255: Component, Sendable {
     static let componentIndex = 255
 }
 
-private final class AtIndex256: Component, @unchecked Sendable {
+private struct AtIndex256: Component, Sendable {
     static let componentIndex = 256
 }
 
-private final class AtIndex1000: Component, @unchecked Sendable {
+private struct AtIndex1000: Component, Sendable {
     static let componentIndex = 1000
 }
 
-/// Tracks the number of live instances to see that storages release what they hold.
-private final class Token: Component, @unchecked Sendable {
+/// Counts the live boxes owned by `Token` values to see that storages release what they hold.
+private final class LiveBox: Sendable {
     nonisolated(unsafe) static var live = 0
-    let value: Int
 
-    init(_ value: Int = 0) {
-        self.value = value
+    init() {
         Self.live += 1
     }
 
     deinit {
         Self.live -= 1
+    }
+}
+
+private struct Token: Component {
+    static var live: Int { LiveBox.live }
+    let value: Int
+    let box = LiveBox()
+
+    init(_ value: Int = 0) {
+        self.value = value
     }
 }
 
@@ -61,12 +69,12 @@ struct ComponentStorageTests {
 
         let first = Position(x: 1, y: 2)
         storage.set(first, for: id)
-        #expect(storage.get(Position.self, for: id) === first)
+        #expect(storage.get(Position.self, for: id) == first)
         #expect(storage.has(componentIndex: Position.componentIndex, for: id))
 
         let second = Position(x: 3, y: 4)
         storage.set(second, for: id)
-        #expect(storage.get(Position.self, for: id) === second)
+        #expect(storage.get(Position.self, for: id) == second)
 
         #expect(storage.remove(Position.self, from: id))
         #expect(!storage.remove(Position.self, from: id))
@@ -164,16 +172,20 @@ struct ComponentStorageTests {
         #expect(Token.live == base)
     }
 
-    @Test func sharedClassInstancesAreKeptOnce() {
+    @Test func equalValuesOfSeveralEntitiesAreStoredAsIndependentCopies() {
         let (storage, ids) = makeStorage(entities: 3)
         let shared = Position(x: 7, y: 7)
         for id in ids {
             storage.set(shared, for: id)
         }
-        #expect(ids.allSatisfy { storage.get(Position.self, for: $0) === shared })
+        #expect(ids.allSatisfy { storage.get(Position.self, for: $0) == shared })
+        #expect(storage.modify(Position.self, for: ids[1]) { $0.x = 8 })
+        #expect(storage.get(Position.self, for: ids[0]) == shared)
+        #expect(storage.get(Position.self, for: ids[1]) == Position(x: 8, y: 7))
+        #expect(storage.get(Position.self, for: ids[2]) == shared)
         storage.remove(Position.self, from: ids[1])
-        #expect(storage.get(Position.self, for: ids[0]) === shared)
-        #expect(storage.get(Position.self, for: ids[2]) === shared)
+        #expect(storage.get(Position.self, for: ids[0]) == shared)
+        #expect(storage.get(Position.self, for: ids[2]) == shared)
     }
 
     @Test func deadAndStaleEntitiesReportAbsence() {
@@ -278,7 +290,7 @@ struct ComponentStorageTests {
         storage.set(Name(name: "n"), for: id)
         let indices = storage.componentIndices(of: id)
         #expect(indices == [Position.componentIndex, Name.componentIndex].sorted())
-        #expect(storage.anyComponent(componentIndex: Position.componentIndex, for: id) as? Position === position)
+        #expect(storage.anyComponent(componentIndex: Position.componentIndex, for: id) as? Position == position)
         #expect(storage.indexByIdentifier[Position.identifier] == Position.componentIndex)
         #expect(storage.remove(componentIndex: Position.componentIndex, from: id))
         #expect(!storage.remove(componentIndex: Position.componentIndex, from: id))

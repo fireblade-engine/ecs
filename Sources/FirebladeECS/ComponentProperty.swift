@@ -27,7 +27,7 @@ public struct ComponentProperty<Root: Component> {
         self.name = name
         valueType = Value.self
         self.keyPath = keyPath
-        isWritable = keyPath is ReferenceWritableKeyPath<Root, Value>
+        isWritable = keyPath is WritableKeyPath<Root, Value>
     }
 
     /// Returns the current value of the property.

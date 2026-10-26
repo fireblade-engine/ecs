@@ -8,17 +8,17 @@
 #if FRB_ENABLE_BENCHMARKS
 import FirebladeECS
 
-class EmptyComponent: Component, @unchecked Sendable {
+struct EmptyComponent: Component, Sendable {
 }
 
-class Name: Component, @unchecked Sendable {
+struct Name: Component, Sendable {
     var name: String
     init(name: String) {
         self.name = name
     }
 }
 
-class Position: Component, @unchecked Sendable {
+struct Position: Component, Sendable {
     var x: Int
     var y: Int
     init(x: Int, y: Int) {
@@ -27,21 +27,21 @@ class Position: Component, @unchecked Sendable {
     }
 }
 
-class Velocity: Component, @unchecked Sendable {
+struct Velocity: Component, Sendable {
     var a: Float
     init(a: Float) {
         self.a = a
     }
 }
 
-class Party: Component, @unchecked Sendable {
+struct Party: Component, Sendable {
     var partying: Bool
     init(partying: Bool) {
         self.partying = partying
     }
 }
 
-class Color: Component, @unchecked Sendable {
+struct Color: Component, Sendable {
     var r: UInt8 = 0
     var g: UInt8 = 0
     var b: UInt8 = 0
@@ -62,7 +62,7 @@ class ExampleSystem {
     }
 }
 
-final class SingleGameState: SingleComponent, @unchecked Sendable {
+struct SingleGameState: SingleComponent, Sendable {
     var shouldQuit: Bool = false
     var playerHealth: Int = 67
 }

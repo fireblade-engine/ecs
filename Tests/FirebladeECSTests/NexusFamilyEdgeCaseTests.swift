@@ -9,9 +9,9 @@ import Testing
 @testable import FirebladeECS
 
 @Suite struct NexusFamilyEdgeCaseTests {
-    @Test func canBecomeMemberUnknownEntity() {
-        let nexus1 = Nexus()
-        let nexus2 = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func canBecomeMemberUnknownEntity(_ storage: Nexus.StorageKind) {
+        let nexus1 = Nexus(storage: storage)
+        let nexus2 = Nexus(storage: storage)
 
         // Create entity in nexus1
         let entity1 = nexus1.createEntity()
@@ -23,8 +23,8 @@ import Testing
         #expect(nexus2.canBecomeMember(entity1, in: family2.traits) == false)
     }
 
-    @Test func membersWithUnknownTraits() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func membersWithUnknownTraits(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let traits = FamilyTraitSet(requiresAll: [Position.self], excludesAll: [])
         // We didn't create a family with these traits.
 
@@ -32,8 +32,8 @@ import Testing
         #expect(members.isEmpty)
     }
 
-    @Test func settingExistingComponentReplaces() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func settingExistingComponentReplaces(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let entity = nexus.createEntity()
         let pos = Position(x: 1, y: 2)
         entity.set(pos)
@@ -44,8 +44,8 @@ import Testing
         #expect(entity.numComponents == 1)
     }
 
-    @Test func settingExistingComponentsReplacesMultiple() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func settingExistingComponentsReplacesMultiple(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let entity = nexus.createEntity()
         let pos = Position(x: 1, y: 2)
         let name = Name(name: "Test")
@@ -60,8 +60,8 @@ import Testing
         #expect(entity.numComponents == 2)
     }
 
-    @Test func assignGenericComponent() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func assignGenericComponent(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let entity = nexus.createEntity()
         let pos = Position(x: 1, y: 2)
 
@@ -73,8 +73,8 @@ import Testing
         #expect(entity.has(Position.self))
     }
 
-    @Test func removeAllFromDestroyedEntity() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func removeAllFromDestroyedEntity(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         nexus.assertsOnStaleHandles = false
         let entity = nexus.createEntity()
         entity.destroy()

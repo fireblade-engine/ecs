@@ -10,8 +10,8 @@ import Testing
 
 @Suite struct FamilyTests7 {
 
-    @Test func memberCreation() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func memberCreation(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self, Comp6.self, Comp7.self)
         #expect(family.isEmpty)
         let entity = family.createMember(with: Comp1(1), Comp2(2), Comp3(3), Comp4(4), Comp5(5), Comp6(6), Comp7(7))
@@ -20,8 +20,8 @@ import Testing
         #expect(entity.numComponents == 7)
     }
 
-    @Test func componentIteration() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func componentIteration(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self, Comp6.self, Comp7.self)
         #expect(family.isEmpty)
         

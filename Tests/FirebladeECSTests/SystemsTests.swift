@@ -32,8 +32,8 @@ import Testing
             }
     }
 
-    @Test func systemsUpdate() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func systemsUpdate(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let colorSystem = ColorSystem(nexus: nexus)
         let positionSystem = PositionSystem(nexus: nexus)
         let num: Int = 10_000

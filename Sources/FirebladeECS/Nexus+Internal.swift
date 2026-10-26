@@ -138,6 +138,10 @@ extension Nexus {
         familyMembersByTraits[traits] = UnorderedSparseSet<EntityIdentifier, EntityIdentifier.Index>()
         familyFiltersByTraits[traits] = filter
         familyList.append((traits, filter))
+        // the archetype storage lists the tables a family matches once, so that the first iteration does not
+        if case let .archetype(archetype) = backend {
+            _ = archetype.matchingTables(filter)
+        }
         // FIXME: iterating all entities is costly for many entities
         // The identifiers ascend by slot index, which makes the member order deterministic instead of following a hash seed.
         for entityId in backend.livingEntityIds {

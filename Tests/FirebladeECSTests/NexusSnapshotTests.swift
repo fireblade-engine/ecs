@@ -36,8 +36,8 @@ struct SerialParent: Equatable, SerializableComponent, Sendable {
         return encoder
     }
 
-    @Test func encodedFormat() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func encodedFormat(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         let root = nexus.createEntity(with: SerialPosition(x: 1, y: 2))
         nexus.createEntity(with: SerialParent(parent: root))
 
@@ -50,8 +50,8 @@ struct SerialParent: Equatable, SerializableComponent, Sendable {
         #expect(json == expected)
     }
 
-    @Test func roundTripRemapsEntityReferences() throws {
-        let source = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func roundTripRemapsEntityReferences(_ storage: Nexus.StorageKind) throws {
+        let source = Nexus(storage: storage)
         let child = source.createEntity()
         let root = source.createEntity(with: SerialPosition(x: 3, y: 4))
         child.set(SerialParent(parent: root))
@@ -59,7 +59,7 @@ struct SerialParent: Equatable, SerializableComponent, Sendable {
         var encoder = makeEncoder()
         let data = try source.encodeSnapshot(using: &encoder, handling: .throwError)
 
-        let target = Nexus()
+        let target = Nexus(storage: storage)
         target.createEntity()
         try target.register([SerialPosition.self, SerialParent.self])
         var decoder = JSONDecoder()
@@ -77,13 +77,13 @@ struct SerialParent: Equatable, SerializableComponent, Sendable {
         #expect(decoder.userInfo[.nexusEntityResolver] == nil)
     }
 
-    @Test func unregisteredTypeThrowsAndRollsBack() throws {
-        let source = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func unregisteredTypeThrowsAndRollsBack(_ storage: Nexus.StorageKind) throws {
+        let source = Nexus(storage: storage)
         source.createEntity(with: SerialPosition(x: 1, y: 1))
         var encoder = makeEncoder()
         let data = try source.encodeSnapshot(using: &encoder, handling: .throwError)
 
-        let target = Nexus()
+        let target = Nexus(storage: storage)
         var decoder = JSONDecoder()
         #expect(throws: ComponentRegistryError.unknownTypeName("Position")) {
             try target.decodeSnapshot(from: data, using: &decoder)
@@ -91,8 +91,8 @@ struct SerialParent: Equatable, SerializableComponent, Sendable {
         #expect(target.numEntities == 0)
     }
 
-    @Test func nonSerializableComponents() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func nonSerializableComponents(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         nexus.createEntity(with: SerialPosition(x: 1, y: 1), Position(x: 2, y: 2))
 
         #expect(throws: ComponentSerializationError.notSerializable(typeName: "FirebladeECSTests.Position")) {
@@ -104,8 +104,8 @@ struct SerialParent: Equatable, SerializableComponent, Sendable {
         #expect(snapshot.members.first?.components.count == 1)
     }
 
-    @Test func registeredNonSerializableTypeThrowsOnImport() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func registeredNonSerializableTypeThrowsOnImport(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         try nexus.register(RegisteredPosition.self)
         let data = Data(#"{"formatVersion":1,"entities":[{"id":0,"components":{"FirebladeECSTests.RegisteredPosition":{}}}]}"#.utf8)
         var decoder = JSONDecoder()
@@ -115,14 +115,14 @@ struct SerialParent: Equatable, SerializableComponent, Sendable {
         #expect(nexus.numEntities == 0)
     }
 
-    @Test func recordReportsSerializability() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func recordReportsSerializability(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         #expect(try nexus.register(SerialPosition.self).isSerializable)
         #expect(try !nexus.register(RegisteredPosition.self).isSerializable)
     }
 
-    @Test func newerFormatVersionThrowsWithoutSideEffects() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func newerFormatVersionThrowsWithoutSideEffects(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         let data = Data(#"{"formatVersion":4,"entities":[{"id":0,"components":{}}]}"#.utf8)
         var decoder = JSONDecoder()
         #expect(throws: ComponentSerializationError.unsupportedFormatVersion(4)) {
@@ -131,8 +131,8 @@ struct SerialParent: Equatable, SerializableComponent, Sendable {
         #expect(nexus.numEntities == 0)
     }
 
-    @Test func missingFormatVersionThrows() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func missingFormatVersionThrows(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let data = Data(#"{"entities":[{"id":0,"components":{}}]}"#.utf8)
         var decoder = JSONDecoder()
         #expect(throws: DecodingError.self) {
@@ -141,9 +141,9 @@ struct SerialParent: Equatable, SerializableComponent, Sendable {
         #expect(nexus.numEntities == 0)
     }
 
-    @Test func snapshotKeepsOriginalEntityIdentifiers() throws {
+    @Test(arguments: Nexus.StorageKind.allCases) func snapshotKeepsOriginalEntityIdentifiers(_ storage: Nexus.StorageKind) throws {
         // Identity-preserving restores rely on the original identifiers, including gaps left by destroyed entities.
-        let nexus = Nexus()
+        let nexus = Nexus(storage: storage)
         let first = nexus.createEntity(with: SerialPosition(x: 0, y: 0))
         let destroyed = nexus.createEntity()
         let third = nexus.createEntity()

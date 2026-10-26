@@ -11,8 +11,8 @@ import Testing
 @Suite struct NexusDeterministicOrderTests {
     private static let entityCount = 256
 
-    @Test func familyCreatedAfterEntitiesHasDeterministicOrder() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func familyCreatedAfterEntitiesHasDeterministicOrder(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let expected = (0..<Self.entityCount).map { index in
             nexus.createEntity(with: Position(x: index, y: index)).identifier
         }
@@ -22,8 +22,8 @@ import Testing
         #expect(family.entities.map(\.identifier) == expected)
     }
 
-    @Test func entitiesHaveDeterministicOrder() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func entitiesHaveDeterministicOrder(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let expected = (0..<Self.entityCount).map { _ in nexus.createEntity().identifier }
 
         #expect(nexus.makeEntitiesIterator().map(\.identifier) == expected)

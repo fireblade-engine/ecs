@@ -17,38 +17,63 @@ extension Family {
         writing wType1: W1.Type,
         _ body: (inout MutableSpan<W1>) throws -> Void
     ) rethrows {
-        guard case let .sparseSet(sparse) = nexus.backend else { return }
         requireRequired(W1.self)
-        let members = memberIds
-        guard !members.isEmpty, let ws1 = sparse.existing(W1.self, at: W1.componentIndex) else { return }
-        sparse.lockDepth += 1
-        sparse.beginWrite(W1.componentIndex)
-        var visited = 0
-        defer {
-            sparse.endWrite(W1.componentIndex)
-            sparse.lockDepth -= 1
-            if visited > 0 {
-                nexus.emitModified(W1.self, count: visited)
-            }
-        }
-        let entries = members.storage.dense
-        try entries.withUnsafeBufferPointer { entries in
-            let total = entries.count
-            var start = 0
-            while start < total {
-                let key = entries[start].key
-                let wSlot1 = ws1.slot(of: key)
-                precondition(wSlot1 >= 0, "member without a required component")
-                var length = 1
-                while start + length < total {
-                    let next = entries[start + length].key
-                    guard ws1.slot(of: next) == wSlot1 + length else { break }
-                    length += 1
+        switch nexus.backend {
+        case let .sparseSet(sparse):
+            let members = memberIds
+            guard !members.isEmpty, let ws1 = sparse.existing(W1.self, at: W1.componentIndex) else { return }
+            sparse.lockDepth += 1
+            sparse.beginWrite(W1.componentIndex)
+            var visited = 0
+            defer {
+                sparse.endWrite(W1.componentIndex)
+                sparse.lockDepth -= 1
+                if visited > 0 {
+                    nexus.emitModified(W1.self, count: visited)
                 }
-                var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: ws1.base + wSlot1, count: length))
-                visited += length
-                try body(&wSpan1)
-                start += length
+            }
+            let entries = members.storage.dense
+            try entries.withUnsafeBufferPointer { entries in
+                let total = entries.count
+                var start = 0
+                while start < total {
+                    let key = entries[start].key
+                    let wSlot1 = ws1.slot(of: key)
+                    precondition(wSlot1 >= 0, "member without a required component")
+                    var length = 1
+                    while start + length < total {
+                        let next = entries[start + length].key
+                        guard ws1.slot(of: next) == wSlot1 + length else { break }
+                        length += 1
+                    }
+                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: ws1.base + wSlot1, count: length))
+                    visited += length
+                    try body(&wSpan1)
+                    start += length
+                }
+            }
+        case let .archetype(archetype):
+            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
+            let query = archetype.matchingTables(filter)
+            let wIndex1 = W1.componentIndex
+            archetype.lockDepth += 1
+            archetype.beginWrite(wIndex1)
+            var visited = 0
+            defer {
+                archetype.endWrite(wIndex1)
+                archetype.lockDepth -= 1
+                if visited > 0 {
+                    nexus.emitModified(W1.self, count: visited)
+                }
+            }
+            for entry in query.tables {
+                try entry._withUnsafeGuaranteedRef { table in
+                    let count = table.entities.count
+                    guard count > 0 else { return }
+                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W1.self, at: wIndex1), count: count))
+                    visited += count
+                    try body(&wSpan1)
+                }
             }
         }
     }
@@ -62,45 +87,75 @@ extension Family {
         _ wType2: W2.Type,
         _ body: (inout MutableSpan<W1>, inout MutableSpan<W2>) throws -> Void
     ) rethrows {
-        guard case let .sparseSet(sparse) = nexus.backend else { return }
         requireRequired(W1.self)
         requireRequired(W2.self)
-        let members = memberIds
-        guard !members.isEmpty, let ws1 = sparse.existing(W1.self, at: W1.componentIndex), let ws2 = sparse.existing(W2.self, at: W2.componentIndex) else { return }
-        sparse.lockDepth += 1
-        sparse.beginWrite(W1.componentIndex)
-        sparse.beginWrite(W2.componentIndex)
-        var visited = 0
-        defer {
-            sparse.endWrite(W1.componentIndex)
-            sparse.endWrite(W2.componentIndex)
-            sparse.lockDepth -= 1
-            if visited > 0 {
-                nexus.emitModified(W1.self, count: visited)
-                nexus.emitModified(W2.self, count: visited)
-            }
-        }
-        let entries = members.storage.dense
-        try entries.withUnsafeBufferPointer { entries in
-            let total = entries.count
-            var start = 0
-            while start < total {
-                let key = entries[start].key
-                let wSlot1 = ws1.slot(of: key)
-                precondition(wSlot1 >= 0, "member without a required component")
-                let wSlot2 = ws2.slot(of: key)
-                precondition(wSlot2 >= 0, "member without a required component")
-                var length = 1
-                while start + length < total {
-                    let next = entries[start + length].key
-                    guard ws1.slot(of: next) == wSlot1 + length, ws2.slot(of: next) == wSlot2 + length else { break }
-                    length += 1
+        switch nexus.backend {
+        case let .sparseSet(sparse):
+            let members = memberIds
+            guard !members.isEmpty, let ws1 = sparse.existing(W1.self, at: W1.componentIndex), let ws2 = sparse.existing(W2.self, at: W2.componentIndex) else { return }
+            sparse.lockDepth += 1
+            sparse.beginWrite(W1.componentIndex)
+            sparse.beginWrite(W2.componentIndex)
+            var visited = 0
+            defer {
+                sparse.endWrite(W1.componentIndex)
+                sparse.endWrite(W2.componentIndex)
+                sparse.lockDepth -= 1
+                if visited > 0 {
+                    nexus.emitModified(W1.self, count: visited)
+                    nexus.emitModified(W2.self, count: visited)
                 }
-                var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: ws1.base + wSlot1, count: length))
-                var wSpan2 = MutableSpan<W2>(_unsafeElements: UnsafeMutableBufferPointer(start: ws2.base + wSlot2, count: length))
-                visited += length
-                try body(&wSpan1, &wSpan2)
-                start += length
+            }
+            let entries = members.storage.dense
+            try entries.withUnsafeBufferPointer { entries in
+                let total = entries.count
+                var start = 0
+                while start < total {
+                    let key = entries[start].key
+                    let wSlot1 = ws1.slot(of: key)
+                    precondition(wSlot1 >= 0, "member without a required component")
+                    let wSlot2 = ws2.slot(of: key)
+                    precondition(wSlot2 >= 0, "member without a required component")
+                    var length = 1
+                    while start + length < total {
+                        let next = entries[start + length].key
+                        guard ws1.slot(of: next) == wSlot1 + length, ws2.slot(of: next) == wSlot2 + length else { break }
+                        length += 1
+                    }
+                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: ws1.base + wSlot1, count: length))
+                    var wSpan2 = MutableSpan<W2>(_unsafeElements: UnsafeMutableBufferPointer(start: ws2.base + wSlot2, count: length))
+                    visited += length
+                    try body(&wSpan1, &wSpan2)
+                    start += length
+                }
+            }
+        case let .archetype(archetype):
+            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
+            let query = archetype.matchingTables(filter)
+            let wIndex1 = W1.componentIndex
+            let wIndex2 = W2.componentIndex
+            archetype.lockDepth += 1
+            archetype.beginWrite(wIndex1)
+            archetype.beginWrite(wIndex2)
+            var visited = 0
+            defer {
+                archetype.endWrite(wIndex1)
+                archetype.endWrite(wIndex2)
+                archetype.lockDepth -= 1
+                if visited > 0 {
+                    nexus.emitModified(W1.self, count: visited)
+                    nexus.emitModified(W2.self, count: visited)
+                }
+            }
+            for entry in query.tables {
+                try entry._withUnsafeGuaranteedRef { table in
+                    let count = table.entities.count
+                    guard count > 0 else { return }
+                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W1.self, at: wIndex1), count: count))
+                    var wSpan2 = MutableSpan<W2>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W2.self, at: wIndex2), count: count))
+                    visited += count
+                    try body(&wSpan1, &wSpan2)
+                }
             }
         }
     }
@@ -113,35 +168,55 @@ extension Family {
         reading rType1: R1.Type,
         _ body: (Span<R1>) throws -> Void
     ) rethrows {
-        guard case let .sparseSet(sparse) = nexus.backend else { return }
         requireRequired(R1.self)
-        let members = memberIds
-        guard !members.isEmpty, let rs1 = sparse.existing(R1.self, at: R1.componentIndex) else { return }
-        sparse.lockDepth += 1
-        let wasReading1 = sparse.beginRead(R1.componentIndex)
-        var visited = 0
-        defer {
-            sparse.endRead(R1.componentIndex, wasReading: wasReading1)
-            sparse.lockDepth -= 1
-        }
-        let entries = members.storage.dense
-        try entries.withUnsafeBufferPointer { entries in
-            let total = entries.count
-            var start = 0
-            while start < total {
-                let key = entries[start].key
-                let rSlot1 = rs1.slot(of: key)
-                precondition(rSlot1 >= 0, "member without a required component")
-                var length = 1
-                while start + length < total {
-                    let next = entries[start + length].key
-                    guard rs1.slot(of: next) == rSlot1 + length else { break }
-                    length += 1
+        switch nexus.backend {
+        case let .sparseSet(sparse):
+            let members = memberIds
+            guard !members.isEmpty, let rs1 = sparse.existing(R1.self, at: R1.componentIndex) else { return }
+            sparse.lockDepth += 1
+            let wasReading1 = sparse.beginRead(R1.componentIndex)
+            var visited = 0
+            defer {
+                sparse.endRead(R1.componentIndex, wasReading: wasReading1)
+                sparse.lockDepth -= 1
+            }
+            let entries = members.storage.dense
+            try entries.withUnsafeBufferPointer { entries in
+                let total = entries.count
+                var start = 0
+                while start < total {
+                    let key = entries[start].key
+                    let rSlot1 = rs1.slot(of: key)
+                    precondition(rSlot1 >= 0, "member without a required component")
+                    var length = 1
+                    while start + length < total {
+                        let next = entries[start + length].key
+                        guard rs1.slot(of: next) == rSlot1 + length else { break }
+                        length += 1
+                    }
+                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: rs1.base + rSlot1, count: length))
+                    visited += length
+                    try body(rSpan1)
+                    start += length
                 }
-                let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: rs1.base + rSlot1, count: length))
-                visited += length
-                try body(rSpan1)
-                start += length
+            }
+        case let .archetype(archetype):
+            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
+            let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            archetype.lockDepth += 1
+            let wasReading1 = archetype.beginRead(rIndex1)
+            defer {
+                archetype.endRead(rIndex1, wasReading: wasReading1)
+                archetype.lockDepth -= 1
+            }
+            for entry in query.tables {
+                try entry._withUnsafeGuaranteedRef { table in
+                    let count = table.entities.count
+                    guard count > 0 else { return }
+                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: table.base(R1.self, at: rIndex1), count: count))
+                    try body(rSpan1)
+                }
             }
         }
     }
@@ -166,8 +241,11 @@ extension Family {
     /// copied or allocated, so a batch is a maximal run of members whose components are consecutive in every involved
     /// array. Entities that were created together and never had components removed form one big batch; after
     /// churn (removing components swap-removes) the batches get shorter, down to 1 element per call in the worst case.
-    /// Write `body` so that it is correct for any batch size, and do not rely on the number of calls. Storages that
-    /// keep the columns of a family aligned (archetype tables, owning groups) will always pass one batch per table.
+    /// Write `body` so that it is correct for any batch size, and do not rely on the number of calls.
+    ///
+    /// The archetype storage keeps the columns of a table aligned, so it passes exactly one batch per table that matches
+    /// the family and has members, in table creation order. Entities with the same component set form one batch, however
+    /// the component set came about, and a family whose members have several component sets gets several calls.
     ///
     /// ### Rules
     ///
@@ -186,44 +264,73 @@ extension Family {
         writing wType1: W1.Type,
         _ body: (Span<R1>, inout MutableSpan<W1>) throws -> Void
     ) rethrows {
-        guard case let .sparseSet(sparse) = nexus.backend else { return }
         requireRequired(R1.self)
         requireRequired(W1.self)
-        let members = memberIds
-        guard !members.isEmpty, let rs1 = sparse.existing(R1.self, at: R1.componentIndex), let ws1 = sparse.existing(W1.self, at: W1.componentIndex) else { return }
-        sparse.lockDepth += 1
-        sparse.beginWrite(W1.componentIndex)
-        let wasReading1 = sparse.beginRead(R1.componentIndex)
-        var visited = 0
-        defer {
-            sparse.endWrite(W1.componentIndex)
-            sparse.endRead(R1.componentIndex, wasReading: wasReading1)
-            sparse.lockDepth -= 1
-            if visited > 0 {
-                nexus.emitModified(W1.self, count: visited)
-            }
-        }
-        let entries = members.storage.dense
-        try entries.withUnsafeBufferPointer { entries in
-            let total = entries.count
-            var start = 0
-            while start < total {
-                let key = entries[start].key
-                let rSlot1 = rs1.slot(of: key)
-                precondition(rSlot1 >= 0, "member without a required component")
-                let wSlot1 = ws1.slot(of: key)
-                precondition(wSlot1 >= 0, "member without a required component")
-                var length = 1
-                while start + length < total {
-                    let next = entries[start + length].key
-                    guard rs1.slot(of: next) == rSlot1 + length, ws1.slot(of: next) == wSlot1 + length else { break }
-                    length += 1
+        switch nexus.backend {
+        case let .sparseSet(sparse):
+            let members = memberIds
+            guard !members.isEmpty, let rs1 = sparse.existing(R1.self, at: R1.componentIndex), let ws1 = sparse.existing(W1.self, at: W1.componentIndex) else { return }
+            sparse.lockDepth += 1
+            sparse.beginWrite(W1.componentIndex)
+            let wasReading1 = sparse.beginRead(R1.componentIndex)
+            var visited = 0
+            defer {
+                sparse.endWrite(W1.componentIndex)
+                sparse.endRead(R1.componentIndex, wasReading: wasReading1)
+                sparse.lockDepth -= 1
+                if visited > 0 {
+                    nexus.emitModified(W1.self, count: visited)
                 }
-                let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: rs1.base + rSlot1, count: length))
-                var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: ws1.base + wSlot1, count: length))
-                visited += length
-                try body(rSpan1, &wSpan1)
-                start += length
+            }
+            let entries = members.storage.dense
+            try entries.withUnsafeBufferPointer { entries in
+                let total = entries.count
+                var start = 0
+                while start < total {
+                    let key = entries[start].key
+                    let rSlot1 = rs1.slot(of: key)
+                    precondition(rSlot1 >= 0, "member without a required component")
+                    let wSlot1 = ws1.slot(of: key)
+                    precondition(wSlot1 >= 0, "member without a required component")
+                    var length = 1
+                    while start + length < total {
+                        let next = entries[start + length].key
+                        guard rs1.slot(of: next) == rSlot1 + length, ws1.slot(of: next) == wSlot1 + length else { break }
+                        length += 1
+                    }
+                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: rs1.base + rSlot1, count: length))
+                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: ws1.base + wSlot1, count: length))
+                    visited += length
+                    try body(rSpan1, &wSpan1)
+                    start += length
+                }
+            }
+        case let .archetype(archetype):
+            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
+            let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let wIndex1 = W1.componentIndex
+            archetype.lockDepth += 1
+            archetype.beginWrite(wIndex1)
+            let wasReading1 = archetype.beginRead(rIndex1)
+            var visited = 0
+            defer {
+                archetype.endWrite(wIndex1)
+                archetype.endRead(rIndex1, wasReading: wasReading1)
+                archetype.lockDepth -= 1
+                if visited > 0 {
+                    nexus.emitModified(W1.self, count: visited)
+                }
+            }
+            for entry in query.tables {
+                try entry._withUnsafeGuaranteedRef { table in
+                    let count = table.entities.count
+                    guard count > 0 else { return }
+                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: table.base(R1.self, at: rIndex1), count: count))
+                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W1.self, at: wIndex1), count: count))
+                    visited += count
+                    try body(rSpan1, &wSpan1)
+                }
             }
         }
     }
@@ -238,51 +345,85 @@ extension Family {
         _ wType2: W2.Type,
         _ body: (Span<R1>, inout MutableSpan<W1>, inout MutableSpan<W2>) throws -> Void
     ) rethrows {
-        guard case let .sparseSet(sparse) = nexus.backend else { return }
         requireRequired(R1.self)
         requireRequired(W1.self)
         requireRequired(W2.self)
-        let members = memberIds
-        guard !members.isEmpty, let rs1 = sparse.existing(R1.self, at: R1.componentIndex), let ws1 = sparse.existing(W1.self, at: W1.componentIndex), let ws2 = sparse.existing(W2.self, at: W2.componentIndex) else { return }
-        sparse.lockDepth += 1
-        sparse.beginWrite(W1.componentIndex)
-        sparse.beginWrite(W2.componentIndex)
-        let wasReading1 = sparse.beginRead(R1.componentIndex)
-        var visited = 0
-        defer {
-            sparse.endWrite(W1.componentIndex)
-            sparse.endWrite(W2.componentIndex)
-            sparse.endRead(R1.componentIndex, wasReading: wasReading1)
-            sparse.lockDepth -= 1
-            if visited > 0 {
-                nexus.emitModified(W1.self, count: visited)
-                nexus.emitModified(W2.self, count: visited)
-            }
-        }
-        let entries = members.storage.dense
-        try entries.withUnsafeBufferPointer { entries in
-            let total = entries.count
-            var start = 0
-            while start < total {
-                let key = entries[start].key
-                let rSlot1 = rs1.slot(of: key)
-                precondition(rSlot1 >= 0, "member without a required component")
-                let wSlot1 = ws1.slot(of: key)
-                precondition(wSlot1 >= 0, "member without a required component")
-                let wSlot2 = ws2.slot(of: key)
-                precondition(wSlot2 >= 0, "member without a required component")
-                var length = 1
-                while start + length < total {
-                    let next = entries[start + length].key
-                    guard rs1.slot(of: next) == rSlot1 + length, ws1.slot(of: next) == wSlot1 + length, ws2.slot(of: next) == wSlot2 + length else { break }
-                    length += 1
+        switch nexus.backend {
+        case let .sparseSet(sparse):
+            let members = memberIds
+            guard !members.isEmpty, let rs1 = sparse.existing(R1.self, at: R1.componentIndex), let ws1 = sparse.existing(W1.self, at: W1.componentIndex), let ws2 = sparse.existing(W2.self, at: W2.componentIndex) else { return }
+            sparse.lockDepth += 1
+            sparse.beginWrite(W1.componentIndex)
+            sparse.beginWrite(W2.componentIndex)
+            let wasReading1 = sparse.beginRead(R1.componentIndex)
+            var visited = 0
+            defer {
+                sparse.endWrite(W1.componentIndex)
+                sparse.endWrite(W2.componentIndex)
+                sparse.endRead(R1.componentIndex, wasReading: wasReading1)
+                sparse.lockDepth -= 1
+                if visited > 0 {
+                    nexus.emitModified(W1.self, count: visited)
+                    nexus.emitModified(W2.self, count: visited)
                 }
-                let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: rs1.base + rSlot1, count: length))
-                var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: ws1.base + wSlot1, count: length))
-                var wSpan2 = MutableSpan<W2>(_unsafeElements: UnsafeMutableBufferPointer(start: ws2.base + wSlot2, count: length))
-                visited += length
-                try body(rSpan1, &wSpan1, &wSpan2)
-                start += length
+            }
+            let entries = members.storage.dense
+            try entries.withUnsafeBufferPointer { entries in
+                let total = entries.count
+                var start = 0
+                while start < total {
+                    let key = entries[start].key
+                    let rSlot1 = rs1.slot(of: key)
+                    precondition(rSlot1 >= 0, "member without a required component")
+                    let wSlot1 = ws1.slot(of: key)
+                    precondition(wSlot1 >= 0, "member without a required component")
+                    let wSlot2 = ws2.slot(of: key)
+                    precondition(wSlot2 >= 0, "member without a required component")
+                    var length = 1
+                    while start + length < total {
+                        let next = entries[start + length].key
+                        guard rs1.slot(of: next) == rSlot1 + length, ws1.slot(of: next) == wSlot1 + length, ws2.slot(of: next) == wSlot2 + length else { break }
+                        length += 1
+                    }
+                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: rs1.base + rSlot1, count: length))
+                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: ws1.base + wSlot1, count: length))
+                    var wSpan2 = MutableSpan<W2>(_unsafeElements: UnsafeMutableBufferPointer(start: ws2.base + wSlot2, count: length))
+                    visited += length
+                    try body(rSpan1, &wSpan1, &wSpan2)
+                    start += length
+                }
+            }
+        case let .archetype(archetype):
+            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
+            let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let wIndex1 = W1.componentIndex
+            let wIndex2 = W2.componentIndex
+            archetype.lockDepth += 1
+            archetype.beginWrite(wIndex1)
+            archetype.beginWrite(wIndex2)
+            let wasReading1 = archetype.beginRead(rIndex1)
+            var visited = 0
+            defer {
+                archetype.endWrite(wIndex1)
+                archetype.endWrite(wIndex2)
+                archetype.endRead(rIndex1, wasReading: wasReading1)
+                archetype.lockDepth -= 1
+                if visited > 0 {
+                    nexus.emitModified(W1.self, count: visited)
+                    nexus.emitModified(W2.self, count: visited)
+                }
+            }
+            for entry in query.tables {
+                try entry._withUnsafeGuaranteedRef { table in
+                    let count = table.entities.count
+                    guard count > 0 else { return }
+                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: table.base(R1.self, at: rIndex1), count: count))
+                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W1.self, at: wIndex1), count: count))
+                    var wSpan2 = MutableSpan<W2>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W2.self, at: wIndex2), count: count))
+                    visited += count
+                    try body(rSpan1, &wSpan1, &wSpan2)
+                }
             }
         }
     }
@@ -296,41 +437,65 @@ extension Family {
         _ rType2: R2.Type,
         _ body: (Span<R1>, Span<R2>) throws -> Void
     ) rethrows {
-        guard case let .sparseSet(sparse) = nexus.backend else { return }
         requireRequired(R1.self)
         requireRequired(R2.self)
-        let members = memberIds
-        guard !members.isEmpty, let rs1 = sparse.existing(R1.self, at: R1.componentIndex), let rs2 = sparse.existing(R2.self, at: R2.componentIndex) else { return }
-        sparse.lockDepth += 1
-        let wasReading1 = sparse.beginRead(R1.componentIndex)
-        let wasReading2 = sparse.beginRead(R2.componentIndex)
-        var visited = 0
-        defer {
-            sparse.endRead(R1.componentIndex, wasReading: wasReading1)
-            sparse.endRead(R2.componentIndex, wasReading: wasReading2)
-            sparse.lockDepth -= 1
-        }
-        let entries = members.storage.dense
-        try entries.withUnsafeBufferPointer { entries in
-            let total = entries.count
-            var start = 0
-            while start < total {
-                let key = entries[start].key
-                let rSlot1 = rs1.slot(of: key)
-                precondition(rSlot1 >= 0, "member without a required component")
-                let rSlot2 = rs2.slot(of: key)
-                precondition(rSlot2 >= 0, "member without a required component")
-                var length = 1
-                while start + length < total {
-                    let next = entries[start + length].key
-                    guard rs1.slot(of: next) == rSlot1 + length, rs2.slot(of: next) == rSlot2 + length else { break }
-                    length += 1
+        switch nexus.backend {
+        case let .sparseSet(sparse):
+            let members = memberIds
+            guard !members.isEmpty, let rs1 = sparse.existing(R1.self, at: R1.componentIndex), let rs2 = sparse.existing(R2.self, at: R2.componentIndex) else { return }
+            sparse.lockDepth += 1
+            let wasReading1 = sparse.beginRead(R1.componentIndex)
+            let wasReading2 = sparse.beginRead(R2.componentIndex)
+            var visited = 0
+            defer {
+                sparse.endRead(R1.componentIndex, wasReading: wasReading1)
+                sparse.endRead(R2.componentIndex, wasReading: wasReading2)
+                sparse.lockDepth -= 1
+            }
+            let entries = members.storage.dense
+            try entries.withUnsafeBufferPointer { entries in
+                let total = entries.count
+                var start = 0
+                while start < total {
+                    let key = entries[start].key
+                    let rSlot1 = rs1.slot(of: key)
+                    precondition(rSlot1 >= 0, "member without a required component")
+                    let rSlot2 = rs2.slot(of: key)
+                    precondition(rSlot2 >= 0, "member without a required component")
+                    var length = 1
+                    while start + length < total {
+                        let next = entries[start + length].key
+                        guard rs1.slot(of: next) == rSlot1 + length, rs2.slot(of: next) == rSlot2 + length else { break }
+                        length += 1
+                    }
+                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: rs1.base + rSlot1, count: length))
+                    let rSpan2 = Span<R2>(_unsafeElements: UnsafeBufferPointer(start: rs2.base + rSlot2, count: length))
+                    visited += length
+                    try body(rSpan1, rSpan2)
+                    start += length
                 }
-                let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: rs1.base + rSlot1, count: length))
-                let rSpan2 = Span<R2>(_unsafeElements: UnsafeBufferPointer(start: rs2.base + rSlot2, count: length))
-                visited += length
-                try body(rSpan1, rSpan2)
-                start += length
+            }
+        case let .archetype(archetype):
+            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
+            let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let rIndex2 = R2.componentIndex
+            archetype.lockDepth += 1
+            let wasReading1 = archetype.beginRead(rIndex1)
+            let wasReading2 = archetype.beginRead(rIndex2)
+            defer {
+                archetype.endRead(rIndex1, wasReading: wasReading1)
+                archetype.endRead(rIndex2, wasReading: wasReading2)
+                archetype.lockDepth -= 1
+            }
+            for entry in query.tables {
+                try entry._withUnsafeGuaranteedRef { table in
+                    let count = table.entities.count
+                    guard count > 0 else { return }
+                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: table.base(R1.self, at: rIndex1), count: count))
+                    let rSpan2 = Span<R2>(_unsafeElements: UnsafeBufferPointer(start: table.base(R2.self, at: rIndex2), count: count))
+                    try body(rSpan1, rSpan2)
+                }
             }
         }
     }
@@ -345,50 +510,83 @@ extension Family {
         writing wType1: W1.Type,
         _ body: (Span<R1>, Span<R2>, inout MutableSpan<W1>) throws -> Void
     ) rethrows {
-        guard case let .sparseSet(sparse) = nexus.backend else { return }
         requireRequired(R1.self)
         requireRequired(R2.self)
         requireRequired(W1.self)
-        let members = memberIds
-        guard !members.isEmpty, let rs1 = sparse.existing(R1.self, at: R1.componentIndex), let rs2 = sparse.existing(R2.self, at: R2.componentIndex), let ws1 = sparse.existing(W1.self, at: W1.componentIndex) else { return }
-        sparse.lockDepth += 1
-        sparse.beginWrite(W1.componentIndex)
-        let wasReading1 = sparse.beginRead(R1.componentIndex)
-        let wasReading2 = sparse.beginRead(R2.componentIndex)
-        var visited = 0
-        defer {
-            sparse.endWrite(W1.componentIndex)
-            sparse.endRead(R1.componentIndex, wasReading: wasReading1)
-            sparse.endRead(R2.componentIndex, wasReading: wasReading2)
-            sparse.lockDepth -= 1
-            if visited > 0 {
-                nexus.emitModified(W1.self, count: visited)
-            }
-        }
-        let entries = members.storage.dense
-        try entries.withUnsafeBufferPointer { entries in
-            let total = entries.count
-            var start = 0
-            while start < total {
-                let key = entries[start].key
-                let rSlot1 = rs1.slot(of: key)
-                precondition(rSlot1 >= 0, "member without a required component")
-                let rSlot2 = rs2.slot(of: key)
-                precondition(rSlot2 >= 0, "member without a required component")
-                let wSlot1 = ws1.slot(of: key)
-                precondition(wSlot1 >= 0, "member without a required component")
-                var length = 1
-                while start + length < total {
-                    let next = entries[start + length].key
-                    guard rs1.slot(of: next) == rSlot1 + length, rs2.slot(of: next) == rSlot2 + length, ws1.slot(of: next) == wSlot1 + length else { break }
-                    length += 1
+        switch nexus.backend {
+        case let .sparseSet(sparse):
+            let members = memberIds
+            guard !members.isEmpty, let rs1 = sparse.existing(R1.self, at: R1.componentIndex), let rs2 = sparse.existing(R2.self, at: R2.componentIndex), let ws1 = sparse.existing(W1.self, at: W1.componentIndex) else { return }
+            sparse.lockDepth += 1
+            sparse.beginWrite(W1.componentIndex)
+            let wasReading1 = sparse.beginRead(R1.componentIndex)
+            let wasReading2 = sparse.beginRead(R2.componentIndex)
+            var visited = 0
+            defer {
+                sparse.endWrite(W1.componentIndex)
+                sparse.endRead(R1.componentIndex, wasReading: wasReading1)
+                sparse.endRead(R2.componentIndex, wasReading: wasReading2)
+                sparse.lockDepth -= 1
+                if visited > 0 {
+                    nexus.emitModified(W1.self, count: visited)
                 }
-                let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: rs1.base + rSlot1, count: length))
-                let rSpan2 = Span<R2>(_unsafeElements: UnsafeBufferPointer(start: rs2.base + rSlot2, count: length))
-                var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: ws1.base + wSlot1, count: length))
-                visited += length
-                try body(rSpan1, rSpan2, &wSpan1)
-                start += length
+            }
+            let entries = members.storage.dense
+            try entries.withUnsafeBufferPointer { entries in
+                let total = entries.count
+                var start = 0
+                while start < total {
+                    let key = entries[start].key
+                    let rSlot1 = rs1.slot(of: key)
+                    precondition(rSlot1 >= 0, "member without a required component")
+                    let rSlot2 = rs2.slot(of: key)
+                    precondition(rSlot2 >= 0, "member without a required component")
+                    let wSlot1 = ws1.slot(of: key)
+                    precondition(wSlot1 >= 0, "member without a required component")
+                    var length = 1
+                    while start + length < total {
+                        let next = entries[start + length].key
+                        guard rs1.slot(of: next) == rSlot1 + length, rs2.slot(of: next) == rSlot2 + length, ws1.slot(of: next) == wSlot1 + length else { break }
+                        length += 1
+                    }
+                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: rs1.base + rSlot1, count: length))
+                    let rSpan2 = Span<R2>(_unsafeElements: UnsafeBufferPointer(start: rs2.base + rSlot2, count: length))
+                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: ws1.base + wSlot1, count: length))
+                    visited += length
+                    try body(rSpan1, rSpan2, &wSpan1)
+                    start += length
+                }
+            }
+        case let .archetype(archetype):
+            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
+            let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let rIndex2 = R2.componentIndex
+            let wIndex1 = W1.componentIndex
+            archetype.lockDepth += 1
+            archetype.beginWrite(wIndex1)
+            let wasReading1 = archetype.beginRead(rIndex1)
+            let wasReading2 = archetype.beginRead(rIndex2)
+            var visited = 0
+            defer {
+                archetype.endWrite(wIndex1)
+                archetype.endRead(rIndex1, wasReading: wasReading1)
+                archetype.endRead(rIndex2, wasReading: wasReading2)
+                archetype.lockDepth -= 1
+                if visited > 0 {
+                    nexus.emitModified(W1.self, count: visited)
+                }
+            }
+            for entry in query.tables {
+                try entry._withUnsafeGuaranteedRef { table in
+                    let count = table.entities.count
+                    guard count > 0 else { return }
+                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: table.base(R1.self, at: rIndex1), count: count))
+                    let rSpan2 = Span<R2>(_unsafeElements: UnsafeBufferPointer(start: table.base(R2.self, at: rIndex2), count: count))
+                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W1.self, at: wIndex1), count: count))
+                    visited += count
+                    try body(rSpan1, rSpan2, &wSpan1)
+                }
             }
         }
     }
@@ -404,57 +602,95 @@ extension Family {
         _ wType2: W2.Type,
         _ body: (Span<R1>, Span<R2>, inout MutableSpan<W1>, inout MutableSpan<W2>) throws -> Void
     ) rethrows {
-        guard case let .sparseSet(sparse) = nexus.backend else { return }
         requireRequired(R1.self)
         requireRequired(R2.self)
         requireRequired(W1.self)
         requireRequired(W2.self)
-        let members = memberIds
-        guard !members.isEmpty, let rs1 = sparse.existing(R1.self, at: R1.componentIndex), let rs2 = sparse.existing(R2.self, at: R2.componentIndex), let ws1 = sparse.existing(W1.self, at: W1.componentIndex), let ws2 = sparse.existing(W2.self, at: W2.componentIndex) else { return }
-        sparse.lockDepth += 1
-        sparse.beginWrite(W1.componentIndex)
-        sparse.beginWrite(W2.componentIndex)
-        let wasReading1 = sparse.beginRead(R1.componentIndex)
-        let wasReading2 = sparse.beginRead(R2.componentIndex)
-        var visited = 0
-        defer {
-            sparse.endWrite(W1.componentIndex)
-            sparse.endWrite(W2.componentIndex)
-            sparse.endRead(R1.componentIndex, wasReading: wasReading1)
-            sparse.endRead(R2.componentIndex, wasReading: wasReading2)
-            sparse.lockDepth -= 1
-            if visited > 0 {
-                nexus.emitModified(W1.self, count: visited)
-                nexus.emitModified(W2.self, count: visited)
-            }
-        }
-        let entries = members.storage.dense
-        try entries.withUnsafeBufferPointer { entries in
-            let total = entries.count
-            var start = 0
-            while start < total {
-                let key = entries[start].key
-                let rSlot1 = rs1.slot(of: key)
-                precondition(rSlot1 >= 0, "member without a required component")
-                let rSlot2 = rs2.slot(of: key)
-                precondition(rSlot2 >= 0, "member without a required component")
-                let wSlot1 = ws1.slot(of: key)
-                precondition(wSlot1 >= 0, "member without a required component")
-                let wSlot2 = ws2.slot(of: key)
-                precondition(wSlot2 >= 0, "member without a required component")
-                var length = 1
-                while start + length < total {
-                    let next = entries[start + length].key
-                    guard rs1.slot(of: next) == rSlot1 + length, rs2.slot(of: next) == rSlot2 + length, ws1.slot(of: next) == wSlot1 + length, ws2.slot(of: next) == wSlot2 + length else { break }
-                    length += 1
+        switch nexus.backend {
+        case let .sparseSet(sparse):
+            let members = memberIds
+            guard !members.isEmpty, let rs1 = sparse.existing(R1.self, at: R1.componentIndex), let rs2 = sparse.existing(R2.self, at: R2.componentIndex), let ws1 = sparse.existing(W1.self, at: W1.componentIndex), let ws2 = sparse.existing(W2.self, at: W2.componentIndex) else { return }
+            sparse.lockDepth += 1
+            sparse.beginWrite(W1.componentIndex)
+            sparse.beginWrite(W2.componentIndex)
+            let wasReading1 = sparse.beginRead(R1.componentIndex)
+            let wasReading2 = sparse.beginRead(R2.componentIndex)
+            var visited = 0
+            defer {
+                sparse.endWrite(W1.componentIndex)
+                sparse.endWrite(W2.componentIndex)
+                sparse.endRead(R1.componentIndex, wasReading: wasReading1)
+                sparse.endRead(R2.componentIndex, wasReading: wasReading2)
+                sparse.lockDepth -= 1
+                if visited > 0 {
+                    nexus.emitModified(W1.self, count: visited)
+                    nexus.emitModified(W2.self, count: visited)
                 }
-                let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: rs1.base + rSlot1, count: length))
-                let rSpan2 = Span<R2>(_unsafeElements: UnsafeBufferPointer(start: rs2.base + rSlot2, count: length))
-                var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: ws1.base + wSlot1, count: length))
-                var wSpan2 = MutableSpan<W2>(_unsafeElements: UnsafeMutableBufferPointer(start: ws2.base + wSlot2, count: length))
-                visited += length
-                try body(rSpan1, rSpan2, &wSpan1, &wSpan2)
-                start += length
+            }
+            let entries = members.storage.dense
+            try entries.withUnsafeBufferPointer { entries in
+                let total = entries.count
+                var start = 0
+                while start < total {
+                    let key = entries[start].key
+                    let rSlot1 = rs1.slot(of: key)
+                    precondition(rSlot1 >= 0, "member without a required component")
+                    let rSlot2 = rs2.slot(of: key)
+                    precondition(rSlot2 >= 0, "member without a required component")
+                    let wSlot1 = ws1.slot(of: key)
+                    precondition(wSlot1 >= 0, "member without a required component")
+                    let wSlot2 = ws2.slot(of: key)
+                    precondition(wSlot2 >= 0, "member without a required component")
+                    var length = 1
+                    while start + length < total {
+                        let next = entries[start + length].key
+                        guard rs1.slot(of: next) == rSlot1 + length, rs2.slot(of: next) == rSlot2 + length, ws1.slot(of: next) == wSlot1 + length, ws2.slot(of: next) == wSlot2 + length else { break }
+                        length += 1
+                    }
+                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: rs1.base + rSlot1, count: length))
+                    let rSpan2 = Span<R2>(_unsafeElements: UnsafeBufferPointer(start: rs2.base + rSlot2, count: length))
+                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: ws1.base + wSlot1, count: length))
+                    var wSpan2 = MutableSpan<W2>(_unsafeElements: UnsafeMutableBufferPointer(start: ws2.base + wSlot2, count: length))
+                    visited += length
+                    try body(rSpan1, rSpan2, &wSpan1, &wSpan2)
+                    start += length
+                }
+            }
+        case let .archetype(archetype):
+            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
+            let query = archetype.matchingTables(filter)
+            let rIndex1 = R1.componentIndex
+            let rIndex2 = R2.componentIndex
+            let wIndex1 = W1.componentIndex
+            let wIndex2 = W2.componentIndex
+            archetype.lockDepth += 1
+            archetype.beginWrite(wIndex1)
+            archetype.beginWrite(wIndex2)
+            let wasReading1 = archetype.beginRead(rIndex1)
+            let wasReading2 = archetype.beginRead(rIndex2)
+            var visited = 0
+            defer {
+                archetype.endWrite(wIndex1)
+                archetype.endWrite(wIndex2)
+                archetype.endRead(rIndex1, wasReading: wasReading1)
+                archetype.endRead(rIndex2, wasReading: wasReading2)
+                archetype.lockDepth -= 1
+                if visited > 0 {
+                    nexus.emitModified(W1.self, count: visited)
+                    nexus.emitModified(W2.self, count: visited)
+                }
+            }
+            for entry in query.tables {
+                try entry._withUnsafeGuaranteedRef { table in
+                    let count = table.entities.count
+                    guard count > 0 else { return }
+                    let rSpan1 = Span<R1>(_unsafeElements: UnsafeBufferPointer(start: table.base(R1.self, at: rIndex1), count: count))
+                    let rSpan2 = Span<R2>(_unsafeElements: UnsafeBufferPointer(start: table.base(R2.self, at: rIndex2), count: count))
+                    var wSpan1 = MutableSpan<W1>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W1.self, at: wIndex1), count: count))
+                    var wSpan2 = MutableSpan<W2>(_unsafeElements: UnsafeMutableBufferPointer(start: table.base(W2.self, at: wIndex2), count: count))
+                    visited += count
+                    try body(rSpan1, rSpan2, &wSpan1, &wSpan2)
+                }
             }
         }
     }

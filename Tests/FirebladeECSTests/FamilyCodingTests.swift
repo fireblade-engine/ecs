@@ -10,8 +10,8 @@ import Testing
 import Foundation
 
 @Suite struct FamilyCodingTests {
-    @Test func encodingFamily1() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func encodingFamily1(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
 
         let family = nexus.family(requires: MyComponent.self)
         family.createMember(with: MyComponent(name: "My Name", flag: true))
@@ -23,7 +23,7 @@ import Foundation
         #expect(encodedData.count >= 90)
     }
 
-    @Test func decodingFamily1() throws {
+    @Test(arguments: Nexus.StorageKind.allCases) func decodingFamily1(_ storage: Nexus.StorageKind) throws {
         let jsonString = """
          [
            {
@@ -42,7 +42,7 @@ import Foundation
         """
         let jsonData = jsonString.data(using: .utf8)!
 
-        let nexus = Nexus()
+        let nexus = Nexus(storage: storage)
         let family = nexus.family(requires: MyComponent.self)
         #expect(family.isEmpty)
         var jsonDecoder = JSONDecoder()
@@ -51,8 +51,8 @@ import Foundation
         #expect(family.count == 2)
     }
 
-    @Test func encodeFamily2() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func encodeFamily2(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
 
         let family = nexus.family(requiresAll: MyComponent.self, YourComponent.self)
         family.createMember(with: MyComponent(name: "My Name", flag: true), YourComponent(number: 1.23))
@@ -64,7 +64,7 @@ import Foundation
         #expect(encodedData.count >= 91)
     }
 
-    @Test func decodingFamily2() throws {
+    @Test(arguments: Nexus.StorageKind.allCases) func decodingFamily2(_ storage: Nexus.StorageKind) throws {
         let jsonString = """
         [
           {
@@ -90,7 +90,7 @@ import Foundation
 
         let jsonData = jsonString.data(using: .utf8)!
 
-        let nexus = Nexus()
+        let nexus = Nexus(storage: storage)
 
         let family = nexus.family(requiresAll: YourComponent.self, MyComponent.self)
         #expect(family.isEmpty)
@@ -100,8 +100,8 @@ import Foundation
         #expect(family.count == 2)
     }
 
-    @Test func encodeFamily3() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func encodeFamily3(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
 
         let family = nexus.family(requiresAll: MyComponent.self, YourComponent.self, Position.self)
         family.createMember(with: MyComponent(name: "My Name", flag: true), YourComponent(number: 1.23), Position(x: 1, y: 2))
@@ -113,7 +113,7 @@ import Foundation
         #expect(encodedData.count >= 200)
     }
 
-    @Test func decodingFamily3() throws {
+    @Test(arguments: Nexus.StorageKind.allCases) func decodingFamily3(_ storage: Nexus.StorageKind) throws {
         let jsonString = """
         [
           {
@@ -147,7 +147,7 @@ import Foundation
 
         let jsonData = jsonString.data(using: .utf8)!
 
-        let nexus = Nexus()
+        let nexus = Nexus(storage: storage)
 
         let family = nexus.family(requiresAll: YourComponent.self, MyComponent.self, Position.self)
         let family2 = nexus.family(requiresAll: YourComponent.self, MyComponent.self, excludesAll: Index.self)
@@ -159,8 +159,8 @@ import Foundation
         #expect(family2.count == 2)
     }
 
-    @Test func encodeFamily4() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func encodeFamily4(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
 
         let family = nexus.family(requiresAll: MyComponent.self, YourComponent.self, Position.self, Color.self)
         family.createMember(with: MyComponent(name: "My Name", flag: true), YourComponent(number: 1.23), Position(x: 1, y: 2), Color(r: 1, g: 2, b: 3))
@@ -172,7 +172,7 @@ import Foundation
         #expect(encodedData.count >= 250)
     }
 
-    @Test func decodeFamily4() throws {
+    @Test(arguments: Nexus.StorageKind.allCases) func decodeFamily4(_ storage: Nexus.StorageKind) throws {
         let jsonString = """
         [
           {
@@ -216,7 +216,7 @@ import Foundation
 
         let jsonData = jsonString.data(using: .utf8)!
 
-        let nexus = Nexus()
+        let nexus = Nexus(storage: storage)
 
         let family = nexus.family(requiresAll: YourComponent.self, MyComponent.self, Position.self, Color.self)
         #expect(family.isEmpty)
@@ -226,8 +226,8 @@ import Foundation
         #expect(family.count == 2)
     }
 
-    @Test func encodeFamily5() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func encodeFamily5(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
 
         let family = nexus.family(requiresAll: MyComponent.self, YourComponent.self, Position.self, Color.self, Party.self)
         family.createMember(with: MyComponent(name: "My Name", flag: true), YourComponent(number: 1.23), Position(x: 1, y: 2), Color(r: 1, g: 2, b: 3), Party(partying: true))
@@ -239,7 +239,7 @@ import Foundation
         #expect(encodedData.count >= 320)
     }
 
-    @Test func decodeFamily5() throws {
+    @Test(arguments: Nexus.StorageKind.allCases) func decodeFamily5(_ storage: Nexus.StorageKind) throws {
         let jsonString = """
         [
           {
@@ -289,7 +289,7 @@ import Foundation
 
         let jsonData = jsonString.data(using: .utf8)!
 
-        let nexus = Nexus()
+        let nexus = Nexus(storage: storage)
 
         let family = nexus.family(requiresAll: YourComponent.self, MyComponent.self, Position.self, Color.self, Party.self)
         #expect(family.isEmpty)
@@ -299,7 +299,7 @@ import Foundation
         #expect(family.count == 2)
     }
 
-    @Test func failDecodingFamily() {
+    @Test(arguments: Nexus.StorageKind.allCases) func failDecodingFamily(_ storage: Nexus.StorageKind) {
         let jsonString = """
         [
           {
@@ -341,7 +341,7 @@ import Foundation
         let jsonData = jsonString.data(using: .utf8)!
         var jsonDecoder = JSONDecoder()
 
-        let nexus = Nexus()
+        let nexus = Nexus(storage: storage)
 
         let family = nexus.family(requiresAll: YourComponent.self, MyComponent.self)
         #expect(throws: Error.self) {

@@ -254,15 +254,18 @@ let benchmarks: @Sendable () -> Void = {
     // The benchmarks above build their nexus inside the measured closure, so setup dominates their time and malloc counts.
     // These variants build the nexus first and measure the iteration alone: the malloc count is the allocations of the
     // iteration itself, which is 0 when iterating allocates nothing per entity.
+    // Every variant runs on both storages: the name carries the storage in brackets.
     func iterationOnly(_ name: String, prepare: @escaping @Sendable (Nexus) -> () -> Void) {
-        Benchmark(name) { benchmark in
-            let nexus = setUpNexus()
-            let iterate = prepare(nexus)
-            benchmark.startMeasurement()
-            for _ in benchmark.scaledIterations {
-                iterate()
+        for storage in Nexus.StorageKind.allCases {
+            Benchmark("\(name) [\(storage)]") { benchmark in
+                let nexus = setUpNexus(storage: storage)
+                let iterate = prepare(nexus)
+                benchmark.startMeasurement()
+                for _ in benchmark.scaledIterations {
+                    iterate()
+                }
+                benchmark.stopMeasurement()
             }
-            benchmark.stopMeasurement()
         }
     }
 
@@ -413,4 +416,6 @@ let benchmarks: @Sendable () -> Void = {
             }
         } }
     }
+
+    storageBenchmarks()
 }

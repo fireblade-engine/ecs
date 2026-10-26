@@ -9,8 +9,8 @@
 import Testing
 
 @Suite struct NexusTests {
-    @Test func entityCreate() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func entityCreate(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         #expect(nexus.numEntities == 0)
 
         let e0 = nexus.createEntity()
@@ -26,8 +26,8 @@ import Testing
         #expect(!nexus.debugDescription.isEmpty)
     }
 
-    @Test func entityDestroy() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func entityDestroy(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         _ = nexus.createEntity()
         let e1 = nexus.createEntity(with: Name(name: "Entity 1"))
         #expect(nexus.numEntities == 2)
@@ -49,8 +49,8 @@ import Testing
         #expect(nexus.numEntities == 0)
     }
 
-    @Test func componentCreation() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func componentCreation(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         #expect(nexus.numEntities == 0)
 
         let e0: Entity = nexus.createEntity()
@@ -68,8 +68,8 @@ import Testing
         #expect(rP0?.y == 2)
     }
 
-    @Test func componentDeletion() throws {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func componentDeletion(_ storage: Nexus.StorageKind) throws {
+        let nexus = Nexus(storage: storage)
         let identifier: EntityIdentifier = nexus.createEntity().identifier
 
         let e0 = try #require(nexus.entity(identifier))
@@ -115,8 +115,8 @@ import Testing
         #expect(e0.numComponents == 0)
     }
 
-    @Test func componentRetrieval() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func componentRetrieval(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let pos = Position(x: 1, y: 2)
         let name = Name(name: "myName")
         let vel = Velocity(a: 3)
@@ -129,8 +129,8 @@ import Testing
         #expect(rVel == vel)
     }
 
-    @Test func componentUniqueness() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func componentUniqueness(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let a = nexus.createEntity()
         let b = nexus.createEntity()
         let c = nexus.createEntity()
@@ -156,8 +156,8 @@ import Testing
         #expect(c.get(Position.self) == Position(x: 0, y: 0))
     }
 
-    @Test func entityIteration() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func entityIteration(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         nexus.createEntities(count: 1000) { ctx in Position(x: ctx.index, y: ctx.index) }
 
         let entityArray = Array(nexus.makeEntitiesIterator())

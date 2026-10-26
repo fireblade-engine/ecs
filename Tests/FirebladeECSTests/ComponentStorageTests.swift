@@ -44,16 +44,23 @@ private struct Token: Component {
     }
 }
 
+extension Nexus.Backend {
+    @discardableResult
+    fileprivate func remove<C: Component>(_: C.Type, from entityId: EntityIdentifier) -> Bool {
+        remove(componentIndex: C.componentIndex, from: entityId)
+    }
+}
+
 private func entityId(_ index: UInt32, generation: UInt32 = 0) -> EntityIdentifier {
     EntityIdentifier(index: index, generation: generation)
 }
 
 @Suite(.serialized)
 struct ComponentStorageTests {
-    typealias Storage = Nexus.SparseSetStorage
+    typealias Storage = Nexus.Backend
 
-    private func makeStorage(entities count: Int) -> (Storage, [EntityIdentifier]) {
-        let storage = Storage()
+    private func makeStorage(_ kind: Nexus.StorageKind, entities count: Int) -> (Storage, [EntityIdentifier]) {
+        let storage = Storage(kind)
         let ids = (1 ... count).map { entityId(UInt32($0)) }
         for id in ids {
             storage.insertEntity(id)
@@ -61,8 +68,8 @@ struct ComponentStorageTests {
         return (storage, ids)
     }
 
-    @Test func setGetReplaceRemove() throws {
-        let (storage, ids) = makeStorage(entities: 1)
+    @Test(arguments: Nexus.StorageKind.allCases) func setGetReplaceRemove(_ kind: Nexus.StorageKind) throws {
+        let (storage, ids) = makeStorage(kind, entities: 1)
         let id = ids[0]
         #expect(storage.get(Position.self, for: id) == nil)
         #expect(!storage.has(componentIndex: Position.componentIndex, for: id))
@@ -82,8 +89,8 @@ struct ComponentStorageTests {
         #expect(storage.componentCount(of: id) == 0)
     }
 
-    @Test func swapRemoveKeepsOtherEntitiesIntact() {
-        let (storage, ids) = makeStorage(entities: 10)
+    @Test(arguments: Nexus.StorageKind.allCases) func swapRemoveKeepsOtherEntitiesIntact(_ kind: Nexus.StorageKind) {
+        let (storage, ids) = makeStorage(kind, entities: 10)
         for (offset, id) in ids.enumerated() {
             storage.set(Position(x: offset, y: 0), for: id)
             storage.set(Name(name: "entity \(offset)"), for: id)
@@ -100,9 +107,19 @@ struct ComponentStorageTests {
         #expect(storage.totalComponentCount == 7 + 10)
     }
 
+    private func makeSparseSet(entities count: Int) -> (Nexus.SparseSetStorage, [EntityIdentifier]) {
+        let storage = Nexus.SparseSetStorage()
+        let ids = (1 ... count).map { entityId(UInt32($0)) }
+        for id in ids {
+            storage.insertEntity(id)
+        }
+        return (storage, ids)
+    }
+
+    /// The paged sparse index is internal to the sparse-set storage.
     @Test func pagingBoundaries() {
         let page = Int(Nexus.PagedSparseIndex.pageSize)
-        let storage = Storage()
+        let storage = Nexus.SparseSetStorage()
         let probes = [1, page - 1, page, 2 * page - 1, 2 * page, 3 * page + 5]
         for probe in probes {
             let id = entityId(UInt32(probe))
@@ -128,9 +145,10 @@ struct ComponentStorageTests {
         #expect(storage.get(Position.self, for: entityId(UInt32(page)))?.x == -1)
     }
 
+    /// The dense buffer of a component type is internal to the sparse-set storage.
     @Test func growthAndReallocation() {
         let count = 5000 // several buffer doublings and two sparse pages
-        let (storage, ids) = makeStorage(entities: count)
+        let (storage, ids) = makeSparseSet(entities: count)
         for (offset, id) in ids.enumerated() {
             storage.set(Position(x: offset, y: 0), for: id)
             if offset.isMultiple(of: 3) {
@@ -148,10 +166,10 @@ struct ComponentStorageTests {
         #expect(storage.existing(Position.self)?.capacity ?? 0 >= count)
     }
 
-    @Test func componentsAreReleasedWithTheStorage() {
+    @Test(arguments: Nexus.StorageKind.allCases) func componentsAreReleasedWithTheStorage(_ kind: Nexus.StorageKind) {
         let base = Token.live
         do {
-            let (storage, ids) = makeStorage(entities: 50)
+            let (storage, ids) = makeStorage(kind, entities: 50)
             for (offset, id) in ids.enumerated() {
                 storage.set(Token(offset), for: id)
             }
@@ -172,8 +190,8 @@ struct ComponentStorageTests {
         #expect(Token.live == base)
     }
 
-    @Test func equalValuesOfSeveralEntitiesAreStoredAsIndependentCopies() {
-        let (storage, ids) = makeStorage(entities: 3)
+    @Test(arguments: Nexus.StorageKind.allCases) func equalValuesOfSeveralEntitiesAreStoredAsIndependentCopies(_ kind: Nexus.StorageKind) {
+        let (storage, ids) = makeStorage(kind, entities: 3)
         let shared = Position(x: 7, y: 7)
         for id in ids {
             storage.set(shared, for: id)
@@ -188,8 +206,8 @@ struct ComponentStorageTests {
         #expect(storage.get(Position.self, for: ids[2]) == shared)
     }
 
-    @Test func deadAndStaleEntitiesReportAbsence() {
-        let (storage, ids) = makeStorage(entities: 2)
+    @Test(arguments: Nexus.StorageKind.allCases) func deadAndStaleEntitiesReportAbsence(_ kind: Nexus.StorageKind) {
+        let (storage, ids) = makeStorage(kind, entities: 2)
         storage.set(Position(x: 1, y: 1), for: ids[0])
         let stale = entityId(ids[0].index, generation: 1)
         #expect(storage.get(Position.self, for: stale) == nil)
@@ -209,8 +227,8 @@ struct ComponentStorageTests {
         #expect(storage.get(Position.self, for: ids[0]) == nil)
     }
 
-    @Test func outOfRangeComponentIndicesAreAbsent() {
-        let (storage, ids) = makeStorage(entities: 1)
+    @Test(arguments: Nexus.StorageKind.allCases) func outOfRangeComponentIndicesAreAbsent(_ kind: Nexus.StorageKind) {
+        let (storage, ids) = makeStorage(kind, entities: 1)
         storage.set(Position(x: 1, y: 1), for: ids[0])
         for index in [-1, 100_000, Int.max] {
             #expect(!storage.has(componentIndex: index, for: ids[0]))
@@ -220,8 +238,8 @@ struct ComponentStorageTests {
         }
     }
 
-    @Test func noLimitOnTheNumberOfComponentTypes() {
-        let (storage, ids) = makeStorage(entities: 2)
+    @Test(arguments: Nexus.StorageKind.allCases) func noLimitOnTheNumberOfComponentTypes(_ kind: Nexus.StorageKind) {
+        let (storage, ids) = makeStorage(kind, entities: 2)
         let id = ids[0]
         storage.set(AtIndex255(), for: id)
         storage.set(AtIndex256(), for: id)
@@ -237,8 +255,8 @@ struct ComponentStorageTests {
         #expect(storage.componentIndices(of: id) == [255, 1000])
     }
 
-    @Test func nestedAccessToDifferentTypesSeesRealData() {
-        let (storage, ids) = makeStorage(entities: 2)
+    @Test(arguments: Nexus.StorageKind.allCases) func nestedAccessToDifferentTypesSeesRealData(_ kind: Nexus.StorageKind) {
+        let (storage, ids) = makeStorage(kind, entities: 2)
         storage.set(Position(x: 1, y: 1), for: ids[0])
         storage.set(Position(x: 2, y: 2), for: ids[1])
         storage.set(Name(name: "a"), for: ids[0])
@@ -254,8 +272,8 @@ struct ComponentStorageTests {
         #expect(storage.get(Position.self, for: ids[0])?.x == 10)
     }
 
-    @Test func bulkAccessCoversEveryComponentOnce() {
-        let (storage, ids) = makeStorage(entities: 20)
+    @Test(arguments: Nexus.StorageKind.allCases) func bulkAccessCoversEveryComponentOnce(_ kind: Nexus.StorageKind) {
+        let (storage, ids) = makeStorage(kind, entities: 20)
         for (offset, id) in ids.enumerated() where offset.isMultiple(of: 2) {
             storage.set(Position(x: offset, y: 0), for: id)
         }
@@ -272,8 +290,8 @@ struct ComponentStorageTests {
         #expect(sum == (0 ..< 20).filter { $0.isMultiple(of: 2) }.reduce(0, +))
     }
 
-    @Test func removeAllForgetsEntitiesAndTypes() {
-        let (storage, ids) = makeStorage(entities: 3)
+    @Test(arguments: Nexus.StorageKind.allCases) func removeAllForgetsEntitiesAndTypes(_ kind: Nexus.StorageKind) {
+        let (storage, ids) = makeStorage(kind, entities: 3)
         storage.set(Position(x: 1, y: 1), for: ids[0])
         storage.removeAll()
         #expect(storage.entityCount == 0)
@@ -282,8 +300,8 @@ struct ComponentStorageTests {
         #expect(!storage.isAlive(ids[0]))
     }
 
-    @Test func untypedSlowPaths() {
-        let (storage, ids) = makeStorage(entities: 1)
+    @Test(arguments: Nexus.StorageKind.allCases) func untypedSlowPaths(_ kind: Nexus.StorageKind) {
+        let (storage, ids) = makeStorage(kind, entities: 1)
         let id = ids[0]
         let position = Position(x: 5, y: 5)
         storage.set(position, for: id)
@@ -291,7 +309,7 @@ struct ComponentStorageTests {
         let indices = storage.componentIndices(of: id)
         #expect(indices == [Position.componentIndex, Name.componentIndex].sorted())
         #expect(storage.anyComponent(componentIndex: Position.componentIndex, for: id) as? Position == position)
-        #expect(storage.indexByIdentifier[Position.identifier] == Position.componentIndex)
+        #expect(storage.componentIndex(of: Position.identifier) == Position.componentIndex)
         #expect(storage.remove(componentIndex: Position.componentIndex, from: id))
         #expect(!storage.remove(componentIndex: Position.componentIndex, from: id))
         #expect(storage.componentCount(of: id) == 1)

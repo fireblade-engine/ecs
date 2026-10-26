@@ -20,8 +20,8 @@ private final class Recorder: NexusEventDelegate, @unchecked Sendable {
 }
 
 /// `count` entities with `Comp1(number)`, `Comp2(number)` and `Comp3(0)`.
-private func makeNexus(count: Int) -> Nexus {
-    let nexus = Nexus()
+private func makeNexus(_ storage: Nexus.StorageKind, count: Int) -> Nexus {
+    let nexus = Nexus(storage: storage)
     for number in 0 ..< count {
         nexus.createEntity(with: Comp1(number), Comp2(number), Comp3(0))
     }
@@ -32,8 +32,8 @@ private func makeNexus(count: Int) -> Nexus {
     // MARK: single type
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    @Test func readingSpanSeesAllComponents() {
-        let nexus = makeNexus(count: 10)
+    @Test(arguments: Nexus.StorageKind.allCases) func readingSpanSeesAllComponents(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 10)
         var sum = 0
         var count = 0
         nexus.componentSpan(reading: Comp1.self) { (span: Span<Comp1>) in
@@ -45,8 +45,8 @@ private func makeNexus(count: Int) -> Nexus {
     }
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    @Test func readingSpanReturnsTheResultOfTheBody() {
-        let nexus = makeNexus(count: 4)
+    @Test(arguments: Nexus.StorageKind.allCases) func readingSpanReturnsTheResultOfTheBody(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 4)
         let total = nexus.componentSpan(reading: Comp1.self) { span in
             var sum = 0
             for index in span.indices { sum += span[index].value }
@@ -56,8 +56,8 @@ private func makeNexus(count: Int) -> Nexus {
     }
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    @Test func writingSpanLandsInStorage() {
-        let nexus = makeNexus(count: 10)
+    @Test(arguments: Nexus.StorageKind.allCases) func writingSpanLandsInStorage(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 10)
         nexus.componentSpan(writing: Comp1.self) { (span: inout MutableSpan<Comp1>) in
             for index in span.indices { span[index].value *= 10 }
         }
@@ -66,8 +66,8 @@ private func makeNexus(count: Int) -> Nexus {
     }
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    @Test func writingSpanErrorsPropagateAfterTheWrite() {
-        let nexus = makeNexus(count: 3)
+    @Test(arguments: Nexus.StorageKind.allCases) func writingSpanErrorsPropagateAfterTheWrite(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 3)
         let recorder = Recorder()
         nexus.delegate = recorder
         #expect(throws: Boom.self) {
@@ -83,8 +83,8 @@ private func makeNexus(count: Int) -> Nexus {
     }
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    @Test func emptyStorageGivesEmptySpansAndNoEvent() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func emptyStorageGivesEmptySpansAndNoEvent(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let recorder = Recorder()
         nexus.delegate = recorder
         // a type that never had a storage
@@ -99,8 +99,8 @@ private func makeNexus(count: Int) -> Nexus {
     }
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    @Test func spansAfterSwapRemoveChurn() {
-        let nexus = makeNexus(count: 10)
+    @Test(arguments: Nexus.StorageKind.allCases) func spansAfterSwapRemoveChurn(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 10)
         let entities = Array(nexus.family(requires: Comp1.self).entities)
         for entity in entities where entity.get(Comp1.self)!.value.isMultiple(of: 3) {
             entity.remove(Comp1.self)
@@ -118,8 +118,8 @@ private func makeNexus(count: Int) -> Nexus {
     }
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    @Test func writingSpanEmitsOneEventPerPass() {
-        let nexus = makeNexus(count: 7)
+    @Test(arguments: Nexus.StorageKind.allCases) func writingSpanEmitsOneEventPerPass(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 7)
         let recorder = Recorder()
         nexus.delegate = recorder
         nexus.componentSpan(writing: Comp1.self) { span in
@@ -133,8 +133,8 @@ private func makeNexus(count: Int) -> Nexus {
     }
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    @Test func readingOtherTypesAndNestingReadsIsAllowed() {
-        let nexus = makeNexus(count: 5)
+    @Test(arguments: Nexus.StorageKind.allCases) func readingOtherTypesAndNestingReadsIsAllowed(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 5)
         var sum = 0
         nexus.componentSpan(writing: Comp1.self) { writing in
             nexus.componentSpan(reading: Comp2.self) { reading in
@@ -159,8 +159,8 @@ private func makeNexus(count: Int) -> Nexus {
     // MARK: family batches
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    @Test func familySpansPairElementsOfTheSameMember() {
-        let nexus = makeNexus(count: 10)
+    @Test(arguments: Nexus.StorageKind.allCases) func familySpansPairElementsOfTheSameMember(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 10)
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self)
         var visited = 0
         family.forEachComponentSpan(reading: Comp1.self, writing: Comp2.self) { (reads: Span<Comp1>, writes: inout MutableSpan<Comp2>) in
@@ -178,8 +178,8 @@ private func makeNexus(count: Int) -> Nexus {
     }
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    @Test func familySpansAreOneBatchWhenColumnsAreAligned() {
-        let nexus = makeNexus(count: 100)
+    @Test(arguments: Nexus.StorageKind.allCases) func familySpansAreOneBatchWhenColumnsAreAligned(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 100)
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self)
         var calls = 0
         family.forEachComponentSpan(reading: Comp1.self, writing: Comp2.self) { reads, _ in
@@ -191,8 +191,8 @@ private func makeNexus(count: Int) -> Nexus {
     }
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    @Test func familySpansAfterChurnVisitEveryMemberOnce() {
-        let nexus = makeNexus(count: 40)
+    @Test(arguments: Nexus.StorageKind.allCases) func familySpansAfterChurnVisitEveryMemberOnce(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 40)
         let all = Array(nexus.family(requires: Comp1.self).entities)
         for entity in all where entity.get(Comp1.self)!.value % 5 == 2 {
             entity.remove(Comp3.self)
@@ -218,15 +218,16 @@ private func makeNexus(count: Int) -> Nexus {
         }
         #expect(seen.count == expected)
         #expect(Set(seen).count == expected)
-        #expect(calls > 1)
+        // the sparse set loses alignment under churn and passes shorter batches; an archetype table is always one batch
+        #expect(storage == .archetype ? calls == 1 : calls > 1)
         for entity in family.entities {
             #expect(entity.get(Comp3.self)?.value == entity.get(Comp1.self).map { $0.value + 1 })
         }
     }
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    @Test func familySpanOverloads() {
-        let nexus = makeNexus(count: 6)
+    @Test(arguments: Nexus.StorageKind.allCases) func familySpanOverloads(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 6)
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self)
         var sum = 0
         family.forEachComponentSpan(reading: Comp1.self) { first in
@@ -248,22 +249,22 @@ private func makeNexus(count: Int) -> Nexus {
     }
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    @Test func familySpansIgnoreNonMembersAndEmptyFamilies() {
-        let nexus = makeNexus(count: 6)
+    @Test(arguments: Nexus.StorageKind.allCases) func familySpansIgnoreNonMembersAndEmptyFamilies(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 6)
         nexus.createEntity(with: Comp1(100))
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self)
         var count = 0
         family.forEachComponentSpan(reading: Comp1.self, writing: Comp2.self) { first, _ in count += first.count }
         #expect(count == 6)
-        let emptyNexus = Nexus()
+        let emptyNexus = Nexus(storage: storage)
         let empty = emptyNexus.family(requiresAll: Comp1.self, Comp2.self)
         empty.forEachComponentSpan(reading: Comp1.self, writing: Comp2.self) { _, _ in Issue.record("called") }
         withExtendedLifetime(emptyNexus) {}
     }
 
     @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
-    @Test func familySpansEmitOneEventPerWrittenType() {
-        let nexus = makeNexus(count: 9)
+    @Test(arguments: Nexus.StorageKind.allCases) func familySpansEmitOneEventPerWrittenType(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 9)
         for entity in Array(nexus.family(requires: Comp1.self).entities) where entity.get(Comp1.self)!.value.isMultiple(of: 2) {
             entity.remove(Comp3.self)
         }
@@ -276,5 +277,81 @@ private func makeNexus(count: Int) -> Nexus {
         #expect(Set(recorder.modified.map(\.component)) == [Comp2.identifier, Comp3.identifier])
         family.forEachComponentSpan(reading: Comp1.self, Comp2.self) { _, _ in }
         #expect(recorder.modified.count == 2)
+    }
+
+    // MARK: entities with different component sets
+
+    /// Entities of three component sets (and with them, in the archetype storage, three tables) that all have `Comp1`.
+    @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
+    private func makeMixedNexus(_ storage: Nexus.StorageKind) -> Nexus {
+        let nexus = Nexus(storage: storage)
+        for number in 0 ..< 4 {
+            nexus.createEntity(with: Comp1(number), Comp2(number))
+            nexus.createEntity(with: Comp1(10 + number), Comp2(10 + number), Comp3(0))
+            nexus.createEntity(with: Comp1(20 + number), Comp4(0))
+        }
+        return nexus
+    }
+
+    @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
+    @Test(arguments: Nexus.StorageKind.allCases) func singleSpanOfATypeInSeveralTablesSeesEveryComponent(_ storage: Nexus.StorageKind) {
+        let nexus = makeMixedNexus(storage)
+        var values: [Int] = []
+        nexus.componentSpan(reading: Comp1.self) { (span: Span<Comp1>) in
+            for index in span.indices { values.append(span[index].value) }
+        }
+        let expected = (0 ..< 4).flatMap { [$0, 10 + $0, 20 + $0] }
+        #expect(values.sorted() == expected.sorted())
+    }
+
+    @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
+    @Test(arguments: Nexus.StorageKind.allCases) func singleWritingSpanOfATypeInSeveralTablesWritesEveryComponent(_ storage: Nexus.StorageKind) {
+        let nexus = makeMixedNexus(storage)
+        let recorder = Recorder()
+        nexus.delegate = recorder
+        nexus.componentSpan(writing: Comp1.self) { (span: inout MutableSpan<Comp1>) in
+            for index in span.indices { span[index].value += 100 }
+        }
+        var values: [Int] = []
+        for entity in nexus.family(requires: Comp1.self).entities { values.append(entity.get(Comp1.self)!.value) }
+        let expected = (0 ..< 4).flatMap { [100 + $0, 110 + $0, 120 + $0] }
+        #expect(values.sorted() == expected.sorted())
+        // one event for the pass, covering the components of all tables
+        #expect(recorder.modified.map(\.count) == [12])
+    }
+
+    @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
+    @Test(arguments: Nexus.StorageKind.allCases) func singleWritingSpanKeepsItsWritesWhenTheBodyThrows(_ storage: Nexus.StorageKind) {
+        let nexus = makeMixedNexus(storage)
+        #expect(throws: Boom.self) {
+            try nexus.componentSpan(writing: Comp1.self) { (span: inout MutableSpan<Comp1>) in
+                for index in span.indices { span[index].value = 7 }
+                throw Boom()
+            }
+        }
+        for entity in nexus.family(requires: Comp1.self).entities {
+            #expect(entity.get(Comp1.self)?.value == 7)
+        }
+    }
+
+    @available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *)
+    @Test(arguments: Nexus.StorageKind.allCases) func familySpansVisitEveryMemberOnceAcrossComponentSets(_ storage: Nexus.StorageKind) {
+        let nexus = makeMixedNexus(storage)
+        let family = nexus.family(requires: Comp1.self)
+        var seen: [Int] = []
+        var calls = 0
+        family.forEachComponentSpan(writing: Comp1.self) { span in
+            calls += 1
+            for index in span.indices {
+                seen.append(span[index].value)
+                span[index].value += 1
+            }
+        }
+        #expect(seen.sorted() == (0 ..< 4).flatMap { [$0, 10 + $0, 20 + $0] }.sorted())
+        // the archetype storage passes one batch per table that matches, here one per component set
+        if storage == .archetype {
+            #expect(calls == 3)
+        }
+        #expect(family.entities.allSatisfy { $0.get(Comp1.self)!.value % 10 >= 1 })
     }
 }

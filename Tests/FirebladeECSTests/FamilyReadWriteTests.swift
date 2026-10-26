@@ -23,8 +23,8 @@ private final class Recorder: NexusEventDelegate, @unchecked Sendable {
 }
 
 /// `count` entities with `Comp1 ... Comp8` all holding the entity's number, plus a `Marker` on the even ones.
-private func makeNexus(count: Int) -> Nexus {
-    let nexus = Nexus()
+private func makeNexus(_ storage: Nexus.StorageKind, count: Int) -> Nexus {
+    let nexus = Nexus(storage: storage)
     for number in 0 ..< count {
         let entity = nexus.createEntity(with: Comp1(number), Comp2(number), Comp3(number), Comp4(number))
         entity.set(Comp5(number), Comp6(number), Comp7(number), Comp8(number))
@@ -36,8 +36,8 @@ private func makeNexus(count: Int) -> Nexus {
 }
 
 @Suite struct FamilyReadWriteTests {
-    @Test func readingAndWritingChangesTheStorageInPlace() {
-        let nexus = makeNexus(count: 10)
+    @Test(arguments: Nexus.StorageKind.allCases) func readingAndWritingChangesTheStorageInPlace(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 10)
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self)
         var visited = 0
         family.forEach(reading: Comp1.self, writing: Comp2.self) { read, write in
@@ -51,8 +51,8 @@ private func makeNexus(count: Int) -> Nexus {
         }
     }
 
-    @Test func excludedMembersAreNotVisited() {
-        let nexus = makeNexus(count: 10)
+    @Test(arguments: Nexus.StorageKind.allCases) func excludedMembersAreNotVisited(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 10)
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self, excludesAll: Marker.self)
         var seen: [Int] = []
         family.forEach(reading: Comp1.self, writing: Comp2.self) { read, write in
@@ -66,23 +66,23 @@ private func makeNexus(count: Int) -> Nexus {
         }
     }
 
-    @Test func familyOverSubsetOfAStorageTouchesOnlyMembers() {
-        let nexus = makeNexus(count: 10)
+    @Test(arguments: Nexus.StorageKind.allCases) func familyOverSubsetOfAStorageTouchesOnlyMembers(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 10)
         let family = nexus.family(requiresAll: Comp1.self, Marker.self)
         family.forEach(writing: Comp1.self) { $0.value += 100 }
         let all = nexus.family(requires: Comp1.self).map(\.value).sorted()
         #expect(all == [100, 1, 102, 3, 104, 5, 106, 7, 108, 9].sorted())
     }
 
-    @Test func emptyFamilyNeverCallsBody() {
-        let nexus = Nexus()
+    @Test(arguments: Nexus.StorageKind.allCases) func emptyFamilyNeverCallsBody(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self)
         family.forEach(reading: Comp1.self, writing: Comp2.self) { _, _ in Issue.record("called") }
         family.forEach(writing: Comp1.self) { _ in Issue.record("called") }
     }
 
-    @Test func zeroReadsAndFourReadsWithoutWrites() {
-        let nexus = makeNexus(count: 4)
+    @Test(arguments: Nexus.StorageKind.allCases) func zeroReadsAndFourReadsWithoutWrites(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 4)
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self)
         var sum = 0
         family.forEach(reading: Comp1.self, Comp2.self, Comp3.self, Comp4.self) { a, b, c, d in
@@ -97,8 +97,8 @@ private func makeNexus(count: Int) -> Nexus {
         }
     }
 
-    @Test func fourReadsAndFourWrites() {
-        let nexus = makeNexus(count: 5)
+    @Test(arguments: Nexus.StorageKind.allCases) func fourReadsAndFourWrites(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 5)
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self, Comp6.self, Comp7.self, Comp8.self)
         family.forEach(reading: Comp1.self, Comp2.self, Comp3.self, Comp4.self,
                        writing: Comp5.self, Comp6.self, Comp7.self, Comp8.self) { r1, r2, r3, r4, w1, w2, w3, w4 in
@@ -116,8 +116,8 @@ private func makeNexus(count: Int) -> Nexus {
         }
     }
 
-    @Test func mixedArities() {
-        let nexus = makeNexus(count: 5)
+    @Test(arguments: Nexus.StorageKind.allCases) func mixedArities(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 5)
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self)
         family.forEach(reading: Comp1.self, Comp2.self, writing: Comp3.self, Comp4.self, Comp5.self) { r1, r2, w1, w2, w3 in
             w1.value = r1.value + r2.value
@@ -134,8 +134,8 @@ private func makeNexus(count: Int) -> Nexus {
         }
     }
 
-    @Test func parameterPackFallbackReadsAndWrites() {
-        let nexus = makeNexus(count: 6)
+    @Test(arguments: Nexus.StorageKind.allCases) func parameterPackFallbackReadsAndWrites(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 6)
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self, Comp4.self, Comp5.self, Comp6.self, Comp7.self, Comp8.self)
         // 3 reads and 5 writes: above the generated arity
         family.forEach(reading: Comp1.self, Comp2.self, Comp3.self,
@@ -166,8 +166,8 @@ private func makeNexus(count: Int) -> Nexus {
         }
     }
 
-    @Test func oneModifiedEventPerWrittenTypeAndPass() throws {
-        let nexus = makeNexus(count: 10)
+    @Test(arguments: Nexus.StorageKind.allCases) func oneModifiedEventPerWrittenTypeAndPass(_ storage: Nexus.StorageKind) throws {
+        let nexus = makeNexus(storage, count: 10)
         let recorder = Recorder()
         nexus.delegate = recorder
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self, Comp3.self)
@@ -186,13 +186,13 @@ private func makeNexus(count: Int) -> Nexus {
         #expect(recorder.modified.count == 2)
     }
 
-    @Test func noEventsWithoutValueChangeSubscription() {
+    @Test(arguments: Nexus.StorageKind.allCases) func noEventsWithoutValueChangeSubscription(_ storage: Nexus.StorageKind) {
         final class Structural: NexusEventDelegate, @unchecked Sendable {
             var count = 0
             func nexusEvent(_: NexusEvent) { count += 1 }
             func nexusNonFatalError(_: String) {}
         }
-        let nexus = makeNexus(count: 3)
+        let nexus = makeNexus(storage, count: 3)
         let family = nexus.family(requiresAll: Comp1.self)
         let delegate = Structural()
         nexus.delegate = delegate
@@ -200,8 +200,8 @@ private func makeNexus(count: Int) -> Nexus {
         #expect(delegate.count == 0)
     }
 
-    @Test func throwingEndsThePassAndReleasesTheLocks() throws {
-        let nexus = makeNexus(count: 10)
+    @Test(arguments: Nexus.StorageKind.allCases) func throwingEndsThePassAndReleasesTheLocks(_ storage: Nexus.StorageKind) throws {
+        let nexus = makeNexus(storage, count: 10)
         let recorder = Recorder()
         nexus.delegate = recorder
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self)
@@ -225,8 +225,8 @@ private func makeNexus(count: Int) -> Nexus {
         }
     }
 
-    @Test func readsOfOtherTypesAndNestedReadPassesAreAllowed() {
-        let nexus = makeNexus(count: 4)
+    @Test(arguments: Nexus.StorageKind.allCases) func readsOfOtherTypesAndNestedReadPassesAreAllowed(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 4)
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self)
         var pairs = 0
         family.forEach(reading: Comp1.self, writing: Comp2.self) { outer, write in
@@ -238,8 +238,8 @@ private func makeNexus(count: Int) -> Nexus {
         #expect(pairs == 4)
     }
 
-    @Test func familiesCreatedAfterwardsAndNewMembersAreIncluded() {
-        let nexus = makeNexus(count: 3)
+    @Test(arguments: Nexus.StorageKind.allCases) func familiesCreatedAfterwardsAndNewMembersAreIncluded(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 3)
         let family = nexus.family(requiresAll: Comp1.self)
         nexus.createEntity(with: Comp1(10))
         var seen: [Int] = []
@@ -249,8 +249,8 @@ private func makeNexus(count: Int) -> Nexus {
 
     // MARK: Entity
 
-    @Test func entityComponentsMatrix() {
-        let nexus = makeNexus(count: 1)
+    @Test(arguments: Nexus.StorageKind.allCases) func entityComponentsMatrix(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 1)
         let entity = nexus.family(requires: Comp1.self).entities.first { _ in true }
         let subject = entity.unsafelyUnwrapped
         #expect(subject.components(Comp1.self, Comp2.self, Comp3.self, Comp4.self, writing: Comp5.self, Comp6.self, Comp7.self, Comp8.self) { r1, r2, r3, r4, w1, w2, w3, w4 in
@@ -270,15 +270,15 @@ private func makeNexus(count: Int) -> Nexus {
         #expect(subject.get(Comp5.self)?.value == 3)
     }
 
-    @Test func entityComponentsFailsWhenAComponentIsMissing() {
-        let nexus = makeNexus(count: 1)
+    @Test(arguments: Nexus.StorageKind.allCases) func entityComponentsFailsWhenAComponentIsMissing(_ storage: Nexus.StorageKind) {
+        let nexus = makeNexus(storage, count: 1)
         let entity = nexus.createEntity(with: Comp1(1))
         #expect(!entity.components(Comp1.self, writing: Comp2.self) { _, _ in Issue.record("called") })
         #expect(!entity.components(Comp2.self) { _ in Issue.record("called") })
     }
 
-    @Test func entityParameterPackFallback() throws {
-        let nexus = makeNexus(count: 1)
+    @Test(arguments: Nexus.StorageKind.allCases) func entityParameterPackFallback(_ storage: Nexus.StorageKind) throws {
+        let nexus = makeNexus(storage, count: 1)
         let recorder = Recorder()
         nexus.delegate = recorder
         let entity = try #require(nexus.family(requires: Comp1.self).entities.first { _ in true })

@@ -96,6 +96,7 @@ extension Family: Equatable {
 extension Family: Sequence {
     /// Creates an iterator over the components of the family members.
     /// - Complexity: O(1)
+    @inlinable
     public func makeIterator() -> ComponentsIterator {
         ComponentsIterator(family: self)
     }
@@ -115,6 +116,7 @@ extension Family {
         /// Creates a new iterator for the given family.
         /// - Parameter family: The family to iterate over.
         /// - Complexity: O(R) where R is the number of required components.
+        @inlinable
         public init(family: Family<repeat each C>) {
             nexus = family.nexus
             memberIdsIterator = family.memberIds.makeIterator()
@@ -126,6 +128,7 @@ extension Family {
         /// Members that were destroyed or lost a required component since the family was iterated from are skipped.
         /// - Returns: The next component collection in the sequence, or `nil`.
         /// - Complexity: O(R) where R is the number of required components.
+        @inlinable
         public mutating func next() -> (repeat each C)? {
             while let entityId: EntityIdentifier = memberIdsIterator.next() {
                 let components = (repeat nexus.component(each cursors, for: entityId))
@@ -160,6 +163,7 @@ extension Family {
         /// Creates a new iterator for the given family.
         /// - Parameter family: The family to iterate over.
         /// - Complexity: O(1)
+        @inlinable
         public init(family: Family<repeat each C>) {
             nexus = family.nexus
             memberIdsIterator = family.memberIds.makeIterator()
@@ -168,6 +172,7 @@ extension Family {
         /// Advances to the next entity and returns it, or `nil` if no next element exists.
         /// - Returns: The next entity in the sequence, or `nil`.
         /// - Complexity: O(1)
+        @inlinable
         public mutating func next() -> Entity? {
             guard let entityId = memberIdsIterator.next() else {
                 return nil
@@ -198,6 +203,7 @@ extension Family {
         /// Creates a new iterator for the given family.
         /// - Parameter family: The family to iterate over.
         /// - Complexity: O(R) where R is the number of required components.
+        @inlinable
         public init(family: Family<repeat each C>) {
             nexus = family.nexus
             memberIdsIterator = family.memberIds.makeIterator()
@@ -209,6 +215,7 @@ extension Family {
         /// Members that were destroyed or lost a required component since the family was iterated from are skipped.
         /// - Returns: The next entity and components pair in the sequence, or `nil`.
         /// - Complexity: O(R) where R is the number of required components.
+        @inlinable
         public mutating func next() -> (Entity, repeat each C)? {
             while let entityId = memberIdsIterator.next() {
                 let components = (repeat nexus.component(each cursors, for: entityId))

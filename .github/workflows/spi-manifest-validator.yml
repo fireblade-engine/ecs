@@ -1,0 +1,43 @@
+name: Validate SPI Manifest
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - '.spi.yml'
+      - '.github/workflows/spi-manifest-validator.yml'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - '.spi.yml'
+      - '.github/workflows/spi-manifest-validator.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  spi-manifest-validator:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Validate SPI Manifest via SwiftPackageIndex Validator
+        run: |
+          RESPONSE=$(curl -s -X POST https://swiftpackageindex.com/validate-spi-manifest \
+            --data-urlencode "manifest=$(cat .spi.yml)")
+
+          if echo "$RESPONSE" | grep -q 'class="result invalid"'; then
+            echo "::error::.spi.yml validation failed on swiftpackageindex.com"
+            echo "$RESPONSE"
+            exit 1
+          elif echo "$RESPONSE" | grep -q 'class="result valid"'; then
+            echo "✅ .spi.yml is valid!"
+          else
+            echo "::error::Unexpected response from swiftpackageindex.com"
+            echo "$RESPONSE"
+            exit 1
+          fi

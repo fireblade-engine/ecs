@@ -281,6 +281,24 @@ Component types are registered automatically the first time an instance is assig
 
 Snapshots start with a `formatVersion` and keep the original entity identifiers, including their generations (older versions still load). Decoding creates new entities, remaps entity references to them, and rejects snapshots written in a newer format version.
 
+## 🔀 Entity State Machines
+
+The optional `FirebladeFSM` product provides `EntityStateMachine`, `EntityState` and the component providers. A state machine swaps the components of an entity when it changes state. Add the product next to `FirebladeECS` and import both modules:
+
+```swift
+.target(
+    name: "YourTargetName",
+    dependencies: [
+        .product(name: "FirebladeECS", package: "ecs"),
+        .product(name: "FirebladeFSM", package: "ecs")
+    ])
+```
+
+```swift
+import FirebladeECS
+import FirebladeFSM
+```
+
 ## 🧪 Demo
 
 See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) to get started.

@@ -1,17 +1,11 @@
 //
 //  FSM.swift
-//  FirebladeECS
+//  FirebladeFSM
 //
 //  Created by Igor Kravchenko on 29.09.2020.
 //
 
-/// Requires initializer with default values.
-/// In case of component - makes sure it can be instantiated by component provider
-public protocol DefaultInitializable {
-    init()
-}
-
-public typealias ComponentInitializable = Component & DefaultInitializable
+import FirebladeECS
 
 /// This is the Interface for component providers. Component providers are used to supply components
 /// for states within an EntityStateMachine. FirebladeECS includes three standard component providers,

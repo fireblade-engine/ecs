@@ -10,7 +10,7 @@ An ECS comprises entities composed from components of data, with systems which o
 Fireblade ECS is available for all platforms that support [Swift 6.2](https://swift.org/) and higher and the [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager).
 It is developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
 
-The optional `FirebladeECSMacros` product adds the `@Component` macro, which depends on [swift-syntax](https://github.com/swiftlang/swift-syntax). The core `FirebladeECS` library has no dependencies.
+The optional `FirebladeECSMacros` product adds the `@Component` macro, which depends on [swift-syntax](https://github.com/swiftlang/swift-syntax). The optional `FirebladeFSM` product adds entity state machines, see the FirebladeFSM documentation. The core `FirebladeECS` library has no dependencies.
 
 For a more detailed example of FirebladeECS in action, see the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo).
 
@@ -34,8 +34,6 @@ For a more detailed example of FirebladeECS in action, see the [Fireblade ECS De
 ### Entities
 
 - ``Entity``
-- ``EntityState``
-- ``EntityStateMachine``
 - ``EntityCreated``
 - ``EntityDestroyed``
 - ``EntityComponentHash``
@@ -53,18 +51,12 @@ For a more detailed example of FirebladeECS in action, see the [Fireblade ECS De
 - ``ComponentReplaced``
 - ``ComponentModified``
 - ``ComponentsModified``
-- ``ComponentProvider``
 - ``ComponentsBuilder-4co42``
 - ``ComponentsBuilder``
-- ``ComponentInstanceProvider``
 - ``ComponentIdentifier``
 - ``ComponentInitializable``
 - ``ComponentTypeHash``
-- ``ComponentTypeProvider``
-- ``ComponentSingletonProvider``
 - ``SingleComponent``
-- ``StateComponentMapping``
-- ``DynamicComponentProvider``
 - ``DefaultInitializable``
 
 ### Component Registry

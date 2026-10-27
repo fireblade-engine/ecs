@@ -1,11 +1,12 @@
 //
 //  FSMTests.swift
-//  FirebladeECSTests
+//  FirebladeFSMTests
 //
 //  Created by Igor Kravchenko on 29.09.2020.
 //
 
-@testable import FirebladeECS
+import FirebladeECS
+@testable import FirebladeFSM
 import Testing
 
 @Suite struct ComponentInstanceProviderTests {
@@ -178,7 +179,6 @@ import Testing
 
 // MARK: -
 
-@testable import class FirebladeECS.EntityState
 
 @Suite struct EntityStateTests {
     @Test func addMappingWithNoQualifierCreatesTypeProvider() {

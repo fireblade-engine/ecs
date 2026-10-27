@@ -1,0 +1,28 @@
+name: Validate Renovate config
+
+on:
+  push:
+    branches: [ master, main ]
+    paths:
+      - '.github/renovate.json'
+      - '.github/workflows/renovate-config-validator.yml'
+  pull_request:
+    branches: [ master, main ]
+    paths:
+      - '.github/renovate.json'
+      - '.github/workflows/renovate-config-validator.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  renovate-config-validator:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Validate Renovate config
+        run: npx --yes --package renovate renovate-config-validator .github/renovate.json

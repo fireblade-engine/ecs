@@ -8,6 +8,23 @@
   ],
   "packageRules": [
     {
+      "description": "Ignore swift-syntax range pinning and non-major updates within 600.x, allowing major 700+ updates",
+      "matchDepNames": [
+        "swift-syntax",
+        "swiftlang/swift-syntax",
+        "https://github.com/swiftlang/swift-syntax.git"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "digest",
+        "lockFileMaintenance",
+        "bump"
+      ],
+      "enabled": false
+    },
+    {
       "description": "Group all Swift package minor and patch updates together",
       "groupName": "Swift non-major dependencies",
       "matchManagers": [
@@ -77,7 +94,7 @@
     {
       "customType": "regex",
       "description": "Exact Swift toolchain versions pinned in CI matrices (swift-full), annotated with a renovate comment",
-      "managerFilePatterns": [
+      "fileMatch": [
         "/^\\.github/workflows/.+\\.ya?ml$/"
       ],
       "matchStrings": [

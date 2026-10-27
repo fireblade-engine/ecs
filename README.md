@@ -61,14 +61,6 @@ import FirebladeECSMacros   // only where @Component or @FamilyTraits is used
 import FirebladeFSM         // only where the state machine is used
 ```
 
-### 📋 Prerequisites
-
-* [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager)
-* [Homebrew](https://brew.sh/) - (optional)
-* [Mint](https://github.com/yonaskolb/Mint) for tool management - (optional)
-* [SwiftLint](https://github.com/realm/SwiftLint) for linting - (optional)
-* [SwiftEnv](https://swiftenv.fuller.li/) for Swift version management - (optional)
-
 ---
 
 ## ⚡ 1-Minute Quickstart
@@ -342,6 +334,14 @@ import FirebladeFSM
 ## 💁 How to contribute
 
 If you want to contribute please review the [CONTRIBUTION GUIDE](CONTRIBUTING.md) first.
+
+### 📋 Prerequisites
+
+* [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager)
+* [Homebrew](https://brew.sh/) - (optional)
+* [Mint](https://github.com/yonaskolb/Mint) for tool management - (optional)
+* [SwiftLint](https://github.com/realm/SwiftLint) for linting - (optional)
+* [SwiftEnv](https://swiftenv.fuller.li/) for Swift version management - (optional)
 
 To set up your project environment:
 

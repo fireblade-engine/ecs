@@ -16,7 +16,7 @@ let package = Package(
     dependencies: [
         // The package identity of a path dependency is its directory name, i.e. the repository name.
         .package(path: ".."),
-        .package(url: "https://github.com/ordo-one/benchmark", .upToNextMajor(from: "1.38.0"))
+        .package(url: "https://github.com/ordo-one/benchmark", .upToNextMajor(from: "1.38.1"))
     ],
     targets: [
         .executableTarget(

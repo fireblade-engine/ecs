@@ -81,7 +81,7 @@ Please consult the [README][ref-readme] for installation instructions.
 
 <!-- REFERENCES -->
 
-[ref-code-of-conduct]: https://github.com/fireblade-engine/ecs/blob/master/CODE_OF_CONDUCT.md
+[ref-code-of-conduct]: https://github.com/fireblade-engine/ecs/blob/main/CODE_OF_CONDUCT.md
 [ref-contributors]: https://github.com/fireblade-engine/ecs/graphs/contributors
 [ref-documentation]: https://fireblade-engine.github.io/ecs
 [ref-gh-actions]: https://github.com/fireblade-engine/ecs/actions
@@ -91,5 +91,5 @@ Please consult the [README][ref-readme] for installation instructions.
 [ref-issues]: https://github.com/fireblade-engine/ecs/issues
 [ref-pull-request-how-to]: https://docs.github.com/en/github/writing-on-github/autolinked-references-and-urls
 [ref-pull-request-new]: https://github.com/fireblade-engine/ecs/compare
-[ref-readme]: https://github.com/fireblade-engine/ecs/blob/master/README.md
-[ref-makefile]: https://github.com/fireblade-engine/ecs/blob/master/Makefile
+[ref-readme]: https://github.com/fireblade-engine/ecs/blob/main/README.md
+[ref-makefile]: https://github.com/fireblade-engine/ecs/blob/main/Makefile

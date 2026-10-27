@@ -4,6 +4,8 @@ Originally seeded by replicating performance tests into a new form leveraging [b
 
 The iteration-only (`IterOnly...`) and storage (`S2...`) benchmarks run on both storages of `Nexus(storage:)`: the name carries the storage in brackets, for example `IterOnlyForEachReadWrite [archetype]`. The `S2...` benchmarks are ported from the storage spike and cover iteration at several arities, filtered and fragmented families, 100k entities in permuted storage order, random access and structural churn.
 
+Note: These are macro-benchmarks using `package-benchmark`. For micro-benchmarks or performance unit tests, use traits-gated unit test performance benchmarks (`swift test --traits benchmarks`).
+
 To run all the available benchmarks from the repository root:
 
     make benchmark
@@ -21,7 +23,7 @@ Creating a local baseline:
     swift package --allow-writing-to-package-directory benchmark baseline update dev
     swift package benchmark baseline list
 
-Comparing to a the baseline 'alpha'
+Comparing to the baseline 'dev'
 
     swift package benchmark baseline compare dev
 

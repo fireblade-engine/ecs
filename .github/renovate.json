@@ -8,11 +8,19 @@
   ],
   "packageRules": [
     {
-      "description": "Ignore range updates / version pinning for swift-syntax",
+      "description": "Ignore swift-syntax range pinning and non-major updates within 600.x, allowing major 700+ updates",
       "matchDepNames": [
         "swift-syntax",
         "swiftlang/swift-syntax",
         "https://github.com/swiftlang/swift-syntax.git"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "digest",
+        "lockFileMaintenance",
+        "bump"
       ],
       "enabled": false
     },

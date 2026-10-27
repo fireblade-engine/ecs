@@ -2,88 +2,106 @@ name: Documentation
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
+    tags: [ '*.*.*', 'v*.*.*' ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
+    types: [ opened, synchronize, reopened, labeled ]
   workflow_dispatch:
+    inputs:
+      backfill_tags:
+        description: 'Backfill historical tag documentation'
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}${{ (github.event.action == 'labeled' && github.event.label.name != 'run-docs') && format('-{0}', github.run_id) || '' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
 jobs:
   build-docs:
     name: Build Documentation
+    if: github.event_name != 'pull_request' || (github.event.action == 'labeled' && github.event.label.name == 'run-docs') || (github.event.action != 'labeled' && contains(github.event.pull_request.labels.*.name, 'run-docs'))
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Determine Version Path
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            echo "DOCS_VERSION_PATH=${{ github.ref_name }}" >> $GITHUB_ENV
+          else
+            echo "DOCS_VERSION_PATH=main" >> $GITHUB_ENV
+          fi
+
+      - name: Backfill Historical Tags
+        if: github.event.inputs.backfill_tags == 'true'
+        run: make docs-backfill-tags
 
       - name: Build Documentation
-        run: make docs-generate REPO_NAME=ecs DOCS_VERSION_PATH=main
-
-      - name: Setup Redirects
-        run: |
-          # Function to create a redirect file
-          create_redirect() {
-            local FILE_PATH=$1
-            local TARGET_URL=$2
-            local TITLE=$3
-            
-            mkdir -p "$(dirname "$FILE_PATH")"
-            
-            cat <<EOF > "$FILE_PATH"
-          <!DOCTYPE html>
-          <html>
-          <head>
-              <meta charset="utf-8">
-              <title>$TITLE</title>
-              <link rel="canonical" href="$TARGET_URL">
-              <script>
-                  window.location.href = "$TARGET_URL" + window.location.hash;
-              </script>
-              <meta http-equiv="refresh" content="0;url=$TARGET_URL">
-          </head>
-          <body>
-              <p>Redirecting to <a href="$TARGET_URL">$TITLE</a>...</p>
-          </body>
-          </html>
-          EOF
-          }
-
-          # 1. Root -> latest/documentation/firebladeecs/
-          create_redirect ".build/documentation/index.html" "latest/documentation/firebladeecs/" "Redirecting to Latest Docs"
-
-          # 2. latest/ -> main/documentation/firebladeecs/
-          create_redirect ".build/documentation/latest/index.html" "../main/documentation/firebladeecs/" "Redirecting to Main Docs"
-
-          # 3. latest/documentation/firebladeecs/ -> main/documentation/firebladeecs/
-          create_redirect ".build/documentation/latest/documentation/firebladeecs/index.html" "../../../main/documentation/firebladeecs/" "Redirecting to Main Docs"
-
-          # 4. documentation/firebladeecs/ -> main/documentation/firebladeecs/
-          create_redirect ".build/documentation/documentation/firebladeecs/index.html" "../../main/documentation/firebladeecs/" "Redirecting to Main Docs"
+        run: make docs-generate REPO_NAME=ecs DOCS_VERSION_PATH=${{ env.DOCS_VERSION_PATH }}
 
       - name: Check Documentation Quality
         run: |
           make docs-check-coverage
           make docs-check-links
 
-      - name: Upload artifact
+      - name: Persist to gh-pages
+        if: github.event_name != 'pull_request'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          TMP_GH_PAGES=$(mktemp -d /tmp/gh-pages-XXXXXX)
+          if git fetch origin gh-pages:refs/remotes/origin/gh-pages 2>/dev/null; then
+              git clone --branch gh-pages "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" "$TMP_GH_PAGES"
+          else
+              git init "$TMP_GH_PAGES"
+              (
+                cd "$TMP_GH_PAGES"
+                git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+                git checkout -b gh-pages
+              )
+          fi
+          rsync -a --delete --exclude '.git' .build/documentation/ "$TMP_GH_PAGES/"
+          (
+            cd "$TMP_GH_PAGES"
+            git add -A
+            if ! git diff-index --quiet HEAD 2>/dev/null; then
+              git commit -m "Update documentation for ${{ env.DOCS_VERSION_PATH }}"
+              git push origin gh-pages
+            else
+              echo "No changes to commit to gh-pages"
+            fi
+          )
+          rm -rf "$TMP_GH_PAGES"
+
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v5
         with:
+          path: .build/documentation
+
+      - name: Upload preview artifact
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-preview
           path: .build/documentation
 
   deploy:
     name: Deploy to GitHub Pages
     needs: build-docs
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -96,21 +114,16 @@ jobs:
   smoke-test:
     name: Post-Deployment Smoke Test
     needs: deploy
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     steps:
       - name: Check Documentation URL
         run: |
-          # Wait a few seconds for CDN propagation
           sleep 10
-          # Verify the versioned documentation path exists
           curl --fail -sL https://fireblade-engine.github.io/ecs/main/documentation/firebladeecs/ | grep -q "Documentation"
           echo "Documentation is live at /ecs/main/"
       
-      - name: Check Root Redirect
+      - name: Check Root Redirects
         run: |
-          # Verify that the root URL redirects correctly
-          RESPONSE=$(curl -sI https://fireblade-engine.github.io/ecs/ | head -n 1)
-          # Note: GitHub Pages might return 200 with the redirect meta tag, or a 301/302 if configured at the DNS level.
-          # Since we use a meta/JS redirect, we check for a 200 OK and then the content.
           curl -s https://fireblade-engine.github.io/ecs/ | grep -q "Redirecting to Latest Docs"
           echo "Root redirect is live at /ecs/ and points to latest docs"

@@ -14,7 +14,7 @@ DOCS_VERSION_PATH ?= main
 # The full base path for hosting
 HOSTING_BASE_PATH ?= $(REPO_NAME)/$(DOCS_VERSION_PATH)
 
-.PHONY: setup lint lint-fix test test-coverage testReadme build-debug build-release docs docs-preview docs-generate docs-coverage docs-check-coverage docs-check-links preview-analysis-docs generate-docs-githubpages pre-commit clean benchmark
+.PHONY: setup lint lint-fix test test-coverage testReadme build-debug build-release docs docs-preview docs-generate docs-generate-all docs-coverage docs-check-coverage docs-check-links preview-analysis-docs generate-docs-githubpages pre-commit clean benchmark
 
 # --- Setup ---
 
@@ -78,15 +78,10 @@ docs-preview:
 	swift package --disable-sandbox preview-documentation --target FirebladeECS
 
 docs-generate:
-	mkdir -p .build/documentation/$(DOCS_VERSION_PATH)
-	# Hosts FirebladeECS only: a second target in the same output path overwrites the shared navigator index.
-	swift package --disable-sandbox \
-		--allow-writing-to-directory .build/documentation \
-		generate-documentation --target FirebladeECS \
-		--disable-indexing \
-		--transform-for-static-hosting \
-		--hosting-base-path $(HOSTING_BASE_PATH) \
-		--output-path .build/documentation/$(DOCS_VERSION_PATH) $(XCS_FORMATTER)
+	./Scripts/sync-documentation.sh
+
+docs-backfill-tags:
+	./Scripts/backfill-doc-tags.sh
 
 DOCS_COVERAGE_THRESHOLD ?= 95
 

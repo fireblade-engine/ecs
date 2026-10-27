@@ -14,86 +14,43 @@ This is a **dependency free**, **lightweight**, **fast** and **easy to use** [En
 
 Coming from 1.x? Read the [migration guide](https://fireblade-engine.github.io/ecs/documentation/firebladeecs/migratingtofirebladeecs2) first, and see the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) or the [documentation](https://fireblade-engine.github.io/ecs) to get started.
 
-## 🚀 Getting Started
+---
 
-These instructions will get you a copy of the project up and running on your local machine and provide a code example.
-
-### 📋 Prerequisites
-
-* [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager)
-* [Homebrew](https://brew.sh/) - (optional)
-* [Mint](https://github.com/mintable/mint) for tool management - (optional)
-* [Swiftlint](https://github.com/realm/SwiftLint) for linting - (optional)
-* [SwiftEnv](https://swiftenv.fuller.li/) for Swift version management - (optional)
-
-### 💻 Installing
-
-Fireblade ECS 2 needs [Swift 6.2](https://swift.org/) or later and the [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager). It runs on macOS, iOS, tvOS, watchOS, visionOS, Linux, Windows and WebAssembly.
-
-Extend the following lines in your `Package.swift` file or use it to create a new project.
-
-```swift
-// swift-tools-version:6.2
-
-import PackageDescription
-
-let package = Package(
-    name: "YourPackageName",
-    dependencies: [
-        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "2.0.0")
-    ],
-    targets: [
-        .target(
-            name: "YourTargetName",
-            dependencies: [
-                .product(name: "FirebladeECS", package: "ecs")
-            ])
-    ]
-)
-
-```
-
-The package provides three products:
-
-| Product | Provides | Dependencies |
-| --- | --- | --- |
-| `FirebladeECS` | `Nexus`, `Entity`, `Family`, `Single`, events, snapshots | none |
-| `FirebladeECSMacros` | the `@Component` and `@FamilyTraits` macros | [swift-syntax](https://github.com/swiftlang/swift-syntax) |
-| `FirebladeFSM` | `EntityStateMachine`, `EntityState`, component providers | `FirebladeECS` |
-
-**Import rule:** `FirebladeECSMacros` and `FirebladeFSM` do not re-export `FirebladeECS`. Add each product you use to the target and import `FirebladeECS` in every file next to the module you need:
+## ⚡ 1-Minute Quickstart
 
 ```swift
 import FirebladeECS
-import FirebladeECSMacros   // only where @Component or @FamilyTraits is used
-import FirebladeFSM         // only where the state machine is used
+
+struct Position: Component { var x = 0, y = 0 }
+struct Velocity: Component { var dx = 0, dy = 0 }
+
+let nexus = Nexus()
+let entity = nexus.createEntity {
+    Position(x: 0, y: 0)
+    Velocity(dx: 1, dy: 2)
+}
+
+let family = nexus.family(requiresAll: Position.self, Velocity.self)
+family.forEach(reading: Velocity.self, writing: Position.self) { velocity, position in
+    position.x += velocity.dx
+    position.y += velocity.dy
+}
+print(entity.get(Position.self)!) // Position(x: 1, y: 2)
 ```
 
-## 📝 Code Example
+---
 
-### 🏛️ Nexus
+## 🚀 Tier 1: Core ECS Essentials
 
-The core element in the Fireblade-ECS is the [Nexus](https://en.wiktionary.org/wiki/nexus#Noun). 
-It acts as a centralized way to store, access and manage entities and their components. 
-You may use more than one `Nexus` at a time.
-
-Initialize a `Nexus` with
+### The Nexus
+The core element in Fireblade-ECS is the [Nexus](https://en.wiktionary.org/wiki/nexus#Noun). It acts as a centralized manager to store, access, and manage entities and their components. You may use more than one `Nexus` at a time.
 
 ```swift
-let nexus = Nexus()                        // archetype storage (default)
-let churning = Nexus(storage: .sparseSet)  // for worlds that add and remove components constantly
+let nexus = Nexus() // archetype storage (default)
 ```
 
-### 👤 Entities
-
-then create entities by letting the `Nexus` generate them.
-
-```swift
-// an entity without components
-let newEntity = nexus.createEntity()
-```
-
-Components are value types. Conform a struct or enum to the `Component` protocol
+### Defining & Managing Components & Entities
+Components are value types conforming to the `Component` protocol:
 
 ```swift
 struct Position: Component {
@@ -101,52 +58,41 @@ struct Position: Component {
     var y: Int = 0
 }
 ```
-and `set` values of it on an `Entity`. Setting adds the component, or replaces the one the entity already has.
+
+Create entities and assign or modify components:
 
 ```swift
+let newEntity = nexus.createEntity()
 newEntity.set(Position(x: 1, y: 2))
-```
 
-Reading a component returns a **copy**. Change the stored component with `modify`, a subscript or `set`:
+// Reading returns a copy
+let copy = newEntity.get(Position.self)
 
-```swift
-let copy = newEntity.get(Position.self)                      // Position?, a copy
-newEntity.modify(Position.self) { $0.x += 1 }                // in place, false if missing
-newEntity[Position.self]?.y += 1                             // in place through the subscript
-newEntity.modify(Position.self, default: Position()) { $0.x += 1 }  // adds the default if missing
-```
+// Modifying in place
+newEntity.modify(Position.self) { $0.x += 1 }
+newEntity[Position.self]?.y += 1
+newEntity.modify(Position.self, default: Position()) { $0.x += 1 }
 
-You can be more efficient by assigning components while creating an entity.
-
-```swift
-// an entity with two components assigned.
+// Creating entities with components inline or in bulk
 nexus.createEntity {
     Position(x: 1, y: 2)
     Velocity(dx: 1, dy: 0)
 }
 
-// bulk create entities with multiple components assigned.
 nexus.createEntities(count: 100) { _ in
     Position()
     Velocity()
 }
-
 ```
-### 👪 Families
 
-This ECS uses a grouping approach for entities with the same component types to optimize cache locality and ease up access to them.   
-Entities with the __same component types__ may belong to one `Family`. 
-A `Family` has entities as members and component types as family traits.
-
-Create a family by calling `.family` with a set of traits on the nexus.
-A family that contains only entities with a `Position` and `Velocity` component, but no `Frozen` component is created by
+### Families & Fast-Path Systems
+Entities with the same component types belong to a `Family`. Create families by calling `.family` with component traits:
 
 ```swift
-let family = nexus.family(requiresAll: Position.self, Velocity.self,
-                          excludesAll: Frozen.self)
+let family = nexus.family(requiresAll: Position.self, Velocity.self, excludesAll: Frozen.self)
 ```
 
-Update the members with `forEach(reading:writing:)`. The read components arrive as copies, the written ones as `inout`, and the changes land in the storage. This is the fast path: no allocation and no lookup per member.
+Update members with `forEach(reading:writing:)` for the archetype-optimized fast path (no allocation or per-member lookup):
 
 ```swift
 struct Frozen: Component {}
@@ -177,44 +123,88 @@ final class MovementSystem {
 > }
 > ```
 >
-> The compiler cannot catch it. Write with `forEach(reading:writing:)`, `entity.modify` or `entity.set`. Plain `for` loops are fine for read-only systems.
+> The compiler cannot catch it. Always use `forEach(reading:writing:)`, `entity.modify`, or `entity.set` for mutations. Plain `for` loops are fine for read-only iteration or accessing `.entityAndComponents` / `.entities`.
 
-Families conform to the [Sequence](https://developer.apple.com/documentation/swift/sequence) protocol for read-only access.
-To get family entities and components at the same time call `family.entityAndComponents`.
-If you are only interested in a family's entities call `family.entities`.
+Families conform to `Sequence` for read-only iteration:
 
 ```swift
-func inspect(_ family: Family<Position, Velocity>) {
-    for (position, velocity) in family {
-        _ = (position.x, velocity.dx)   // read-only copies
-    }
-    for (entity, position, _) in family.entityAndComponents {
-        _ = (entity.identifier, position)
-    }
-    for entity in family.entities {
-        entity.modify(Position.self) { $0.x = 0 }   // write through the entity
-    }
+for (position, velocity) in family {
+    _ = (position.x, velocity.dx) // read-only copies
+}
+for (entity, position, _) in family.entityAndComponents {
+    _ = (entity.identifier, position)
+}
+for entity in family.entities {
+    entity.modify(Position.self) { $0.x = 0 }
 }
 ```
 
-With the `FirebladeECSMacros` product a family can be declared once as a type, see the [documentation](https://fireblade-engine.github.io/ecs):
+---
+
+## 🧩 Tier 2: Ergonomics with Macros (`FirebladeECSMacros`)
+
+### `@Component` Macro
+The `FirebladeECSMacros` product provides the `@Component` macro, which automatically implements component protocols based on stored properties:
+
+| Protocol | Generated | Enables |
+| --- | --- | --- |
+| `RegistrableComponent` | stable `componentTypeName` | `nexus.register(_:)`, `nexus.registeredComponentTypes`, `nexus.componentType(named:)` |
+| `CloneableComponent` | `init(cloning:context:)`, `clone(context:)` | `entity.clone()`, `nexus.clone(entities:)`, `nexus.clone(into:)` with remapped references |
+| `SerializableComponent` | `CodingKeys`, `init(from:)`, `encode(to:)` | `nexus.encodeSnapshot(...)`, `nexus.decodeSnapshot(...)` |
+| `InspectableComponent` | `componentProperties` (name, type, key path) | Generic runtime inspection (e.g. editors) |
+| `DefaultInitializable` | `init()` if all properties have defaults | `entity[\Position.x] = 1`, state machines |
+
+Use `@ComponentIgnored` to skip specific properties from serialization or inspection, or configure exclusion flags:
+
+```swift
+@Component
+struct Transform {
+    var position: SIMD3<Float> = .zero
+    var parent: EntityIdentifier?
+    @ComponentIgnored var cachedMatrix: [Float] = []
+}
+
+@Component(excluding: .serializable)
+struct RenderHandle: @unchecked Sendable {
+    var handle: Int = 0
+}
+```
+
+### `@FamilyTraits` Macro
+Declare families cleanly as types using `@FamilyTraits`:
 
 ```swift
 @FamilyTraits(reading: Velocity.self, writing: Position.self, excluding: Frozen.self)
 struct Movers {}
 
-Movers(in: nexus).forEach { velocity, position in position.x += velocity.dx }
+Movers(in: nexus).forEach { velocity, position in
+    position.x += velocity.dx
+}
 ```
 
-### 🧑 Singles
+---
 
-A `Single` on the other hand is a special kind of family that holds exactly **one** entity with exactly **one** component for the entire lifetime of the Nexus. This may come in handy if you have components that have a [Singleton](https://en.wikipedia.org/wiki/Singleton_(mathematics)) character. Single components must conform to the `SingleComponent` protocol and will not be available through regular family iteration.
+## 🔄 Tier 3: Lifecycle, State & Persistence
+
+### Generational Entity Identifiers
+An `EntityIdentifier` consists of a slot index and generation. When an entity is destroyed, its identifier becomes stale and safely rejects subsequent operations:
+
+```swift
+let id = newEntity.identifier
+nexus.destroy(entity: newEntity)
+nexus.isAlive(id) // false
+nexus.entity(id)  // nil
+```
+
+### Singles
+A `Single` holds exactly one entity with exactly one component for the lifetime of the `Nexus`, representing singleton-like state.
 
 ```swift
 struct GameState: SingleComponent {
     var quitGame: Bool = false
 }
-class GameLogicSystem {
+
+final class GameLogicSystem {
     let gameState: Single<GameState>
     
     init(nexus: Nexus) {
@@ -222,158 +212,132 @@ class GameLogicSystem {
     }
     
     func update() {
-        // `component` is a read-only copy: write with `modify` or `set`
         gameState.modify { $0.quitGame = true }
-        
-        // entity access is provided as well
         _ = gameState.entity
     }
 }
-
 ```
 
-### 🆔 Entity identifiers
-
-An `EntityIdentifier` is a 64 bit value of slot index and generation. When an entity is destroyed, its identifier goes stale and never matches a later entity in the same slot:
-
-```swift
-let id = newEntity.identifier
-nexus.destroy(entity: newEntity)
-nexus.isAlive(id)    // false
-nexus.entity(id)     // nil
-```
-
-### 🔗 Serialization
-
-
-To serialize/deserialize entities you must conform their assigned components to the `Codable` protocol.  
-Conforming components can then be serialized per family like this:
+### World Snapshots & Cloning
+Clone worlds or encode/decode snapshots of families or entire nexuses:
 
 ```swift
-// MyComponent and YourComponent both conform to Component and Codable protocols.
-let nexus = Nexus()
-let family = nexus.family(requiresAll: MyComponent.self, YourComponent.self)
-
-// JSON encode entities from given family.
-var jsonEncoder = JSONEncoder()
-let encodedData = try family.encodeMembers(using: &jsonEncoder)
-
-// Decode entities into given family from JSON. 
-// The decoded entities will be added to the nexus.
-var jsonDecoder = JSONDecoder()
-let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
-
-```
-
-### 🧩 Component Macro
-
-The `FirebladeECSMacros` product provides the `@Component` macro. It turns a `struct` or `enum` into a component and implements a set of component protocols from its stored properties, so you don't have to write that code by hand:
-
-| Protocol | Generated | Enables |
-| --- | --- | --- |
-| `RegistrableComponent` | stable `componentTypeName` (fully qualified type name; declare `static let componentTypeName` to override it) | `nexus.register(_:)`, `nexus.registeredComponentTypes`, `nexus.componentType(named:)` |
-| `CloneableComponent` | `init(cloning:context:)`, `clone(context:)` | `entity.clone()`, `nexus.clone(entities:)`, `nexus.clone(into:)` with remapped entity references |
-| `SerializableComponent` | `CodingKeys`, `init(from:)`, `encode(to:)` | `nexus.encodeSnapshot(using:handling:)`, `nexus.decodeSnapshot(from:using:)` |
-| `InspectableComponent` | `componentProperties` (name, type and key path for each property) | generic inspection, e.g. in editors |
-| `DefaultInitializable` | `init()` if every stored property has a default value | `entity[\Position.x] = 1`, state machines |
-
-Add the product to your target:
-
-```swift
-.target(
-    name: "YourTargetName",
-    dependencies: [.product(name: "FirebladeECSMacros", package: "ecs")])
-```
-
-```swift
-import FirebladeECS
-import FirebladeECSMacros
-
-@Component
-struct Transform {
-    var position: SIMD3<Float> = .zero
-    var parent: EntityIdentifier?
-    @ComponentIgnored var cachedMatrix: [Float] = []  // still cloned, but not serialized or inspected
-}
-
-@Component(excluding: .serializable)  // runtime-only component
-struct RenderHandle: @unchecked Sendable {
-    var handle: Int = 0
-}
-
-let nexus = Nexus()
-try nexus.register([Transform.self, RenderHandle.self])
-
-// Clone a whole world; entity references (`parent`) are remapped to the clones.
 let playMode = Nexus()
 try nexus.clone(into: playMode)
 
-// Export and import all serializable components, keyed by their stable type names.
+// Snapshots
 var encoder = JSONEncoder()
 let data = try nexus.encodeSnapshot(using: &encoder, handling: .skip)
 var decoder = JSONDecoder()
 try playMode.decodeSnapshot(from: data, using: &decoder)
+
+// Family serialization
+let family = nexus.family(requiresAll: MyComponent.self)
+let encodedData = try family.encodeMembers(using: &jsonEncoder)
+let decodedEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
 ```
 
-Component types are registered automatically the first time a value is set. Register them explicitly before decoding snapshots that reference them. All protocols can also be implemented by hand without the macro.
+---
 
-Snapshots start with a `formatVersion` and keep the original entity identifiers, including their generations (older versions still load). Decoding creates new entities, remaps entity references to them, and rejects snapshots written in a newer format version.
+## ⚙️ Tier 4: Advanced Architecture & Extensions
 
-## 🔀 Entity State Machines
+### Storage Trade-offs
+- **Archetype Storage (Default):** Entities with identical component combinations are stored in dense, cache-local memory arrays. Optimized for fast, linear iteration across families.
+- **Sparse Set Storage (`Nexus(storage: .sparseSet)`):** Ideal for worlds with extremely high structural churn (frequent component additions and removals).
 
-The optional `FirebladeFSM` product provides `EntityStateMachine`, `EntityState` and the component providers. A state machine swaps the components of an entity when it changes state. Add the product next to `FirebladeECS` and import both modules:
-
-```swift
-.target(
-    name: "YourTargetName",
-    dependencies: [
-        .product(name: "FirebladeECS", package: "ecs"),
-        .product(name: "FirebladeFSM", package: "ecs")
-    ])
-```
+### Entity State Machines
+The optional `FirebladeFSM` product provides `EntityStateMachine`, `EntityState`, and component providers to swap components dynamically when an entity changes states.
 
 ```swift
 import FirebladeECS
 import FirebladeFSM
 ```
 
-## 🧪 Demo
+---
 
-See the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) to get started.
+## 📦 Installation & Setup
 
-## 📖 Documentation
+### Prerequisites
+* [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager)
+* [Homebrew](https://brew.sh/) - (optional)
+* [Mint](https://github.com/mintable/mint) for tool management - (optional)
+* [SwiftLint](https://github.com/realm/SwiftLint) for linting - (optional)
+* [SwiftEnv](https://swiftenv.fuller.li/) for Swift version management - (optional)
 
-Consult the [online documentation](https://fireblade-engine.github.io/ecs), or preview it locally:
+### `Package.swift` Integration
+Fireblade ECS requires Swift 6.2 or later.
 
-- `make docs-preview`
+```swift
+// swift-tools-version:6.2
 
-## 💁 How to contribute
+import PackageDescription
 
-If you want to contribute please see the [CONTRIBUTION GUIDE](CONTRIBUTING.md) first. 
+let package = Package(
+    name: "YourPackageName",
+    dependencies: [
+        .package(url: "https://github.com/fireblade-engine/ecs.git", from: "2.0.0")
+    ],
+    targets: [
+        .target(
+            name: "YourTargetName",
+            dependencies: [
+                .product(name: "FirebladeECS", package: "ecs"),
+                .product(name: "FirebladeECSMacros", package: "ecs"), // optional
+                .product(name: "FirebladeFSM", package: "ecs")       // optional
+            ])
+    ]
+)
+```
 
-To start your project contribution run these in your command line:
+### Products & Import Guidelines
+| Product | Provides | Dependencies |
+| --- | --- | --- |
+| `FirebladeECS` | `Nexus`, `Entity`, `Family`, `Single`, events, snapshots | none |
+| `FirebladeECSMacros` | `@Component` and `@FamilyTraits` macros | [swift-syntax](https://github.com/swiftlang/swift-syntax) |
+| `FirebladeFSM` | `EntityStateMachine`, `EntityState`, component providers | `FirebladeECS` |
 
+**Import Rule:** `FirebladeECSMacros` and `FirebladeFSM` do not re-export `FirebladeECS`. Import `FirebladeECS` alongside any auxiliary module:
+
+```swift
+import FirebladeECS
+import FirebladeECSMacros   // only where macros are used
+import FirebladeFSM         // only where state machines are used
+```
+
+---
+
+## 🧪 Demo & Documentation
+
+- **Demo App:** Explore the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo).
+- **Documentation:** Read the [online documentation](https://fireblade-engine.github.io/ecs) or preview it locally:
+  - `make docs-preview`
+
+---
+
+## 💁 Contributing & Development
+
+If you want to contribute, please review the [CONTRIBUTION GUIDE](CONTRIBUTING.md) first.
+
+To set up your development environment:
 1. `git clone git@github.com:fireblade-engine/ecs.git fireblade-ecs`
 2. `cd fireblade-ecs`
 3. `make setup`
 
-Before commiting code please ensure to run:
-
+Before committing code, ensure checks pass:
 - `make pre-commit`
 
-To measure runtime performance run `make benchmark` (see [Benchmarks/README.md](Benchmarks/README.md)).
+To measure performance:
+- `make benchmark` (see [Benchmarks/README.md](Benchmarks/README.md))
 
-This project is currently maintained by [Christian Treffs](https://github.com/ctreffs).   
-See also the list of [contributors](https://github.com/fireblade-engine/ecs/contributors) who participated in this project.
+Maintained by [Christian Treffs](https://github.com/ctreffs) and [contributors](https://github.com/fireblade-engine/ecs/contributors).
 
-## 🔏 License
+---
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
+## 🔏 License & Acknowledgments
 
-## 🙏 Acknowledgments
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-Inspired by  
-
+Inspired by:
 - [Ashley](https://github.com/libgdx/ashley)
 - [Entitas](https://github.com/sschmid/Entitas-CSharp)
 - [EntitasKit](https://github.com/mzaks/EntitasKit)

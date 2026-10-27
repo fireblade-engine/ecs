@@ -65,7 +65,7 @@ import FirebladeFSM         // only where the state machine is used
 
 * [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager)
 * [Homebrew](https://brew.sh/) - (optional)
-* [Mint](https://github.com/mintable/mint) for tool management - (optional)
+* [Mint](https://github.com/yonaskolb/Mint) for tool management - (optional)
 * [SwiftLint](https://github.com/realm/SwiftLint) for linting - (optional)
 * [SwiftEnv](https://swiftenv.fuller.li/) for Swift version management - (optional)
 

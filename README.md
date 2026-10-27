@@ -1,10 +1,11 @@
 # Fireblade ECS (Entity-Component System)
 [![license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 [![macOS](https://github.com/fireblade-engine/ecs/actions/workflows/ci-macos.yml/badge.svg)](https://github.com/fireblade-engine/ecs/actions/workflows/ci-macos.yml)
+[![iOS](https://github.com/fireblade-engine/ecs/actions/workflows/ci-ios.yml/badge.svg)](https://github.com/fireblade-engine/ecs/actions/workflows/ci-ios.yml)
 [![Linux](https://github.com/fireblade-engine/ecs/actions/workflows/ci-linux.yml/badge.svg)](https://github.com/fireblade-engine/ecs/actions/workflows/ci-linux.yml)
 [![Windows](https://github.com/fireblade-engine/ecs/actions/workflows/ci-windows.yml/badge.svg)](https://github.com/fireblade-engine/ecs/actions/workflows/ci-windows.yml)
 [![WASM](https://github.com/fireblade-engine/ecs/actions/workflows/ci-wasm.yml/badge.svg)](https://github.com/fireblade-engine/ecs/actions/workflows/ci-wasm.yml)
-[![documentation](https://github.com/fireblade-engine/ecs/workflows/Documentation/badge.svg)](https://fireblade-engine.github.io/ecs)  
+[![documentation](https://github.com/fireblade-engine/ecs/actions/workflows/docs.yml/badge.svg)](https://fireblade-engine.github.io/ecs)  
 [![codecov](https://codecov.io/gh/fireblade-engine/ecs/branch/main/graph/badge.svg)](https://codecov.io/gh/fireblade-engine/ecs)
 [![spi-swift-versions](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Ffireblade-engine%2Fecs%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/fireblade-engine/ecs)
 [![spi-swift-platforms](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Ffireblade-engine%2Fecs%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/fireblade-engine/ecs)
@@ -20,6 +21,8 @@ These instructions will get you a copy of the project up and running on your loc
 ### 📋 Prerequisites
 
 * [Swift Package Manager (SPM)](https://github.com/apple/swift-package-manager)
+* [Homebrew](https://brew.sh/) - (optional)
+* [Mint](https://github.com/mintable/mint) for tool management - (optional)
 * [Swiftlint](https://github.com/realm/SwiftLint) for linting - (optional)
 * [SwiftEnv](https://swiftenv.fuller.li/) for Swift version management - (optional)
 

@@ -2,8 +2,8 @@ name: Linux
 
 on:
   push:
-    branches: [ master, main ]
-  # PRs into master run automatically. PRs into any other branch (e.g. stacked PRs) run when they carry
+    branches: [ main, master ]
+  # PRs into main run automatically. PRs into any other branch (e.g. stacked PRs) run when they carry
   # the `run-ci` label (all platforms) or `run-ci-linux` (this platform only); later pushes then rerun.
   pull_request:
     types: [ opened, synchronize, reopened, labeled ]
@@ -52,7 +52,7 @@ jobs:
 
       # Caches only depend on the toolchain and the dependency graph, so they hold the expensive
       # swift-syntax build; this package's own modules are rebuilt incrementally.
-      # PRs restore master's cache, only master saves it.
+      # PRs restore main's cache, only main saves it.
       - name: Restore Build Cache
         id: cache
         uses: actions/cache/restore@v6

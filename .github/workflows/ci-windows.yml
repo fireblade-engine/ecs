@@ -2,8 +2,8 @@ name: Windows
 
 on:
   push:
-    branches: [ master, main ]
-  # PRs into master run automatically. PRs into any other branch (e.g. stacked PRs) run when they carry
+    branches: [ main, master ]
+  # PRs into main run automatically. PRs into any other branch (e.g. stacked PRs) run when they carry
   # the `run-ci` label (all platforms) or `run-ci-windows` (this platform only); later pushes then rerun.
   pull_request:
     types: [ opened, synchronize, reopened, labeled ]

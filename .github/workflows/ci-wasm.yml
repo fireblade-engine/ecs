@@ -2,8 +2,8 @@ name: WASM
 
 on:
   push:
-    branches: [master, main]
-  # PRs into master run automatically. PRs into any other branch (e.g. stacked PRs) run when they carry
+    branches: [main, master]
+  # PRs into main run automatically. PRs into any other branch (e.g. stacked PRs) run when they carry
   # the `run-ci` label (all platforms) or `run-ci-wasm` (this platform only); later pushes then rerun.
   pull_request:
     types: [ opened, synchronize, reopened, labeled ]
@@ -68,7 +68,7 @@ jobs:
           done
           exit 1
 
-      # PRs restore master's cache, only master saves it.
+      # PRs restore main's cache, only main saves it.
       - name: Restore Build Cache
         id: cache
         uses: actions/cache/restore@v6

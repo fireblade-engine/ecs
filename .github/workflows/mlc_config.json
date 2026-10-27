@@ -8,6 +8,9 @@
         },
         {
             "pattern": "^\\./tracks/"
+        },
+        {
+            "pattern": "migratingtofirebladeecs2"
         }
     ],
     "httpHeaders": [

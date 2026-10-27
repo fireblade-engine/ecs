@@ -94,7 +94,7 @@
     {
       "customType": "regex",
       "description": "Exact Swift toolchain versions pinned in CI matrices (swift-full), annotated with a renovate comment",
-      "managerFilePatterns": [
+      "fileMatch": [
         "/^\\.github/workflows/.+\\.ya?ml$/"
       ],
       "matchStrings": [

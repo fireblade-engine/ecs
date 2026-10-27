@@ -32,6 +32,7 @@ Add the product to your target. It re-exports `FirebladeECS`.
 ### Declaring components
 
 ```swift
+import FirebladeECS
 import FirebladeECSMacros
 
 @Component

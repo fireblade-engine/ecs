@@ -3,6 +3,7 @@
 //  FirebladeECSMacrosTests
 //
 
+import FirebladeECS
 import FirebladeECSMacros
 
 /// Declared in its own file: `ImpliedConformanceTests.swift` looks up `Kind` before it uses the type as a

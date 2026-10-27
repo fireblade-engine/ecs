@@ -248,6 +248,7 @@ Add the product to your target:
 ```
 
 ```swift
+import FirebladeECS
 import FirebladeECSMacros
 
 @Component

@@ -5,6 +5,8 @@
 //  Created by Christian Treffs on 25.10.26.
 //
 
+import FirebladeECS
+
 /// Declares a struct as a family of entities and generates its ``FamilyTraitsProviding`` conformance.
 ///
 /// ```swift

@@ -62,7 +62,7 @@ There is no storage protocol: the set of storages is closed, so each storage com
 
 - The sparse-set storage stores components per type in one dense array with a paged sparse index, and each entity holds a bitset of its component types. Adding, removing and looking up a component touches one type's data only. The archetype storage stores entities with the same component types together in a table with a column per type.
 - Every component type has a dense ``Component/componentIndex``. Plain conformances get it lazily, in order of first use and shared by all nexuses of the process. There is no limit on the number of component types.
-- Public API that returned or took component storage internals is unchanged. ``ManagedContiguousArray`` is no longer used by ``Nexus``; it stays available until it is removed.
+- Public API that returned or took component storage internals is unchanged. `ManagedContiguousArray` is removed; ``Nexus`` no longer uses it. Use ``UnorderedSparseSet`` or a Swift `ContiguousArray`.
 - The components an entity iterates, and the components of a snapshot or clone, come in ``Component/componentIndex`` order now instead of hash order.
 
 ### Events
@@ -123,6 +123,24 @@ single.set(GameState(value: x))      // replaces the component, delivers Compone
 
 - ``ComponentSingletonProvider`` creates its value on first use and hands a copy of it to every entity. It used to hand the same instance to every entity, so a change through one entity was visible on all. Now each entity owns its copy. The name is kept for source compatibility; ComponentValueProvider would describe it better and may replace it.
 - Values have no identity, so a provider is identified by the provider object: ``ComponentInstanceProvider/identifier`` and ``ComponentSingletonProvider/identifier`` are unique per provider. When an entity changes state, a component stays only if both states share the same provider object (`withProvider(_:)`). Two ``ComponentInstanceProvider``s holding equal values are different providers and the component is removed and added again.
+
+### Removed API
+
+- `Nexus.get(safe:for:)`, `Nexus.get(unsafe:for:)`, `Nexus.get(safe:)` and `Nexus.get(unsafe:)` are removed. Resolve the entity with ``Nexus/entity(_:)`` and read the component with ``Entity/get(_:)``, which returns `nil` when the entity does not have it.
+- `ManagedContiguousArray` is removed. It was a container of the 1.x component storage and nothing in the package uses it any more.
+- `FirebladeECSMacros` no longer re-exports `FirebladeECS`. Add `import FirebladeECS` next to `import FirebladeECSMacros` in every file that uses the library types.
+- The `assign` methods stay deprecated: ``Entity/set(_:)-(Component)`` replaces `Entity.assign` and `Nexus.assign`. The compiler suggests the rename.
+
+```swift
+// before
+import FirebladeECSMacros
+let position: Position? = nexus.get(safe: entityId)
+
+// after
+import FirebladeECS
+import FirebladeECSMacros
+let position = nexus.entity(entityId)?.get(Position.self)
+```
 
 ### Spans
 

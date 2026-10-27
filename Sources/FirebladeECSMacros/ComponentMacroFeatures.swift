@@ -5,6 +5,8 @@
 //  Created by Christian Treffs on 08.10.26.
 //
 
+import FirebladeECS
+
 /// The features the ``Component(excluding:)`` macro implements.
 ///
 /// Registration (``RegistrableComponent``) is always implemented.

@@ -81,65 +81,6 @@ extension Nexus {
         assign(components: components, to: entity.identifier)
     }
 
-    /// Safely retrieves a component by its identifier for a given entity.
-    /// - Parameters:
-    ///   - componentId: The identifier of the component.
-    ///   - entityId: The identifier of the entity.
-    /// - Returns: The component instance if found; otherwise, `nil`.
-    /// - Complexity: O(1)
-    @available(*, deprecated, message: "Use entity.get(_:) instead. Get the entity for an identifier with nexus.entity(_:).")
-    @inlinable
-    public final func get(safe componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component? {
-        component(componentId, for: entityId)
-    }
-
-    /// Unsafely retrieves a component by its identifier for a given entity.
-    ///
-    /// - Parameters:
-    ///   - componentId: The identifier of the component.
-    ///   - entityId: The identifier of the entity.
-    /// - Returns: The component instance.
-    /// - Precondition: The component MUST be assigned to the entity.
-    /// - Complexity: O(1)
-    @available(*, deprecated, message: "Use entity.get(_:) instead. Get the entity for an identifier with nexus.entity(_:).")
-    @inlinable
-    public final func get(unsafe componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> Component {
-        unsafeComponent(componentId, for: entityId)
-    }
-
-    /// Safely retrieves a typed component for a given entity.
-    /// - Parameters:
-    ///   - componentId: The identifier of the component.
-    ///   - entityId: The identifier of the entity.
-    /// - Returns: The cast component instance if found; otherwise, `nil`.
-    /// - Complexity: O(1)
-    @available(*, deprecated, message: "Use entity.get(_:) instead. Get the entity for an identifier with nexus.entity(_:).")
-    @inlinable
-    public final func get<C: Component>(safe componentId: ComponentIdentifier, for entityId: EntityIdentifier) -> C? {
-        component(componentId, for: entityId) as? C
-    }
-
-    /// Safely retrieves a typed component for a given entity using the component type's identifier.
-    /// - Parameter entityId: The identifier of the entity.
-    /// - Returns: The component instance if found; otherwise, `nil`.
-    /// - Complexity: O(1)
-    @available(*, deprecated, message: "Use entity.get(_:) instead. Get the entity for an identifier with nexus.entity(_:).")
-    @inlinable
-    public final func get<C: Component>(safe entityId: EntityIdentifier) -> C? {
-        component(for: entityId)
-    }
-
-    /// Unsafely retrieves a typed component for a given entity.
-    /// - Parameter entityId: The identifier of the entity.
-    /// - Returns: The component instance.
-    /// - Precondition: The component MUST be assigned to the entity.
-    /// - Complexity: O(1)
-    @available(*, deprecated, message: "Use entity.get(_:) instead. Get the entity for an identifier with nexus.entity(_:).")
-    @inlinable
-    public final func get<C: Component>(unsafe entityId: EntityIdentifier) -> C {
-        unsafeComponent(for: entityId)
-    }
-
     /// Retrieves a component by its identifier for a given entity.
     /// - Parameters:
     ///   - componentId: The identifier of the component.

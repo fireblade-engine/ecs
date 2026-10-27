@@ -12,6 +12,8 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      contents: write
     steps:
       - name: Checkout main
         uses: actions/checkout@v7

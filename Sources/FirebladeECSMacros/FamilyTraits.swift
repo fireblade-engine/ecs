@@ -31,13 +31,13 @@ import FirebladeECS
 ///   - writing: Required component types the family changes in place.
 ///   - excluding: Component types a member must not have.
 @attached(
-    member,
-    names: named(Bound), named(traits), named(readComponents), named(writeComponents), named(familyIndex),
-    named(family), named(makeFamily), named(init), named(forEach)
+member,
+names: named(Bound), named(traits), named(readComponents), named(writeComponents), named(familyIndex),
+named(family), named(makeFamily), named(init), named(forEach)
 )
 @attached(extension, conformances: FamilyTraitsProviding)
 public macro FamilyTraits(
-    reading: any Component.Type...,
-    writing: any Component.Type...,
-    excluding: any Component.Type...
+reading: any Component.Type...,
+writing: any Component.Type...,
+excluding: any Component.Type...
 ) = #externalMacro(module: "FirebladeECSMacrosImpl", type: "FamilyTraitsMacro")

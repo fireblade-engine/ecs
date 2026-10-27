@@ -41,11 +41,11 @@ import FirebladeECS
 /// - Parameter excluding: Features not to implement, e.g. `.serializable` for runtime-only components.
 @attached(member, names: named(init), named(componentIndex))
 @attached(
-    extension,
-    conformances: Component, RegistrableComponent, CloneableComponent, SerializableComponent, InspectableComponent,
-    DefaultInitializable,
-    names: named(init(cloning:context:)), named(clone(context:)), named(init(from:)),
-    named(encode(to:)), named(CodingKeys), named(componentProperties)
+extension,
+conformances: Component, RegistrableComponent, CloneableComponent, SerializableComponent, InspectableComponent,
+DefaultInitializable,
+names: named(init(cloning:context:)), named(clone(context:)), named(init(from:)),
+named(encode(to:)), named(CodingKeys), named(componentProperties)
 )
 public macro Component(excluding: ComponentMacroFeatures = []) = #externalMacro(module: "FirebladeECSMacrosImpl", type: "ComponentMacro")
 

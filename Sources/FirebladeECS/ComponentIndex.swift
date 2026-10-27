@@ -6,15 +6,15 @@
 //
 
 #if canImport(WinSDK)
-    import WinSDK
+import WinSDK
 #elseif canImport(Darwin)
-    import Darwin
+import Darwin
 #elseif canImport(Glibc)
-    import Glibc
+import Glibc
 #elseif canImport(Musl)
-    import Musl
+import Musl
 #elseif canImport(Bionic)
-    import Bionic
+import Bionic
 #endif
 
 extension Component {
@@ -62,37 +62,37 @@ extension Nexus {
     @usableFromInline
     final class Lock: @unchecked Sendable {
         #if os(Windows)
-            private let handle = UnsafeMutablePointer<SRWLOCK>.allocate(capacity: 1)
+        private let handle = UnsafeMutablePointer<SRWLOCK>.allocate(capacity: 1)
         #elseif !os(WASI)
-            private let handle = UnsafeMutablePointer<pthread_mutex_t>.allocate(capacity: 1)
+        private let handle = UnsafeMutablePointer<pthread_mutex_t>.allocate(capacity: 1)
         #endif
 
         @usableFromInline
         init() {
             #if os(Windows)
-                InitializeSRWLock(handle)
+            InitializeSRWLock(handle)
             #elseif !os(WASI)
-                pthread_mutex_init(handle, nil)
+            pthread_mutex_init(handle, nil)
             #endif
         }
 
         deinit {
             #if !os(WASI)
-                #if !os(Windows)
-                    pthread_mutex_destroy(handle)
-                #endif
-                handle.deallocate()
+            #if !os(Windows)
+            pthread_mutex_destroy(handle)
+            #endif
+            handle.deallocate()
             #endif
         }
 
         @usableFromInline
         func withLock<R>(_ body: () -> R) -> R {
             #if os(Windows)
-                AcquireSRWLockExclusive(handle)
-                defer { ReleaseSRWLockExclusive(handle) }
+            AcquireSRWLockExclusive(handle)
+            defer { ReleaseSRWLockExclusive(handle) }
             #elseif !os(WASI)
-                pthread_mutex_lock(handle)
-                defer { pthread_mutex_unlock(handle) }
+            pthread_mutex_lock(handle)
+            defer { pthread_mutex_unlock(handle) }
             #endif
             return body()
         }

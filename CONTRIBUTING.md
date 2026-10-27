@@ -35,7 +35,7 @@ Note that we have a [code of conduct][ref-code-of-conduct], please follow it in 
 1. Open a [new pull request (PR)][ref-pull-request-new] with the patch.
 2. Ensure the PR description clearly describes the problem and solution. 
 3. Link the relevant **issue** if applicable ([how to link issues in PRs][ref-pull-request-how-to]).
-4. Ensure that [**no tests are failing**][ref-gh-actions] and **coding conventions** are met
+4. Ensure that Swift 6.2+ is used, `make test` and `make lint` pass successfully, and `make pre-commit` succeeds.
 5. Submit the patch and await review.
 
 ### 🎁 You want to suggest or contribute a new feature?
@@ -68,9 +68,9 @@ For any new contributions please consider these guidelines:
 Don't be intimidated by these responsibilities, they are easy to meet if you take your time to develop your feature 😌
 
 - [x] Create issues for any major changes and enhancements that you wish to make. Discuss things transparently and get community feedback.
-- [x] Ensure (cross-)platform compatibility for every change that's accepted. An addition should not reduce the number of platforms that the project supports.
-- [x] Ensure **coding conventions** are met. Lint your code with the project's default tools. Project wide commands are available through the [Makefile][ref-makefile] in the repository root.
-- [x] Add tests for your feature that prove it's working as expected. Code coverage should not drop below its previous value.
+- [x] Ensure (cross-)platform compatibility and Swift 6.2+ requirement for every change that's accepted. An addition should not reduce the number of platforms that the project supports.
+- [x] Ensure **coding conventions** are met. Run `make lint` and `make pre-commit`. Project wide commands are available through the [Makefile][ref-makefile] in the repository root.
+- [x] Add tests for your feature that prove it's working as expected using `make test`. Code coverage should not drop below its previous value.
 - [x] Ensure none of the existing tests are failing after adding your changes.
 - [x] Document your public API code and ensure to add code comments where necessary.
 

@@ -23,9 +23,9 @@ Replace this paragraph with a short description of the incorrect behavior.
 
 ### Information
 
-- **Package version:** What tag or branch of this package are you using? e.g. tag `1.2.3` or branch `main`
-- **Platform version:** Please tell us the version number of your operating system. e.g. `macOS 11.2.3` or `Ubuntu 20.04`
-- **Swift version:** Paste the output of `swift --version` here.
+- **Package version:** What tag or branch of this package are you using? e.g. tag `2.0.0` or branch `main`
+- **Platform version:** Please tell us the version number of your operating system. e.g. `macOS 15` or `Ubuntu 24.04`
+- **Swift version:** Paste the output of `swift --version` here (e.g. Swift `6.2+`).
 
 ### Checklist
 

@@ -8,6 +8,15 @@
   ],
   "packageRules": [
     {
+      "description": "Ignore range updates / version pinning for swift-syntax",
+      "matchDepNames": [
+        "swift-syntax",
+        "swiftlang/swift-syntax",
+        "https://github.com/swiftlang/swift-syntax.git"
+      ],
+      "enabled": false
+    },
+    {
       "description": "Group all Swift package minor and patch updates together",
       "groupName": "Swift non-major dependencies",
       "matchManagers": [

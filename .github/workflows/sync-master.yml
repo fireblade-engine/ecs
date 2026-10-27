@@ -1,26 +1,28 @@
-name: Sync Master
+name: Sync master to main
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+
+concurrency:
+  group: sync-master
+  cancel-in-progress: false
 
 jobs:
   sync:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    timeout-minutes: 5
     steps:
-      - name: Checkout
+      - name: Checkout main
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - name: Push to master
+      - name: Fast-forward master
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch origin main master
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin master:master || git checkout -b master origin/master
           git checkout master
-          git merge --ff-only origin/main
+          git merge origin/main --ff-only
           git push origin master

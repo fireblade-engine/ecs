@@ -87,8 +87,13 @@ family.forEach(reading: Velocity.self, writing: Position.self) { velocity, posit
 The `Nexus` is the central manager that stores, organizes, and indexes entities and their components.
 
 ```swift
-let nexus = Nexus()
+let nexus = Nexus()                            // Archetype storage (default)
+let churningNexus = Nexus(storage: .sparseSet) // Sparse set storage
 ```
+
+Fireblade ECS supports two storage models:
+- **Archetype Storage (Default):** Entities with identical component combinations are packed contiguously in cache-local memory arrays. Highly optimized for linear, fast system iteration.
+- **Sparse Set Storage (`storage: .sparseSet`):** Stores components in separate sparse sets. Ideal for worlds with high structural churn (frequent component addition and removal).
 
 ### Components & Entities
 
@@ -295,40 +300,57 @@ let newEntities = try family.decodeMembers(from: jsonData, using: &jsonDecoder)
 
 ---
 
-## Storage Engines
-
-Fireblade ECS provides two storage models:
-
-- **Archetype Storage (Default):** Entities with identical component combinations are packed contiguously in memory. Highly optimized for linear, cache-dense system iterations.
-- **Sparse Set Storage (`Nexus(storage: .sparseSet)`):** Stores components in separate sparse sets. Optimized for worlds with high structural churn (frequent component addition and removal).
-
----
-
 ## Entity State Machines
 
-The optional `FirebladeFSM` product provides state machines that swap components dynamically on state changes:
+The optional `FirebladeFSM` product provides `EntityStateMachine` to dynamically swap components on an entity when it transitions between states:
 
 ```swift
 import FirebladeECS
 import FirebladeFSM
+
+enum EnemyBehavior {
+    case patrol
+    case attack
+}
+
+struct Patrol: Component, DefaultInitializable {}
+struct Attack: Component, DefaultInitializable {}
+
+let entity = nexus.createEntity()
+let fsm = EntityStateMachine<EnemyBehavior>(entity: entity)
+
+// Define states and assign component types
+fsm.createState(name: .patrol)
+    .addType(Patrol.self)
+
+fsm.createState(name: .attack)
+    .addType(Attack.self)
+
+// Transition state: removes previous state components and adds new state components
+fsm.changeState(name: .attack)
 ```
 
 ---
 
-## Demo & Documentation
+## Documentation
 
-- **Demo App:** Explore the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo).
 - **Online Documentation:** Read the [API Documentation](https://fireblade-engine.github.io/ecs).
-- **Local Preview:** Preview documentation locally:
+- **Local Preview:** Preview documentation locally with:
   ```sh
   make docs-preview
   ```
 
 ---
 
+## Demo
+
+Explore the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) for practical examples, particle simulations, and asteroid games.
+
+---
+
 ## Contributing
 
-Review the [Contribution Guide](CONTRIBUTING.md) before submitting changes.
+This project is maintained by [Christian Treffs](https://github.com/ctreffs) and [contributors](https://github.com/fireblade-engine/ecs/contributors). Please review the [Contribution Guide](CONTRIBUTING.md) before submitting changes.
 
 ### Prerequisites
 
@@ -354,8 +376,6 @@ Review the [Contribution Guide](CONTRIBUTING.md) before submitting changes.
    ```sh
    make benchmark
    ```
-
-Maintained by [Christian Treffs](https://github.com/ctreffs) and [contributors](https://github.com/fireblade-engine/ecs/contributors).
 
 ---
 

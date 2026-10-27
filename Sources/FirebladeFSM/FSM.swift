@@ -21,7 +21,7 @@ public protocol ComponentProvider: Sendable {
     // is not removed. If they are different, the component from the old state is removed
     // and a component for the new state is added.
 
-    /// - Returns: struct/class instance that conforms to Hashable protocol
+    /// - Returns: value that conforms to Hashable protocol
     var identifier: AnyHashable { get }
 
     /// Used to request a component from the provider.

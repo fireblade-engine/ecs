@@ -16,9 +16,8 @@ extension Nexus {
     /// or an entity) while a scoped access runs, a second write access to a type that is being written, a read of a type
     /// that is being written, and two component types that share an index.
     ///
-    /// The scoped-access lock (`lockDepth`, `activeWrites`) guards `modify` and `withComponents`, which product code
-    /// does not call yet: with class components writes go through the references, and the scoped writing
-    /// iteration arrives with value-type components (PR 8/9). Until then only the tests exercise the traps.
+    /// The scoped-access lock (`lockDepth`, `activeWrites`) guards `modify` and `withComponents`, which are the
+    /// only way to change a value-type component in place. Reading a component copies it.
     ///
     /// Soundness of `@exclusivity(unchecked)`: the stored properties change only in structural changes and in the
     /// `beginWrite`/`endWrite`/`lockDepth` bookkeeping. Structural changes are blocked while a scoped access runs

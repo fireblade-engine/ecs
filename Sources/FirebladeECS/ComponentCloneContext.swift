@@ -12,8 +12,8 @@
 /// are kept unchanged.
 ///
 /// Use the `clone(_:)` overloads for every stored property of a ``CloneableComponent``.
-/// Values of all other types are returned unchanged, i.e. value types are copied and
-/// references to class instances are shared.
+/// Values of all other types are returned unchanged: they are copied, and a class instance
+/// stored in a property (not a component itself) is shared between the original and the clone.
 public struct ComponentCloneContext {
     /// The nexus the cloned entities belong to.
     public let nexus: Nexus

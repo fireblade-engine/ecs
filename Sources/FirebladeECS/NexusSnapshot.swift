@@ -7,7 +7,7 @@
 
 /// An encodable view of the entities of a nexus and their serializable components.
 ///
-/// A snapshot references the live component instances and entity identifier generator of the nexus. Encode it right after creation.
+/// A snapshot references the live components and entity identifier generator of the nexus. Encode it right after creation.
 ///
 /// The encoded form starts with the ``formatVersion`` and lists all entities in ascending identifier order,
 /// each with its original identifier (the raw value, here with generation 0) and its components keyed by their stable ``RegistrableComponent/componentTypeName``:

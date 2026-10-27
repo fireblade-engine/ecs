@@ -29,7 +29,7 @@ Replace this paragraph with a short description of the incorrect behavior.
 
 ### Checklist
 
-- [ ] If possible, I've reproduced the issue using the `main`/`master` branch of this package.
+- [ ] If possible, I've reproduced the issue using the `main` branch of this package.
 - [ ] I've searched for existing issues under the issues tab.
 - [ ] The bug is reproducible
 

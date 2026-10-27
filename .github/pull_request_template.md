@@ -46,6 +46,7 @@ Please ensure CI is not broken*
 
 - [ ] I've read the [Contribution Guidelines](https://github.com/fireblade-engine/ecs/blob/main/CONTRIBUTING.md)
 - [ ] I've followed the coding style of the rest of the project.
+- [ ] I've run `make pre-commit` and verified all checks pass.
 - [ ] I've added tests covering all new code paths my change adds to the project (to the extent possible).
 - [ ] I've added benchmarks covering new functionality (if appropriate).
 - [ ] I've verified that my change does not break any existing tests or introduce unexpected benchmark regressions.

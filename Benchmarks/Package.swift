@@ -19,14 +19,9 @@ let package = Package(
         .package(url: "https://github.com/ordo-one/benchmark", .upToNextMajor(from: "1.38.1"))
     ],
     targets: [
-        .target(
-            name: "FirebladeECSV1",
-            path: "Legacy/FirebladeECSV1/Sources/FirebladeECS"
-        ),
         .executableTarget(
             name: "ECSBenchmark",
             dependencies: [
-                "FirebladeECSV1",
                 .product(name: "FirebladeECS", package: "ecs.benchmarks"),
                 .product(name: "Benchmark", package: "benchmark")
             ],

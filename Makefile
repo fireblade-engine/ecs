@@ -14,7 +14,7 @@ DOCS_VERSION_PATH ?= main
 # The full base path for hosting
 HOSTING_BASE_PATH ?= $(REPO_NAME)/$(DOCS_VERSION_PATH)
 
-.PHONY: setup lint lint-fix test test-coverage testReadme build-debug build-release docs docs-preview docs-generate docs-generate-all docs-coverage docs-check-coverage docs-check-links preview-analysis-docs generate-docs-githubpages pre-commit clean benchmark
+.PHONY: setup lint lint-fix test test-coverage testReadme build-debug build-release docs docs-preview docs-generate docs-generate-all docs-coverage docs-check-coverage docs-check-links preview-analysis-docs generate-docs-githubpages pre-commit clean benchmark benchmark-report
 
 # --- Setup ---
 
@@ -128,6 +128,9 @@ generate-docs-githubpages:
 # Runtime benchmarks live in a separate package (Benchmarks/) so the benchmark dependency stays out of FirebladeECS.
 benchmark:
 	cd Benchmarks && swift package benchmark
+
+benchmark-report:
+	./Scripts/generate-benchmark-report.sh
 
 # --- Workflows ---
 

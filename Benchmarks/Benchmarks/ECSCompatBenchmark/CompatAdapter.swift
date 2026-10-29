@@ -70,7 +70,8 @@ enum CompatSuite {
 
     /// Sets `component`, replacing an existing instance (`Entity.set` keeps the existing one on 1.x).
     static func replace(_ component: some Component, on entity: Entity) {
-        entity.remove(type(of: component))
+        // 1.4.3 traps when removing a component the entity does not have.
+        if entity.has(type(of: component)) { entity.remove(type(of: component)) }
         entity.set(component)
     }
 

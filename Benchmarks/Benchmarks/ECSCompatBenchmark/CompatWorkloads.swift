@@ -192,8 +192,11 @@ enum CompatWorkload: String, CaseIterable, Sendable {
         case .removeAdd:
             for (index, entity) in state.entities.enumerated() {
                 outcome.operations += 1
-                if entity.remove(CompatFirstComponent.self) { outcome.hits += 1 }
+                // `remove` returns Bool on value revisions and Entity on 1.x, so the result is not used; a completed
+                // remove/add pair counts as one hit and the tests verify occupancy.
+                entity.remove(CompatFirstComponent.self)
                 entity.set(CompatFirstComponent(value: index))
+                outcome.hits += 1
                 outcome.valueSum &+= index
             }
         case .add:

@@ -25,7 +25,7 @@ struct CompatWorkloadTests {
         #expect(identities.contains("entity.create.empty"))
         #expect(identities.contains("entity.create.no-entities"))
         for workload in CompatWorkload.allCases {
-            #expect(workload.identity.hasPrefix("entity.") || workload.identity.hasPrefix("component."))
+            #expect(["entity", "component", "iteration", "system", "event"].contains(String(workload.identity.prefix { $0 != "." })))
             #expect(!workload.identity.contains(" "))
         }
     }

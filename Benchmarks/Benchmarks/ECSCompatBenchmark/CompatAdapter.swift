@@ -7,7 +7,7 @@ import FirebladeECS
 
 #if ECS_CLASS_COMPONENTS
 /// Class-component revision (`Component: AnyObject`) with its single, default storage.
-struct CompatProbeComponent: Component {
+final class CompatProbeComponent: Component {
     var value = 0
 }
 #else

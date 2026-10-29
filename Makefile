@@ -14,7 +14,7 @@ DOCS_VERSION_PATH ?= main
 # The full base path for hosting
 HOSTING_BASE_PATH ?= $(REPO_NAME)/$(DOCS_VERSION_PATH)
 
-.PHONY: setup lint lint-fix test test-coverage testReadme build-debug build-release docs docs-preview docs-generate docs-generate-all docs-coverage docs-check-coverage docs-check-links preview-analysis-docs generate-docs-githubpages pre-commit clean benchmark benchmark-report benchmark-compare test-benchmark-compare test-benchmarks test-benchmark-scripts
+.PHONY: setup lint lint-fix test test-coverage testReadme build-debug build-release docs docs-preview docs-generate docs-generate-all docs-coverage docs-check-coverage docs-check-links preview-analysis-docs generate-docs-githubpages pre-commit clean benchmark benchmark-compare benchmark-report test-benchmarks test-benchmark-scripts
 
 # --- Setup ---
 
@@ -125,25 +125,28 @@ generate-docs-githubpages:
 
 # --- Benchmarks ---
 
-BASELINE_REF ?=
-CANDIDATE_REF ?=
-BENCHMARK_REPETITIONS ?= 3
 BENCHMARK_FILTER ?=
+REPORT_OUTPUT ?= Benchmarks/.results/report.md
+REPORT_BASELINE ?=
+REPORT_TITLE ?=
+RESULTS_TOOL = Benchmarks/.build/release/ECSBenchmarkResults
 
 # Runtime benchmarks live in a separate package (Benchmarks/) so the benchmark dependency stays out of FirebladeECS.
 benchmark:
 	cd Benchmarks && swift package benchmark
 
-benchmark-report:
-	@if [ -z "$(BASELINE_REF)" ] || [ -z "$(CANDIDATE_REF)" ]; then printf 'Set both BASELINE_REF and CANDIDATE_REF to Git refs.\n' >&2; exit 2; fi
-	./Scripts/generate-benchmark-report.sh "$(BASELINE_REF)" "$(CANDIDATE_REF)" "$(BENCHMARK_REPETITIONS)" "$(BENCHMARK_FILTER)"
-
+# Measures the shared compatibility suite at each committed ref (comma-separated tags, branches or SHAs) in isolated
+# snapshots and saves one validated result file per ref under Benchmarks/.results/<UTC timestamp>/.
+# Without BENCHMARK_FILTER only the smallest scale of every workload runs; BENCHMARK_FILTER='.*' selects everything.
 benchmark-compare:
-	@if [ -z "$(BASELINE_REF)" ]; then printf 'Set BASELINE_REF to a Git tag, branch, or commit.\n' >&2; exit 2; fi
-	./Scripts/benchmark-compare.sh "$(BASELINE_REF)" "$(CANDIDATE_REF)" "$(BENCHMARK_REPETITIONS)" "$(BENCHMARK_FILTER)"
+	@if [ -z "$(REFS)" ]; then printf 'Set REFS to comma-separated Git refs, for example: make benchmark-compare REFS=1.4.3,main\n' >&2; exit 2; fi
+	./Scripts/benchmark-run-refs.sh --refs "$(REFS)" $(if $(BENCHMARK_FILTER),--filter "$(BENCHMARK_FILTER)")
 
-test-benchmark-compare:
-	./Tests/benchmark-compare-tests.sh
+# Renders a Markdown report from saved result files only (at least two); it never runs benchmarks.
+benchmark-report:
+	@if [ -z "$(RESULTS)" ]; then printf 'Set RESULTS to saved result files, for example: make benchmark-report RESULTS="a.json b.json"\n' >&2; exit 2; fi
+	swift build --package-path Benchmarks -c release --product ECSBenchmarkResults $(SWIFT_FLAGS)
+	$(RESULTS_TOOL) report $(RESULTS) --output "$(REPORT_OUTPUT)" $(if $(REPORT_BASELINE),--baseline "$(REPORT_BASELINE)") $(if $(REPORT_TITLE),--title "$(REPORT_TITLE)")
 
 test-benchmarks:
 	cd Benchmarks && swift test $(SWIFT_FLAGS)

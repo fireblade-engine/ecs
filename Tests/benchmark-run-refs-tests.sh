@@ -116,6 +116,9 @@ for n in one two three; do
     [[ -f $f ]] || fail "missing result for t-$n"
     grep -qF "result: $f" <<< "$stdout" || fail "result list must include t-$n"
 done
+assert_eq "$(grep -c '^result: ' <<< "$stdout")" 3 'stdout lists exactly one result line per accepted ref'
+[[ $stdout != *.partial* && $stdout != *"snapshot output"* ]] || fail 'stdout must list only final result files'
+assert_eq "$(grep -vc '^result: ' <<< "$stdout" || true)" 0 'stdout must contain nothing but result lines'
 assert_eq "$(sed -E 's/.*--out ([^ ]+) .*/\1/' "$STUB_LOG" | sort -u | wc -l | tr -d ' ')" 3 'each ref needs its own snapshot directory'
 assert_eq "$(grep -c -- "--suite-ref $(sha_of t-three) " "$STUB_LOG")" 3 'every ref uses the same resolved suite SHA'
 for n in one two three; do

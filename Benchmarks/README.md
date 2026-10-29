@@ -65,7 +65,7 @@ The command prints one `result: <path>` line per ref. Files land in a new run di
 Selection:
 
 - **Smoke (default):** without a filter only the smallest scale of every workload runs.
-- **Full:** `BENCHMARK_FILTER='.*' make benchmark-compare REFS=...` runs every workload and scale. `BENCHMARK_FILTER` takes any regular expression over benchmark names, for example `BENCHMARK_FILTER='^iteration\..* / 1024$'`; a filter that matches nothing fails before measuring.
+- **Full:** `BENCHMARK_FILTER='.*' make benchmark-compare REFS=...` runs every workload and scale. `BENCHMARK_FILTER` takes any regular expression over benchmark names, for example `BENCHMARK_FILTER='^iteration\..* / 16$'`; a filter that matches nothing fails before measuring.
 
 The runner script offers more options (`--suite-ref`, `--out`); running it without arguments prints the usage.
 

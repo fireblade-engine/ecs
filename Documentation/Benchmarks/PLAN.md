@@ -119,13 +119,41 @@ The user approved every remaining gate in advance for an unattended run, with th
 - Evidence: `make test-benchmarks` passed on current; `CompatSuiteTests` passed in a `1.4.3` snapshot; `entity.create.empty / 16` ran on `1.4.3` (`default`) and current (`archetype`, `sparseSet`) with Benchmark 1.38.1 and hdrhistogram-swift 0.2.0 recorded.
 - Follow-ups for Step 9: missing `jq` must fail instead of writing `unknown` provenance; add a Make target for the snapshot script tests; the current-revision smoke ran before two class-only adapter fixes and must be repeated.
 
+### Steps 4–7 result (gate passed under delegation)
+
+- `ECSCompatBenchmark` holds 19 workload identities (entity creation/destruction/lookup, component add and remove-add, iteration one/two/mixed-three, basic and complex system updates for uniform and mixed populations, and the two component-event adaptations). All are labelled `adapted(<reason>)`; none is `equivalent`, because no case has evidence of identical work and timing. A test asserts this.
+- `CompatUnsupported.all` lists the 10 unsupported workloads (three bulk, four dispatcher, two observer, one receiver) with reasons.
+- Each revision uses its native path: value components through `Family.forEach(reading:writing:)`, class components mutated in place. `#if ECS_CLASS_COMPONENTS` is confined to `CompatAdapter.swift`.
+- System composition, order, formulas, and populations follow upstream at `98678f7` (`Application::init`, `src/base/base/systems/*.h`); event workloads use the plain Position/Velocity/Data mixed population of `ExtendedECSBenchmark.h`. Persistent workloads run a fixed 10 warmup and 100 measured passes so every revision does the same work.
+- Class-model bugs found by tests on `1.4.3`: `Entity.set` keeps an existing instance, and `remove` traps for an absent component. The population and `replace` helper handle both.
+- An independent review (no blockers) led to `b5fd6995`. Its snapshot-script findings move to Step 9: fail without `jq`, record all pins plus toolchain/host/filter, compare `Package.resolved` before and after resolve, clean temporary output on failure, anchor model detection, check the dirty state of the selected suite ref, require the filter to match, and add a Make target for the script tests.
+- Evidence: `make test-benchmarks` (36 tests), `Tests/benchmark-snapshot-tests.sh`, both snapshot smokes, and `CompatSuiteTests` inside a `1.4.3` snapshot with `-DECS_CLASS_COMPONENTS` all passed.
+
+### Step 8 design (decided under delegation)
+
+- **Targets:** move workload definitions into a library target `ECSCompatSuite`; `ECSCompatBenchmark` becomes a thin registration executable. Add executable `ECSBenchmarkResults` (depends on `ECSCompatSuite` and the `Benchmark` library) with subcommands `write`, `validate`, and later `report` (Step 10). It is built inside each snapshot, so its workload manifest reflects that ref's adapter.
+- **Input:** the plugin's native baseline (`swift package benchmark baseline update <name>`), decoded through an app-owned mirror of the plugin's baseline envelope containing native `BenchmarkResult`/`Statistics`. The writer refuses a Benchmark or hdrhistogram-swift version other than the pinned ones.
+- **Result file** (`<run-dir>/<sanitized-ref>-<short-sha>.json`), top-level keys:
+  - `schema` = `"fireblade-ecs-benchmark-result"`, `schemaVersion` = 1
+  - `run`: id, start and finish timestamps (ISO 8601 UTC)
+  - `ref`: requested name, full SHA, component model, available backends
+  - `suite`: SHA, target, filter, configuration hash (SHA-256 of suite SHA + filter + enabled metrics + iteration constants)
+  - `packages`: every pin from the post-resolve `Package.resolved` (identity, version, revision)
+  - `toolchain`: `swift --version` text, build mode `release`
+  - `host`: OS name and version, architecture, CPU model, core count, physical memory
+  - `workloads`: identity, upstream name, parity kind and reason, `persistsState`
+  - `unsupported`: identity, upstream name, reason
+  - `benchmarks`: one entry per benchmark name with parsed identity, backend, and scale
+  - `baseline`: the native baseline envelope, embedded unchanged
+- **Tests:** durable field-by-field round trips for every enabled metric and for the whole wrapper (not `BenchmarkResult ==`); rejection of a wrong schema version, wrong package versions, missing provenance, and a benchmark name that does not parse to a known identity.
+
 ## Phases and review gates
 
 Each phase is a separate check-in; pause for user review before beginning the next.
 
 - [x] **Inventory and semantics:** classify logical API applicability for `1.4.3` and the current revision using inspected APIs, and document known reference differences. No builds or benchmark parity tests were performed.
 - [x] **Scoped export feasibility:** native baseline round trips were verified for the measured four metrics and synthetic result cases at the recorded package pins. Broader metric coverage, wrapper/provenance tests, format compatibility, and production-pipeline accuracy remain unproven; the approved direction and evidence are recorded below.
-- [ ] **Shared suite and adapters** (Step 3 authorized 2026-10-29): consolidate/reuse applicable cases, preserve unrelated package benchmarks, and add correctness checks for population counts, operation counts, and state mutation.
+- [x] **Shared suite and adapters** (Steps 3–7, gate passed under delegation 2026-10-29): consolidate/reuse applicable cases, preserve unrelated package benchmarks, and add correctness checks for population counts, operation counts, and state mutation.
 - [ ] **Ref runner and results:** support more than two committed refs, isolated SHA snapshots, consistent config, complete per-ref JSON, and clear failure for unsupported refs or missing capabilities.
 - [ ] **Report-only path:** validate N-way matching, all-statistic output, unit handling, missing values, zero baselines, Mermaid rendering, and that report generation does not invoke benchmarks.
 - [ ] **Compatibility and performance validation:** after approval, build/smoke against `1.4.3` and current, then run the full agreed workload set only after smoke results and resource cost are reviewed.

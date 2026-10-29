@@ -8,6 +8,7 @@ public enum ResultsCLI {
                                 --ref <requested> --ref-sha <sha> --suite-sha <sha> --filter <regex>
                                 --package-resolved <path> --swift-version <text>
       ECSBenchmarkResults validate <result.json>
+      ECSBenchmarkResults report <result.json>... --output <report.md> [--baseline <requested-ref>] [--title <text>]
     """
 
     public static func run(_ arguments: [String]) -> Int32 {
@@ -20,6 +21,8 @@ public enum ResultsCLI {
                 guard arguments.count == 2 else { return fail("validate takes exactly one path\n\(usage)") }
                 let file = try ResultValidator.validateFile(at: arguments[1])
                 print("valid: \(file.benchmarks.count) benchmarks, ref \(file.ref.requested) \(file.ref.sha)")
+            case "report":
+                try report(Array(arguments.dropFirst()))
             default:
                 return fail("unknown command '\(command)'\n\(usage)")
             }
@@ -46,6 +49,46 @@ public enum ResultsCLI {
         try ResultWriter.write(request, to: output)
         // Prove the written file is accepted before reporting success.
         _ = try ResultValidator.validateFile(at: output)
+        print("wrote \(output)")
+    }
+
+    /// Reads and validates every input, renders the report and writes it. This is the only file IO of the report path.
+    private static func report(_ arguments: [String]) throws {
+        var paths: [String] = []
+        var optionArguments: [String] = []
+        var index = 0
+        while index < arguments.count {
+            if arguments[index].hasPrefix("--") {
+                optionArguments += arguments[index ..< min(index + 2, arguments.count)]
+                index += 2
+            } else {
+                paths.append(arguments[index])
+                index += 1
+            }
+        }
+        let options = try parseOptions(optionArguments, allowed: ["baseline", "title", "output"])
+        guard let output = options["output"] else { throw ResultError("missing required option --output") }
+        guard paths.count >= 2 else { throw ResultError("report needs at least two result files, got \(paths.count)\n\(usage)") }
+
+        var files: [BenchmarkResultFile] = []
+        for path in paths {
+            do {
+                files.append(try ResultValidator.validateFile(at: path))
+            } catch {
+                throw ResultError("\(path): \(error)")
+            }
+        }
+        var reportOptions = ReportOptions(baseline: options["baseline"])
+        if let title = options["title"] { reportOptions.title = title }
+        let rendered = try BenchmarkReport.render(files, options: reportOptions)
+        for warning in rendered.warnings {
+            FileHandle.standardError.write(Data("ECSBenchmarkResults: warning: \(warning)\n".utf8))
+        }
+        do {
+            try Data(rendered.markdown.utf8).write(to: URL(fileURLWithPath: output), options: .atomic)
+        } catch {
+            throw ResultError("cannot write \(output): \(error)")
+        }
         print("wrote \(output)")
     }
 

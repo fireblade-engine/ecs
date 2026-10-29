@@ -237,13 +237,53 @@ struct ReportTests {
         #expect(text.hasPrefix("# Fixture\n"))
         #expect(text.contains("- Baseline: `main`"))
 
-        #expect(ResultsCLI.run(["report", paths[0], "--output", output]) != 0, "needs two inputs")
-        #expect(ResultsCLI.run(["report"] + paths + ["--baseline", "nope", "--output", output]) != 0)
+        #expect(ResultsCLI.run(["report", paths[0], "--output", output, "--overwrite"]) != 0, "needs two inputs")
+        #expect(ResultsCLI.run(["report"] + paths + ["--baseline", "nope", "--output", output, "--overwrite"]) != 0)
         #expect(ResultsCLI.run(["report"] + paths) != 0, "needs --output")
         let broken = directory.appendingPathComponent("broken.json")
         try Data("{}".utf8).write(to: broken)
         let missing = directory.appendingPathComponent("never.md").path
         #expect(ResultsCLI.run(["report", paths[0], broken.path, "--output", missing]) != 0)
         #expect(!FileManager.default.fileExists(atPath: missing), "nothing is written when an input is invalid")
+    }
+
+    @Test
+    func cliNeverOverwritesInputsOrExistingOutputs() throws {
+        let directory = try Support.scratchDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        var paths: [String] = []
+        for (index, file) in all.enumerated() {
+            let url = directory.appendingPathComponent("r\(index).json")
+            try BenchmarkResultFile.encoder().encode(file).write(to: url)
+            paths.append(url.path)
+        }
+        let before = try paths.map { try Data(contentsOf: URL(fileURLWithPath: $0)) }
+        func inputsUntouched() throws -> Bool { try paths.map { try Data(contentsOf: URL(fileURLWithPath: $0)) } == before }
+
+        // Output equal to an input, spelled differently, through a symlink, and as a hard link: all refused, even with --overwrite.
+        let link = directory.appendingPathComponent("link.md")
+        try FileManager.default.createSymbolicLink(atPath: link.path, withDestinationPath: paths[1])
+        let hard = directory.appendingPathComponent("hard.md")
+        try FileManager.default.linkItem(atPath: paths[2], toPath: hard.path)
+        let dotted = directory.path + "/./sub/../r0.json"
+        try FileManager.default.createDirectory(at: directory.appendingPathComponent("sub"), withIntermediateDirectories: true)
+        for output in [paths[0], dotted, link.path, hard.path] {
+            #expect(ResultsCLI.run(["report"] + paths + ["--output", output]) != 0, "refused: \(output)")
+            #expect(ResultsCLI.run(["report"] + paths + ["--output", output, "--overwrite"]) != 0, "refused with --overwrite: \(output)")
+            #expect(try inputsUntouched(), "inputs unchanged after refusing \(output)")
+        }
+
+        // Existing output: refused without --overwrite and left unchanged; replaced with it.
+        let output = directory.appendingPathComponent("report.md")
+        try Data("precious".utf8).write(to: output)
+        #expect(ResultsCLI.run(["report"] + paths + ["--output", output.path]) != 0)
+        #expect(try Data(contentsOf: output) == Data("precious".utf8))
+        #expect(ResultsCLI.run(["report"] + paths + ["--output", output.path, "--overwrite"]) == 0)
+        #expect(try String(contentsOf: output, encoding: .utf8).hasPrefix("# FirebladeECS benchmark comparison"))
+        #expect(try inputsUntouched())
+
+        // A fresh output path works without the flag; a directory is refused.
+        #expect(ResultsCLI.run(["report"] + paths + ["--output", directory.appendingPathComponent("fresh.md").path]) == 0)
+        #expect(ResultsCLI.run(["report"] + paths + ["--output", directory.appendingPathComponent("sub").path, "--overwrite"]) != 0)
     }
 }

@@ -8,7 +8,7 @@ public enum ResultsCLI {
                                 --ref <requested> --ref-sha <sha> --suite-sha <sha> --filter <regex>
                                 --package-resolved <path> --swift-version <text>
       ECSBenchmarkResults validate <result.json>
-      ECSBenchmarkResults report <result.json>... --output <report.md> [--baseline <requested-ref>] [--title <text>]
+      ECSBenchmarkResults report <result.json>... --output <report.md> [--baseline <requested-ref>] [--title <text>] [--overwrite]
     """
 
     public static func run(_ arguments: [String]) -> Int32 {
@@ -56,9 +56,13 @@ public enum ResultsCLI {
     private static func report(_ arguments: [String]) throws {
         var paths: [String] = []
         var optionArguments: [String] = []
+        var overwrite = false
         var index = 0
         while index < arguments.count {
-            if arguments[index].hasPrefix("--") {
+            if arguments[index] == "--overwrite" {
+                overwrite = true
+                index += 1
+            } else if arguments[index].hasPrefix("--") {
                 optionArguments += arguments[index ..< min(index + 2, arguments.count)]
                 index += 2
             } else {
@@ -69,6 +73,7 @@ public enum ResultsCLI {
         let options = try parseOptions(optionArguments, allowed: ["baseline", "title", "output"])
         guard let output = options["output"] else { throw ResultError("missing required option --output") }
         guard paths.count >= 2 else { throw ResultError("report needs at least two result files, got \(paths.count)\n\(usage)") }
+        try checkOutput(output, inputs: paths, overwrite: overwrite)
 
         var files: [BenchmarkResultFile] = []
         for path in paths {
@@ -90,6 +95,33 @@ public enum ResultsCLI {
             throw ResultError("cannot write \(output): \(error)")
         }
         print("wrote \(output)")
+    }
+
+    /// Refuses an output that is (or links to) one of the inputs, and an existing output unless `overwrite` is set. Paths are
+    /// standardized and symlinks resolved; hard links are caught by file identity.
+    static func checkOutput(_ output: String, inputs: [String], overwrite: Bool) throws {
+        let fileManager = FileManager.default
+        let target = canonical(output)
+        for input in inputs where canonical(input) == target || sameFile(input, output) {
+            throw ResultError("--output \(output) is the input \(input); refusing to overwrite a result file")
+        }
+        var isDirectory: ObjCBool = false
+        if fileManager.fileExists(atPath: output, isDirectory: &isDirectory) {
+            guard !isDirectory.boolValue else { throw ResultError("--output \(output) is a directory") }
+            guard overwrite else { throw ResultError("--output \(output) already exists; pass --overwrite to replace it") }
+        }
+    }
+
+    private static func canonical(_ path: String) -> String {
+        URL(fileURLWithPath: path).standardizedFileURL.resolvingSymlinksInPath().path
+    }
+
+    private static func sameFile(_ lhs: String, _ rhs: String) -> Bool {
+        let fileManager = FileManager.default
+        guard let a = try? fileManager.attributesOfItem(atPath: lhs), let b = try? fileManager.attributesOfItem(atPath: rhs),
+              let aNumber = a[.systemFileNumber] as? UInt64, let bNumber = b[.systemFileNumber] as? UInt64,
+              let aSystem = a[.systemNumber] as? Int, let bSystem = b[.systemNumber] as? Int else { return false }
+        return aNumber == bNumber && aSystem == bSystem
     }
 
     static func parseOptions(_ arguments: [String], allowed: Set<String>) throws -> [String: String] {

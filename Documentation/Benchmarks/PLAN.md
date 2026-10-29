@@ -147,6 +147,26 @@ The user approved every remaining gate in advance for an unattended run, with th
   - `baseline`: the native baseline envelope, embedded unchanged
 - **Tests:** durable field-by-field round trips for every enabled metric and for the whole wrapper (not `BenchmarkResult ==`); rejection of a wrong schema version, wrong package versions, missing provenance, and a benchmark name that does not parse to a known identity.
 
+### Steps 8–9 result
+
+- Step 8 (`d820ee62`..`abf31a75`): `ECSCompatSuite` library, thin `ECSCompatBenchmark`, and `ECSBenchmarkResults write|validate`. The enabled metrics are wallClock, cpuTotal, throughput, peakMemoryResident, and mallocCountTotal, declared once in `CompatConfiguration.swift`; `instructions` is left out because it needs Linux perf. 32 durable field-by-field schema tests, including a 218 KB real plugin baseline fixture.
+- Step 9 (`4946a8e3`..`bda49990`): `Scripts/benchmark-run-refs.sh --refs a,b,c` validates every ref first, isolates snapshots, writes `<ref>-<sha12>.json` per ref under the gitignored `Benchmarks/.results/<UTC>/`, and requires one configuration hash across refs. Snapshots are extracted with a temporary index and `checkout-index`, so `export-ignore`/`export-subst` cannot alter them. Shell tests run through `make test-benchmark-scripts`.
+- Real smoke `--refs 1.4.3,main`: 19 benchmarks (`1.4.3`, class, `default`) and 38 (`main`, value, `archetype`/`sparseSet`), both validated, configuration hash `8cbd7cef…1c39`. Smoke result files are about 4 MB and 8 MB.
+
+### Step 10 design (decided under delegation)
+
+- `ECSBenchmarkResults report <result.json>... [--baseline <requested-ref>] [--title TEXT] --output <file.md>`; at least two inputs. The baseline defaults to the first input. Inputs are read-only, and the command never starts a process.
+- **Series:** one series per ref × backend, labelled `<requested-ref> (<model>, <backend>)`. A series is compared with the baseline series of the same backend if one exists, otherwise with the baseline's only backend (for `1.4.3`, `default`); the report states each pairing.
+- **Matching** by workload identity, scale, and metric. Statistics: measurement count, mean, standard deviation, and the package's default percentiles (p0, p25, p50, p75, p90, p99, p100), read from native `Statistics` without mutating it.
+- **Units:** each metric/statistic row is converted to one unit across series only when the dimensions are compatible (time scales, count scales). Anything else, and any missing workload, metric, or backend, prints `unavailable`, never zero.
+- **Deltas:** absolute difference plus ratio and percent change; ratio and percent are `unavailable` when the baseline value is zero. Polarity (`prefersLarger`) decides better or worse.
+- **Layout:**
+  1. Header with title, selection filter, and a provenance table per ref (SHA, suite SHA, configuration hash, component model, backends, toolchain, host, package pins).
+  2. A configuration-hash mismatch warning if hashes differ.
+  3. Parity notes per workload, and the unsupported list.
+  4. For each identity, scale, and metric: a Markdown table (rows are statistics, columns are series with deltas) and one Mermaid `xychart-beta` bar chart with p50 per series.
+- Output is deterministic (sorted keys and stable number formatting) and keeps the package's precision.
+
 ## Phases and review gates
 
 Each phase is a separate check-in; pause for user review before beginning the next.

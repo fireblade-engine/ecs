@@ -14,7 +14,7 @@ DOCS_VERSION_PATH ?= main
 # The full base path for hosting
 HOSTING_BASE_PATH ?= $(REPO_NAME)/$(DOCS_VERSION_PATH)
 
-.PHONY: setup lint lint-fix test test-coverage testReadme build-debug build-release docs docs-preview docs-generate docs-generate-all docs-coverage docs-check-coverage docs-check-links preview-analysis-docs generate-docs-githubpages pre-commit clean benchmark benchmark-report benchmark-compare
+.PHONY: setup lint lint-fix test test-coverage testReadme build-debug build-release docs docs-preview docs-generate docs-generate-all docs-coverage docs-check-coverage docs-check-links preview-analysis-docs generate-docs-githubpages pre-commit clean benchmark benchmark-report benchmark-compare test-benchmark-compare
 
 # --- Setup ---
 
@@ -125,17 +125,25 @@ generate-docs-githubpages:
 
 # --- Benchmarks ---
 
-BASELINE ?= dev
+BASELINE_REF ?=
+CANDIDATE_REF ?=
+BENCHMARK_REPETITIONS ?= 3
+BENCHMARK_FILTER ?=
 
 # Runtime benchmarks live in a separate package (Benchmarks/) so the benchmark dependency stays out of FirebladeECS.
 benchmark:
 	cd Benchmarks && swift package benchmark
 
 benchmark-report:
-	./Scripts/generate-benchmark-report.sh
+	@if [ -z "$(BASELINE_REF)" ] || [ -z "$(CANDIDATE_REF)" ]; then printf 'Set both BASELINE_REF and CANDIDATE_REF to Git refs.\n' >&2; exit 2; fi
+	./Scripts/generate-benchmark-report.sh "$(BASELINE_REF)" "$(CANDIDATE_REF)" "$(BENCHMARK_REPETITIONS)" "$(BENCHMARK_FILTER)"
 
 benchmark-compare:
-	./Scripts/benchmark-compare.sh $(BASELINE)
+	@if [ -z "$(BASELINE_REF)" ]; then printf 'Set BASELINE_REF to a Git tag, branch, or commit.\n' >&2; exit 2; fi
+	./Scripts/benchmark-compare.sh "$(BASELINE_REF)" "$(CANDIDATE_REF)" "$(BENCHMARK_REPETITIONS)" "$(BENCHMARK_FILTER)"
+
+test-benchmark-compare:
+	./Tests/benchmark-compare-tests.sh
 
 # --- Workflows ---
 

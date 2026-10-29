@@ -13,7 +13,6 @@
 *.pbxuser
 *.perspectivev3
 *.rb
-*.sh
 *.xccheckout
 *.xcconfig
 *.xcscmblueprint

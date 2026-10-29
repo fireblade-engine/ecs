@@ -5,7 +5,9 @@
 # commit, keep the library directory named `ecs` (the suite's path dependency is resolved by directory name), and
 # resolve with the committed Benchmarks/Package.resolved using --force-resolved-versions.
 #
-# One ref per invocation. This is not the multi-ref runner: it writes no result schema and no report.
+# One ref per invocation. This is not the multi-ref runner. With --result it runs the suite once through
+# `benchmark baseline update` and turns the native baseline into one self-contained result file via the snapshot's own
+# ECSBenchmarkResults tool, so the file's workload manifest reflects that ref's adapter. It writes no report.
 set -euo pipefail
 
 usage() {
@@ -15,6 +17,7 @@ Usage: Scripts/benchmark-snapshot.sh <ref> [options]
   --suite-ref <rev>   commit providing the suite (default: HEAD); suite paths in the worktree must be clean
   --out <dir>         snapshot directory (must not exist or be empty; default: new temporary directory)
   --filter <regex>    benchmark filter passed to the Benchmark plugin (default: smallest scale of every compat workload)
+  --result <path>     write a self-contained result file for the run (must not exist; needs a full run)
   --prepare-only      stop after writing the snapshot and provenance; do not resolve, build or run
   --build-only        resolve and build, but do not run
   --repo <dir>        repository to read refs from (default: the repository containing this script)
@@ -33,6 +36,7 @@ suite_ref=HEAD
 out=""
 filter='^(entity\.create\.no-entities .* / 0|.* / 16)$'
 mode=run
+result=""
 
 while (($#)); do
     case $1 in
@@ -40,6 +44,7 @@ while (($#)); do
         --out) (($# >= 2)) || usage; out=$2; shift 2 ;;
         --filter) (($# >= 2)) || usage; filter=$2; shift 2 ;;
         --repo) (($# >= 2)) || usage; repo=$2; shift 2 ;;
+        --result) (($# >= 2)) || usage; result=$2; shift 2 ;;
         --prepare-only) mode=prepare; shift ;;
         --build-only) mode=build; shift ;;
         -h | --help) usage ;;
@@ -48,6 +53,12 @@ while (($#)); do
     esac
 done
 [[ -n $ref ]] || usage
+if [[ -n $result ]]; then
+    [[ $mode == run ]] || die "--result needs a full run; it cannot be combined with --prepare-only or --build-only"
+    [[ ! -e $result ]] || die "result file already exists: $result"
+    [[ -d $(dirname -- "$result") ]] || die "result directory does not exist: $(dirname -- "$result")"
+    result="$(cd "$(dirname -- "$result")" && pwd)/$(basename -- "$result")"
+fi
 
 git_repo() { git -C "$repo" "$@"; }
 
@@ -118,5 +129,27 @@ swift build -c release --product ECSCompatBenchmark --force-resolved-versions ${
 [[ $mode != build ]] || exit 0
 
 # Package options must precede the plugin command; the resolved file was already enforced above.
+if [[ -z $result ]]; then
+    swift package --disable-automatic-resolution ${swift_flags[@]+"${swift_flags[@]}"} --allow-writing-to-package-directory \
+        benchmark --target ECSCompatBenchmark --filter "$filter" --no-progress
+    exit 0
+fi
+
+# Result mode: one run, stored as a uniquely named native baseline, then wrapped with this snapshot's provenance.
+baseline_name="snapshot-${ref_sha:0:12}-$$-$RANDOM"
+run_id=$(uuidgen)
+timestamp() { date -u +%Y-%m-%dT%H:%M:%SZ; }
+started=$(timestamp)
 swift package --disable-automatic-resolution ${swift_flags[@]+"${swift_flags[@]}"} --allow-writing-to-package-directory \
-    benchmark --target ECSCompatBenchmark --filter "$filter" --no-progress
+    benchmark baseline update "$baseline_name" --target ECSCompatBenchmark --filter "$filter" --no-progress
+finished=$(timestamp)
+baseline_file=".benchmarkBaselines/ECSCompatBenchmark/$baseline_name/results.json"
+[[ -f $baseline_file ]] || die "benchmark plugin wrote no baseline at $lib/Benchmarks/$baseline_file"
+
+swift build -c release --product ECSBenchmarkResults --force-resolved-versions ${swift_flags[@]+"${swift_flags[@]}"}
+bin_path=$(swift build -c release --show-bin-path ${swift_flags[@]+"${swift_flags[@]}"})
+"$bin_path/ECSBenchmarkResults" write \
+    --baseline "$baseline_file" --out "$result" --run-id "$run_id" --started "$started" --finished "$finished" \
+    --ref "$ref" --ref-sha "$ref_sha" --suite-sha "$suite_sha" --filter "$filter" \
+    --package-resolved Package.resolved --swift-version "$(swift --version 2>&1)"
+printf 'result: %s\n' "$result"

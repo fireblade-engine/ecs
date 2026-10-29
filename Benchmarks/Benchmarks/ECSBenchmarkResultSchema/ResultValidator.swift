@@ -94,10 +94,8 @@ public enum ResultValidator {
             guard !results.isEmpty else { throw ResultError("benchmark '\(identifier.name)' has no metrics") }
             let metrics = results.map(\.metric.description)
             guard Set(metrics).count == metrics.count else { throw ResultError("benchmark '\(identifier.name)' repeats a metric") }
-            for result in results {
-                // measurementCount reads the histogram without touching the statistics caches.
-                guard result.statistics.measurementCount > 0 else { throw ResultError("benchmark '\(identifier.name)' metric \(result.metric.description) has no measurements") }
-            }
+            // A metric without measurements (for example a counter that never fired) is valid data: the report prints it as
+            // `unavailable`. Only structurally malformed statistics are rejected, and those fail to decode.
         }
     }
 

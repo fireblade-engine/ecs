@@ -8,6 +8,7 @@ public enum ResultsCLI {
                                 --ref <requested> --ref-sha <sha> --suite-sha <sha> --filter <regex>
                                 --package-resolved <path> --swift-version <text> [--batch-id <id>]
       ECSBenchmarkResults validate <result.json>
+      ECSBenchmarkResults host-check
       ECSBenchmarkResults report <result.json>... --output <report.md> [--baseline <requested-ref>] [--title <text>] [--overwrite]
     """
 
@@ -21,6 +22,10 @@ public enum ResultsCLI {
                 guard arguments.count == 2 else { return fail("validate takes exactly one path\n\(usage)") }
                 let file = try ResultValidator.validateFile(at: arguments[1])
                 print("valid: \(file.benchmarks.count) benchmarks, ref \(file.ref.requested) \(file.ref.sha)")
+            case "host-check":
+                guard arguments.count == 1 else { return fail("host-check takes no arguments\n\(usage)") }
+                let host = try HostFacts.current()
+                print("host ok: \(host.osName) \(host.osVersion), \(host.architecture), \(host.cpuModel), \(host.coreCount) cores")
             case "report":
                 try report(Array(arguments.dropFirst()))
             default:

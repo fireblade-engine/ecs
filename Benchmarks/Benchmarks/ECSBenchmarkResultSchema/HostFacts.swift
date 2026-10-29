@@ -6,6 +6,9 @@ import Glibc
 #endif
 
 enum HostFacts {
+    /// The facts the result schema requires. The schema has no marker for an unavailable field and `unknown` would silently
+    /// pass as a real value, so a host whose facts cannot be read fails (listing every missing fact) instead of being recorded.
+    /// `host-check` runs this before the first measurement.
     static func current() throws -> ResultHost {
         let info = ProcessInfo.processInfo
         let version = info.operatingSystemVersion
@@ -13,13 +16,23 @@ enum HostFacts {
         _ = uname(&name)
         let machine = withUnsafeBytes(of: &name.machine) { String(cString: $0.bindMemory(to: CChar.self).baseAddress!) }
         #if os(macOS)
-        let osName = "macOS"
+        let osName: String? = "macOS"
         #elseif os(Linux)
-        let osName = "Linux"
+        let osName: String? = "Linux"
         #else
-        let osName = "unknown"
+        let osName: String? = nil
         #endif
-        guard let cpu = cpuModel() else { throw ResultError("cannot determine the CPU model of this host") }
+        let cpu = cpuModel()?.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        var missing: [String] = []
+        if osName == nil { missing.append("OS name") }
+        if machine.isEmpty { missing.append("architecture") }
+        if cpu?.isEmpty ?? true { missing.append("CPU model") }
+        if info.processorCount <= 0 { missing.append("core count") }
+        if info.physicalMemory == 0 { missing.append("physical memory") }
+        guard missing.isEmpty, let osName, let cpu else {
+            throw ResultError("cannot determine host facts required by the result schema: \(missing.joined(separator: ", "))")
+        }
         return ResultHost(
             osName: osName,
             osVersion: "\(version.majorVersion).\(version.minorVersion).\(version.patchVersion)",

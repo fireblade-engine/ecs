@@ -99,6 +99,13 @@ struct ReportSample {
 
         // `histogram` is a value type: this copy is read-only and leaves the statistics caches untouched.
         let histogram = statistics.histogram
+        // A metric that recorded nothing has no mean or percentiles; the report prints it as unavailable.
+        guard measurementCount > 0 else {
+            mean = 0
+            standardDeviation = 0
+            percentiles = Statistics.defaultPercentilesToCalculate.map { _ in 0 }
+            return
+        }
         mean = histogram.mean * factor
         standardDeviation = histogram.stdDeviation * factor
         percentiles = Statistics.defaultPercentilesToCalculate.map { percentile in
@@ -107,6 +114,9 @@ struct ReportSample {
             return Double(histogram.valueAtPercentile(p)) * factor
         }
     }
+
+    /// True when the metric has no measurements; only `measurementCount` is meaningful then.
+    var isEmpty: Bool { measurementCount == 0 }
 
     /// Compatible samples share the dimension and the polarity.
     func isCompatible(with other: ReportSample) -> Bool {

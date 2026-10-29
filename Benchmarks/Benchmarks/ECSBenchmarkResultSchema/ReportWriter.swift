@@ -157,7 +157,7 @@ struct ReportWriter {
         for statistic in ReportStatistic.tableRows {
             var unit = ReportUnit("", 1)
             if statistic != .count, let reference {
-                unit = reference.dimension.unit(fitting: comparable.compactMap { $0?.value(statistic) })
+                unit = reference.dimension.unit(fitting: comparable.compactMap { $0.flatMap { $0.isEmpty ? nil : $0.value(statistic) } })
             }
             var cells: [String] = []
             for index in model.series.indices {
@@ -179,10 +179,11 @@ struct ReportWriter {
         guard model.series[index].samples[key] != nil else { return "unavailable" }
         guard let sample else { return "unavailable (incompatible units)" }
         if statistic == .count { return "\(sample.measurementCount)" }
+        if sample.isEmpty { return "unavailable (no measurements)" }
         let value = sample.value(statistic)
         let text = ReportFormat.quantity(value, unit)
         guard model.series[index].fileIndex != model.baselineIndex else { return text }
-        guard let pair = model.pairedSeries(for: index), let base = model.series[pair].samples[key], base.isCompatible(with: sample) else {
+        guard let pair = model.pairedSeries(for: index), let base = model.series[pair].samples[key], base.isCompatible(with: sample), !base.isEmpty else {
             return "\(text) (delta unavailable)"
         }
         let baseValue = base.value(statistic)
@@ -205,11 +206,11 @@ struct ReportWriter {
     private mutating func chart(_ key: ReportKey, _ reference: ReportSample?, _ comparable: [ReportSample?]) {
         guard let reference else { return }
         let p50 = ReportStatistic.percentile(50)
-        let unit = reference.dimension.unit(fitting: comparable.compactMap { $0?.value(p50) })
+        let unit = reference.dimension.unit(fitting: comparable.compactMap { $0.flatMap { $0.isEmpty ? nil : $0.value(p50) } })
         var labels: [String] = []
         var values: [String] = []
         for index in model.series.indices {
-            guard let sample = comparable[index] else { continue }
+            guard let sample = comparable[index], !sample.isEmpty else { continue }
             labels.append("\"\(Self.quoted(model.series[index].label))\"")
             values.append(ReportFormat.number(sample.value(p50) / unit.divisor))
         }

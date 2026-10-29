@@ -313,4 +313,35 @@ struct ReportTests {
         withBatch.run.batchId = "b1"
         #expect(try ResultValidator.decode(BenchmarkResultFile.encoder().encode(withBatch)).run.batchId == "b1")
     }
+
+    @Test
+    func metricWithoutMeasurementsIsRecordedAndPrintedUnavailable() throws {
+        var files = all
+        // The class ref's w2 malloc counter recorded nothing; main's archetype w2 has data.
+        let identifier = try #require(files[0].baseline.results.keys.first { $0.name.hasPrefix(ReportFixtures.w2) })
+        files[0].baseline.results[identifier] = files[0].baseline.results[identifier]!.map {
+            $0.metric == .mallocCountTotal ? ReportFixtures.result(.mallocCountTotal, []) : $0
+        }
+        // Structurally valid, survives encoding and decoding.
+        let decoded = try ResultValidator.decode(BenchmarkResultFile.encoder().encode(files[0]))
+        #expect(decoded.baseline.results[identifier]?.contains { $0.statistics.measurementCount == 0 } == true)
+        let report = try render(files)
+        let section = "### `\(ReportFixtures.w2)` / 16"
+        let count = try row(report, section: section, metric: "Malloc (total)", label: "measurements")
+        #expect(count.contains("| 0 |"), "\(count)")
+        let p50 = try row(report, section: section, metric: "Malloc (total)", label: "p50")
+        #expect(p50.contains("| unavailable (no measurements) |"), "\(p50)")
+        let mean = try row(report, section: section, metric: "Malloc (total)", label: "mean")
+        #expect(mean.contains("| unavailable (no measurements) |"), "\(mean)")
+        #expect(!report.contains("| nan"), "no NaN values")
+        #expect(!report.contains("| inf") && !report.contains("| -inf") && !report.contains("(Δ nan"))
+        // The other metrics of the ref are untouched.
+        #expect(try row(report, section: section, metric: "Time (wall clock)", label: "p50").contains("| 1 μs |"))
+    }
+
+    @Test
+    func hostCheckPassesOnThisHost() {
+        #expect(ResultsCLI.run(["host-check"]) == 0)
+        #expect(ResultsCLI.run(["host-check", "extra"]) != 0)
+    }
 }

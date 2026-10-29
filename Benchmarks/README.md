@@ -39,22 +39,63 @@ For the entity suite, the reference is `flecs-entities/FlecsEntityBenchmarkSuite
 
 Throughput is reported per benchmark invocation (batch). For `UnpackThreeComponents`, N is the created-entity count, not the lookup count; when N > 0, per-lookup normalization uses ceil(N/2), not N.
 
-The Git-ref comparison below uses the separate preliminary `ComparisonHarness`, not these reference-derived cases. It does not compare them and is not a completed Flecs comparison.
+The Git-ref comparison described below uses the shared suite (`ECSCompatBenchmark`), not the package benchmarks above. It is not a completed Flecs comparison.
+
+## Shared comparison suite
+
+`ECSCompatBenchmark` (workloads in the `ECSCompatSuite` library) is the one suite that compiles against every FirebladeECS revision, so the same committed source can be measured at several Git refs.
+
+- **Workloads:** 19 identities such as `entity.create.minimal`, `component.add`, `iteration.two`, `system.update.basic.uniform` and `event.component.publish.mixed`. A benchmark is named `<identity> [<backend>] / <scale>`. Revisions with the value-type model run the `archetype` and `sparseSet` backends; the class-component model of `1.4.3` has one `default` backend.
+- **Adapter:** `CompatAdapter.swift` is the only file that knows about the component model (`#if ECS_CLASS_COMPONENTS`). Each revision uses its native path: value components go through `Family.forEach(reading:writing:)`, class components are mutated in place.
+- **Parity labels:** every workload is labelled `adapted(<reason>)` or `equivalent`. All current workloads are `adapted`; the reason names the difference from the reference (timing boundary, population, native API). The label is stored in the result file and printed in the report.
+- **Unsupported:** ten reference workloads are listed with a reason in `CompatUnsupported.all` and never approximated: bulk creation/destruction (`entity.create.empty-bulk`, `entity.create.minimal-bulk`, `entity.destroy.minimal-bulk`), dispatcher events (`event.dispatch.*`, four), observer events (`event.observer.*`, two) and the receiver (`event.receiver.post-update.mixed`).
+- **Metrics:** wall clock, CPU total, throughput, peak resident memory and malloc count, declared once in `CompatConfiguration.swift`. Persistent-world workloads run a pinned 10 warmup and 100 measured passes.
+- **Tests:** `make test-benchmarks` (population and operation counts, state mutation, schema round trips, report rendering). `make test-benchmark-scripts` tests the runner and snapshot shell scripts.
 
 ## Comparing Git refs
 
-Use the root comparison harness to measure the shared workloads against two Git refs. The baseline is required; the candidate defaults to `HEAD`:
+Measure the suite at one or more committed refs (tags, branches or SHAs). Each ref is resolved once to a SHA and built and measured in its own isolated snapshot; uncommitted changes are never measured.
 
 ```sh
-make benchmark-compare BASELINE_REF=1.4.3 CANDIDATE_REF=HEAD
+make benchmark-compare REFS=1.4.3,main
 ```
 
-Use `CANDIDATE_REF=WORKTREE` to include supported local tracked and untracked engine sources without changing the original worktree. Ignored source inputs and refs containing Git submodules are rejected rather than silently omitted. The command runs at least three independent processes per ref and writes a provenance-rich report and raw JMH outputs under `Benchmarks/results/`. `make benchmark-report BASELINE_REF=<ref> CANDIDATE_REF=<ref>` runs the same validated comparison and atomically updates `Documentation/Benchmarks/REPORT.md` only after success; it refuses to replace an existing report unless the caller explicitly sets `BENCHMARK_REPORT_OVERWRITE=1`. The report comes from the separate preliminary `ComparisonHarness`, not the package benchmarks or reference-derived cases; its raw outputs and provenance remain in the run artifacts.
+The command prints one `result: <path>` line per ref. Files land in a new run directory `Benchmarks/.results/<UTC timestamp>/` (gitignored) as `<ref>-<sha12>.json`. If a ref fails, later refs are not started, finished results are kept and a rejected measurement is kept under `.failed/`. Warnings are printed when toolchain, host or benchmark set differ between refs.
 
-A filtered smoke comparison can be run with the script directly:
+Selection:
+
+- **Smoke (default):** without a filter only the smallest scale of every workload runs.
+- **Full:** `BENCHMARK_FILTER='.*' make benchmark-compare REFS=...` runs every workload and scale. `BENCHMARK_FILTER` takes any regular expression over benchmark names, for example `BENCHMARK_FILTER='^iteration\..* / 1024$'`; a filter that matches nothing fails before measuring.
+
+The runner script offers more options (`--suite-ref`, `--out`); running it without arguments prints the usage.
+
+## Result files
+
+Each file is self-contained JSON (`schema` `fireblade-ecs-benchmark-result`, `schemaVersion` 1) with the keys `run` (id, timestamps, batch id), `ref` (requested name, full SHA, component model, backends), `suite` (suite SHA, filter, configuration hash), `packages` (resolved pins), `toolchain`, `host`, `workloads` (identity, upstream name, parity), `unsupported`, `benchmarks` (one per benchmark name with identity, backend and scale) and `baseline`, the package-benchmark native baseline embedded unchanged with every statistic at the package's precision. A file is validated when it is written and when it is read:
 
 ```sh
-./Scripts/benchmark-compare.sh 1.4.3 HEAD 3 'EntityIteration / 64'
+cd Benchmarks && swift run -c release ECSBenchmarkResults validate <result.json>
 ```
 
-Exact workload names are required for arithmetic. Workloads missing on either side are reported as unsupported, never as zero. The comparison records source snapshot and harness hashes, host/toolchain details, and whether the revisions use reference-type or value-type components; differing component models are not a like-for-like storage comparison. `Update7SystemsOnly` excludes world and system construction from timing on both suites.
+## Reports
+
+`make benchmark-report` renders a Markdown report from saved result files only (two or more); it builds the `ECSBenchmarkResults` tool in release mode and never runs benchmarks.
+
+```sh
+make benchmark-report RESULTS="Benchmarks/.results/<run>/1.4.3-<sha>.json Benchmarks/.results/<run>/main-<sha>.json" \
+    REPORT_OUTPUT=report.md REPORT_BASELINE=1.4.3 REPORT_TITLE="ECS 1.4.3 vs main"
+```
+
+`REPORT_OUTPUT` defaults to `Benchmarks/.results/report.md` and an existing output file is refused; `REPORT_BASELINE` (a requested ref name) defaults to the first file; `REPORT_TITLE` is optional. The report has a provenance table per ref, warnings about differing configuration, parity notes and the unsupported list, then per workload, scale and metric a table of all statistics with deltas and a Mermaid chart of p50. Values missing or incomparable print `unavailable`, never zero.
+
+`Documentation/Benchmarks/REPORT.md` is generated from saved result files with this command; do not edit it by hand.
+
+## Make targets
+
+| Target | Purpose |
+| :--- | :--- |
+| `make benchmark` | Run the broad package benchmarks of this package |
+| `make benchmark-compare REFS=a,b,c [BENCHMARK_FILTER=...]` | Measure refs and save one validated result file each |
+| `make benchmark-report RESULTS="a.json b.json" [REPORT_OUTPUT=...] [REPORT_BASELINE=...] [REPORT_TITLE=...]` | Render a report from saved results |
+| `make test-benchmarks` | Swift tests of this package |
+| `make test-benchmark-scripts` | Shell tests of the runner and snapshot scripts |

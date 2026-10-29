@@ -31,7 +31,7 @@ repo=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 ref=""
 suite_ref=HEAD
 out=""
-filter='^(entity|component)\..* / 16$'
+filter='^(entity\.create\.no-entities .* / 0|.* / 16)$'
 mode=run
 
 while (($#)); do

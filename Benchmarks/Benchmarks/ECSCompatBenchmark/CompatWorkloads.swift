@@ -1,4 +1,5 @@
 // Workloads shared verbatim by every FirebladeECS revision. Stable identities are the contract with the plan's matrix.
+import Benchmark
 import FirebladeECS
 
 /// How closely a workload follows its upstream (`abeimler/ecs_benchmark`) counterpart. Machine-readable via `note`.
@@ -19,9 +20,10 @@ enum CompatParity: Equatable, Sendable {
 struct CompatOutcome: Equatable {
     /// Timed operations performed (entities created or destroyed, lookups, remove/add pairs, additions).
     var operations = 0
-    /// Operations that found or changed what they targeted (successful destroys, lookups that returned components, removals).
+    /// Operations that changed what they targeted (successful destroys, completed remove/add pairs, additions); zero for
+    /// lookups, whose results go to `blackHole` and are verified by the tests with direct reads.
     var hits = 0
-    /// Sum of the component values read or written, so lookups produce an observable result.
+    /// Sum of the component values written by mutation workloads.
     var valueSum = 0
 }
 
@@ -44,9 +46,15 @@ enum CompatWorkload: String, CaseIterable, Sendable {
     case removeAdd = "component.remove-add"
     case add = "component.add"
 
-    /// Scales shared by every workload. `smallScale` is what smoke selections use.
+    /// Scales shared by every scaled workload. `smallScale` is what smoke selections use.
     static let scales = [0, 1, 16, 1024]
     static let smallScale = 16
+
+    /// Scales this workload is registered at. `entity.create.no-entities` creates zero entities whatever the scale, so it is
+    /// registered once, at scale 0 (which the default smoke filter selects explicitly).
+    var registeredScales: [Int] {
+        self == .createNoEntities ? [0] : Self.scales
+    }
 
     /// Stable matrix identity.
     var identity: String { rawValue }
@@ -150,45 +158,33 @@ enum CompatWorkload: String, CaseIterable, Sendable {
                 if nexus.destroy(entity: entity) { outcome.hits += 1 }
             }
         case .lookupNone:
+            // Results go to blackHole like the upstream locals; counts are derived, not tracked per lookup.
             for entity in state.entities {
-                outcome.operations += 1
-                if let third = entity.get(CompatThirdComponent.self) {
-                    outcome.hits += 1
-                    outcome.valueSum &+= third.value
-                }
+                blackHole(entity.get(CompatThirdComponent.self))
             }
+            outcome.operations = state.entities.count
         case .lookupOne:
             for entity in state.entities {
-                outcome.operations += 1
-                if let first = entity.get(CompatFirstComponent.self) {
-                    outcome.hits += 1
-                    outcome.valueSum &+= first.value
-                }
+                blackHole(entity.get(CompatFirstComponent.self))
             }
+            outcome.operations = state.entities.count
         case .lookupTwo:
             for entity in state.entities {
                 // Two separate gets per entity, as upstream.
-                outcome.operations += 2
-                if let first = entity.get(CompatFirstComponent.self) {
-                    outcome.hits += 1
-                    outcome.valueSum &+= first.value
-                }
-                if let second = entity.get(CompatSecondComponent.self) {
-                    outcome.hits += 1
-                    outcome.valueSum &+= second.value
-                }
+                blackHole(entity.get(CompatFirstComponent.self))
+                blackHole(entity.get(CompatSecondComponent.self))
             }
+            outcome.operations = state.entities.count * 2
         case .lookupMixedThree:
             for entity in state.entities {
-                // Three gets per looked-up entity.
-                outcome.operations += 3
                 let (first, second, third) = entity.get(
                     components: CompatFirstComponent.self, CompatSecondComponent.self, CompatThirdComponent.self
                 )
-                if let first { outcome.hits += 1; outcome.valueSum &+= first.value }
-                if let second { outcome.hits += 1; outcome.valueSum &+= second.value }
-                if let third { outcome.hits += 1; outcome.valueSum &+= third.value }
+                blackHole(first)
+                blackHole(second)
+                blackHole(third)
             }
+            outcome.operations = state.entities.count * 3
         case .removeAdd:
             for (index, entity) in state.entities.enumerated() {
                 outcome.operations += 1

@@ -33,9 +33,9 @@ struct CompatWorkloadTests {
     @Test
     func benchmarkNamesAreUniqueAndStartWithIdentity() {
         var names: Set<String> = []
-        for scale in CompatWorkload.scales {
-            for backend in CompatSuite.backends {
-                for workload in CompatWorkload.allCases {
+        for workload in CompatWorkload.allCases {
+            for scale in workload.registeredScales {
+                for backend in CompatSuite.backends {
                     let name = workload.benchmarkName(backend: backend, scale: scale)
                     #expect(names.insert(name).inserted)
                     #expect(name.hasPrefix(workload.identity + " ["))
@@ -57,7 +57,7 @@ struct CompatWorkloadTests {
 
     @Test
     func adapterReflectsComponentModelOfRevision() {
-        #expect((CompatFirstComponent.self is AnyObject.Type) == CompatSuite.usesClassComponents)
+        #expect(((CompatFirstComponent.self as Any.Type) is AnyClass) == CompatSuite.usesClassComponents)
         #expect(!CompatSuite.backends.isEmpty)
     }
 
@@ -120,7 +120,8 @@ struct CompatWorkloadTests {
             let state = CompatWorkload.lookupNone.prepare(backend: backend, count: count)
             #expect(state.nexus.numEntities == count)
             let outcome = CompatWorkload.lookupNone.run(state, count: count)
-            #expect(outcome == CompatOutcome(operations: count, hits: 0, valueSum: 0))
+            #expect(outcome.operations == count)
+            #expect(state.entities.filter { $0.get(CompatThirdComponent.self) != nil }.isEmpty)
             #expect(state.nexus.numComponents == 0)
         }
     }
@@ -130,18 +131,25 @@ struct CompatWorkloadTests {
         forEachFixture { backend, count in
             let state = CompatWorkload.lookupOne.prepare(backend: backend, count: count)
             let outcome = CompatWorkload.lookupOne.run(state, count: count)
-            #expect(outcome == CompatOutcome(operations: count, hits: count, valueSum: count * (count - 1) / 2))
+            #expect(outcome.operations == count)
+            #expect(state.entities.count == count)
+            for (index, entity) in state.entities.enumerated() {
+                #expect(entity.get(CompatFirstComponent.self)?.value == index)
+            }
             #expect(state.nexus.numComponents == count * 2)
         }
     }
 
     @Test
-    func lookupTwoPerformsTwoHitsPerEntity() {
+    func lookupTwoPerformsTwoGetsPerEntity() {
         forEachFixture { backend, count in
             let state = CompatWorkload.lookupTwo.prepare(backend: backend, count: count)
             let outcome = CompatWorkload.lookupTwo.run(state, count: count)
-            let indexSum = count * (count - 1) / 2
-            #expect(outcome == CompatOutcome(operations: count * 2, hits: count * 2, valueSum: indexSum * 3))
+            #expect(outcome.operations == count * 2)
+            for (index, entity) in state.entities.enumerated() {
+                #expect(entity.get(CompatFirstComponent.self)?.value == index)
+                #expect(entity.get(CompatSecondComponent.self)?.value == index * 2)
+            }
         }
     }
 
@@ -154,10 +162,16 @@ struct CompatWorkloadTests {
             #expect(state.entities.count == looked)
             #expect(state.nexus.numComponents == count * 2 + looked)
             let outcome = CompatWorkload.lookupMixedThree.run(state, count: count)
-            let evenIndexSum = stride(from: 0, to: count, by: 2).reduce(0, +)
             #expect(outcome.operations == looked * 3)
-            #expect(outcome.hits == looked * 3)
-            #expect(outcome.valueSum == evenIndexSum * 6)
+            for (position, entity) in state.entities.enumerated() {
+                let index = position * 2
+                let (first, second, third) = entity.get(
+                    components: CompatFirstComponent.self, CompatSecondComponent.self, CompatThirdComponent.self
+                )
+                #expect(first?.value == index)
+                #expect(second?.value == index * 2)
+                #expect(third?.value == index * 3)
+            }
         }
     }
 
@@ -176,6 +190,20 @@ struct CompatWorkloadTests {
                 #expect(entity.get(CompatFirstComponent.self)?.value == index)
                 #expect(entity.get(CompatSecondComponent.self)?.value == index * 2)
             }
+        }
+    }
+
+    @Test
+    func removeStepActuallyRemovesTheComponent() {
+        for backend in CompatSuite.backends {
+            let state = CompatWorkload.removeAdd.prepare(backend: backend, count: 3)
+            for entity in state.entities {
+                #expect(entity.has(CompatFirstComponent.self))
+                entity.remove(CompatFirstComponent.self)
+                #expect(!entity.has(CompatFirstComponent.self))
+                #expect(entity.has(CompatSecondComponent.self))
+            }
+            #expect(state.nexus.numComponents == 3)
         }
     }
 

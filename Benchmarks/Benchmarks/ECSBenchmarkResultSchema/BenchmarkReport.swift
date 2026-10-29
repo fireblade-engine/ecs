@@ -121,7 +121,44 @@ struct ReportModel {
             let detail = files.indices.map { "\(labels[$0]): \(String(files[$0].suite.configurationHash.prefix(12)))" }.joined(separator: "; ")
             warnings.append("Configuration hashes differ across inputs (\(detail)); the runs did not use the same suite configuration, so differences may not reflect the refs alone.")
         }
+        warnings += Self.comparabilityWarnings(files, labels: labels, series: series)
         self.warnings = warnings
+    }
+
+    /// Differences between inputs that make a comparison less trustworthy: toolchain, host (without the physical memory size,
+    /// which can differ by reporting rounding between otherwise identical machines), the set of registered benchmarks, and the
+    /// number of measurements behind the same metric.
+    private static func comparabilityWarnings(_ files: [BenchmarkResultFile], labels: [String], series: [ReportSeries]) -> [String] {
+        var warnings: [String] = []
+        func describe(_ perInput: [String]) -> String { files.indices.map { "\(labels[$0]): \(perInput[$0])" }.joined(separator: "; ") }
+
+        let toolchains = files.map { "\($0.toolchain.swiftVersion.replacingOccurrences(of: "\n", with: " / ")) (\($0.toolchain.buildMode))" }
+        if Set(toolchains).count > 1 {
+            warnings.append("Toolchains differ across inputs (\(describe(toolchains))).")
+        }
+        let hosts = files.map { "\($0.host.osName) \($0.host.osVersion), \($0.host.architecture), \($0.host.cpuModel), \($0.host.coreCount) cores" }
+        if Set(hosts).count > 1 {
+            warnings.append("Hosts differ across inputs (\(describe(hosts))); results of different machines are not comparable.")
+        }
+        // Backend names are part of a benchmark name and legitimately differ between refs, so compare workload and scale.
+        let sets = files.map { file in Set(file.benchmarks.map { "\($0.identity) / \($0.scale)" }) }
+        if Set(sets).count > 1 {
+            let union = sets.reduce(into: Set<String>()) { $0.formUnion($1) }
+            let notEverywhere = union.filter { entry in sets.contains { !$0.contains(entry) } }.sorted()
+            let shown = notEverywhere.prefix(5).map { "`\($0)`" }.joined(separator: ", ")
+            warnings.append("The registered benchmark sets differ across inputs: \(notEverywhere.count) workload and scale combinations are not in every input (\(shown)\(notEverywhere.count > 5 ? ", ..." : "")).")
+        }
+        var differing: [ReportKey] = []
+        let allKeys = Set(series.flatMap { $0.samples.keys })
+        for key in allKeys.sorted(by: { ($0.identity, $0.scale, $0.metric) < ($1.identity, $1.scale, $1.metric) }) {
+            let counts = Set(series.compactMap { $0.samples[key]?.measurementCount })
+            if counts.count > 1 { differing.append(key) }
+        }
+        if !differing.isEmpty {
+            let shown = differing.prefix(5).map { "`\($0.identity)` / \($0.scale) \($0.metric)" }.joined(separator: ", ")
+            warnings.append("\(differing.count) metric rows have different measurement counts between series (\(shown)\(differing.count > 5 ? ", ..." : "")); see the measurements row of each table.")
+        }
+        return warnings
     }
 
     static func makeFileLabels(_ files: [BenchmarkResultFile]) -> [String] {

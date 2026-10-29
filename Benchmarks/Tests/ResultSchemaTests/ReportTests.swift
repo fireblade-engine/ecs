@@ -133,15 +133,59 @@ struct ReportTests {
         #expect(report.contains("#### Time (wall clock) (smaller is better)"))
     }
 
+    /// A second input that differs from the class fixture only in its identity.
+    private func twin(_ requested: String) -> BenchmarkResultFile {
+        var file = ReportFixtures.classRef()
+        file.ref.requested = requested
+        file.ref.sha = String(repeating: "d", count: 40)
+        return file
+    }
+
     @Test
     func configurationHashMismatchWarns() throws {
         let rendered = try BenchmarkReport.render(all)
-        #expect(rendered.warnings.count == 1)
-        #expect(rendered.warnings[0].contains("Configuration hashes differ"))
+        #expect(rendered.warnings.filter { $0.contains("Configuration hashes differ") }.count == 1)
         #expect(rendered.markdown.contains("## Warnings"))
-        let same = try BenchmarkReport.render([ReportFixtures.classRef(), ReportFixtures.valueRef()])
+        let same = try BenchmarkReport.render([ReportFixtures.classRef(), twin("twin")])
         #expect(same.warnings.isEmpty)
         #expect(!same.markdown.contains("## Warnings"))
+    }
+
+    @Test
+    func toolchainHostAndBenchmarkSetDifferencesWarn() throws {
+        var toolchain = twin("tc")
+        toolchain.toolchain.swiftVersion = "Apple Swift version 6.5"
+        let toolchainWarnings = try BenchmarkReport.render([ReportFixtures.classRef(), toolchain]).warnings
+        #expect(toolchainWarnings.count == 1 && toolchainWarnings[0].contains("Toolchains differ"))
+
+        var host = twin("host")
+        host.host.cpuModel = "Other CPU"
+        let hostWarnings = try BenchmarkReport.render([ReportFixtures.classRef(), host]).warnings
+        #expect(hostWarnings.count == 1 && hostWarnings[0].contains("Hosts differ"))
+
+        // The physical memory size alone is not a reason to warn.
+        var memory = twin("mem")
+        memory.host.physicalMemoryBytes += 4096
+        #expect(try BenchmarkReport.render([ReportFixtures.classRef(), memory]).warnings.isEmpty)
+
+        var fewer = twin("set")
+        fewer.benchmarks.removeLast()
+        let removed = try #require(fewer.baseline.results.keys.first { $0.name.hasPrefix(ReportFixtures.w2) })
+        fewer.baseline.results[removed] = nil
+        let setWarnings = try BenchmarkReport.render([ReportFixtures.classRef(), fewer]).warnings
+        #expect(setWarnings.contains { $0.contains("registered benchmark sets differ") && $0.contains(ReportFixtures.w2) })
+    }
+
+    @Test
+    func measurementCountDifferencesBetweenSeriesWarn() throws {
+        var other = twin("counts")
+        let identifier = try #require(other.baseline.results.keys.first { $0.name == "\(ReportFixtures.w1) [default] / 16" })
+        other.baseline.results[identifier] = other.baseline.results[identifier]!.map {
+            $0.metric == .wallClock ? ReportFixtures.result(.wallClock, Array(ReportFixtures.spread().prefix(7))) : $0
+        }
+        let rendered = try BenchmarkReport.render([ReportFixtures.classRef(), other])
+        let warning = try #require(rendered.warnings.first { $0.contains("different measurement counts") })
+        #expect(warning.hasPrefix("1 metric rows") && warning.contains(ReportFixtures.w1) && warning.contains("Time (wall clock)"), "\(warning)")
     }
 
     @Test

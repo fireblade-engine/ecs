@@ -70,3 +70,84 @@ Each phase is a separate check-in; pause for user review before beginning the ne
 - `Benchmarks/ComparisonHarness/**` and its missing package manifest: either complete and consolidate this shared suite or remove the redundant preliminary harness after its applicable work is migrated. Do not maintain two competing suites.
 - `Scripts/benchmark-compare.sh`, `Scripts/benchmark-compare-lib.sh`, `Scripts/generate-benchmark-report.sh`, the benchmark targets in `Makefile`, and `Tests/benchmark-compare-tests.sh` for the committed-ref runner, result validation, and report-only fixtures.
 - `Benchmarks/README.md` and, after approval, generated `Documentation/Benchmarks/REPORT.md` for the final workflow and report. No CI/pipeline files, permanent version metadata files, or unrelated architecture files are part of this plan.
+
+## Ordered micro-commit roadmap
+
+The titles below are proposed imperative commit messages, not authorization to implement. Each implementation commit must be independently reviewable, bisectable, and revertable; keep the benchmark package buildable and do not break existing entry points between commits. The current comparison path is already nonworking because its expected `Benchmarks/ComparisonHarness/Package.swift` is absent; treat that as a known baseline defect, not a passing check or a regression caused by this work.
+
+### Phase A — settle scope and measurement feasibility
+
+1. **Inventory reference workloads and compatibility**
+   - **Scope:** Reconcile every concrete registration at the pinned reference revision—including the entity-suite source discrepancy, conditional event/publish/update registrations, and extended cases—with the partial package workloads. Record stable identities, setup population, operation and match counts, timed boundaries, reset/warmup behavior, normalization, component model, backend availability, and per-ref parity (`equivalent`, `semantic difference`, or `unsupported`) in the existing benchmark documentation and focused expectations. Preserve unrelated iteration/storage cases. Do not call an event or extended case unsupported until the registrations and Fireblade API have been checked.
+   - **Depends on:** Nothing.
+   - **Focused evidence:** A registration-to-identity reconciliation with no unexplained registered cases; focused tests/expectations for identity uniqueness and the documented `1.4.3` reference-component versus current value-component/backend matrix. In particular, resolve the existing three-component lookup, add-component timing, iteration membership/normalization, and two-/seven-system parity questions rather than inheriting names as proof.
+   - **Review gate:** User reviews the inventory and parity classifications before suite changes begin.
+
+2. **Verify lossless benchmark statistics export**
+   - **Scope:** Inspect the actually pinned ordo-one 1.38.1 result/statistics APIs and formats. Establish, with package-produced data, whether a supported export and decode round trip retains every available metric, statistic, value, and unit. Record the evidence and limitations in the existing benchmark documentation. A one-case spike or synthetic JMH fixture is exploratory evidence only, not proof of complete export.
+   - **Depends on:** Step 1's workload/metric inventory.
+   - **Focused evidence:** A representative package-produced result with multiple metrics/statistics; compare all exposed values and units before/after the proposed serialization. Do not finalize a result schema or claim raw-sample retention unless the package output demonstrates it.
+   - **Stop condition:** If no supported lossless path is established, stop and bring the limitation/options back for user approval; do not silently fall back to p50-only JMH parsing.
+   - **Review gate:** User approves the evidence and export direction before committing to a schema or implementing the result pipeline.
+
+### Phase B — build and verify the shared workload suite
+
+3. **Build a shared one-workload compatibility slice**
+   - **Scope:** Choose the smallest existing package/harness arrangement that can run one inventoried workload against committed `1.4.3` and current sources. Add only the required reference/value component and backend adapters, plus correctness checks for population, operation count, and final state. Keep existing comparison callers untouched. Decide whether the preliminary harness is reusable or redundant from this working slice; do not add or maintain its missing manifest merely to make the old path progress.
+   - **Depends on:** Approved steps 1–2.
+   - **Focused evidence:** Compile and run the same small workload/configuration against both committed revisions; assert matching workload identity and intended work/state, while explicitly reporting representation/backend differences. Use the existing benchmark-package tests for fixture assertions; use `make build-release` for the engine build where applicable. No full benchmark run.
+   - **Review gate:** User reviews the adapter surface, actual cross-revision evidence, and chosen shared-suite location before additional workloads are ported.
+
+4. **Port entity creation and lookup workloads**
+   - **Scope:** Add only applicable empty/minimal creation, destruction, and zero/one/two/optional-three-component lookup cases from the inventory. Make setup/timed work, lookup count, and batch normalization explicit. Do not emulate native bulk operations with loops or rename semantic mismatches as equivalent.
+   - **Depends on:** Step 3's working shared slice.
+   - **Focused evidence:** Small-count tests assert created/destroyed entities, matched lookup counts, component values, and normalized operation counts; compile/run the selected cases on `1.4.3` and current. Preserve existing package benchmarks outside the comparison suite.
+
+5. **Port component mutation workloads**
+   - **Scope:** Add applicable add, remove/add, and other registered mutation cases with reference-matching occupancy and timed boundaries. Reset or reconstruct state when needed so warmup/scaled iterations do not silently change the amount of work. Keep an explicit semantic-difference classification where exact matching is impossible.
+   - **Depends on:** Step 3 and the mutation entries in step 1.
+   - **Focused evidence:** Small-count tests assert component/entity counts and pre/post state across repeated operations; selected workload smoke checks exercise both component models without asserting timing thresholds.
+
+6. **Port reference iteration workloads**
+   - **Scope:** Add applicable one-, two-, and mixed-three-component populations and reference membership distribution. Keep created entities, family matches, and visits distinct. Resolve the existing half-population behavior and normalization difference before labeling any case equivalent; retain unrelated iteration/storage benchmarks.
+   - **Depends on:** Step 3 and the iteration entries in step 1.
+   - **Focused evidence:** Extend focused population/iteration tests to assert per-family membership and visited counts at empty, small, odd, and representative mixed populations, for each available backend; verify value reads and stable identities.
+
+7. **Port update and applicable extended workloads**
+   - **Scope:** Add the inventoried uniform/mixed two-system and applicable seven-system scenarios, then only event/extended operations verified as registered and expressible. Preserve operation order, setup/timed boundaries, accumulator/observable work, and state reset semantics. Record unsupported operations with concrete reasons; do not relabel `Update7SystemsOnly` as equivalent without evidence.
+   - **Depends on:** Step 3 and the system/event/extended entries in step 1.
+   - **Focused evidence:** Small-count tests assert setup population, each system's state transition/count, reset/warmup behavior, and final state; selected smoke cases cover every supported scenario and classify unavailable combinations explicitly.
+   - **Review gate:** User reviews the complete suite, per-ref parity matrix, and focused correctness evidence before result production is added.
+
+### Phase C — connect results, runner, and report
+
+8. **Write validated full-statistics results**
+   - **Scope:** Implement the self-contained per-ref JSON writer using only the export path approved in step 2. Include requested ref and full SHA, run/suite/configuration identity, component model/backend/capabilities, toolchain/build/host provenance, metric names/units, all verified statistics, and parity/availability notes. Keep each result independently interpretable; do not reduce or round values.
+   - **Depends on:** Steps 2–7.
+   - **Focused evidence:** Encode/decode round-trip tests compare every supported metric/statistic/value/unit against package-produced results; schema validation rejects missing required provenance, malformed values, and unsupported unit claims. If the gate in step 2 was not passed, this commit does not proceed.
+
+9. **Run a list of committed refs in isolation**
+   - **Scope:** Extend the committed-ref runner to accept a list, resolve and validate every input to a full SHA before any build/run, reject invalid or duplicate refs, and run the same committed suite/configuration against isolated source snapshots. Emit one result per ref, preserve requested-name and resolved-SHA provenance, isolate state/artifacts, and make missing capability/unsupported workloads explicit. Exclude `WORKTREE` and uncommitted source. Retain existing caller behavior until the final cutover.
+   - **Depends on:** Steps 3–8.
+   - **Focused evidence:** Runner tests with controlled/fake executions prove all-ref validation precedes execution, snapshots do not share mutable source/state, each accepted ref produces exactly one independently valid result, and failure/missing-capability paths do not leave partial published results. Run the updated `make test-benchmark-compare` only after its tests target this implementation; its present missing-manifest failure is known baseline behavior, not evidence of a pass.
+
+10. **Render N-way reports from saved results**
+    - **Scope:** Make report generation consume three or more saved JSON inputs only. Match by stable identity, metric, statistic, and compatible units; display all comparable statistics with units/provenance; mark missing, unsupported, or incompatible values unavailable; guard zero baselines; render the required Markdown tables and Mermaid charts without changing inputs. Retain guarded publication behavior and do not invoke the runner from this path.
+    - **Depends on:** Step 8's validated schema; step 9's result contract.
+    - **Focused evidence:** Fixture tests with at least three refs cover multiple statistics beyond p50, missing metrics/workloads, dimension-compatible and incompatible units, zero baselines, unsupported availability, and deterministic output. A stub/call counter proves report generation does not invoke a benchmark command or alter source JSON.
+
+11. **Switch comparison callers to the validated pipeline**
+    - **Scope:** Atomically update the existing Makefile targets, scripts, their tests, and `Benchmarks/README.md` to the new producer/report flow. Preserve existing target names and two-ref use where compatible, and document any unavoidable CLI change in the same commit. Remove the preliminary comparison harness only if the replacement suite and all callers are already covered; otherwise repair it only if it is the selected minimal shared suite. Do not overwrite `Documentation/Benchmarks/REPORT.md` or commit run artifacts without explicit approval.
+    - **Depends on:** Steps 8–10 and successful focused tests for the replacement paths.
+    - **Focused evidence:** `make test-benchmark-compare` exercises the final command contracts, validation/failure behavior, no-rerun report path, and publication guard; documentation examples match the actual Makefile interface. `make test` remains the official ECS package test command. Do not claim the old comparison command passed before cutover; distinguish its known missing-manifest failure from new regressions.
+    - **Review gate:** User reviews the full caller/docs diff and focused verification before any cross-version smoke or publication.
+
+### Phase D — approved validation only
+
+12. **Validate approved reference and current runs** — **validation gate, not an automatic commit**
+    - **Scope:** After step 11 review, run an agreed low-count smoke selection against committed `1.4.3` and current refs, inspect result parity/provenance, resource use, and report output. Present full-run workload count, expected duration/resource cost, and any remaining unsupported cases for review. Run the full workload set only after the user explicitly approves that cost and scope.
+    - **Depends on:** Step 11 and explicit user approval for the smoke. Full execution additionally depends on smoke review and separate explicit full-run approval.
+    - **Focused evidence:** The smoke must build each requested committed snapshot, produce one valid JSON per ref, round-trip the full available statistics, and render a report without rerunning measurements. Use the checked-in Makefile commands (`make build-release`, `make test`, and the final comparison targets) where applicable; `make benchmark` runs the package's broad workload set and is not a default smoke. No test/build/full benchmark is authorized by this plan itself.
+    - **Commit rule:** A validation-only pass has no commit. Commit a generated report or benchmark artifacts only if the user separately approves those exact deliverables; never manufacture a commit for a run with no accepted repository delta.
+
+Review checkpoints are mandatory between phases: after steps 1–2; after steps 3–7; after steps 8–10; after step 11; and after the smoke before any full run. A review checkpoint is not permission to start the next phase until the user approves it.

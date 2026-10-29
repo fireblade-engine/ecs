@@ -125,17 +125,17 @@ enum CompatWorkload: String, CaseIterable, Sendable {
         case .lookupMixedThree:
             .adapted("population and lookup count match; payload is a single Int per component and gets return the component")
         case .iterationOne, .iterationTwo:
-            .adapted("access differs by component model (value copies on value revisions, class references on 1.x); family built before timing; upstream boundary varies by wrapper")
+            .adapted("each revision uses its native family iteration (forEach(reading:) value copies on value revisions, plain iteration over class references on 1.x); family built before timing; upstream boundary varies by wrapper")
         case .iterationMixedThree:
-            .adapted("membership recipe matches upstream; access differs by component model (value copies vs class references); family built before timing")
+            .adapted("membership recipe matches upstream; each revision uses its native family iteration (value copies vs class references); family built before timing")
         case .removeAdd:
             .equivalent
         case .add:
             .adapted("component one is removed from the whole batch before timing; upstream pauses to remove per entity")
         case .systemBasicUniform, .systemBasicMixed:
-            .adapted("two-system set (movement, data) and population ported from the local reference update benchmark, upstream app composition unverified; value revisions write components back with set, class revisions mutate in place")
+            .adapted("two-system set (movement, data) and population ported from the local reference update benchmark, upstream app composition unverified; each revision uses its native family iteration (forEach(reading:writing:) with inout components on value revisions, plain iteration mutating class instances on 1.x)")
         case .systemComplexUniform, .systemComplexMixed:
-            .adapted("seven-system set follows the local Update7SystemsOnly composition, upstream composition unverified; same population as the basic workloads; value revisions write components back with set, class revisions mutate in place")
+            .adapted("seven-system set follows the local Update7SystemsOnly composition, upstream composition unverified; same population as the basic workloads; each revision uses its native family iteration (forEach(reading:writing:) with inout components on value revisions, plain iteration mutating class instances on 1.x)")
         case .eventPublishMixed:
             .adapted("per-entity marker add then per-entity remove; no native type-wide component clear")
         case .eventPublishUpdateMixed:
@@ -193,7 +193,7 @@ enum CompatWorkload: String, CaseIterable, Sendable {
             let family = nexus.family(requires: CompatFirstComponent.self)
             return CompatState(nexus: nexus, family: CompatFamilyProbe(matched: family.count) {
                 var visited = 0
-                for first in family {
+                CompatSuite.forEachReading(family) { first in
                     blackHole(first)
                     visited += 1
                 }
@@ -204,7 +204,7 @@ enum CompatWorkload: String, CaseIterable, Sendable {
             let family = nexus.family(requiresAll: CompatFirstComponent.self, CompatSecondComponent.self)
             return CompatState(nexus: nexus, family: CompatFamilyProbe(matched: family.count) {
                 var visited = 0
-                for (first, second) in family {
+                CompatSuite.forEachReading(family) { first, second in
                     blackHole(first)
                     blackHole(second)
                     visited += 1
@@ -226,7 +226,7 @@ enum CompatWorkload: String, CaseIterable, Sendable {
             let family = nexus.family(requiresAll: CompatFirstComponent.self, CompatSecondComponent.self, CompatThirdComponent.self)
             return CompatState(nexus: nexus, family: CompatFamilyProbe(matched: family.count) {
                 var visited = 0
-                for (first, second, third) in family {
+                CompatSuite.forEachReading(family) { first, second, third in
                     blackHole(first)
                     blackHole(second)
                     blackHole(third)

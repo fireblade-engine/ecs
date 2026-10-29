@@ -68,10 +68,58 @@ enum CompatSuite {
         Nexus()
     }
 
-    /// Mutates `component` in place (class components are references; nothing to write back).
-    static func modify<C: CompatBoxed>(_ component: C, of _: Entity, _ body: (inout C.Payload) -> Void) {
-        var component = component
-        body(&component.payload)
+    // Native family iteration of the class-component revision: plain iteration over the family; written components are
+    // references mutated in place, so nothing is written back. Families are declared with the read types first.
+    @inline(__always)
+    static func forEachReading<R: Component>(_ family: Family<R>, _ body: (R) -> Void) {
+        for r in family { body(r) }
+    }
+
+    @inline(__always)
+    static func forEachReading<R1: Component, R2: Component>(_ family: Family<R1, R2>, _ body: (R1, R2) -> Void) {
+        for (r1, r2) in family { body(r1, r2) }
+    }
+
+    @inline(__always)
+    static func forEachReading<R1: Component, R2: Component, R3: Component>(_ family: Family<R1, R2, R3>, _ body: (R1, R2, R3) -> Void) {
+        for (r1, r2, r3) in family { body(r1, r2, r3) }
+    }
+
+    @inline(__always)
+    static func forEachWriting<W: Component>(_ family: Family<W>, _ body: (inout W) -> Void) {
+        for w in family {
+            var w = w
+            body(&w)
+        }
+    }
+
+    @inline(__always)
+    static func forEachRead1Write1<R: Component, W: Component>(_ family: Family<R, W>, _ body: (R, inout W) -> Void) {
+        for (r, w) in family {
+            var w = w
+            body(r, &w)
+        }
+    }
+
+    @inline(__always)
+    static func forEachRead1Write2<R: Component, W1: Component, W2: Component>(
+        _ family: Family<R, W1, W2>, _ body: (R, inout W1, inout W2) -> Void
+    ) {
+        for (r, w1, w2) in family {
+            var w1 = w1
+            var w2 = w2
+            body(r, &w1, &w2)
+        }
+    }
+
+    @inline(__always)
+    static func forEachRead2Write1<R1: Component, R2: Component, W: Component>(
+        _ family: Family<R1, R2, W>, _ body: (R1, R2, inout W) -> Void
+    ) {
+        for (r1, r2, w) in family {
+            var w = w
+            body(r1, r2, &w)
+        }
     }
     #else
     static let usesClassComponents = false
@@ -86,11 +134,45 @@ enum CompatSuite {
         }
     }
 
-    /// Mutates a copy of `component` and writes it back to `entity` (value components are copied on read).
-    static func modify<C: CompatBoxed>(_ component: C, of entity: Entity, _ body: (inout C.Payload) -> Void) {
-        var component = component
-        body(&component.payload)
-        entity.set(component)
+    // Native family iteration of the value-component revision: Family.forEach(reading:writing:) with inout written components
+    // (Sources/FirebladeECS/Family+ReadWrite.swift). Families are declared with the read types first.
+    @inline(__always)
+    static func forEachReading<R: Component>(_ family: Family<R>, _ body: (R) -> Void) {
+        family.forEach(reading: R.self, body)
+    }
+
+    @inline(__always)
+    static func forEachReading<R1: Component, R2: Component>(_ family: Family<R1, R2>, _ body: (R1, R2) -> Void) {
+        family.forEach(reading: R1.self, R2.self, body)
+    }
+
+    @inline(__always)
+    static func forEachReading<R1: Component, R2: Component, R3: Component>(_ family: Family<R1, R2, R3>, _ body: (R1, R2, R3) -> Void) {
+        family.forEach(reading: R1.self, R2.self, R3.self, body)
+    }
+
+    @inline(__always)
+    static func forEachWriting<W: Component>(_ family: Family<W>, _ body: (inout W) -> Void) {
+        family.forEach(writing: W.self, body)
+    }
+
+    @inline(__always)
+    static func forEachRead1Write1<R: Component, W: Component>(_ family: Family<R, W>, _ body: (R, inout W) -> Void) {
+        family.forEach(reading: R.self, writing: W.self, body)
+    }
+
+    @inline(__always)
+    static func forEachRead1Write2<R: Component, W1: Component, W2: Component>(
+        _ family: Family<R, W1, W2>, _ body: (R, inout W1, inout W2) -> Void
+    ) {
+        family.forEach(reading: R.self, writing: W1.self, W2.self, body)
+    }
+
+    @inline(__always)
+    static func forEachRead2Write1<R1: Component, R2: Component, W: Component>(
+        _ family: Family<R1, R2, W>, _ body: (R1, R2, inout W) -> Void
+    ) {
+        family.forEach(reading: R1.self, R2.self, writing: W.self, body)
     }
     #endif
 }

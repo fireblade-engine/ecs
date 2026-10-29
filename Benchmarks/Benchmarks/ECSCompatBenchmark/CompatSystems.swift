@@ -77,20 +77,17 @@ typealias CompatMarker = CompatBox<CompatMarkerPayload>
 // MARK: - Systems (each returns the number of members it visited)
 
 struct CompatMovementSystem {
-    let family: Family<CompatPosition, CompatVelocity>
+    let family: Family<CompatVelocity, CompatPosition>
 
     init(nexus: Nexus) {
-        family = nexus.family(requiresAll: CompatPosition.self, CompatVelocity.self)
+        family = nexus.family(requiresAll: CompatVelocity.self, CompatPosition.self)
     }
 
     func update(deltaTime: Float) -> Int {
         var visited = 0
-        for (entity, position, velocity) in family.entityAndComponents {
-            let v = velocity.payload
-            CompatSuite.modify(position, of: entity) {
-                $0.x += v.x * deltaTime
-                $0.y += v.y * deltaTime
-            }
+        CompatSuite.forEachRead1Write1(family) { velocity, position in
+            position.payload.x += velocity.payload.x * deltaTime
+            position.payload.y += velocity.payload.y * deltaTime
             visited += 1
         }
         return visited
@@ -106,13 +103,11 @@ struct CompatDataSystem {
 
     func update(deltaTime: Float) -> Int {
         var visited = 0
-        for (entity, data) in family.entityAndComponents {
-            CompatSuite.modify(data, of: entity) {
-                $0.thingy = ($0.thingy + 1) % 1_000_000
-                $0.dingy += 0.0001 * Double(deltaTime)
-                $0.mingy.toggle()
-                $0.numgy = $0.rng.next()
-            }
+        CompatSuite.forEachWriting(family) { data in
+            data.payload.thingy = (data.payload.thingy + 1) % 1_000_000
+            data.payload.dingy += 0.0001 * Double(deltaTime)
+            data.payload.mingy.toggle()
+            data.payload.numgy = data.payload.rng.next()
             visited += 1
         }
         return visited
@@ -128,13 +123,11 @@ struct CompatMoreComplexSystem {
 
     func update(deltaTime: Float) -> Int {
         var visited = 0
-        for (entity, position, velocity, data) in family.entityAndComponents {
-            let v = velocity.payload
+        CompatSuite.forEachRead1Write2(family) { position, velocity, data in
             let bump = Float(data.payload.thingy & 3)
-            CompatSuite.modify(position, of: entity) {
-                $0.x += v.x * deltaTime + bump
-                $0.y += v.y * deltaTime + bump
-            }
+            velocity.payload.x += bump * deltaTime
+            velocity.payload.y += bump * deltaTime
+            _ = position
             visited += 1
         }
         return visited
@@ -150,10 +143,8 @@ struct CompatHealthSystem {
 
     func update() -> Int {
         var visited = 0
-        for (entity, health) in family.entityAndComponents {
-            CompatSuite.modify(health, of: entity) {
-                if $0.hp > $0.maxhp { $0.hp = $0.maxhp }
-            }
+        CompatSuite.forEachWriting(family) { health in
+            if health.payload.hp > health.payload.maxhp { health.payload.hp = health.payload.maxhp }
             visited += 1
         }
         return visited
@@ -161,17 +152,16 @@ struct CompatHealthSystem {
 }
 
 struct CompatDamageSystem {
-    let family: Family<CompatHealth, CompatDamage>
+    let family: Family<CompatDamage, CompatHealth>
 
     init(nexus: Nexus) {
-        family = nexus.family(requiresAll: CompatHealth.self, CompatDamage.self)
+        family = nexus.family(requiresAll: CompatDamage.self, CompatHealth.self)
     }
 
     func update() -> Int {
         var visited = 0
-        for (entity, health, damage) in family.entityAndComponents {
-            let atk = damage.payload.atk
-            CompatSuite.modify(health, of: entity) { $0.hp = $0.hp &- atk }
+        CompatSuite.forEachRead1Write1(family) { damage, health in
+            health.payload.hp = health.payload.hp &- damage.payload.atk
             visited += 1
         }
         return visited
@@ -187,9 +177,8 @@ struct CompatSpriteSystem {
 
     func update() -> Int {
         var visited = 0
-        for (entity, health, sprite) in family.entityAndComponents {
-            let alive = health.payload.hp > 0
-            CompatSuite.modify(sprite, of: entity) { $0.character = alive ? 65 : 66 }
+        CompatSuite.forEachRead1Write1(family) { health, sprite in
+            sprite.payload.character = health.payload.hp > 0 ? 65 : 66
             visited += 1
         }
         return visited
@@ -205,10 +194,12 @@ struct CompatRenderSystem {
 
     func update(accumulator: inout Float) -> Int {
         var visited = 0
-        for position in family {
-            accumulator += position.payload.x + position.payload.y
+        var sum: Float = 0
+        CompatSuite.forEachReading(family) { position in
+            sum += position.payload.x + position.payload.y
             visited += 1
         }
+        accumulator += sum
         return visited
     }
 }
@@ -311,7 +302,7 @@ final class CompatEventWorld: CompatPassRunner {
     /// Visits the Position+Velocity+Marker view; empty unless markers were published.
     func visitEventView() -> Int {
         var visited = 0
-        for (position, velocity, marker) in eventView {
+        CompatSuite.forEachReading(eventView) { position, velocity, marker in
             blackHole(position)
             blackHole(velocity)
             blackHole(marker)

@@ -1,6 +1,6 @@
 # Git-ref Benchmark Suite — Living Plan
 
-**Status:** Steps 1–2 reviewed and approved (2026-10-29). Step 3 (shared one-workload compatibility slice) is authorized; Steps 4+ still wait for the Step 3 review gate.
+**Status:** Steps 1–3 done. The user pre-approved all remaining gates for an unattended run (2026-10-29), limited to a low-count smoke in Step 12; see "Overnight delegation" below. Each gate passed under that delegation is logged there for the user's morning review.
 
 **Goal:** one repeatable ordo-one benchmark suite for committed FirebladeECS refs, one self-contained JSON result per ref, and a separate N-way Markdown/Mermaid report generator that consumes saved results without rerunning benchmarks.
 
@@ -101,6 +101,23 @@ The matrix classifies logical workload applicability for both refs using inspect
 - **Snapshot contract (built in Step 3, reused by Step 9):** extract the ref's committed tree with `git archive`, replace its `Benchmarks/` directory (`1.4.3` ships its own) with the suite from a single clean suite SHA, keep the library directory named `ecs` (the path dependency is resolved by directory name), and resolve with the copied `Benchmarks/Package.resolved` using `--force-resolved-versions` so Benchmark cannot float past 1.38.1. Record ref SHA, suite SHA, and resolved package versions.
 - **Benchmark package tests get a Makefile target** (`make test-benchmarks`) instead of ad-hoc `swift test` inside `Benchmarks/`.
 - **Cleanup deferred to Step 11:** restore the `.gitignore` trailing newline and review the `*.sh` ignore removal; consider renaming the `ReferenceUpdateTests` test target, which also holds iteration tests.
+
+## Overnight delegation (2026-10-29)
+
+The user approved every remaining gate in advance for an unattended run, with these answers:
+
+- **Step 12 scope:** low-count smoke only, `1.4.3` and current `main`. Regenerate `REPORT.md` from the smoke's saved JSON and label it as a smoke report. The full run needs separate approval.
+- **Pushing:** push `benchmarks-comparison` after Steps 3–7, after Steps 8–10, and after Step 11 (each push runs the full CI matrix).
+- **CLI cutover (Step 11):** `make benchmark-compare REFS=a,b,c` runs and saves one JSON per ref; `make benchmark-report RESULTS=...` reads saved JSON only. Remove `WORKTREE`, `BASELINE_REF`, `CANDIDATE_REF`, and `Benchmarks/ComparisonHarness`.
+- **Adaptations:** port the event component-publish workloads (per-entity marker add/remove) and `AddComponent` (adapted timing boundary) under their own IDs, with the difference recorded in results and the report. Native bulk, dispatcher, and observer workloads stay unsupported.
+
+### Step 3 result (gate passed under delegation)
+
+- Shared suite is the new `ECSCompatBenchmark` target with tests in `CompatSuiteTests`. The existing `ECSBenchmark` target uses value-only APIs and cannot compile on `1.4.3`, so `Benchmarks/Package.swift` drops it (and `ReferenceUpdateTests`) when `ECS_BENCHMARK_SUITE=shared`.
+- `#if ECS_CLASS_COMPONENTS` appears only in `CompatAdapter.swift`. On `1.4.3`, the backend is recorded as `default`; current runs `archetype` and `sparseSet`.
+- `Scripts/benchmark-snapshot.sh` implements the snapshot contract; `Tests/benchmark-snapshot-tests.sh` covers invalid refs, dirty suites, model detection, and the harness exclusion. `--force-resolved-versions` applies to resolve/build only, since the plugin invocation rejects it.
+- Evidence: `make test-benchmarks` passed on current; `CompatSuiteTests` passed in a `1.4.3` snapshot; `entity.create.empty / 16` ran on `1.4.3` (`default`) and current (`archetype`, `sparseSet`) with Benchmark 1.38.1 and hdrhistogram-swift 0.2.0 recorded.
+- Follow-ups for Step 9: missing `jq` must fail instead of writing `unknown` provenance; add a Make target for the snapshot script tests; the current-revision smoke ran before two class-only adapter fixes and must be repeated.
 
 ## Phases and review gates
 

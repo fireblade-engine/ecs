@@ -1,4 +1,6 @@
-// Payloads, systems and worlds of the update and event workloads, ported from the reference benchmarks in ECSBenchmark.
+// Payloads, systems and worlds of the update and event workloads. The system set, order and formulas follow
+// abeimler/ecs_benchmark at 98678f746e0e2f04c37a3332453c8d98daa94f92 (src/base/base/systems/*.h, Application::init with
+// UseMoreComplexSystems): Movement, Data, MoreComplex, Health, Damage, Sprite, Render.
 // Everything here compiles unchanged against every revision; component access goes through `CompatSuite.modify`.
 import Benchmark
 import FirebladeECS
@@ -52,6 +54,7 @@ struct CompatDataPayload: Sendable {
     }
 }
 
+/// Declaration order matches upstream (`NPC, Monster, Hero`).
 enum CompatPlayerType: Int32, Sendable { case npc = 0, monster = 1, hero = 2 }
 
 struct CompatPlayerPayload: Sendable {
@@ -59,7 +62,13 @@ struct CompatPlayerPayload: Sendable {
     var type: CompatPlayerType = .npc
 }
 
-struct CompatHealthPayload: Sendable { var hp: Int32 = 0, maxhp: Int32 = 0 }
+enum CompatStatusEffect: Int32, Sendable { case spawn = 0, dead = 1, alive = 2 }
+
+struct CompatHealthPayload: Sendable {
+    var hp: Int32 = 0
+    var maxhp: Int32 = 0
+    var status: CompatStatusEffect = .spawn
+}
 struct CompatDamagePayload: Sendable { var atk: Int32 = 0, def: Int32 = 0 }
 struct CompatSpritePayload: Sendable { var character: UInt8 = 32 }
 /// Empty marker used by the component-event workloads.
@@ -114,6 +123,7 @@ struct CompatDataSystem {
     }
 }
 
+/// Upstream `MoreComplexSystem`: reads Position, rewrites Velocity and Data (the data RNG) every tenth `thingy`.
 struct CompatMoreComplexSystem {
     let family: Family<CompatPosition, CompatVelocity, CompatData>
 
@@ -121,19 +131,25 @@ struct CompatMoreComplexSystem {
         family = nexus.family(requiresAll: CompatPosition.self, CompatVelocity.self, CompatData.self)
     }
 
-    func update(deltaTime: Float) -> Int {
+    func update() -> Int {
         var visited = 0
         CompatSuite.forEachRead1Write2(family) { position, velocity, data in
-            let bump = Float(data.payload.thingy & 3)
-            velocity.payload.x += bump * deltaTime
-            velocity.payload.y += bump * deltaTime
-            _ = position
+            if data.payload.thingy % 10 == 0 {
+                if position.payload.x > position.payload.y {
+                    velocity.payload.x = Float(data.payload.rng.range(3, 19)) - 10
+                    velocity.payload.y = Float(data.payload.rng.range(0, 5))
+                } else {
+                    velocity.payload.x = Float(data.payload.rng.range(0, 5))
+                    velocity.payload.y = Float(data.payload.rng.range(3, 19)) - 10
+                }
+            }
             visited += 1
         }
         return visited
     }
 }
 
+/// Upstream `HealthSystem` state machine.
 struct CompatHealthSystem {
     let family: Family<CompatHealth>
 
@@ -144,13 +160,25 @@ struct CompatHealthSystem {
     func update() -> Int {
         var visited = 0
         CompatSuite.forEachWriting(family) { health in
-            if health.payload.hp > health.payload.maxhp { health.payload.hp = health.payload.maxhp }
+            if health.payload.hp <= 0, health.payload.status != .dead {
+                health.payload.hp = 0
+                health.payload.status = .dead
+            } else if health.payload.status == .dead, health.payload.hp == 0 {
+                health.payload.hp = health.payload.maxhp
+                health.payload.status = .spawn
+            } else if health.payload.hp >= health.payload.maxhp, health.payload.status != .alive {
+                health.payload.hp = health.payload.maxhp
+                health.payload.status = .alive
+            } else {
+                health.payload.status = .alive
+            }
             visited += 1
         }
         return visited
     }
 }
 
+/// Upstream `DamageSystem`: `atk - def` damage while alive, never below zero hp.
 struct CompatDamageSystem {
     let family: Family<CompatDamage, CompatHealth>
 
@@ -161,45 +189,80 @@ struct CompatDamageSystem {
     func update() -> Int {
         var visited = 0
         CompatSuite.forEachRead1Write1(family) { damage, health in
-            health.payload.hp = health.payload.hp &- damage.payload.atk
+            let totalDamage = damage.payload.atk - damage.payload.def
+            if health.payload.hp > 0, totalDamage > 0 {
+                health.payload.hp = max(health.payload.hp - totalDamage, 0)
+            }
             visited += 1
         }
         return visited
     }
 }
 
+/// Upstream `SpriteSystem`: '@' hero, 'k' monster, 'h' NPC while alive, '|' dead, '_' spawning.
 struct CompatSpriteSystem {
-    let family: Family<CompatHealth, CompatSprite>
+    static let hero = UInt8(ascii: "@")
+    static let monster = UInt8(ascii: "k")
+    static let npc = UInt8(ascii: "h")
+    static let grave = UInt8(ascii: "|")
+    static let spawn = UInt8(ascii: "_")
+
+    let family: Family<CompatPlayer, CompatHealth, CompatSprite>
 
     init(nexus: Nexus) {
-        family = nexus.family(requiresAll: CompatHealth.self, CompatSprite.self)
+        family = nexus.family(requiresAll: CompatPlayer.self, CompatHealth.self, CompatSprite.self)
     }
 
     func update() -> Int {
         var visited = 0
-        CompatSuite.forEachRead1Write1(family) { health, sprite in
-            sprite.payload.character = health.payload.hp > 0 ? 65 : 66
+        CompatSuite.forEachRead2Write1(family) { player, health, sprite in
+            switch health.payload.status {
+            case .alive:
+                switch player.payload.type {
+                case .hero: sprite.payload.character = Self.hero
+                case .monster: sprite.payload.character = Self.monster
+                case .npc: sprite.payload.character = Self.npc
+                }
+            case .dead: sprite.payload.character = Self.grave
+            case .spawn: sprite.payload.character = Self.spawn
+            }
             visited += 1
         }
         return visited
     }
 }
 
+/// Upstream 320x240 frame buffer; `draw` ignores out-of-bounds cells.
+final class CompatFrameBuffer {
+    static let width = 320
+    static let height = 240
+    private(set) var cells = [UInt8](repeating: 0, count: width * height)
+    /// In-bounds draws since creation.
+    private(set) var drawn = 0
+
+    func draw(x: Int, y: Int, _ character: UInt8) {
+        guard y >= 0, y < Self.height, x >= 0, x < Self.width else { return }
+        cells[x + y * Self.width] = character
+        drawn += 1
+    }
+}
+
+/// Upstream `RenderSystem`: draws every Position+Sprite member into the frame buffer.
 struct CompatRenderSystem {
-    let family: Family<CompatPosition>
+    let family: Family<CompatPosition, CompatSprite>
+    let frameBuffer = CompatFrameBuffer()
 
     init(nexus: Nexus) {
-        family = nexus.family(requires: CompatPosition.self)
+        family = nexus.family(requiresAll: CompatPosition.self, CompatSprite.self)
     }
 
-    func update(accumulator: inout Float) -> Int {
+    func update() -> Int {
         var visited = 0
-        var sum: Float = 0
-        CompatSuite.forEachReading(family) { position in
-            sum += position.payload.x + position.payload.y
+        let frameBuffer = frameBuffer
+        CompatSuite.forEachReading(family) { position, sprite in
+            frameBuffer.draw(x: Int(position.payload.x), y: Int(position.payload.y), sprite.payload.character)
             visited += 1
         }
-        accumulator += sum
         return visited
     }
 }
@@ -225,7 +288,6 @@ final class CompatUpdateWorld: CompatPassRunner {
     let damage: CompatDamageSystem?
     let sprite: CompatSpriteSystem?
     let render: CompatRenderSystem?
-    private(set) var accumulator: Float = 0
 
     init(nexus: Nexus, isComplex: Bool) {
         self.isComplex = isComplex
@@ -243,13 +305,11 @@ final class CompatUpdateWorld: CompatPassRunner {
         let dt = Self.deltaTime
         var visits = [movement.update(deltaTime: dt), data.update(deltaTime: dt)]
         if isComplex, let moreComplex, let health, let damage, let sprite, let render {
-            visits.append(moreComplex.update(deltaTime: dt))
+            visits.append(moreComplex.update())
             visits.append(health.update())
             visits.append(damage.update())
             visits.append(sprite.update())
-            var accumulator = 0 as Float
-            visits.append(render.update(accumulator: &accumulator))
-            self.accumulator = accumulator
+            visits.append(render.update())
         }
         return visits
     }

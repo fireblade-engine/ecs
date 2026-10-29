@@ -133,9 +133,9 @@ enum CompatWorkload: String, CaseIterable, Sendable {
         case .add:
             .adapted("component one is removed from the whole batch before timing; upstream pauses to remove per entity")
         case .systemBasicUniform, .systemBasicMixed:
-            .adapted("two-system set (movement, data) and population ported from the local reference update benchmark, upstream app composition unverified; each revision uses its native family iteration (forEach(reading:writing:) with inout components on value revisions, plain iteration mutating class instances on 1.x)")
+            .adapted("system list (Movement, Data), order and formulas follow upstream; player RNG seeds are ordinal, not address-derived; each revision uses its native family iteration instead of upstream's virtual system dispatch")
         case .systemComplexUniform, .systemComplexMixed:
-            .adapted("seven-system set follows the local Update7SystemsOnly composition, upstream composition unverified; same population as the basic workloads; each revision uses its native family iteration (forEach(reading:writing:) with inout components on value revisions, plain iteration mutating class instances on 1.x)")
+            .adapted("system list (Movement, Data, MoreComplex, Health, Damage, Sprite, Render), order and formulas follow upstream UseMoreComplexSystems; player RNG seeds are ordinal, not address-derived; each revision uses its native family iteration instead of upstream's virtual system dispatch")
         case .eventPublishMixed:
             .adapted("per-entity marker add then per-entity remove; no native type-wide component clear")
         case .eventPublishUpdateMixed:

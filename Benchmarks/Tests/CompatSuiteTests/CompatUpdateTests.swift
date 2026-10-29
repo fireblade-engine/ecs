@@ -103,7 +103,7 @@ struct CompatUpdateTests {
                     let visits = world.update()
                     #expect(visits == [
                         expected.positionVelocity, expected.data, expected.positionVelocityData,
-                        expected.players, expected.players, expected.players, expected.position
+                        expected.players, expected.players, expected.players, expected.players
                     ], "\(workload.identity) N=\(count)")
                 }
             }
@@ -111,19 +111,57 @@ struct CompatUpdateTests {
     }
 
     @Test
-    func complexUpdateDamagesHealthAndUpdatesSprites() throws {
+    func healthDamageAndSpriteSystemsFollowTheUpstreamStateMachine() throws {
         for backend in CompatSuite.backends {
             let state = CompatWorkload.systemComplexUniform.prepare(backend: backend, count: 16)
             let world = try #require(state.runner as? CompatUpdateWorld)
-            let before = Array(state.nexus.family(requiresAll: CompatHealth.self, CompatDamage.self)
-                .map { Int($0.0.payload.hp) - Int($0.1.payload.atk) })
+            let members = { Array(state.nexus.family(requiresAll: CompatHealth.self, CompatDamage.self, CompatSprite.self)
+                .map { ($0.0.payload, $0.1.payload, $0.2.payload.character) }) }
+            #expect(members().allSatisfy { $0.0.status == .spawn && $0.0.hp == 0 && $0.2 == 95 })
+
+            // Pass 1: hp 0 and not dead -> Dead, damage skips (hp 0), sprite shows the grave.
             _ = world.update()
-            // Health is initialised at zero hp: the damage system lowers it by atk, the sprite system then marks it dead (66).
-            let after = Array(state.nexus.family(requiresAll: CompatHealth.self, CompatSprite.self)
-                .map { (Int($0.0.payload.hp), $0.1.payload.character) })
-            #expect(after.count == 16)
-            #expect(after.allSatisfy { $0.0 <= 0 && $0.1 == 66 })
-            #expect(before.count == 16)
+            #expect(members().count == 16)
+            #expect(members().allSatisfy { $0.0.status == .dead && $0.0.hp == 0 && $0.2 == CompatSpriteSystem.grave })
+
+            // Pass 2: Dead with hp 0 -> Spawn with max hp, then damage of atk - def (if positive), sprite shows spawn.
+            _ = world.update()
+            for (health, damage, character) in members() {
+                let total = damage.atk - damage.def
+                let expectedHP = total > 0 ? max(health.maxhp - total, 0) : health.maxhp
+                #expect(health.status == .spawn)
+                #expect(health.hp == expectedHP)
+                #expect(character == CompatSpriteSystem.spawn)
+            }
+        }
+    }
+
+    @Test
+    func moreComplexSystemRewritesVelocityOnEveryTenthThingy() throws {
+        for backend in CompatSuite.backends {
+            let state = CompatWorkload.systemComplexUniform.prepare(backend: backend, count: 100)
+            let world = try #require(state.runner as? CompatUpdateWorld)
+            let velocities = { Array(state.nexus.family(requires: CompatVelocity.self).map { ($0.payload.x, $0.payload.y) }) }
+            // The data system runs before the more-complex system, so thingy is 1...9 for nine passes: velocities stay (1, 1).
+            for _ in 0 ..< 9 { _ = world.update() }
+            #expect(velocities().allSatisfy { $0.0 == 1 && $0.1 == 1 })
+            _ = world.update()
+            #expect(velocities().contains { $0.0 != 1 || $0.1 != 1 })
+        }
+    }
+
+    @Test
+    func renderSystemDrawsInBoundsMembers() throws {
+        for backend in CompatSuite.backends {
+            let state = CompatWorkload.systemComplexUniform.prepare(backend: backend, count: 100)
+            let world = try #require(state.runner as? CompatUpdateWorld)
+            let render = try #require(world.render)
+            _ = world.update()
+            let inBounds = state.nexus.family(requiresAll: CompatPosition.self, CompatSprite.self)
+                .filter { (0 ..< 320).contains(Int($0.0.payload.x)) && (0 ..< 240).contains(Int($0.0.payload.y)) }
+                .count
+            #expect(render.frameBuffer.drawn == inBounds)
+            #expect(inBounds > 0)
         }
     }
 

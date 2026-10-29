@@ -115,7 +115,7 @@ for ((i = 0; i < ${#refs[@]}; i++)); do
     staged="$scratch/result-$i.json"
     printf 'benchmark-run-refs: [%d/%d] %s (%s)\n' "$((i + 1))" "${#refs[@]}" "$ref" "${sha:0:12}" >&2
 
-    if ! "$snapshot" "$ref" --repo "$repo" --suite-ref "$suite_sha" --out "$scratch/snapshot-$i" --result "$staged" ${filter_args[@]+"${filter_args[@]}"}; then
+    if ! "$snapshot" "$ref" --repo "$repo" --suite-ref "$suite_sha" --out "$scratch/snapshot-$i" --result "$staged" ${filter_args[@]+"${filter_args[@]}"} >&2; then
         rm -rf "$scratch/snapshot-$i"
         printf 'benchmark-run-refs: ref %s failed; later refs were not started\n' "$ref" >&2
         break

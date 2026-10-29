@@ -5,7 +5,13 @@
 // Run from this directory:
 //   swift package benchmark
 
+import Foundation
 import PackageDescription
+
+// ECS_BENCHMARK_SUITE=shared builds only the compatibility suite, which compiles against every FirebladeECS
+// revision. Scripts/benchmark-snapshot.sh sets it for snapshots of older revisions, whose component model the
+// reference benchmarks in ECSBenchmark do not support.
+let sharedSuiteOnly = ProcessInfo.processInfo.environment["ECS_BENCHMARK_SUITE"] == "shared"
 
 let package = Package(
     name: "ECSBenchmarks",
@@ -18,6 +24,23 @@ let package = Package(
         .package(url: "https://github.com/ordo-one/benchmark", .upToNextMajor(from: "1.38.1"))
     ],
     targets: [
+        .executableTarget(
+            name: "ECSCompatBenchmark",
+            dependencies: [
+                .product(name: "FirebladeECS", package: "ecs"),
+                .product(name: "Benchmark", package: "benchmark")
+            ],
+            path: "Benchmarks/ECSCompatBenchmark",
+            plugins: [
+                .plugin(name: "BenchmarkPlugin", package: "benchmark")
+            ]
+        ),
+        .testTarget(
+            name: "CompatSuiteTests",
+            dependencies: ["ECSCompatBenchmark"],
+            path: "Tests/CompatSuiteTests"
+        )
+    ] + (sharedSuiteOnly ? [] : [
         .executableTarget(
             name: "ECSBenchmark",
             dependencies: [
@@ -34,5 +57,5 @@ let package = Package(
             dependencies: ["ECSBenchmark"],
             path: "Tests/ReferenceUpdateTests"
         )
-    ]
+    ])
 )

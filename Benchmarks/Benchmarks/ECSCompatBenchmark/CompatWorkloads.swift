@@ -20,8 +20,8 @@ enum CompatParity: Equatable, Sendable {
 struct CompatOutcome: Equatable {
     /// Timed operations performed (entities created or destroyed, lookups, remove/add pairs, additions).
     var operations = 0
-    /// Operations that changed what they targeted (successful destroys, completed remove/add pairs, additions); zero for
-    /// lookups, whose results go to `blackHole` and are verified by the tests with direct reads.
+    /// Operations that succeeded: successful destroys, completed remove/add pairs, additions, and lookups that returned a
+    /// component (counted per get in the loop).
     var hits = 0
     /// Sum of the component values written by mutation workloads.
     var valueSum = 0
@@ -116,12 +116,19 @@ enum CompatWorkload: String, CaseIterable, Sendable {
         }
     }
 
+    /// Fixed pass counts of persistent workloads: warmup passes, then exactly this many measured samples.
+    static let persistentWarmupIterations = 10
+    static let persistentIterations = 100
+    static let persistentMaxDuration: Duration = .seconds(600)
+
     var parity: CompatParity {
         switch self {
         case .createNoEntities, .createEmpty, .createMinimal, .destroyMinimal:
             .adapted("nexus teardown is outside the timed region; upstream times registry teardown")
-        case .lookupNone, .lookupOne, .lookupTwo:
-            .equivalent
+        case .lookupNone:
+            .adapted("payload is a single Int per component vs upstream float structs; gets return class references on 1.x and value copies on value revisions; the miss is a get of an absent component; entities are created outside timing")
+        case .lookupOne, .lookupTwo:
+            .adapted("payload is a single Int per component vs upstream float structs; gets return class references on 1.x and value copies on value revisions; two separate gets per entity for lookupTwo; entities are created outside timing")
         case .lookupMixedThree:
             .adapted("population and lookup count match; payload is a single Int per component and gets return the component")
         case .iterationOne, .iterationTwo:
@@ -129,17 +136,17 @@ enum CompatWorkload: String, CaseIterable, Sendable {
         case .iterationMixedThree:
             .adapted("membership recipe matches upstream; each revision uses its native family iteration (value copies vs class references); family built before timing")
         case .removeAdd:
-            .equivalent
+            .adapted("payload is a single Int vs upstream float structs; every set allocates a new class instance on 1.x vs a value copy on value revisions; nexus teardown is outside the timed region")
         case .add:
             .adapted("component one is removed from the whole batch before timing; upstream pauses to remove per entity")
         case .systemBasicUniform, .systemBasicMixed:
-            .adapted("system list (Movement, Data), order and formulas follow upstream; player RNG seeds are ordinal, not address-derived; each revision uses its native family iteration instead of upstream's virtual system dispatch")
+            .adapted("system list (Movement, Data), order and formulas follow upstream; pass count is pinned (10 warmup + 100 measured passes on one persistent world) so every revision runs the same passes; player RNG seeds are ordinal, not address-derived; each revision uses its native family iteration instead of upstream's virtual system dispatch")
         case .systemComplexUniform, .systemComplexMixed:
-            .adapted("system list (Movement, Data, MoreComplex, Health, Damage, Sprite, Render), order and formulas follow upstream UseMoreComplexSystems; player RNG seeds are ordinal, not address-derived; each revision uses its native family iteration instead of upstream's virtual system dispatch")
+            .adapted("system list (Movement, Data, MoreComplex, Health, Damage, Sprite, Render), order and formulas follow upstream UseMoreComplexSystems; pass count is pinned (10 warmup + 100 measured passes on one persistent world) so every revision runs the same passes; player RNG seeds are ordinal, not address-derived; each revision uses its native family iteration instead of upstream's virtual system dispatch")
         case .eventPublishMixed:
-            .adapted("per-entity marker add then per-entity remove; no native type-wide component clear")
+            .adapted("pass count is pinned (10 warmup + 100 measured passes); base-only mixed population (Position, Velocity, Data; no players) as upstream's EnTT factory; per-entity marker add then per-entity remove through a scratch array that is collected inside the timed region; no native type-wide component clear")
         case .eventPublishUpdateMixed:
-            .adapted("effective upstream workload: Position+Velocity update, empty marker view visits zero, per-entity clear of an empty marker pool; no native type-wide component clear")
+            .adapted("pass count is pinned (10 warmup + 100 measured passes); base-only mixed population (no players) as upstream's EnTT factory; effective upstream workload: Position+Velocity update, empty marker view visits zero, per-entity clear of an empty marker pool via a scratch array collected inside the timed region; no native type-wide component clear")
         }
     }
 
@@ -184,7 +191,8 @@ enum CompatWorkload: String, CaseIterable, Sendable {
             let isComplex = self == .systemComplexUniform || self == .systemComplexMixed
             return CompatState(nexus: nexus, runner: CompatUpdateWorld(nexus: nexus, isComplex: isComplex), entities: [])
         case .eventPublishMixed, .eventPublishUpdateMixed:
-            CompatPopulation.populate(nexus: nexus, entityCount: count, isMixed: true)
+            // Upstream builds events on the base factory's mixed population (no hero/monster components).
+            CompatPopulation.populateBaseMixed(nexus: nexus, entityCount: count)
             return CompatState(nexus: nexus, runner: CompatEventWorld(nexus: nexus, withUpdate: self == .eventPublishUpdateMixed), entities: [])
         case .iterationOne:
             for index in 0 ..< count {
@@ -267,23 +275,31 @@ enum CompatWorkload: String, CaseIterable, Sendable {
                 if nexus.destroy(entity: entity) { outcome.hits += 1 }
             }
         case .lookupNone:
-            // Results go to blackHole like the upstream locals; counts are derived, not tracked per lookup.
+            // Results go to blackHole like the upstream locals; each get is counted, successful ones as hits.
             for entity in state.entities {
-                blackHole(entity.get(CompatThirdComponent.self))
+                let third = entity.get(CompatThirdComponent.self)
+                blackHole(third)
+                outcome.operations += 1
+                if third != nil { outcome.hits += 1 }
             }
-            outcome.operations = state.entities.count
         case .lookupOne:
             for entity in state.entities {
-                blackHole(entity.get(CompatFirstComponent.self))
+                let first = entity.get(CompatFirstComponent.self)
+                blackHole(first)
+                outcome.operations += 1
+                if first != nil { outcome.hits += 1 }
             }
-            outcome.operations = state.entities.count
         case .lookupTwo:
             for entity in state.entities {
                 // Two separate gets per entity, as upstream.
-                blackHole(entity.get(CompatFirstComponent.self))
-                blackHole(entity.get(CompatSecondComponent.self))
+                let first = entity.get(CompatFirstComponent.self)
+                blackHole(first)
+                let second = entity.get(CompatSecondComponent.self)
+                blackHole(second)
+                outcome.operations += 2
+                if first != nil { outcome.hits += 1 }
+                if second != nil { outcome.hits += 1 }
             }
-            outcome.operations = state.entities.count * 2
         case .lookupMixedThree:
             for entity in state.entities {
                 let (first, second, third) = entity.get(
@@ -292,8 +308,11 @@ enum CompatWorkload: String, CaseIterable, Sendable {
                 blackHole(first)
                 blackHole(second)
                 blackHole(third)
+                outcome.operations += 3
+                if first != nil { outcome.hits += 1 }
+                if second != nil { outcome.hits += 1 }
+                if third != nil { outcome.hits += 1 }
             }
-            outcome.operations = state.entities.count * 3
         case .iterationOne, .iterationTwo, .iterationMixedThree:
             outcome.operations = state.family?.visit() ?? 0
         case .systemBasicUniform, .systemBasicMixed, .systemComplexUniform, .systemComplexMixed,

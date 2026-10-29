@@ -52,7 +52,36 @@ struct CompatWorkloadTests {
             #expect(note == "equivalent" || (note.hasPrefix("adapted(") && note.hasSuffix(")") && note.count > "adapted()".count))
         }
         #expect(CompatWorkload.add.parity.note.hasPrefix("adapted("))
-        #expect(CompatWorkload.lookupOne.parity == .equivalent)
+        // No workload is labelled equivalent without cited evidence; none has any.
+        #expect(CompatWorkload.allCases.allSatisfy { $0.parity != .equivalent })
+        for workload in [CompatWorkload.lookupNone, .lookupOne, .lookupTwo, .removeAdd] {
+            #expect(workload.parity.note.hasPrefix("adapted("), "\(workload.identity)")
+        }
+        for workload in CompatWorkload.allCases where workload.persistsState {
+            #expect(workload.parity.note.contains("pass count is pinned"), "\(workload.identity)")
+        }
+        #expect(CompatWorkload.eventPublishMixed.parity.note.contains("base-only mixed population"))
+        #expect(CompatWorkload.eventPublishUpdateMixed.parity.note.contains("base-only mixed population"))
+    }
+
+    @Test
+    func persistsStateMatchesPreparedRunnerAndScalesAreIntended() {
+        let persistent: Set<CompatWorkload> = [
+            .systemBasicUniform, .systemBasicMixed, .systemComplexUniform, .systemComplexMixed,
+            .eventPublishMixed, .eventPublishUpdateMixed
+        ]
+        #expect(CompatWorkload.scales == [0, 1, 16, 1024])
+        #expect(CompatWorkload.smallScale == 16)
+        for workload in CompatWorkload.allCases {
+            #expect(workload.persistsState == persistent.contains(workload), "\(workload.identity)")
+            for backend in CompatSuite.backends {
+                let state = workload.prepare(backend: backend, count: 16)
+                #expect((state.runner != nil) == workload.persistsState, "\(workload.identity)")
+            }
+            #expect(workload.registeredScales == (workload == .createNoEntities ? [0] : [0, 1, 16, 1024]), "\(workload.identity)")
+        }
+        #expect(CompatWorkload.persistentWarmupIterations > 0)
+        #expect(CompatWorkload.persistentIterations > 0)
     }
 
     @Test
@@ -121,6 +150,7 @@ struct CompatWorkloadTests {
             #expect(state.nexus.numEntities == count)
             let outcome = CompatWorkload.lookupNone.run(state, count: count)
             #expect(outcome.operations == count)
+            #expect(outcome.hits == 0)
             #expect(state.entities.filter { $0.get(CompatThirdComponent.self) != nil }.isEmpty)
             #expect(state.nexus.numComponents == 0)
         }
@@ -132,6 +162,7 @@ struct CompatWorkloadTests {
             let state = CompatWorkload.lookupOne.prepare(backend: backend, count: count)
             let outcome = CompatWorkload.lookupOne.run(state, count: count)
             #expect(outcome.operations == count)
+            #expect(outcome.hits == count)
             #expect(state.entities.count == count)
             for (index, entity) in state.entities.enumerated() {
                 #expect(entity.get(CompatFirstComponent.self)?.value == index)
@@ -146,6 +177,7 @@ struct CompatWorkloadTests {
             let state = CompatWorkload.lookupTwo.prepare(backend: backend, count: count)
             let outcome = CompatWorkload.lookupTwo.run(state, count: count)
             #expect(outcome.operations == count * 2)
+            #expect(outcome.hits == count * 2)
             for (index, entity) in state.entities.enumerated() {
                 #expect(entity.get(CompatFirstComponent.self)?.value == index)
                 #expect(entity.get(CompatSecondComponent.self)?.value == index * 2)
@@ -163,6 +195,7 @@ struct CompatWorkloadTests {
             #expect(state.nexus.numComponents == count * 2 + looked)
             let outcome = CompatWorkload.lookupMixedThree.run(state, count: count)
             #expect(outcome.operations == looked * 3)
+            #expect(outcome.hits == looked * 3)
             for (position, entity) in state.entities.enumerated() {
                 let index = position * 2
                 let (first, second, third) = entity.get(

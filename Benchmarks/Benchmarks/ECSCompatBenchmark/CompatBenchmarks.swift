@@ -9,9 +9,16 @@ let benchmarks: @Sendable () -> Void = {
                 if workload.persistsState {
                     // One world per benchmark, built in setup and shared by warmup and every sample: no reset between passes.
                     nonisolated(unsafe) var state: CompatState?
+                    // Pass counts are pinned, not time-bounded: the world carries state across passes (Render's draw count
+                    // drifts), so every revision must run the same passes. `maxDuration` is only a generous safety net.
                     Benchmark(
                         name,
-                        configuration: .init(scalingFactor: .one),
+                        configuration: .init(
+                            warmupIterations: CompatWorkload.persistentWarmupIterations,
+                            scalingFactor: .one,
+                            maxDuration: CompatWorkload.persistentMaxDuration,
+                            maxIterations: CompatWorkload.persistentIterations
+                        ),
                         closure: { benchmark in
                             guard let state else {
                                 benchmark.error("setup did not create the world")

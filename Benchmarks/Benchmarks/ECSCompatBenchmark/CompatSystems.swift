@@ -1,7 +1,7 @@
 // Payloads, systems and worlds of the update and event workloads. The system set, order and formulas follow
 // abeimler/ecs_benchmark at 98678f746e0e2f04c37a3332453c8d98daa94f92 (src/base/base/systems/*.h, Application::init with
 // UseMoreComplexSystems): Movement, Data, MoreComplex, Health, Damage, Sprite, Render.
-// Everything here compiles unchanged against every revision; component access goes through `CompatSuite.modify`.
+// Everything here compiles unchanged against every revision; component access goes through the `CompatSuite.forEach*` helpers.
 import Benchmark
 import FirebladeECS
 
@@ -300,7 +300,7 @@ final class CompatUpdateWorld: CompatPassRunner {
         render = isComplex ? CompatRenderSystem(nexus: nexus) : nil
     }
 
-    /// Members visited per system, in execution order.
+    /// Members visited per system, in execution order. Allocates; tests only, `pass()` uses `updateTotal()`.
     func update() -> [Int] {
         let dt = Self.deltaTime
         var visits = [movement.update(deltaTime: dt), data.update(deltaTime: dt)]
@@ -314,8 +314,22 @@ final class CompatUpdateWorld: CompatPassRunner {
         return visits
     }
 
+    /// Total members visited across all systems, in execution order, without allocating.
+    func updateTotal() -> Int {
+        let dt = Self.deltaTime
+        var visited = movement.update(deltaTime: dt) + data.update(deltaTime: dt)
+        if isComplex, let moreComplex, let health, let damage, let sprite, let render {
+            visited += moreComplex.update()
+            visited += health.update()
+            visited += damage.update()
+            visited += sprite.update()
+            visited += render.update()
+        }
+        return visited
+    }
+
     func pass() -> CompatOutcome {
-        CompatOutcome(operations: update().reduce(0, +))
+        CompatOutcome(operations: updateTotal())
     }
 }
 
@@ -324,14 +338,15 @@ final class CompatEventWorld: CompatPassRunner {
     let withUpdate: Bool
     let movement: CompatMovementSystem
     let markerFamily: Family<CompatMarker>
-    let eventView: Family<CompatPosition, CompatVelocity, CompatMarker>
+    /// Position+Velocity+Marker view; only created for the publish-update workload, which visits it.
+    let eventView: Family<CompatPosition, CompatVelocity, CompatMarker>?
     private var scratch: [Entity] = []
 
     init(nexus: Nexus, withUpdate: Bool) {
         self.withUpdate = withUpdate
         movement = CompatMovementSystem(nexus: nexus)
         markerFamily = nexus.family(requires: CompatMarker.self)
-        eventView = nexus.family(requiresAll: CompatPosition.self, CompatVelocity.self, CompatMarker.self)
+        eventView = withUpdate ? nexus.family(requiresAll: CompatPosition.self, CompatVelocity.self, CompatMarker.self) : nil
         scratch.reserveCapacity(movement.family.count)
     }
 
@@ -361,6 +376,7 @@ final class CompatEventWorld: CompatPassRunner {
 
     /// Visits the Position+Velocity+Marker view; empty unless markers were published.
     func visitEventView() -> Int {
+        guard let eventView else { return 0 }
         var visited = 0
         CompatSuite.forEachReading(eventView) { position, velocity, marker in
             blackHole(position)

@@ -38,8 +38,8 @@ struct CompatThirdComponent: Component, Sendable {
 }
 #endif
 
-/// Boxes a plain payload as a component. Shared code mutates payloads only through `CompatSuite.modify`, so it never branches
-/// on the model: class revisions mutate the shared instance, value revisions write the modified copy back.
+/// Boxes a plain payload as a component. Shared code mutates payloads only through the `CompatSuite.forEach*` helpers, so it
+/// never branches on the model: class revisions mutate the shared instance, value revisions write the modified copy back.
 protocol CompatBoxed: Component {
     associatedtype Payload: Sendable
     var payload: Payload { get set }

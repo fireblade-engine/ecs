@@ -42,23 +42,15 @@ enum CompatPopulation {
         isMixed ? mixed(at: index, entityCount: entityCount) : uniform(at: index)
     }
 
-    static func populate(nexus: Nexus, entityCount: Int, isMixed: Bool) {
-        var entities: [Entity] = []
-        entities.reserveCapacity(entityCount)
+    /// Base-only mixed world: Position, Velocity and Data on every entity with the upstream removal recipe and no player
+    /// components. Upstream's event workloads on EnTT build exactly this (`createEntitiesWithMixedComponents<EntityFactory>`,
+    /// whose `EntityFactory::create` emplaces Position, Velocity and Data only).
+    static func populateBaseMixed(nexus: Nexus, entityCount: Int) {
+        _ = createBaseEntities(nexus: nexus, entityCount: entityCount, isMixed: true)
+    }
 
-        // The reference creates every base entity and applies its removals before adding any player components.
-        for index in 0 ..< entityCount {
-            let fixture = fixture(at: index, entityCount: entityCount, isMixed: isMixed)
-            let entity = nexus.createEntity(
-                with: CompatPosition(CompatPositionPayload()),
-                CompatVelocity(CompatVelocityPayload()),
-                CompatData(CompatDataPayload())
-            )
-            if fixture.removesPosition { entity.remove(CompatPosition.self) }
-            if fixture.removesVelocity { entity.remove(CompatVelocity.self) }
-            if fixture.removesData { entity.remove(CompatData.self) }
-            entities.append(entity)
-        }
+    static func populate(nexus: Nexus, entityCount: Int, isMixed: Bool) {
+        let entities = createBaseEntities(nexus: nexus, entityCount: entityCount, isMixed: isMixed)
 
         for index in entities.indices {
             guard let initialization = fixture(at: index, entityCount: entityCount, isMixed: isMixed).playerInitialization else { continue }
@@ -76,6 +68,25 @@ enum CompatPopulation {
 }
 
 private extension CompatPopulation {
+    /// The reference creates every base entity and applies its removals before adding any player components.
+    static func createBaseEntities(nexus: Nexus, entityCount: Int, isMixed: Bool) -> [Entity] {
+        var entities: [Entity] = []
+        entities.reserveCapacity(entityCount)
+        for index in 0 ..< entityCount {
+            let fixture = fixture(at: index, entityCount: entityCount, isMixed: isMixed)
+            let entity = nexus.createEntity(
+                with: CompatPosition(CompatPositionPayload()),
+                CompatVelocity(CompatVelocityPayload()),
+                CompatData(CompatDataPayload())
+            )
+            if fixture.removesPosition { entity.remove(CompatPosition.self) }
+            if fixture.removesVelocity { entity.remove(CompatVelocity.self) }
+            if fixture.removesData { entity.remove(CompatData.self) }
+            entities.append(entity)
+        }
+        return entities
+    }
+
     static func makeFixture(
         at index: Int,
         removesPosition: Bool,

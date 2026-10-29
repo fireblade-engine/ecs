@@ -175,6 +175,14 @@ The user approved every remaining gate in advance for an unattended run, with th
 - **Batch id:** `run.batchId` is an optional additive field (older files still validate, so `schemaVersion` stays 1), set once per runner invocation and shown in report provenance.
 - **Warnings:** runner and report warn when toolchain, host (without the physical memory size) or the registered workload and scale set differ; the report also flags metric rows whose measurement counts differ between series. Duplicate benchmark names make `BenchmarkReport.render` throw `ReportError.duplicateBenchmarkName`.
 
+### Steps 8–10 gate (passed under delegation)
+
+- Step 10 (`dabf393b`..`2f92c9ba`): `ECSBenchmarkResults report` renders tables and Mermaid charts from saved results only. An independent review (no blockers) led to the hardening above (`2d8f70ca`..`22692010`).
+- **Display precision:** report tables round values to five significant digits for readability. Deltas and ratios are computed from unrounded values, and the result JSON keeps the package's full precision. This refines the Step 10 design's "keeps the package's precision".
+- **Incompatible units:** rows are keyed by metric, and the pinned package fixes each metric's dimension, so real files cannot produce a dimension mismatch within one row. The `(incompatible units)` path is reached only by a polarity mismatch and is covered by a forged-polarity fixture.
+- Known leftover: a `String(cString:)` deprecation warning in `HostFacts.swift`; it goes to the Step 11 lint pass.
+- Evidence: `make test-benchmarks` (59 + 9 + 36 tests), `make test-benchmark-scripts`, and a real `--refs 1.4.3,main` smoke whose report rendered.
+
 ## Phases and review gates
 
 Each phase is a separate check-in; pause for user review before beginning the next.
@@ -182,8 +190,8 @@ Each phase is a separate check-in; pause for user review before beginning the ne
 - [x] **Inventory and semantics:** classify logical API applicability for `1.4.3` and the current revision using inspected APIs, and document known reference differences. No builds or benchmark parity tests were performed.
 - [x] **Scoped export feasibility:** native baseline round trips were verified for the measured four metrics and synthetic result cases at the recorded package pins. Broader metric coverage, wrapper/provenance tests, format compatibility, and production-pipeline accuracy remain unproven; the approved direction and evidence are recorded below.
 - [x] **Shared suite and adapters** (Steps 3–7, gate passed under delegation 2026-10-29): consolidate/reuse applicable cases, preserve unrelated package benchmarks, and add correctness checks for population counts, operation counts, and state mutation.
-- [ ] **Ref runner and results:** support more than two committed refs, isolated SHA snapshots, consistent config, complete per-ref JSON, and clear failure for unsupported refs or missing capabilities.
-- [ ] **Report-only path:** validate N-way matching, all-statistic output, unit handling, missing values, zero baselines, Mermaid rendering, and that report generation does not invoke benchmarks.
+- [x] **Ref runner and results** (gate passed under delegation): support more than two committed refs, isolated SHA snapshots, consistent config, complete per-ref JSON, and clear failure for unsupported refs or missing capabilities.
+- [x] **Report-only path** (gate passed under delegation): validate N-way matching, all-statistic output, unit handling, missing values, zero baselines, Mermaid rendering, and that report generation does not invoke benchmarks.
 - [ ] **Compatibility and performance validation:** after approval, build/smoke against `1.4.3` and current, then run the full agreed workload set only after smoke results and resource cost are reviewed.
 
 ### Acceptance checks

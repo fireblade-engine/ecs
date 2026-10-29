@@ -14,7 +14,7 @@ Usage: Scripts/benchmark-snapshot.sh <ref> [options]
 
   --suite-ref <rev>   commit providing the suite (default: HEAD); suite paths in the worktree must be clean
   --out <dir>         snapshot directory (must not exist or be empty; default: new temporary directory)
-  --filter <regex>    benchmark filter passed to the Benchmark plugin (default: smallest scale of entity.create.empty)
+  --filter <regex>    benchmark filter passed to the Benchmark plugin (default: smallest scale of every compat workload)
   --prepare-only      stop after writing the snapshot and provenance; do not resolve, build or run
   --build-only        resolve and build, but do not run
   --repo <dir>        repository to read refs from (default: the repository containing this script)
@@ -31,7 +31,7 @@ repo=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 ref=""
 suite_ref=HEAD
 out=""
-filter='^entity\.create\.empty .* / 16$'
+filter='^(entity|component)\..* / 16$'
 mode=run
 
 while (($#)); do

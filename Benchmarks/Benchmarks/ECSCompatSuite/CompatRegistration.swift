@@ -15,12 +15,7 @@ public func registerCompatBenchmarks() {
                     // drifts), so every revision must run the same passes. `maxDuration` is only a generous safety net.
                     Benchmark(
                         name,
-                        configuration: .init(
-                            warmupIterations: CompatWorkload.persistentWarmupIterations,
-                            scalingFactor: .one,
-                            maxDuration: CompatWorkload.persistentMaxDuration,
-                            maxIterations: CompatWorkload.persistentIterations
-                        ),
+                        configuration: CompatSuite.persistentConfiguration(),
                         closure: { benchmark in
                             guard let state else {
                                 benchmark.error("setup did not create the world")
@@ -38,7 +33,7 @@ public func registerCompatBenchmarks() {
                 } else {
                     // Every invocation prepares fresh state before timing and runs exactly one pass (`.one`), so warmup and
                     // repeated invocations do the same work. Nexus teardown happens after stop.
-                    Benchmark(name, configuration: .init(scalingFactor: .one)) { benchmark in
+                    Benchmark(name, configuration: CompatSuite.freshStateConfiguration()) { benchmark in
                         let state = workload.prepare(backend: backend, count: scale)
                         benchmark.startMeasurement()
                         let outcome = workload.run(state, count: scale)

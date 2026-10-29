@@ -1,0 +1,249 @@
+import Benchmark
+import Foundation
+import Testing
+@testable import ECSBenchmarkResultSchema
+
+@Suite
+struct ReportTests {
+    private func render(_ files: [BenchmarkResultFile], baseline: String? = nil) throws -> String {
+        try BenchmarkReport.render(files, options: ReportOptions(baseline: baseline)).markdown
+    }
+
+    private var all: [BenchmarkResultFile] { [ReportFixtures.classRef(), ReportFixtures.valueRef(), ReportFixtures.scaledRef()] }
+
+    /// The table row `label` of the section whose heading line starts with `heading`.
+    private func row(_ report: String, section: String, metric: String, label: String) throws -> String {
+        let lines = report.components(separatedBy: "\n")
+        let start = try #require(lines.firstIndex(of: section))
+        let metricStart = try #require(lines[start...].firstIndex { $0.hasPrefix("#### \(metric)") })
+        let line = lines[metricStart...].prefix { !$0.hasPrefix("```") }.first { $0.hasPrefix("| \(label) |") }
+        return try #require(line)
+    }
+
+    @Test
+    func fixturesAreValid() throws {
+        for file in all { try ResultValidator.validate(file) }
+        #expect(all.count >= 3)
+    }
+
+    @Test
+    func reportsEveryStatisticBeyondP50() throws {
+        let report = try render(all)
+        let section = "### `\(ReportFixtures.w1)` / 16"
+        let labels = ["measurements", "mean", "std dev", "p0", "p25", "p50", "p75", "p90", "p99", "p100"]
+        for label in labels { _ = try row(report, section: section, metric: "Time (wall clock)", label: label) }
+        let mean = try row(report, section: section, metric: "Time (wall clock)", label: "mean")
+        #expect(mean.contains("| 1.7001 μs |"), "baseline mean (package precision) shown in μs: \(mean)")
+        let p99 = try row(report, section: section, metric: "Time (wall clock)", label: "p99")
+        #expect(p99.contains("| 4 μs |"))
+        let p75 = try row(report, section: section, metric: "Time (wall clock)", label: "p75")
+        #expect(p75.contains("| 2 μs |"))
+        let count = try row(report, section: section, metric: "Time (wall clock)", label: "measurements")
+        #expect(count.contains("| 10 |"))
+    }
+
+    @Test
+    func backendPairingComparesWithTheBaselinesOnlyBackend() throws {
+        let report = try render(all)
+        #expect(report.contains("| 1.4.3 (class, default) | baseline |"))
+        #expect(report.contains("| main (value, archetype) | 1.4.3 (class, default) |"))
+        #expect(report.contains("| main (value, sparseSet) | 1.4.3 (class, default) |"))
+        #expect(report.contains("| candidate (value, archetype) | 1.4.3 (class, default) |"))
+    }
+
+    @Test
+    func backendPairingPrefersTheSameBackendName() throws {
+        // With the value ref as baseline, the class ref's `default` backend matches none of its two backends.
+        let report = try render(all, baseline: "main")
+        #expect(report.contains("| 1.4.3 (class, default) | unavailable (the baseline has several backends and none is `default`) |"))
+        #expect(report.contains("| main (value, archetype) | baseline |"))
+        #expect(report.contains("| main (value, sparseSet) | baseline |"))
+        #expect(report.contains("| candidate (value, archetype) | main (value, archetype) |"))
+    }
+
+    @Test
+    func missingMetricAndWorkloadPrintUnavailable() throws {
+        let report = try render(all)
+        let section = "### `\(ReportFixtures.w1)` / 16"
+        // archetype has no throughput, and neither does the candidate.
+        let throughput = try row(report, section: section, metric: "Throughput", label: "p50")
+        let cells = throughput.components(separatedBy: " | ")
+        #expect(cells[2] == "unavailable")
+        #expect(cells.last == "unavailable |")
+        // w2 is missing for sparseSet and the candidate; w3 for everything but the candidate.
+        let w2 = try row(report, section: "### `\(ReportFixtures.w2)` / 16", metric: "Time (wall clock)", label: "p50")
+        #expect(w2.components(separatedBy: " | ")[3] == "unavailable")
+        let w3 = try row(report, section: "### `\(ReportFixtures.w3)` / 16", metric: "Time (wall clock)", label: "p50")
+        #expect(w3.contains("| unavailable | unavailable | unavailable |"))
+        #expect(w3.contains("| 1 μs (delta unavailable) |"))
+        // Scale 64 exists only in the class ref.
+        let scale64 = try row(report, section: "### `\(ReportFixtures.w1)` / 64", metric: "Time (wall clock)", label: "p50")
+        #expect(scale64.contains("| unavailable | unavailable | unavailable |"))
+    }
+
+    @Test
+    func compatibleUnitsAndScalesAreConvertedToOneUnitPerRow() throws {
+        let report = try render(all)
+        let section = "### `\(ReportFixtures.w1)` / 16"
+        // archetype: 500x the baseline values labelled in microseconds -> p50 500 μs vs 1 μs.
+        let p0 = try row(report, section: section, metric: "Time (wall clock)", label: "p0")
+        #expect(p0.contains("| 1 μs |"))
+        #expect(p0.contains("| 500 μs (Δ +499 μs, ×500, +49900%, worse) |"), "\(p0)")
+        // sparseSet: identical to the baseline.
+        #expect(p0.contains("| 1 μs (Δ 0 μs, ×1, 0%, unchanged) |"), "\(p0)")
+        // candidate: kilo-scaled raw values (1000x per 1000 iterations) equal the baseline per iteration.
+        #expect(p0.hasSuffix("| 1 μs (Δ 0 μs, ×1, 0%, unchanged) |"), "\(p0)")
+        // The std dev row picks its own unit (ns) for the same series.
+        let deviation = try row(report, section: section, metric: "Time (wall clock)", label: "std dev")
+        #expect(deviation.contains("| 900.26 ns |"), "\(deviation)")
+        // One unit across the row, also when the smallest value is in ns.
+        let scale64 = try row(report, section: "### `\(ReportFixtures.w1)` / 64", metric: "Time (wall clock)", label: "p0")
+        #expect(scale64.contains("| 4 μs |"))
+    }
+
+    @Test
+    func incompatiblePolarityIsUnavailableNotConverted() throws {
+        let report = try render(all)
+        let p50 = try row(report, section: "### `\(ReportFixtures.w1)` / 16", metric: "Time (total CPU)", label: "p50")
+        #expect(p50.hasSuffix("| unavailable (incompatible units) |"), "\(p50)")
+        #expect(p50.contains("(Δ"))
+    }
+
+    @Test
+    func zeroBaselineHasNoRatioOrPercent() throws {
+        let report = try render(all)
+        let p50 = try row(report, section: "### `\(ReportFixtures.w2)` / 16", metric: "Malloc (total)", label: "p50")
+        #expect(p50.contains("| 0 |"), "\(p50)")
+        #expect(p50.contains("(Δ +5, ratio and change unavailable: zero baseline, worse)"), "\(p50)")
+        #expect(!p50.contains("inf") && !p50.contains("nan"))
+    }
+
+    @Test
+    func polarityDecidesBetterOrWorse() throws {
+        // Throughput: larger is better. sparseSet equals the baseline, so build a faster variant.
+        var files = all
+        files[1].baseline.results = Dictionary(uniqueKeysWithValues: files[1].baseline.results.map { identifier, results in
+            (identifier, results.map { $0.metric == .throughput ? ReportFixtures.result(.throughput, [200_000, 400_000, 400_000, 800_000]) : $0 })
+        })
+        let report = try render(files)
+        let p50 = try row(report, section: "### `\(ReportFixtures.w1)` / 16", metric: "Throughput", label: "p50")
+        #expect(p50.contains("better"), "\(p50)")
+        #expect(p50.contains("(smaller is better)") == false)
+        #expect(report.contains("#### Throughput (# / s) (larger is better)"))
+        #expect(report.contains("#### Time (wall clock) (smaller is better)"))
+    }
+
+    @Test
+    func configurationHashMismatchWarns() throws {
+        let rendered = try BenchmarkReport.render(all)
+        #expect(rendered.warnings.count == 1)
+        #expect(rendered.warnings[0].contains("Configuration hashes differ"))
+        #expect(rendered.markdown.contains("## Warnings"))
+        let same = try BenchmarkReport.render([ReportFixtures.classRef(), ReportFixtures.valueRef()])
+        #expect(same.warnings.isEmpty)
+        #expect(!same.markdown.contains("## Warnings"))
+    }
+
+    @Test
+    func duplicateInputsWarnButRender() throws {
+        let rendered = try BenchmarkReport.render([ReportFixtures.classRef(), ReportFixtures.classRef()])
+        #expect(rendered.warnings.contains { $0.contains("share ref SHA") })
+        #expect(rendered.markdown.contains("1.4.3@aaaaaaaaaaaa (class, default)"))
+        #expect(rendered.markdown.contains("1.4.3@aaaaaaaaaaaa #2 (class, default)"), "labels stay unique")
+    }
+
+    @Test
+    func refusesTooFewInputsAndUnknownBaseline() throws {
+        #expect(throws: ResultError.self) { try render([]) }
+        #expect(throws: ResultError.self) { try render([ReportFixtures.classRef()]) }
+        #expect(throws: ResultError.self) { try render(all, baseline: "nope") }
+    }
+
+    @Test
+    func renderingIsDeterministic() throws {
+        let first = try render(all)
+        let second = try render(all)
+        #expect(first == second)
+        #expect(try render(all, baseline: "main") == render(all, baseline: "main"))
+        #expect(first.hasSuffix("\n") && !first.contains("\r"))
+    }
+
+    @Test
+    func inputsAreNotMutated() throws {
+        let files = all
+        let encoder = BenchmarkResultFile.encoder()
+        let before = try files.map { SHA256.hexDigest(Array(try encoder.encode($0))) }
+        _ = try render(files)
+        _ = try render(files, baseline: "candidate")
+        let after = try files.map { SHA256.hexDigest(Array(try encoder.encode($0))) }
+        #expect(before == after)
+        // Reading through the native accessors afterwards still yields the fixture's own values.
+        let result = try #require(files[0].baseline.results.values.first { $0.count == 4 }?.first)
+        #expect(result.statistics.percentiles() == [1000, 1000, 1000, 2000, 2000, 4000, 4000])
+    }
+
+    @Test
+    func mermaidBlocksFollowTheXYChartGrammar() throws {
+        let report = try render(all)
+        let blocks = report.components(separatedBy: "```mermaid\n").dropFirst().map { $0.components(separatedBy: "```")[0] }
+        #expect(blocks.count == 8, "one block per identity, scale and metric")
+        for block in blocks {
+            let lines = block.split(separator: "\n").map(String.init)
+            #expect(lines.first == "xychart-beta")
+            #expect(lines[1].hasPrefix("    title \"") && lines[1].hasSuffix("\""))
+            let xLine = try #require(lines.first { $0.hasPrefix("    x-axis [") })
+            let barLine = try #require(lines.first { $0.hasPrefix("    bar [") })
+            let yLine = try #require(lines.first { $0.hasPrefix("    y-axis \"p50") })
+            #expect(yLine.hasSuffix("\""))
+            let labels = xLine.dropFirst("    x-axis [".count).dropLast().components(separatedBy: "\", \"")
+            let values = barLine.dropFirst("    bar [".count).dropLast().components(separatedBy: ", ")
+            #expect(labels.count == values.count)
+            #expect(labels.first?.hasPrefix("\"") == true && labels.last?.hasSuffix("\"") == true)
+            for value in values { #expect(Double(value) != nil, "numeric y value: \(value)") }
+        }
+        // Throughput chart: unit in the axis title; unavailable series left out of the chart.
+        #expect(report.contains("    y-axis \"p50 (μs)\""))
+        #expect(report.contains("    y-axis \"p50 (Kops/s)\"") || report.contains("    y-axis \"p50 (ops/s)\""))
+        #expect(!report.contains("    bar [unavailable"))
+    }
+
+    @Test
+    func reportCodeLaunchesNoProcess() throws {
+        // By design the renderer is a function over decoded values; this guards the whole schema target (including everything
+        // the report path could call) against ever acquiring a process launch.
+        let directory = Support.packageRoot.appendingPathComponent("Benchmarks/ECSBenchmarkResultSchema")
+        let sources = try FileManager.default.contentsOfDirectory(atPath: directory.path).filter { $0.hasSuffix(".swift") }
+        #expect(sources.contains("BenchmarkReport.swift"))
+        let forbidden = try Regex(#"\bProcess\b|\bNSTask\b|posix_spawn|\bsystem\(|\bpopen\(|\bexecv|\bfork\("#)
+        for source in sources {
+            let text = try String(contentsOf: directory.appendingPathComponent(source), encoding: .utf8)
+            #expect(text.firstMatch(of: forbidden) == nil, "\(source) must not launch processes")
+        }
+    }
+
+    @Test
+    func cliWritesReportAfterValidatingEveryInput() throws {
+        let directory = try Support.scratchDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        var paths: [String] = []
+        for (index, file) in all.enumerated() {
+            let url = directory.appendingPathComponent("r\(index).json")
+            try BenchmarkResultFile.encoder().encode(file).write(to: url)
+            paths.append(url.path)
+        }
+        let output = directory.appendingPathComponent("report.md").path
+        #expect(ResultsCLI.run(["report"] + paths + ["--baseline", "main", "--title", "Fixture", "--output", output]) == 0)
+        let text = try String(contentsOfFile: output, encoding: .utf8)
+        #expect(text.hasPrefix("# Fixture\n"))
+        #expect(text.contains("- Baseline: `main`"))
+
+        #expect(ResultsCLI.run(["report", paths[0], "--output", output]) != 0, "needs two inputs")
+        #expect(ResultsCLI.run(["report"] + paths + ["--baseline", "nope", "--output", output]) != 0)
+        #expect(ResultsCLI.run(["report"] + paths) != 0, "needs --output")
+        let broken = directory.appendingPathComponent("broken.json")
+        try Data("{}".utf8).write(to: broken)
+        let missing = directory.appendingPathComponent("never.md").path
+        #expect(ResultsCLI.run(["report", paths[0], broken.path, "--output", missing]) != 0)
+        #expect(!FileManager.default.fileExists(atPath: missing), "nothing is written when an input is invalid")
+    }
+}

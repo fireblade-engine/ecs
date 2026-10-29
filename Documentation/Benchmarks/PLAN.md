@@ -167,6 +167,14 @@ The user approved every remaining gate in advance for an unattended run, with th
   4. For each identity, scale, and metric: a Markdown table (rows are statistics, columns are series with deltas) and one Mermaid `xychart-beta` bar chart with p50 per series.
 - Output is deterministic (sorted keys and stable number formatting) and keeps the package's precision.
 
+### Review follow-ups (pipeline hardening)
+
+- **Report output:** `report` refuses an `--output` that is, links to or hard-links an input, and an existing output unless `--overwrite`.
+- **No lost measurements:** a finished native baseline whose wrapping or validation fails is kept under `<run dir>/.failed/`, and the path is reported. A metric with zero measurements is valid data and prints `unavailable`. Host facts are checked by `ECSBenchmarkResults host-check` before the first measurement; the schema has no marker for a missing field, so an unreadable host fails the run instead of recording a placeholder.
+- **Refs resolved once:** the runner passes the full SHA plus `--requested <name>` to the snapshot script, which never re-resolves a SHA. Results are staged under a hidden name in the run directory and renamed into place.
+- **Batch id:** `run.batchId` is an optional additive field (older files still validate, so `schemaVersion` stays 1), set once per runner invocation and shown in report provenance.
+- **Warnings:** runner and report warn when toolchain, host (without the physical memory size) or the registered workload and scale set differ; the report also flags metric rows whose measurement counts differ between series. Duplicate benchmark names make `BenchmarkReport.render` throw `ReportError.duplicateBenchmarkName`.
+
 ## Phases and review gates
 
 Each phase is a separate check-in; pause for user review before beginning the next.

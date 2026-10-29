@@ -6,7 +6,7 @@ public enum ResultsCLI {
     Usage:
       ECSBenchmarkResults write --baseline <path> --out <path> --run-id <id> --started <iso8601> --finished <iso8601>
                                 --ref <requested> --ref-sha <sha> --suite-sha <sha> --filter <regex>
-                                --package-resolved <path> --swift-version <text>
+                                --package-resolved <path> --swift-version <text> [--batch-id <id>]
       ECSBenchmarkResults validate <result.json>
       ECSBenchmarkResults report <result.json>... --output <report.md> [--baseline <requested-ref>] [--title <text>] [--overwrite]
     """
@@ -34,7 +34,7 @@ public enum ResultsCLI {
 
     private static func write(_ arguments: [String]) throws {
         let options = try parseOptions(arguments, allowed: [
-            "baseline", "out", "run-id", "started", "finished", "ref", "ref-sha", "suite-sha", "filter", "package-resolved", "swift-version"
+            "baseline", "out", "run-id", "started", "finished", "ref", "ref-sha", "suite-sha", "filter", "package-resolved", "swift-version", "batch-id"
         ])
         func value(_ key: String) throws -> String {
             guard let value = options[key] else { throw ResultError("missing required option --\(key)") }
@@ -43,7 +43,7 @@ public enum ResultsCLI {
         let request = try WriteRequest(
             baselinePath: value("baseline"), runID: value("run-id"), startedAt: value("started"), finishedAt: value("finished"),
             requestedRef: value("ref"), refSHA: value("ref-sha"), suiteSHA: value("suite-sha"), filter: value("filter"),
-            packageResolvedPath: value("package-resolved"), swiftVersion: value("swift-version")
+            packageResolvedPath: value("package-resolved"), swiftVersion: value("swift-version"), batchID: options["batch-id"]
         )
         let output = try value("out")
         try ResultWriter.write(request, to: output)

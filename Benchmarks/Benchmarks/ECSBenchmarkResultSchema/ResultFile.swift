@@ -33,6 +33,9 @@ public struct ResultRun: Codable, Equatable, Sendable {
     /// ISO 8601 UTC.
     public var startedAt: String
     public var finishedAt: String
+    /// One id per runner invocation (`Scripts/benchmark-run-refs.sh`), shared by all results of that invocation. Optional and
+    /// additive: files without it still decode and validate, so the schema version stays 1.
+    public var batchId: String?
 }
 
 public struct ResultRef: Codable, Equatable, Sendable {

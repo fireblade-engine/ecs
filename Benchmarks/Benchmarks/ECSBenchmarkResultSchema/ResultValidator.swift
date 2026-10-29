@@ -43,6 +43,7 @@ public enum ResultValidator {
         guard file.schemaVersion == ResultSchema.version else { throw ResultError("unsupported schema version \(file.schemaVersion)") }
 
         try ResultWriter.require("run id", file.run.id)
+        if let batch = file.run.batchId { try ResultWriter.require("batch id", batch) }
         let started = try requireDate("run start", file.run.startedAt)
         let finished = try requireDate("run finish", file.run.finishedAt)
         guard finished >= started else { throw ResultError("run finished before it started") }

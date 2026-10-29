@@ -62,6 +62,7 @@ struct ReportWriter {
                 ("Suite target", file.suite.target),
                 ("Configuration hash", file.suite.configurationHash),
                 ("Run", "\(file.run.id) (\(file.run.startedAt) to \(file.run.finishedAt))"),
+                ("Batch", file.run.batchId ?? "none recorded"),
                 ("Toolchain", "\(file.toolchain.swiftVersion) (\(file.toolchain.buildMode))"),
                 ("Host", "\(file.host.osName) \(file.host.osVersion), \(file.host.architecture), \(file.host.cpuModel), \(file.host.coreCount) cores, \(file.host.physicalMemoryBytes) bytes memory"),
                 ("Packages", file.packages.map { "\($0.identity) \($0.version ?? "-") \($0.revision.prefix(12))" }.joined(separator: "; "))

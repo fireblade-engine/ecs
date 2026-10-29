@@ -286,4 +286,31 @@ struct ReportTests {
         #expect(ResultsCLI.run(["report"] + paths + ["--output", directory.appendingPathComponent("fresh.md").path]) == 0)
         #expect(ResultsCLI.run(["report"] + paths + ["--output", directory.appendingPathComponent("sub").path, "--overwrite"]) != 0)
     }
+
+    @Test
+    func duplicateBenchmarkNamesThrowInsteadOfTrapping() throws {
+        var files = all
+        files[1].benchmarks.append(files[1].benchmarks[0])
+        #expect(throws: ReportError.duplicateBenchmarkName(input: "main", name: files[1].benchmarks[0].name)) { try render(files) }
+        #expect(throws: ResultError.self) { try ResultValidator.validate(files[1]) }
+    }
+
+    @Test
+    func batchIdIsShownInProvenanceAndIsOptional() throws {
+        var files = all
+        files[0].run.batchId = "batch-42"
+        let report = try render(files)
+        #expect(report.contains("| Batch | batch-42 |"))
+        #expect(report.contains("| Batch | none recorded |"))
+        try ResultValidator.validate(files[0])
+        files[0].run.batchId = " "
+        #expect(throws: ResultError.self) { try ResultValidator.validate(files[0]) }
+        // A file without the field decodes; with it, the id survives the round trip.
+        let plain = try BenchmarkResultFile.encoder().encode(all[0])
+        #expect(!String(decoding: plain, as: UTF8.self).contains("batchId"))
+        _ = try ResultValidator.decode(plain)
+        var withBatch = all[0]
+        withBatch.run.batchId = "b1"
+        #expect(try ResultValidator.decode(BenchmarkResultFile.encoder().encode(withBatch)).run.batchId == "b1")
+    }
 }

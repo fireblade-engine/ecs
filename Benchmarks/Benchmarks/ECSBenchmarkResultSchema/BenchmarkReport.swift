@@ -20,10 +20,28 @@ public struct RenderedReport {
     public let warnings: [String]
 }
 
+/// Errors of `BenchmarkReport.render` caused by inputs that were not validated.
+public enum ReportError: Error, CustomStringConvertible, Equatable {
+    /// Two entries of one input share a benchmark name; names are the key into the baseline.
+    case duplicateBenchmarkName(input: String, name: String)
+
+    public var description: String {
+        switch self {
+        case let .duplicateBenchmarkName(input, name): "input '\(input)' lists the benchmark '\(name)' more than once"
+        }
+    }
+}
+
 public enum BenchmarkReport {
     /// Renders the comparison of already validated result files.
     public static func render(_ files: [BenchmarkResultFile], options: ReportOptions = ReportOptions()) throws -> RenderedReport {
         guard files.count >= 2 else { throw ResultError("a report needs at least two result files, got \(files.count)") }
+        for file in files {
+            var seen = Set<String>()
+            for benchmark in file.benchmarks where !seen.insert(benchmark.name).inserted {
+                throw ReportError.duplicateBenchmarkName(input: file.ref.requested, name: benchmark.name)
+            }
+        }
         let baselineIndex = try resolveBaseline(files, options.baseline)
         let model = ReportModel(files: files, baselineIndex: baselineIndex)
         var writer = ReportWriter(model: model, title: options.title)

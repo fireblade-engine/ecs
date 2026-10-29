@@ -14,11 +14,13 @@ public struct WriteRequest {
     public var filter: String
     public var packageResolvedPath: String
     public var swiftVersion: String
+    public var batchID: String?
 
     public init(
         baselinePath: String, runID: String, startedAt: String, finishedAt: String, requestedRef: String, refSHA: String,
-        suiteSHA: String, filter: String, packageResolvedPath: String, swiftVersion: String
+        suiteSHA: String, filter: String, packageResolvedPath: String, swiftVersion: String, batchID: String? = nil
     ) {
+        self.batchID = batchID
         self.baselinePath = baselinePath
         self.runID = runID
         self.startedAt = startedAt
@@ -39,6 +41,7 @@ public enum ResultWriter {
         try require("requested ref", request.requestedRef)
         try require("suite filter", request.filter)
         try require("swift version text", request.swiftVersion)
+        if let batch = request.batchID { try require("batch id", batch) }
         try requireSHA("ref SHA", request.refSHA)
         try requireSHA("suite SHA", request.suiteSHA)
         try ResultValidator.requireDate("run start", request.startedAt)
@@ -74,7 +77,7 @@ public enum ResultWriter {
         let file = BenchmarkResultFile(
             schema: ResultSchema.name,
             schemaVersion: ResultSchema.version,
-            run: ResultRun(id: request.runID, startedAt: request.startedAt, finishedAt: request.finishedAt),
+            run: ResultRun(id: request.runID, startedAt: request.startedAt, finishedAt: request.finishedAt, batchId: request.batchID),
             ref: ResultRef(requested: request.requestedRef, sha: request.refSHA, componentModel: CompatManifest.componentModel, backends: CompatManifest.backends),
             suite: ResultSuite(
                 sha: request.suiteSHA,

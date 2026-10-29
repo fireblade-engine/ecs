@@ -63,18 +63,14 @@ enum CompatPopulation {
         for index in entities.indices {
             guard let initialization = fixture(at: index, entityCount: entityCount, isMixed: isMixed).playerInitialization else { continue }
             let entity = entities[index]
-            entity.set(CompatPlayer(CompatPlayerPayload(rng: CompatXoshiro128(seed: playerSeed(for: index)))))
-            entity.set(CompatHealth(CompatHealthPayload()))
-            entity.set(CompatDamage(CompatDamagePayload()))
-            entity.set(CompatSprite(CompatSpritePayload()))
-            if !entity.has(CompatPosition.self) {
-                entity.set(CompatPosition(CompatPositionPayload()))
-            }
+            // `Entity.set` keeps an existing instance on 1.x, so every component is set exactly once with its final value;
+            // Position may already exist and is replaced through the adapter. The end state equals the upstream
+            // `emplace_or_replace` + `initComponents` sequence.
             entity.set(CompatPlayer(initialization.player))
             entity.set(CompatHealth(initialization.health))
             entity.set(CompatDamage(initialization.damage))
             entity.set(CompatSprite(initialization.sprite))
-            entity.set(CompatPosition(initialization.position))
+            CompatSuite.replace(CompatPosition(initialization.position), on: entity)
         }
     }
 }

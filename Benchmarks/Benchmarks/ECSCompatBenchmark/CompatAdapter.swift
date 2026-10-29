@@ -68,6 +68,12 @@ enum CompatSuite {
         Nexus()
     }
 
+    /// Sets `component`, replacing an existing instance (`Entity.set` keeps the existing one on 1.x).
+    static func replace(_ component: some Component, on entity: Entity) {
+        entity.remove(type(of: component))
+        entity.set(component)
+    }
+
     // Native family iteration of the class-component revision: plain iteration over the family; written components are
     // references mutated in place, so nothing is written back. Families are declared with the read types first.
     @inline(__always)
@@ -132,6 +138,11 @@ enum CompatSuite {
         case "sparseSet": Nexus(storage: .sparseSet)
         default: preconditionFailure("unknown backend \(backend)")
         }
+    }
+
+    /// Sets `component`, replacing an existing instance.
+    static func replace(_ component: some Component, on entity: Entity) {
+        entity.set(component)
     }
 
     // Native family iteration of the value-component revision: Family.forEach(reading:writing:) with inout written components

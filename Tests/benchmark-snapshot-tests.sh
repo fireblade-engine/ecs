@@ -65,8 +65,8 @@ assert_eq "$(sed -n 's/^ref_sha: //p' "$prov")" "$class_sha" 'class ref must res
 assert_eq "$(sed -n 's/^suite_sha: //p' "$prov")" "$value_sha" 'suite SHA defaults to HEAD'
 assert_eq "$(sed -n 's/^component_model: //p' "$prov")" class 'class components must be detected from Component.swift'
 assert_eq "$(sed -n 's/^swift_flags: //p' "$prov")" '-Xswiftc -DECS_CLASS_COMPONENTS' 'class snapshot must define ECS_CLASS_COMPONENTS'
-assert_eq "$(sed -n 's/^benchmark: //p' "$prov")" '1.38.1 aaaa' 'benchmark version must be recorded'
-assert_eq "$(sed -n 's/^hdrhistogram-swift: //p' "$prov")" '0.2.0 bbbb' 'hdrhistogram version must be recorded'
+assert_eq "$(sed -n 's/^pin.benchmark: //p' "$prov")" '1.38.1 aaaa' 'benchmark pin must be recorded'
+assert_eq "$(sed -n 's/^pin.hdrhistogram-swift: //p' "$prov")" '0.2.0 bbbb' 'every pin must be recorded'
 [[ -f $test_root/class/ecs/Sources/FirebladeECS/Component.swift ]] || fail 'library must live in a directory named ecs'
 [[ ! -e $test_root/class/ecs/Benchmarks/Old ]] || fail 'ref-owned Benchmarks/ content must be replaced'
 [[ -f $test_root/class/ecs/Benchmarks/Benchmarks/ECSCompatBenchmark/Suite.swift ]] || fail 'suite must be copied'
@@ -87,6 +87,65 @@ touch "$test_root/busy/file"
 if run class-rev --out "$test_root/busy" > /dev/null 2>&1; then
     fail 'non-empty output directory must be refused'
 fi
+
+# export-ignore / export-subst in the ref must not alter the snapshot (git archive would honor them).
+attr=$(mktemp -d "$test_root/attr.XXXXXXXX")
+git clone -q "$fixture" "$attr/repo"
+git -C "$attr/repo" config user.email test@example.com
+git -C "$attr/repo" config user.name test
+printf 'ignored.txt export-ignore\nsubst.txt export-subst\n' > "$attr/repo/.gitattributes"
+echo 'kept' > "$attr/repo/ignored.txt"
+echo '$Format:%H$' > "$attr/repo/subst.txt"
+git -C "$attr/repo" add .gitattributes ignored.txt subst.txt
+git -C "$attr/repo" commit -qm attributes
+"$script" --repo "$attr/repo" --prepare-only HEAD --out "$test_root/attr-out" > /dev/null
+[[ -f $test_root/attr-out/ecs/ignored.txt ]] || fail 'export-ignore must not drop files from the snapshot'
+assert_eq "$(cat "$test_root/attr-out/ecs/subst.txt")" '$Format:%H$' 'export-subst must not rewrite files'
+
+# Class detection is anchored: a comment mentioning the class model must not select it.
+git -C "$attr/repo" checkout -q -b prose
+printf '// protocol Component: AnyObject\n/* protocol Component: AnyObject */\npublic protocol Component: Sendable {}\n' > "$attr/repo/Sources/FirebladeECS/Component.swift"
+git -C "$attr/repo" add Sources/FirebladeECS/Component.swift
+git -C "$attr/repo" commit -qm prose
+"$script" --repo "$attr/repo" --prepare-only prose --out "$test_root/prose" > /dev/null
+assert_eq "$(sed -n 's/^component_model: //p' "$test_root/prose/provenance.txt")" value 'comments must not select the class model'
+
+# jq is required.
+nojq="$test_root/nojq"
+mkdir -p "$nojq"
+for tool in git bash env dirname basename mktemp rm mkdir cat awk grep sed mv cp ls cmp tar uname; do
+    src=$(command -v "$tool" || true)
+    [[ -z $src ]] || ln -s "$src" "$nojq/$tool"
+done
+if PATH="$nojq" "$script" --repo "$fixture" --prepare-only class-rev --out "$test_root/nojq-out" > /dev/null 2> "$test_root/nojq.err"; then
+    fail 'missing jq must fail'
+fi
+grep -q 'jq is required' "$test_root/nojq.err" || fail 'missing jq must be reported'
+[[ ! -e $test_root/nojq-out ]] || fail 'missing jq must not create the snapshot'
+
+# A temporary snapshot is removed when the run fails; an explicit --out is kept.
+tmp_before=$(ls -d "${TMPDIR:-/tmp}"/benchmark-snapshot.* 2> /dev/null | wc -l)
+printf 'fake\n' > "$fixture/Benchmarks/Benchmarks/ECSCompatBenchmark/Suite.swift"
+git -C "$fixture" checkout -q -- Benchmarks
+cat > "$test_root/failing-swift" <<'STUB'
+#!/usr/bin/env bash
+exit 3
+STUB
+mkdir -p "$test_root/failbin"
+cp "$test_root/failing-swift" "$test_root/failbin/swift"
+chmod +x "$test_root/failbin/swift"
+if PATH="$test_root/failbin:$PATH" "$script" --repo "$fixture" class-rev > /dev/null 2>&1; then fail 'failing swift must fail the run'; fi
+assert_eq "$(ls -d "${TMPDIR:-/tmp}"/benchmark-snapshot.* 2> /dev/null | wc -l)" "$tmp_before" 'a failed temporary snapshot must be removed'
+if PATH="$test_root/failbin:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/kept" > /dev/null 2>&1; then fail 'failing swift must fail the run'; fi
+[[ -d $test_root/kept/ecs ]] || fail 'an explicit --out must be kept after a failure'
+
+# Suite ref other than HEAD: the worktree is irrelevant, so a dirty worktree does not block it; HEAD still does.
+echo 'dirty' >> "$fixture/Benchmarks/Benchmarks/ECSCompatBenchmark/Suite.swift"
+run class-rev --suite-ref class-rev --out "$test_root/suite-nonhead" > /dev/null || fail 'a committed non-HEAD suite ref must ignore worktree changes'
+assert_eq "$(sed -n 's/^suite_sha: //p' "$test_root/suite-nonhead/provenance.txt")" "$class_sha" 'non-HEAD suite ref must be used as committed'
+
+assert_eq "$(cat "$test_root/suite-nonhead/ecs/Benchmarks/Benchmarks/ECSCompatBenchmark/Suite.swift")" suite 'non-HEAD suite must come from the committed tree'
+git -C "$fixture" checkout -q -- Benchmarks
 
 # Dirty suite paths are refused (modified tracked file, then untracked file).
 echo 'dirty' >> "$fixture/Benchmarks/Benchmarks/ECSCompatBenchmark/Suite.swift"
@@ -130,6 +189,8 @@ case "$*" in
         name=$(sed -E 's/.*baseline update ([^ ]+).*/\1/' <<< "$*")
         mkdir -p ".benchmarkBaselines/ECSCompatBenchmark/$name"
         echo '{"stub":true}' > ".benchmarkBaselines/ECSCompatBenchmark/$name/results.json" ;;
+    *"benchmark list"*) printf 'alpha / 16\nfoo / 1\n' ;;
+    *"package resolve"*) [[ -z ${STUB_RESOLVE_TOUCH:-} ]] || echo changed >> Package.resolved ;;
     *"--show-bin-path"*) echo "$STUB_BIN" ;;
     --version) echo "stub swift 1.0" ;;
 esac
@@ -147,7 +208,7 @@ PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/full
     || fail 'result mode must succeed with stubs'
 [[ -f $test_root/full-result.json ]] || fail 'result file must be written'
 grep -Eq 'benchmark baseline update snapshot-[0-9a-f]{12}-[0-9]+-[0-9]+ --target ECSCompatBenchmark --filter f\.\*' "$STUB_LOG" || fail 'result mode must store a uniquely named baseline'
-[[ $(grep -c 'benchmark ' "$STUB_LOG") == 1 ]] || fail 'result mode must run the benchmarks exactly once'
+[[ $(grep -c 'benchmark baseline update' "$STUB_LOG") == 1 ]] || fail 'result mode must run the benchmarks exactly once'
 grep -q 'build -c release --product ECSBenchmarkResults' "$STUB_LOG" || fail 'the snapshot must build its own result tool'
 args="$test_root/stub.log.results"
 arg_after() { grep -A1 -x -- "$1" "$args" | tail -1; }
@@ -161,6 +222,20 @@ assert_eq "$(arg_after --baseline | sed -E 's/snapshot-[0-9a-f]{12}-[0-9]+-[0-9]
 [[ $(arg_after --started) =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:]{8}Z$ ]] || fail 'start must be an ISO 8601 UTC timestamp'
 [[ $(arg_after --finished) =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:]{8}Z$ ]] || fail 'finish must be an ISO 8601 UTC timestamp'
 [[ -n $(arg_after --run-id) ]] || fail 'a run id must be passed'
+
+# Resolving must not change the committed Package.resolved.
+if STUB_RESOLVE_TOUCH=1 PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/resolve-changed" > /dev/null 2> "$test_root/resolve-changed.err"; then
+    fail 'a resolve that changes Package.resolved must fail'
+fi
+grep -q 'changed Package.resolved' "$test_root/resolve-changed.err" || fail 'changed Package.resolved must be reported'
+
+# A filter that matches no benchmark fails before anything runs.
+: > "$STUB_LOG"
+if PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/nomatch" --filter 'zzz-nothing' > /dev/null 2> "$test_root/nomatch.err"; then
+    fail 'a filter matching nothing must fail'
+fi
+grep -q 'matches no benchmarks' "$test_root/nomatch.err" || fail 'an empty filter selection must be reported'
+grep -q 'baseline update\|benchmark --target' "$STUB_LOG" && fail 'nothing may run when the filter matches nothing'
 
 # Without --result the previous behavior stands: a plain benchmark run, no baseline, no result tool.
 : > "$STUB_LOG"

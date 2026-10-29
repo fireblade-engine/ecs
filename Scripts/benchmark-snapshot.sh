@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Builds (and optionally runs) the shared benchmark compatibility suite against one committed git ref.
 #
-# Snapshot contract: `git archive` the ref, replace its Benchmarks/ directory with the suite from one clean suite
+# Snapshot contract: extract the ref's committed tree (via a temporary index, so export-ignore/export-subst never apply), replace its Benchmarks/ directory with the suite from one clean suite
 # commit, keep the library directory named `ecs` (the suite's path dependency is resolved by directory name), and
 # resolve with the committed Benchmarks/Package.resolved using --force-resolved-versions.
 #
@@ -60,20 +60,38 @@ if [[ -n $result ]]; then
     result="$(cd "$(dirname -- "$result")" && pwd)/$(basename -- "$result")"
 fi
 
+command -v jq > /dev/null || die "jq is required (provenance and pins are read from Package.resolved)"
+
 git_repo() { git -C "$repo" "$@"; }
 
 ref_sha=$(git_repo rev-parse --verify --quiet "$ref^{commit}") || die "invalid ref: $ref"
 suite_sha=$(git_repo rev-parse --verify --quiet "$suite_ref^{commit}") || die "invalid suite ref: $suite_ref"
 
-# The suite is everything under Benchmarks/ except the retired preliminary harness.
-suite_dirty=$(git_repo status --porcelain --untracked-files=all -- Benchmarks ':(exclude)Benchmarks/ComparisonHarness' ':(exclude)Benchmarks/graft')
-[[ -z $suite_dirty ]] || die "suite paths are dirty; commit or discard first:
+# The suite is everything under Benchmarks/ except the retired preliminary harness. Only the checked-out HEAD can have
+# a dirty worktree; any other suite ref is read from its committed tree, so the worktree state is irrelevant.
+head_sha=$(git_repo rev-parse --verify --quiet 'HEAD^{commit}' || true)
+if [[ $suite_sha == "$head_sha" ]]; then
+    suite_dirty=$(git_repo status --porcelain --untracked-files=all -- Benchmarks ':(exclude)Benchmarks/ComparisonHarness' ':(exclude)Benchmarks/graft')
+    [[ -z $suite_dirty ]] || die "suite paths are dirty; commit or discard first:
 $suite_dirty"
+fi
 
 git_repo cat-file -e "$suite_sha:Benchmarks/Package.resolved" 2>/dev/null || die "suite commit $suite_sha has no Benchmarks/Package.resolved"
 
+cleanup_dir=""
+scratch=$(mktemp -d "${TMPDIR:-/tmp}/benchmark-snapshot-scratch.XXXXXXXX")
+on_exit() {
+    local status=$?
+    rm -rf "$scratch"
+    # A temporary snapshot is removed on failure; an explicit --out is the caller's to inspect.
+    if ((status != 0)) && [[ -n $cleanup_dir ]]; then rm -rf "$cleanup_dir"; fi
+    return "$status"
+}
+trap on_exit EXIT
+
 if [[ -z $out ]]; then
     out=$(mktemp -d "${TMPDIR:-/tmp}/benchmark-snapshot.XXXXXXXX")
+    cleanup_dir=$out
 elif [[ -e $out ]]; then
     [[ -d $out && -z $(ls -A "$out") ]] || die "output directory is not empty: $out"
 fi
@@ -82,14 +100,40 @@ out=$(cd "$out" && pwd)
 lib="$out/ecs"
 mkdir "$lib"
 
-git_repo archive "$ref_sha" | tar -x -C "$lib"
+# Extract committed trees through a throwaway index: unlike `git archive`, this ignores export-ignore/export-subst.
+extract_tree() { # <sha> <dest> [pathspec]
+    local index="$scratch/index.$1.$$"
+    GIT_INDEX_FILE=$index git_repo read-tree "$1"
+    GIT_INDEX_FILE=$index git_repo ls-files -z -- ${3:+"$3"} | GIT_INDEX_FILE=$index git_repo checkout-index -z --stdin --prefix="$2/"
+    rm -f "$index"
+}
+extract_tree "$ref_sha" "$lib"
 rm -rf "$lib/Benchmarks"
-git_repo archive "$suite_sha" Benchmarks | tar -x -C "$lib"
+extract_tree "$suite_sha" "$lib" Benchmarks
 rm -rf "$lib/Benchmarks/ComparisonHarness" "$lib/Benchmarks/graft"
 
 component_file="$lib/Sources/FirebladeECS/Component.swift"
 [[ -f $component_file ]] || die "snapshot of $ref has no Sources/FirebladeECS/Component.swift"
-if grep -Eq 'protocol[[:space:]]+Component[[:space:]]*:[[:space:]]*AnyObject' "$component_file"; then
+# Comments are stripped first so a mention of the class model in prose never selects it.
+strip_comments() {
+    awk '{
+        line = $0; out = ""
+        while (length(line) > 0) {
+            if (inblock) {
+                i = index(line, "*/")
+                if (i == 0) { line = ""; break }
+                line = substr(line, i + 2); inblock = 0
+            } else {
+                b = index(line, "/*"); l = index(line, "//")
+                if (l > 0 && (b == 0 || l < b)) { out = out substr(line, 1, l - 1); line = ""; break }
+                if (b == 0) { out = out line; line = ""; break }
+                out = out substr(line, 1, b - 1); line = substr(line, b + 2); inblock = 1
+            }
+        }
+        print out
+    }' "$1"
+}
+if strip_comments "$component_file" | grep -Eq '(^|[[:space:]])protocol[[:space:]]+Component[[:space:]]*:[[:space:]]*([A-Za-z_]+[[:space:]]*,[[:space:]]*)*AnyObject([^A-Za-z0-9_]|$)'; then
     component_model=class
     swift_flags=(-Xswiftc -DECS_CLASS_COMPONENTS)
 else
@@ -99,22 +143,20 @@ fi
 
 write_provenance() {
     local resolved="$lib/Benchmarks/Package.resolved"
-    local benchmark_version="" hdr_version=""
-    if [[ -f $resolved ]] && command -v jq > /dev/null; then
-        benchmark_version=$(jq -r '[.pins[] | select(.identity == "benchmark")][0].state | "\(.version // "none") \(.revision)"' "$resolved")
-        hdr_version=$(jq -r '[.pins[] | select(.identity == "hdrhistogram-swift")][0].state | "\(.version // "none") \(.revision)"' "$resolved")
-    fi
-    cat > "$out/provenance.txt" <<NOTE
+    {
+        cat <<NOTE
 ref: $ref
 ref_sha: $ref_sha
 suite_sha: $suite_sha
 component_model: $component_model
 swift_flags: ${swift_flags[*]:-none}
-benchmark: ${benchmark_version:-unknown}
-hdrhistogram-swift: ${hdr_version:-unknown}
 NOTE
+        jq -r '.pins[] | "pin.\(.identity): \(.state.version // "none") \(.state.revision)"' "$resolved"
+    } > "$out/provenance.txt.tmp"
+    mv "$out/provenance.txt.tmp" "$out/provenance.txt"
 }
 
+cp "$lib/Benchmarks/Package.resolved" "$scratch/Package.resolved.committed"
 write_provenance
 printf 'snapshot: %s\n' "$out"
 
@@ -123,10 +165,15 @@ printf 'snapshot: %s\n' "$out"
 cd "$lib/Benchmarks"
 export ECS_BENCHMARK_SUITE=shared
 swift package resolve --force-resolved-versions
+cmp -s "$scratch/Package.resolved.committed" Package.resolved || die "resolving changed Package.resolved; commit the intended pins first"
 write_provenance
 swift build -c release --product ECSCompatBenchmark --force-resolved-versions ${swift_flags[@]+"${swift_flags[@]}"}
 
 [[ $mode != build ]] || exit 0
+
+# The filter must select something; an empty selection would otherwise "succeed" with no measurements.
+matches=$(swift package --disable-automatic-resolution ${swift_flags[@]+"${swift_flags[@]}"} benchmark list --target ECSCompatBenchmark | grep -Ec -- "$filter" || true)
+((matches > 0)) || die "filter matches no benchmarks: $filter"
 
 # Package options must precede the plugin command; the resolved file was already enforced above.
 if [[ -z $result ]]; then

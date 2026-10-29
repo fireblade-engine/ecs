@@ -197,7 +197,15 @@ esac
 STUB
 cat > "$stubs/bin/ECSBenchmarkResults" <<'STUB'
 #!/usr/bin/env bash
+echo "tool $1" >> "$STUB_LOG"
+case $1 in
+    host-check) [[ -z ${STUB_HOST_FAIL:-} ]] || { echo 'cannot determine host facts' >&2; exit 1; }; exit 0 ;;
+    validate) [[ -z ${STUB_VALIDATE_FAIL:-} ]] || exit 1; exit 0 ;;
+    write) ;;
+    *) exit 2 ;;
+esac
 printf '%s\n' "$@" > "$STUB_LOG.results"
+[[ -z ${STUB_WRITE_FAIL:-} ]] || exit 1
 out=""
 while (($#)); do [[ $1 == --out ]] && out=$2; shift; done
 echo '{"stub":"result"}' > "$out"
@@ -222,6 +230,61 @@ assert_eq "$(arg_after --baseline | sed -E 's/snapshot-[0-9a-f]{12}-[0-9]+-[0-9]
 [[ $(arg_after --started) =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:]{8}Z$ ]] || fail 'start must be an ISO 8601 UTC timestamp'
 [[ $(arg_after --finished) =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:]{8}Z$ ]] || fail 'finish must be an ISO 8601 UTC timestamp'
 [[ -n $(arg_after --run-id) ]] || fail 'a run id must be passed'
+
+# --requested names the ref in provenance; a full SHA is used as given and never looked up again, so a branch that moved
+# after the caller resolved it cannot change what is measured. --batch-id is passed to the writer.
+git -C "$fixture" branch moving "$class_sha"
+moving_sha=$class_sha
+git -C "$fixture" branch -f moving "$value_sha"
+run "$moving_sha" --requested moving --out "$test_root/pinned" > /dev/null
+assert_eq "$(sed -n 's/^ref_sha: //p' "$test_root/pinned/provenance.txt")" "$class_sha" 'a SHA must not be re-resolved through a moved branch'
+assert_eq "$(sed -n 's/^ref: //p' "$test_root/pinned/provenance.txt")" moving 'the requested name must be recorded'
+assert_eq "$(sed -n 's/^component_model: //p' "$test_root/pinned/provenance.txt")" class 'the snapshot must come from the pinned SHA'
+if run "$(printf 'f%.0s' {1..40})" --requested x --out "$test_root/nosuchsha" > /dev/null 2>&1; then fail 'an unknown full SHA must be rejected'; fi
+: > "$STUB_LOG"
+PATH="$stubs:$PATH" "$script" --repo "$fixture" "$moving_sha" --requested moving --batch-id batch-7 --out "$test_root/pinned-full" --result "$test_root/pinned-result.json" > /dev/null \
+    || fail 'result mode with a SHA must succeed'
+assert_eq "$(arg_after --ref)" moving 'the requested name must reach the writer'
+assert_eq "$(arg_after --ref-sha)" "$class_sha" 'the pinned SHA must reach the writer'
+assert_eq "$(arg_after --batch-id)" batch-7 'the batch id must reach the writer'
+git -C "$fixture" branch -D moving > /dev/null
+
+# Host facts are checked before any measurement; a failure measures nothing.
+: > "$STUB_LOG"
+if STUB_HOST_FAIL=1 PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/hostfail" --result "$test_root/hostfail.json" > /dev/null 2> "$test_root/hostfail.err"; then
+    fail 'unreadable host facts must fail'
+fi
+grep -q 'nothing was measured' "$test_root/hostfail.err" || fail 'a host failure must be explained'
+grep -q 'baseline update' "$STUB_LOG" && fail 'no benchmark may run when the host facts are unavailable'
+[[ ! -e $test_root/hostfail.json ]] || fail 'no result for a failed preflight'
+
+# A finished measurement survives a failing writer or validator: the native baseline is kept under <result dir>/.failed.
+for failure in STUB_WRITE_FAIL STUB_VALIDATE_FAIL; do
+    keep="$test_root/keep-$failure"
+    mkdir "$keep"
+    if env "$failure=1" PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/keep-out-$failure" --result "$keep/r.json" > /dev/null 2> "$keep.err"; then
+        fail "$failure must fail the run"
+    fi
+    [[ ! -e $keep/r.json ]] || fail "$failure must not leave a result file"
+    kept="$keep/.failed/class-rev-${class_sha:0:12}/results.json"
+    [[ -f $kept ]] || fail "$failure must keep the native baseline at $kept"
+    grep -q '"stub":true' "$kept" || fail "$failure must keep the measured baseline unchanged"
+    grep -qF "$(sed 's|//|/|g' <<< "$kept")" "$keep.err" || fail "$failure must report the kept path"
+done
+
+# Prerequisites of result mode are checked before the snapshot is written.
+if PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/nofilter" --filter ' ' > /dev/null 2> "$test_root/nofilter.err"; then fail 'an empty filter must be refused'; fi
+grep -q 'filter is empty' "$test_root/nofilter.err" || fail 'an empty filter must be reported'
+nouuid="$test_root/nouuid"
+mkdir -p "$nouuid"
+for tool in git bash env dirname basename mktemp rm mkdir cat awk grep sed mv cp ls cmp tar uname jq; do
+    src=$(command -v "$tool" || true)
+    [[ -z $src ]] || ln -s "$src" "$nouuid/$tool"
+done
+ln -s "$stubs/swift" "$nouuid/swift"
+if PATH="$nouuid" "$script" --repo "$fixture" class-rev --out "$test_root/nouuid-out" --result "$test_root/nouuid.json" > /dev/null 2> "$test_root/nouuid.err"; then fail 'missing uuidgen must fail'; fi
+grep -q 'uuidgen is required' "$test_root/nouuid.err" || fail 'missing uuidgen must be reported'
+[[ ! -e $test_root/nouuid-out ]] || fail 'missing uuidgen must not create the snapshot'
 
 # Resolving must not change the committed Package.resolved.
 if STUB_RESOLVE_TOUCH=1 PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/resolve-changed" > /dev/null 2> "$test_root/resolve-changed.err"; then

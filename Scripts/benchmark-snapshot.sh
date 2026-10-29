@@ -8,6 +8,11 @@
 # One ref per invocation. This is not the multi-ref runner. With --result it runs the suite once through
 # `benchmark baseline update` and turns the native baseline into one self-contained result file via the snapshot's own
 # ECSBenchmarkResults tool, so the file's workload manifest reflects that ref's adapter. It writes no report.
+#
+# A ref given as a full 40-character SHA is never re-resolved: the multi-ref runner resolves names once and passes the SHA
+# plus --requested <name> (the name recorded as provenance). Result mode checks its prerequisites (jq, uuidgen, swift, a
+# non-empty filter, readable host facts) before the first measurement, and keeps the native baseline of a finished run in
+# <result dir>/.failed/ when wrapping or validating it fails: a completed measurement is never discarded.
 set -euo pipefail
 
 usage() {
@@ -18,6 +23,8 @@ Usage: Scripts/benchmark-snapshot.sh <ref> [options]
   --out <dir>         snapshot directory (must not exist or be empty; default: new temporary directory)
   --filter <regex>    benchmark filter passed to the Benchmark plugin (default: smallest scale of every compat workload)
   --result <path>     write a self-contained result file for the run (must not exist; needs a full run)
+  --requested <name>  name recorded as the requested ref when <ref> is a full SHA (default: <ref>)
+  --batch-id <id>     batch id recorded in the result (set by the multi-ref runner)
   --prepare-only      stop after writing the snapshot and provenance; do not resolve, build or run
   --build-only        resolve and build, but do not run
   --repo <dir>        repository to read refs from (default: the repository containing this script)
@@ -37,6 +44,8 @@ out=""
 filter='^(entity\.create\.no-entities .* / 0|.* / 16)$'
 mode=run
 result=""
+requested=""
+batch_id=""
 
 while (($#)); do
     case $1 in
@@ -45,6 +54,8 @@ while (($#)); do
         --filter) (($# >= 2)) || usage; filter=$2; shift 2 ;;
         --repo) (($# >= 2)) || usage; repo=$2; shift 2 ;;
         --result) (($# >= 2)) || usage; result=$2; shift 2 ;;
+        --requested) (($# >= 2)) || usage; requested=$2; shift 2 ;;
+        --batch-id) (($# >= 2)) || usage; batch_id=$2; shift 2 ;;
         --prepare-only) mode=prepare; shift ;;
         --build-only) mode=build; shift ;;
         -h | --help) usage ;;
@@ -53,6 +64,7 @@ while (($#)); do
     esac
 done
 [[ -n $ref ]] || usage
+[[ -n ${filter//[[:space:]]/} ]] || die "the benchmark filter is empty"
 if [[ -n $result ]]; then
     [[ $mode == run ]] || die "--result needs a full run; it cannot be combined with --prepare-only or --build-only"
     [[ ! -e $result ]] || die "result file already exists: $result"
@@ -61,10 +73,21 @@ if [[ -n $result ]]; then
 fi
 
 command -v jq > /dev/null || die "jq is required (provenance and pins are read from Package.resolved)"
+if [[ -n $result ]]; then
+    command -v uuidgen > /dev/null || die "uuidgen is required to create the run id"
+    command -v swift > /dev/null || die "swift is required"
+fi
 
 git_repo() { git -C "$repo" "$@"; }
 
-ref_sha=$(git_repo rev-parse --verify --quiet "$ref^{commit}") || die "invalid ref: $ref"
+if [[ $ref =~ ^[0-9a-f]{40}$ ]]; then
+    # Already resolved by the caller: never look the name up again, whatever branch or tag might now carry it.
+    git_repo cat-file -e "$ref^{commit}" 2> /dev/null || die "invalid ref: $ref"
+    ref_sha=$ref
+else
+    ref_sha=$(git_repo rev-parse --verify --quiet "$ref^{commit}") || die "invalid ref: $ref"
+fi
+requested=${requested:-$ref}
 suite_sha=$(git_repo rev-parse --verify --quiet "$suite_ref^{commit}") || die "invalid suite ref: $suite_ref"
 
 # The suite is everything under Benchmarks/ except the retired preliminary harness. Only the checked-out HEAD can have
@@ -145,7 +168,7 @@ write_provenance() {
     local resolved="$lib/Benchmarks/Package.resolved"
     {
         cat <<NOTE
-ref: $ref
+ref: $requested
 ref_sha: $ref_sha
 suite_sha: $suite_sha
 component_model: $component_model
@@ -171,6 +194,13 @@ swift build -c release --product ECSCompatBenchmark --force-resolved-versions ${
 
 [[ $mode != build ]] || exit 0
 
+# Result mode: build the result tool and prove the host facts are readable before spending a measurement on this ref.
+if [[ -n $result ]]; then
+    swift build -c release --product ECSBenchmarkResults --force-resolved-versions ${swift_flags[@]+"${swift_flags[@]}"}
+    bin_path=$(swift build -c release --show-bin-path ${swift_flags[@]+"${swift_flags[@]}"})
+    "$bin_path/ECSBenchmarkResults" host-check || die "host facts are not available; nothing was measured"
+fi
+
 # The filter must select something; an empty selection would otherwise "succeed" with no measurements.
 matches=$(swift package --disable-automatic-resolution ${swift_flags[@]+"${swift_flags[@]}"} benchmark list --target ECSCompatBenchmark | grep -Ec -- "$filter" || true)
 ((matches > 0)) || die "filter matches no benchmarks: $filter"
@@ -193,10 +223,20 @@ finished=$(timestamp)
 baseline_file=".benchmarkBaselines/ECSCompatBenchmark/$baseline_name/results.json"
 [[ -f $baseline_file ]] || die "benchmark plugin wrote no baseline at $lib/Benchmarks/$baseline_file"
 
-swift build -c release --product ECSBenchmarkResults --force-resolved-versions ${swift_flags[@]+"${swift_flags[@]}"}
-bin_path=$(swift build -c release --show-bin-path ${swift_flags[@]+"${swift_flags[@]}"})
+result_dir=$(dirname -- "$result")
+keep_failed() { # <reason>: keep the finished native baseline next to the results
+    local dir="$result_dir/.failed/$(printf '%s' "$requested" | tr -c 'A-Za-z0-9._\n-' '-')-${ref_sha:0:12}"
+    mkdir -p "$dir"
+    cp "$baseline_file" "$dir/results.json"
+    rm -f "$result"
+    die "$1; the completed measurement was kept at $dir/results.json"
+}
+batch_args=()
+[[ -z $batch_id ]] || batch_args=(--batch-id "$batch_id")
 "$bin_path/ECSBenchmarkResults" write \
     --baseline "$baseline_file" --out "$result" --run-id "$run_id" --started "$started" --finished "$finished" \
-    --ref "$ref" --ref-sha "$ref_sha" --suite-sha "$suite_sha" --filter "$filter" \
-    --package-resolved Package.resolved --swift-version "$(swift --version 2>&1)"
+    --ref "$requested" --ref-sha "$ref_sha" --suite-sha "$suite_sha" --filter "$filter" \
+    --package-resolved Package.resolved --swift-version "$(swift --version 2>&1)" ${batch_args[@]+"${batch_args[@]}"} \
+    || keep_failed "writing the result file failed"
+"$bin_path/ECSBenchmarkResults" validate "$result" > /dev/null || keep_failed "the written result file did not validate"
 printf 'result: %s\n' "$result"

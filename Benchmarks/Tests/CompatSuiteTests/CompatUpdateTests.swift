@@ -1,6 +1,6 @@
 import FirebladeECS
 import Testing
-@testable import ECSCompatBenchmark
+@testable import ECSCompatSuite
 
 private let updateCounts = [0, 1, 2, 3, 16, 17, 99, 100, 512]
 

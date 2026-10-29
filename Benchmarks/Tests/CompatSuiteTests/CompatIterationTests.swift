@@ -1,6 +1,6 @@
 import FirebladeECS
 import Testing
-@testable import ECSCompatBenchmark
+@testable import ECSCompatSuite
 
 private let iterationCounts = [0, 1, 2, 3, 16, 17, 99, 100, 101, 512]
 

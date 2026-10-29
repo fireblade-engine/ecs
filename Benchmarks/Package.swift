@@ -24,10 +24,20 @@ let package = Package(
         .package(url: "https://github.com/ordo-one/benchmark", .upToNextMajor(from: "1.38.1"))
     ],
     targets: [
+        // Workload definitions, per-revision adapter and the enabled metric set. Shared by the plugin executable,
+        // the result tool and the tests.
+        .target(
+            name: "ECSCompatSuite",
+            dependencies: [
+                .product(name: "FirebladeECS", package: "ecs"),
+                .product(name: "Benchmark", package: "benchmark")
+            ],
+            path: "Benchmarks/ECSCompatSuite"
+        ),
         .executableTarget(
             name: "ECSCompatBenchmark",
             dependencies: [
-                .product(name: "FirebladeECS", package: "ecs"),
+                "ECSCompatSuite",
                 .product(name: "Benchmark", package: "benchmark")
             ],
             path: "Benchmarks/ECSCompatBenchmark",
@@ -37,7 +47,7 @@ let package = Package(
         ),
         .testTarget(
             name: "CompatSuiteTests",
-            dependencies: ["ECSCompatBenchmark"],
+            dependencies: ["ECSCompatSuite"],
             path: "Tests/CompatSuiteTests"
         )
     ] + (sharedSuiteOnly ? [] : [

@@ -97,4 +97,18 @@ struct ResultWrapperTests {
         #expect(base != configurationHash(suiteSHA: "a", filter: "g", configuration: "c"))
         #expect(base != configurationHash(suiteSHA: "a", filter: "f", configuration: "d"))
     }
+
+    /// Pins the configuration the results are hashed over. If this fails, the suite configuration (enabled metrics, iteration
+    /// constants) changed: results recorded before and after are no longer comparable. Update the pinned values deliberately.
+    @Test
+    func configurationDescriptionAndHashAreGolden() {
+        #expect(
+            CompatManifest.configurationDescription
+                == "metrics=Time (wall clock),Time (total CPU),Throughput (# / s),Memory (resident peak),Malloc (total);persistentWarmupIterations=10;persistentIterations=100;persistentMaxDuration=600.0 seconds"
+        )
+        #expect(
+            configurationHash(suiteSHA: Support.suiteSHA, filter: "^entity.create.empty .* / 16$", configuration: CompatManifest.configurationDescription)
+                == "891cdf054514aea89eb4da158295bc05b574795a2d668506eeb1bd96d37bc08a"
+        )
+    }
 }

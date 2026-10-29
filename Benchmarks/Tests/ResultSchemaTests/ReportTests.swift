@@ -252,16 +252,68 @@ struct ReportTests {
     }
 
     @Test
-    func reportCodeLaunchesNoProcess() throws {
-        // By design the renderer is a function over decoded values; this guards the whole schema target (including everything
-        // the report path could call) against ever acquiring a process launch.
-        let directory = Support.packageRoot.appendingPathComponent("Benchmarks/ECSBenchmarkResultSchema")
-        let sources = try FileManager.default.contentsOfDirectory(atPath: directory.path).filter { $0.hasSuffix(".swift") }
-        #expect(sources.contains("BenchmarkReport.swift"))
+    func resultsToolsLaunchNoProcess() throws {
+        // By design the renderer is a function over decoded values; this guards the whole schema target and the executable
+        // target (its main.swift) against ever acquiring a process launch.
         let forbidden = try Regex(#"\bProcess\b|\bNSTask\b|posix_spawn|\bsystem\(|\bpopen\(|\bexecv|\bfork\("#)
-        for source in sources {
-            let text = try String(contentsOf: directory.appendingPathComponent(source), encoding: .utf8)
-            #expect(text.firstMatch(of: forbidden) == nil, "\(source) must not launch processes")
+        var checked: [String] = []
+        for target in ["ECSBenchmarkResultSchema", "ECSBenchmarkResults"] {
+            let directory = Support.packageRoot.appendingPathComponent("Benchmarks/\(target)")
+            let sources = try FileManager.default.contentsOfDirectory(atPath: directory.path).filter { $0.hasSuffix(".swift") }
+            for source in sources {
+                let text = try String(contentsOf: directory.appendingPathComponent(source), encoding: .utf8)
+                #expect(text.firstMatch(of: forbidden) == nil, "\(target)/\(source) must not launch processes")
+                checked.append("\(target)/\(source)")
+            }
+        }
+        #expect(checked.contains("ECSBenchmarkResultSchema/BenchmarkReport.swift"))
+        #expect(checked.contains("ECSBenchmarkResults/main.swift"))
+    }
+
+    @Test
+    func throughputPercentilesFollowThePackagePolarity() throws {
+        // Larger is better: p0 is the largest value, p100 the smallest. Sample set: 1000 x5, 2000 x4, 4000 x1.
+        let sample = ReportSample(ReportFixtures.result(.throughput, ReportFixtures.spread()))
+        #expect(sample.prefersLarger)
+        #expect(sample.value(.percentile(0)) == 4000)
+        #expect(sample.value(.percentile(25)) == 2000)
+        #expect(sample.value(.percentile(90)) == 1000)
+        #expect(sample.value(.percentile(100)) == 1000)
+        // The same values with smaller-is-better polarity are mirrored.
+        let time = ReportSample(ReportFixtures.result(.wallClock, ReportFixtures.spread()))
+        #expect(!time.prefersLarger)
+        #expect(time.value(.percentile(0)) == 1000)
+        #expect(time.value(.percentile(25)) == 1000)
+        #expect(time.value(.percentile(90)) == 2000)
+        #expect(time.value(.percentile(100)) == 4000)
+        // And in the rendered report (ops/s: 4000 ops/s prints as 4 Kops/s).
+        var files = all
+        files[0].baseline.results = Dictionary(uniqueKeysWithValues: files[0].baseline.results.map { identifier, results in
+            (identifier, results.map { $0.metric == .throughput ? ReportFixtures.result(.throughput, ReportFixtures.spread()) : $0 })
+        })
+        let report = try render(files)
+        let section = "### `\(ReportFixtures.w1)` / 16"
+        #expect(try row(report, section: section, metric: "Throughput", label: "p0").contains("| 4 Kops/s |"))
+        #expect(try row(report, section: section, metric: "Throughput", label: "p25").contains("| 2 Kops/s |"))
+        #expect(try row(report, section: section, metric: "Throughput", label: "p90").contains("| 1 Kops/s |"))
+        #expect(try row(report, section: section, metric: "Throughput", label: "p100").contains("| 1 Kops/s |"))
+    }
+
+    @Test
+    func reportPercentilesMatchThePackageOnAFreshCopy() throws {
+        // Oracle: Statistics.percentiles() of an untouched decode of the same native result, for both polarities, with and
+        // without a scaling factor. The report must never touch the caches of the copy it reads.
+        let values = (1 ... 400).map { ($0 * $0 * 37) % 90_001 + 10 }
+        for metric in [BenchmarkMetric.wallClock, .throughput, .mallocCountTotal, .peakMemoryResident] {
+            for scaling in [BenchmarkScalingFactor.one, .kilo] {
+                let original = ReportFixtures.result(metric, values, scaling: scaling)
+                let fresh = try JSONDecoder().decode(BenchmarkResult.self, from: JSONEncoder().encode(original))
+                let sample = ReportSample(original)
+                let factor: Double = metric == .throughput ? Double(scaling.rawValue) : (metric.useScalingFactor ? 1 / Double(scaling.rawValue) : 1)
+                let oracle = fresh.statistics.percentiles().map { Double($0) * factor }
+                #expect(sample.percentiles == oracle, "\(metric) scaling \(scaling)")
+                #expect(sample.prefersLarger == fresh.statistics.prefersLarger)
+            }
         }
     }
 

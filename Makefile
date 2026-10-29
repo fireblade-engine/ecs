@@ -129,6 +129,7 @@ BENCHMARK_FILTER ?=
 REPORT_OUTPUT ?= Benchmarks/.results/report.md
 REPORT_BASELINE ?=
 REPORT_TITLE ?=
+REPORT_OVERWRITE ?=
 RESULTS_TOOL = Benchmarks/.build/release/ECSBenchmarkResults
 
 # Runtime benchmarks live in a separate package (Benchmarks/) so the benchmark dependency stays out of FirebladeECS.
@@ -146,7 +147,7 @@ benchmark-compare:
 benchmark-report:
 	@if [ -z "$(RESULTS)" ]; then printf 'Set RESULTS to saved result files, for example: make benchmark-report RESULTS="a.json b.json"\n' >&2; exit 2; fi
 	swift build --package-path Benchmarks -c release --product ECSBenchmarkResults $(SWIFT_FLAGS)
-	$(RESULTS_TOOL) report $(RESULTS) --output "$(REPORT_OUTPUT)" $(if $(REPORT_BASELINE),--baseline "$(REPORT_BASELINE)") $(if $(REPORT_TITLE),--title "$(REPORT_TITLE)")
+	$(RESULTS_TOOL) report $(RESULTS) --output "$(REPORT_OUTPUT)" $(if $(REPORT_BASELINE),--baseline "$(REPORT_BASELINE)") $(if $(REPORT_TITLE),--title "$(REPORT_TITLE)") $(if $(REPORT_OVERWRITE),--overwrite)
 
 test-benchmarks:
 	cd Benchmarks && swift test $(SWIFT_FLAGS)

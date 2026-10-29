@@ -86,7 +86,7 @@ make benchmark-report RESULTS="Benchmarks/.results/<run>/1.4.3-<sha>.json Benchm
     REPORT_OUTPUT=report.md REPORT_BASELINE=1.4.3 REPORT_TITLE="ECS 1.4.3 vs main"
 ```
 
-`REPORT_OUTPUT` defaults to `Benchmarks/.results/report.md` and an existing output file is refused; `REPORT_BASELINE` (a requested ref name) defaults to the first file; `REPORT_TITLE` is optional. The report has a provenance table per ref, warnings about differing configuration, parity notes and the unsupported list, then per workload, scale and metric a table of all statistics with deltas and a Mermaid chart of p50. Values missing or incomparable print `unavailable`, never zero.
+`REPORT_OUTPUT` defaults to `Benchmarks/.results/report.md` and an existing output file is refused unless `REPORT_OVERWRITE=1` is set; `REPORT_BASELINE` (a requested ref name) defaults to the first file; `REPORT_TITLE` is optional. The report has a provenance table per ref, warnings about differing configuration, parity notes and the unsupported list, then per workload, scale and metric a table of all statistics with deltas and a Mermaid chart of p50. Values missing or incomparable print `unavailable`, never zero.
 
 `Documentation/Benchmarks/REPORT.md` is generated from saved result files with this command; do not edit it by hand.
 
@@ -96,6 +96,6 @@ make benchmark-report RESULTS="Benchmarks/.results/<run>/1.4.3-<sha>.json Benchm
 | :--- | :--- |
 | `make benchmark` | Run the broad package benchmarks of this package |
 | `make benchmark-compare REFS=a,b,c [BENCHMARK_FILTER=...]` | Measure refs and save one validated result file each |
-| `make benchmark-report RESULTS="a.json b.json" [REPORT_OUTPUT=...] [REPORT_BASELINE=...] [REPORT_TITLE=...]` | Render a report from saved results |
+| `make benchmark-report RESULTS="a.json b.json" [REPORT_OUTPUT=...] [REPORT_BASELINE=...] [REPORT_TITLE=...] [REPORT_OVERWRITE=1]` | Render a report from saved results |
 | `make test-benchmarks` | Swift tests of this package |
 | `make test-benchmark-scripts` | Shell tests of the runner and snapshot scripts |

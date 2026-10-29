@@ -14,21 +14,25 @@ let package = Package(
         .macOS(.v14)
     ],
     dependencies: [
-        // The package identity of a path dependency is its directory name, i.e. the repository name.
-        .package(path: ".."),
+        .package(name: "ecs", path: ".."),
         .package(url: "https://github.com/ordo-one/benchmark", .upToNextMajor(from: "1.38.1"))
     ],
     targets: [
         .executableTarget(
             name: "ECSBenchmark",
             dependencies: [
-                .product(name: "FirebladeECS", package: "ecs.benchmarks"),
+                .product(name: "FirebladeECS", package: "ecs"),
                 .product(name: "Benchmark", package: "benchmark")
             ],
             path: "Benchmarks/ECSBenchmark",
             plugins: [
                 .plugin(name: "BenchmarkPlugin", package: "benchmark")
             ]
+        ),
+        .testTarget(
+            name: "ReferenceUpdateTests",
+            dependencies: ["ECSBenchmark"],
+            path: "Tests/ReferenceUpdateTests"
         )
     ]
 )

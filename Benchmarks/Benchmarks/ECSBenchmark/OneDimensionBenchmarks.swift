@@ -419,4 +419,5 @@ let benchmarks: @Sendable () -> Void = {
 
     storageBenchmarks()
     comparisonBenchmarks()
+    referenceUpdateBenchmarks()
 }

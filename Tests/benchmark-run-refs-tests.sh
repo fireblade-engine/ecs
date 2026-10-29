@@ -31,36 +31,45 @@ for n in one two three; do
 done
 sha_of() { git -C "$fixture" rev-parse "$1^{commit}"; }
 
-# Stub snapshot: logs every invocation, writes a minimal result, can fail for one ref, can skew the config hash.
+# Stub snapshot: logs every invocation, writes a minimal result, can fail for one ref, can skew the config hash or the
+# toolchain, and can move a branch while the first ref is being "measured".
 stub="$test_root/snapshot-stub.sh"
 cat > "$stub" <<'STUB'
 #!/usr/bin/env bash
 set -euo pipefail
 ref=$1; shift
 echo "$ref $*" >> "$STUB_LOG"
-[[ ${STUB_FAIL_REF:-} != "$ref" ]] || exit 7
-repo="" suite="" out="" result=""
+repo="" suite="" out="" result="" requested="" batch=""
 while (($#)); do
     case $1 in
         --repo) repo=$2 ;;
         --suite-ref) suite=$2 ;;
         --out) out=$2 ;;
         --result) result=$2 ;;
+        --requested) requested=$2 ;;
+        --batch-id) batch=$2 ;;
     esac
     shift
 done
+[[ -z ${STUB_MOVE_ONCE:-} || -e $STUB_MOVE_ONCE ]] || { touch "$STUB_MOVE_ONCE"; git -C "$repo" branch -f movable t-three; }
+[[ ${STUB_FAIL_REF:-} != "$requested" ]] || exit 7
 mkdir "$out"
 hash=HASH
-[[ ${STUB_SKEW_REF:-} != "$ref" ]] || hash=OTHER
-jq -n --arg r "$(git -C "$repo" rev-parse "$ref^{commit}")" --arg s "$suite" --arg h "$hash" \
-    '{ref: {sha: $r}, suite: {sha: $s, configurationHash: $h}}' > "$result"
+[[ ${STUB_SKEW_REF:-} != "$requested" ]] || hash=OTHER
+swift_version="swift 6"
+[[ ${STUB_TOOLCHAIN_REF:-} != "$requested" ]] || swift_version="swift 7"
+sha=$(git -C "$repo" rev-parse "$ref^{commit}")
+[[ ${STUB_WRONG_SHA_REF:-} != "$requested" ]] || sha=$(printf 'e%.0s' {1..40})
+jq -n --arg r "$sha" --arg s "$suite" --arg h "$hash" --arg b "$batch" --arg v "$swift_version" --arg q "$requested" \
+    '{run: {batchId: $b}, ref: {requested: $q, sha: $r}, suite: {sha: $s, configurationHash: $h}, toolchain: {swiftVersion: $v},
+      host: {cpuModel: "cpu", physicalMemoryBytes: 1}, benchmarks: [{identity: "w", scale: 16}]}' > "$result"
 STUB
 chmod +x "$stub"
 export BENCHMARK_SNAPSHOT_SCRIPT="$stub" STUB_LOG="$test_root/calls.log"
 
 run() { "$script" --repo "$fixture" "$@"; }
 calls() { if [[ -f $STUB_LOG ]]; then wc -l < "$STUB_LOG" | tr -d ' '; else echo 0; fi; }
-reset() { rm -f "$STUB_LOG"; unset STUB_FAIL_REF STUB_SKEW_REF; }
+reset() { rm -f "$STUB_LOG"; unset STUB_FAIL_REF STUB_SKEW_REF STUB_TOOLCHAIN_REF STUB_WRONG_SHA_REF STUB_MOVE_ONCE; }
 
 # Validation precedes any execution: one bad ref anywhere means no snapshot call at all.
 bad_cases=(
@@ -109,6 +118,13 @@ for n in one two three; do
 done
 assert_eq "$(sed -E 's/.*--out ([^ ]+) .*/\1/' "$STUB_LOG" | sort -u | wc -l | tr -d ' ')" 3 'each ref needs its own snapshot directory'
 assert_eq "$(grep -c -- "--suite-ref $(sha_of t-three) " "$STUB_LOG")" 3 'every ref uses the same resolved suite SHA'
+for n in one two three; do
+    grep -q "^$(sha_of "t-$n") --requested t-$n " "$STUB_LOG" || fail "t-$n must be passed to the snapshot as its resolved SHA plus the requested name"
+done
+batches=$(jq -r '.run.batchId' "$out_ok"/*.json | sort -u)
+[[ -n $batches && $(wc -l <<< "$batches" | tr -d ' ') == 1 ]] || fail 'all results of one invocation share one batch id'
+[[ $(grep -c -- "--batch-id $batches " "$STUB_LOG") == 3 ]] || fail 'the batch id must be passed to every snapshot'
+assert_eq "$(ls -A "$out_ok" | wc -l | tr -d ' ')" 3 'no staged or failed leftovers after a successful run'
 assert_eq "$(grep -c -- '--filter f\.\*' "$STUB_LOG")" 3 'every ref uses the same filter'
 
 # Failure of ref 2 of 3: ref 1's result stays, no result for ref 2, ref 3 never starts, non-zero exit.
@@ -127,7 +143,57 @@ out_skew="$test_root/skew"
 if run --refs "t-one,t-two,t-three" --out "$out_skew" > /dev/null 2> "$test_root/skew.err"; then fail 'a differing configuration hash must fail the run'; fi
 grep -q 'configuration hash' "$test_root/skew.err" || fail 'hash mismatch must be reported'
 assert_eq "$(ls "$out_skew" | wc -l | tr -d ' ')" 1 'a hash mismatch leaves only the earlier result'
+kept="$out_skew/.failed/t-two-$(sha_of t-two | cut -c1-12).json"
+[[ -f $kept ]] || fail 'a rejected completed measurement must be kept under .failed'
+grep -qF "$kept" "$test_root/skew.err" || fail 'the kept path must be reported'
+assert_eq "$(ls -A "$out_skew" | grep -c partial || true)" 0 'no staged file may remain'
 assert_eq "$(calls)" 2 'ref 3 must not start after a hash mismatch'
+
+# A result recording another SHA than the resolved one is rejected and kept as well.
+reset
+export STUB_WRONG_SHA_REF=t-one
+out_wrong="$test_root/wrong"
+if run --refs "t-one,t-two" --out "$out_wrong" > /dev/null 2> "$test_root/wrong.err"; then fail 'a result with the wrong SHA must fail the run'; fi
+[[ -f $out_wrong/.failed/t-one-$(sha_of t-one | cut -c1-12).json ]] || fail 'the rejected result must be kept'
+assert_eq "$(calls)" 1 'later refs must not start after a rejected result'
+
+# Refs are resolved once: a branch that moves while the first ref runs does not change the SHA measured for it.
+reset
+git -C "$fixture" branch movable t-two
+export STUB_MOVE_ONCE="$test_root/moved.flag"
+rm -f "$STUB_MOVE_ONCE"
+out_move="$test_root/move"
+run --refs "t-one,movable" --out "$out_move" > /dev/null 2>&1
+assert_eq "$(sha_of movable)" "$(sha_of t-three)" 'the stub must have moved the branch'
+grep -q "^$(sha_of t-two) --requested movable " "$STUB_LOG" || fail 'the SHA resolved before the run must be measured, not the moved branch'
+[[ -f $out_move/movable-$(sha_of t-two | cut -c1-12).json ]] || fail 'the result file must carry the original SHA'
+assert_eq "$(jq -r '.ref.requested' "$out_move"/movable-*.json)" movable 'the requested name stays provenance'
+
+# Differences between results warn without failing the run.
+reset
+export STUB_TOOLCHAIN_REF=t-two
+out_warn="$test_root/warn"
+run --refs "t-one,t-two" --out "$out_warn" > /dev/null 2> "$test_root/warn.err" || fail 'a toolchain difference must not fail the run'
+grep -q 'warning: toolchain differs between t-two and t-one' "$test_root/warn.err" || fail 'a toolchain difference must warn'
+assert_eq "$(ls "$out_warn" | wc -l | tr -d ' ')" 2 'both results are kept despite the warning'
+reset
+run --refs "t-one,t-two" --out "$test_root/nowarn" > /dev/null 2> "$test_root/nowarn.err"
+grep -q 'warning' "$test_root/nowarn.err" && fail 'identical toolchain, host and set must not warn'
+
+# Prerequisites and the filter are checked before any snapshot starts.
+reset
+if run --refs t-one --filter ' ' --out "$test_root/nofilter" > /dev/null 2> "$test_root/nofilter.err"; then fail 'an empty filter must be refused'; fi
+grep -q 'filter is empty' "$test_root/nofilter.err" || fail 'an empty filter must be reported'
+nouuid="$test_root/nouuid"
+mkdir -p "$nouuid"
+for tool in git bash env dirname basename mktemp rm mkdir rmdir cat awk grep sed mv cp ls tr date jq swift sort; do
+    src=$(command -v "$tool" || true)
+    [[ -z $src ]] || ln -s "$src" "$nouuid/$tool"
+done
+if PATH="$nouuid" run --refs t-one --out "$test_root/nouuid-out" > /dev/null 2> "$test_root/nouuid.err"; then fail 'missing uuidgen must fail'; fi
+grep -q 'uuidgen is required' "$test_root/nouuid.err" || fail 'missing uuidgen must be reported'
+assert_eq "$(calls)" 0 'missing prerequisites must not start snapshots'
+[[ ! -e $test_root/nouuid-out ]] || fail 'missing prerequisites must not create the run directory'
 
 # Existing non-empty run directories are refused; a run that produces nothing leaves no directory behind.
 reset

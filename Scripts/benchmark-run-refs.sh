@@ -3,10 +3,15 @@
 # result file per ref in a single run directory. Every ref is built and measured in its own isolated snapshot by
 # Scripts/benchmark-snapshot.sh --result; all refs use the same suite commit, filter and suite configuration.
 #
-# All refs are resolved and validated before the first build. A ref's result is moved into the run directory only after
-# the snapshot run succeeded and its provenance checks passed. If a ref fails, later refs are not started, results of
-# already completed refs are kept, and the exit status is non-zero. Nothing but result files is written to the run
-# directory. Report generation reads these files elsewhere.
+# All refs are resolved once and validated before the first build, and the resolved full SHA (plus the requested name for
+# provenance) is what the snapshot script receives, so a branch that moves mid-run cannot change what is measured.
+# Prerequisites (jq, uuidgen, swift, a non-empty filter) are checked before the first build; the snapshot script also
+# checks the host facts before it measures. A ref's result is staged under a hidden name inside the run directory and
+# renamed into place only after the snapshot run succeeded and its provenance checks passed. If a ref fails, later refs
+# are not started, results of already completed refs are kept, and the exit status is non-zero. A completed measurement
+# whose result is rejected is never discarded: it is kept under <run dir>/.failed/ and its path is reported. All results
+# of one invocation share a batch id. Differences in toolchain, host or benchmark set between results produce warnings.
+# Report generation reads these files elsewhere.
 set -euo pipefail
 
 usage() {
@@ -37,11 +42,13 @@ have_refs=0
 suite_ref=HEAD
 out=""
 filter_args=()
+filter_given=0
+filter_text=""
 
 while (($#)); do
     case $1 in
         --refs) (($# >= 2)) || usage; refs_arg=$2; have_refs=1; shift 2 ;;
-        --filter) (($# >= 2)) || usage; filter_args=(--filter "$2"); shift 2 ;;
+        --filter) (($# >= 2)) || usage; filter_args=(--filter "$2"); filter_given=1; filter_text=$2; shift 2 ;;
         --suite-ref) (($# >= 2)) || usage; suite_ref=$2; shift 2 ;;
         --out) (($# >= 2)) || usage; out=$2; shift 2 ;;
         --repo) (($# >= 2)) || usage; repo=$2; shift 2 ;;
@@ -49,7 +56,10 @@ while (($#)); do
     esac
 done
 ((have_refs)) || usage
-command -v jq > /dev/null || die "jq is required"
+for tool in jq uuidgen swift; do
+    command -v "$tool" > /dev/null || die "$tool is required"
+done
+((!filter_given)) || [[ -n ${filter_text//[[:space:]]/} ]] || die "--filter is empty"
 
 # --- Validate everything before any build ---------------------------------------------------------------------------
 [[ -n $refs_arg ]] || die "--refs is empty"
@@ -99,9 +109,27 @@ out=$(cd "$out" && pwd)
 scratch=$(mktemp -d "${TMPDIR:-/tmp}/benchmark-run-refs.XXXXXXXX")
 cleanup() {
     rm -rf "$scratch"
+    rm -f "$out"/.*.partial
     rmdir "$out" 2> /dev/null || true # an empty run directory is not a result
 }
 trap cleanup EXIT
+
+batch_id=$(uuidgen)
+failed_dir="$out/.failed"
+# Keeps a rejected result: <staged file> <result name> -> prints the kept path on stderr.
+keep_failed() {
+    mkdir -p "$failed_dir"
+    mv "$1" "$failed_dir/$2"
+    printf 'benchmark-run-refs: the completed measurement was kept at %s\n' "$failed_dir/$2" >&2
+}
+# Differences between a result and the first one that make a comparison less trustworthy (warnings only).
+fingerprint() { # <file> <part>
+    case $2 in
+        toolchain) jq -c '.toolchain' "$1" ;;
+        host) jq -c '.host | del(.physicalMemoryBytes)' "$1" ;;
+        set) jq -c '[(.benchmarks // [])[] | "\(.identity) / \(.scale)"] | unique' "$1" ;;
+    esac
+}
 
 # --- Run one snapshot per ref ---------------------------------------------------------------------------------------
 results=()
@@ -112,11 +140,12 @@ for ((i = 0; i < ${#refs[@]}; i++)); do
     name="$(printf '%s' "$ref" | tr -c 'A-Za-z0-9._\n-' '-')-${sha:0:12}.json"
     final="$out/$name"
     [[ ! -e $final ]] || die "result file already exists: $final"
-    staged="$scratch/result-$i.json"
+    staged="$out/.$name.partial"
     printf 'benchmark-run-refs: [%d/%d] %s (%s)\n' "$((i + 1))" "${#refs[@]}" "$ref" "${sha:0:12}" >&2
 
-    if ! "$snapshot" "$ref" --repo "$repo" --suite-ref "$suite_sha" --out "$scratch/snapshot-$i" --result "$staged" ${filter_args[@]+"${filter_args[@]}"} >&2; then
+    if ! "$snapshot" "$sha" --requested "$ref" --batch-id "$batch_id" --repo "$repo" --suite-ref "$suite_sha" --out "$scratch/snapshot-$i" --result "$staged" ${filter_args[@]+"${filter_args[@]}"} >&2; then
         rm -rf "$scratch/snapshot-$i"
+        if [[ -f $staged ]]; then keep_failed "$staged" "$name"; fi
         printf 'benchmark-run-refs: ref %s failed; later refs were not started\n' "$ref" >&2
         break
     fi
@@ -138,11 +167,19 @@ for ((i = 0; i < ${#refs[@]}; i++)); do
         fi
     fi
     if [[ -n $problem ]]; then
+        if [[ -f $staged ]]; then keep_failed "$staged" "$name"; fi
         printf 'benchmark-run-refs: ref %s failed: %s; later refs were not started\n' "$ref" "$problem" >&2
         break
     fi
 
     mv "$staged" "$final"
+    if ((${#results[@]})); then
+        for part in toolchain host set; do
+            if [[ $(fingerprint "$final" "$part") != "$(fingerprint "${results[0]}" "$part")" ]]; then
+                printf 'benchmark-run-refs: warning: %s differs between %s and %s; their results may not be comparable\n' "$part" "$ref" "${refs[0]}" >&2
+            fi
+        done
+    fi
     results+=("$final")
 done
 

@@ -2,19 +2,19 @@ import Benchmark
 import FirebladeECS
 
 let benchmarks: @Sendable () -> Void = {
-    let scales = [0, 1, 16, 1024]
-
-    for scale in scales {
+    for scale in CompatWorkload.scales {
         for backend in CompatSuite.backends {
-            // Nexus construction is before timing and teardown after stop; each invocation creates exactly `scale` entities.
-            Benchmark("\(CompatWorkload.createEmptyIdentity) [\(backend)] / \(scale)", configuration: .init(scalingFactor: .one)) { benchmark in
-                let nexus = CompatSuite.makeNexus(backend: backend)
-                benchmark.startMeasurement()
-                for _ in benchmark.scaledIterations {
-                    CompatWorkload.createEmptyEntities(in: nexus, count: scale)
+            for workload in CompatWorkload.allCases {
+                // Every invocation prepares fresh state before timing and runs exactly one pass (`.one`), so warmup and
+                // repeated invocations do the same work. Nexus teardown happens after stop.
+                Benchmark(workload.benchmarkName(backend: backend, scale: scale), configuration: .init(scalingFactor: .one)) { benchmark in
+                    let state = workload.prepare(backend: backend, count: scale)
+                    benchmark.startMeasurement()
+                    let outcome = workload.run(state, count: scale)
+                    benchmark.stopMeasurement()
+                    blackHole(outcome)
+                    blackHole(state.nexus.numEntities)
                 }
-                benchmark.stopMeasurement()
-                blackHole(nexus.numEntities)
             }
         }
     }

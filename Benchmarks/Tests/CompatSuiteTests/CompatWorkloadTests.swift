@@ -2,38 +2,229 @@ import FirebladeECS
 import Testing
 @testable import ECSCompatBenchmark
 
+/// Empty, single, even, odd and larger counts.
+private let counts = [0, 1, 2, 3, 16, 17, 1024]
+
+private func forEachFixture(_ body: (String, Int) -> Void) {
+    for backend in CompatSuite.backends {
+        for count in counts {
+            body(backend, count)
+        }
+    }
+}
+
 @Suite
 struct CompatWorkloadTests {
+    // MARK: - Catalog
+
     @Test
-    func createEmptyCreatesExactlyCountEntitiesOnFreshNexus() {
-        for backend in CompatSuite.backends {
-            for count in [0, 1, 16, 1024] {
-                let nexus = CompatSuite.makeNexus(backend: backend)
-                #expect(nexus.numEntities == 0)
-
-                CompatWorkload.createEmptyEntities(in: nexus, count: count)
-
-                #expect(nexus.numEntities == count)
-                #expect(nexus.numComponents == 0)
-            }
+    func identitiesAreUniqueAndStable() {
+        let identities = CompatWorkload.allCases.map(\.identity)
+        #expect(Set(identities).count == identities.count)
+        #expect(Set(CompatWorkload.allCases.map(\.upstreamName)).count == identities.count)
+        #expect(identities.contains("entity.create.empty"))
+        #expect(identities.contains("entity.create.no-entities"))
+        for workload in CompatWorkload.allCases {
+            #expect(workload.identity.hasPrefix("entity.") || workload.identity.hasPrefix("component."))
+            #expect(!workload.identity.contains(" "))
         }
     }
 
     @Test
-    func repeatedInvocationsOnFreshNexusDoNotAccumulate() {
-        for backend in CompatSuite.backends {
-            for _ in 0 ..< 3 {
-                let nexus = CompatSuite.makeNexus(backend: backend)
-                CompatWorkload.createEmptyEntities(in: nexus, count: 16)
-                #expect(nexus.numEntities == 16)
+    func benchmarkNamesAreUniqueAndStartWithIdentity() {
+        var names: Set<String> = []
+        for scale in CompatWorkload.scales {
+            for backend in CompatSuite.backends {
+                for workload in CompatWorkload.allCases {
+                    let name = workload.benchmarkName(backend: backend, scale: scale)
+                    #expect(names.insert(name).inserted)
+                    #expect(name.hasPrefix(workload.identity + " ["))
+                }
             }
         }
+        #expect(CompatWorkload.scales.contains(CompatWorkload.smallScale))
+    }
+
+    @Test
+    func parityNotesAreMachineReadable() {
+        for workload in CompatWorkload.allCases {
+            let note = workload.parity.note
+            #expect(note == "equivalent" || (note.hasPrefix("adapted(") && note.hasSuffix(")") && note.count > "adapted()".count))
+        }
+        #expect(CompatWorkload.add.parity.note.hasPrefix("adapted("))
+        #expect(CompatWorkload.lookupOne.parity == .equivalent)
     }
 
     @Test
     func adapterReflectsComponentModelOfRevision() {
-        #expect((CompatProbeComponent.self is AnyObject.Type) == CompatSuite.usesClassComponents)
-        #expect(CompatWorkload.createEmptyIdentity == "entity.create.empty")
+        #expect((CompatFirstComponent.self is AnyObject.Type) == CompatSuite.usesClassComponents)
         #expect(!CompatSuite.backends.isEmpty)
+    }
+
+    // MARK: - Creation and destruction
+
+    @Test
+    func createNoEntitiesCreatesNothingAtAnyScale() {
+        forEachFixture { backend, count in
+            let state = CompatWorkload.createNoEntities.prepare(backend: backend, count: count)
+            let outcome = CompatWorkload.createNoEntities.run(state, count: count)
+            #expect(outcome == CompatOutcome())
+            #expect(state.nexus.numEntities == 0)
+            #expect(state.nexus.numComponents == 0)
+        }
+    }
+
+    @Test
+    func createEmptyCreatesExactlyCountEntities() {
+        forEachFixture { backend, count in
+            let state = CompatWorkload.createEmpty.prepare(backend: backend, count: count)
+            #expect(state.nexus.numEntities == 0)
+            let outcome = CompatWorkload.createEmpty.run(state, count: count)
+            #expect(outcome.operations == count)
+            #expect(outcome.hits == count)
+            #expect(state.nexus.numEntities == count)
+            #expect(state.nexus.numComponents == 0)
+        }
+    }
+
+    @Test
+    func createMinimalCreatesCountEntitiesWithTwoComponentsEach() {
+        forEachFixture { backend, count in
+            let state = CompatWorkload.createMinimal.prepare(backend: backend, count: count)
+            let outcome = CompatWorkload.createMinimal.run(state, count: count)
+            #expect(outcome.operations == count)
+            #expect(state.nexus.numEntities == count)
+            #expect(state.nexus.numComponents == count * 2)
+        }
+    }
+
+    @Test
+    func destroyMinimalDestroysEachEntityOnce() {
+        forEachFixture { backend, count in
+            let state = CompatWorkload.destroyMinimal.prepare(backend: backend, count: count)
+            #expect(state.nexus.numEntities == count)
+            #expect(state.nexus.numComponents == count * 2)
+            let outcome = CompatWorkload.destroyMinimal.run(state, count: count)
+            #expect(outcome.operations == count)
+            #expect(outcome.hits == count)
+            #expect(state.nexus.numEntities == 0)
+            #expect(state.nexus.numComponents == 0)
+        }
+    }
+
+    // MARK: - Lookup
+
+    @Test
+    func lookupNoneMissesEveryEntity() {
+        forEachFixture { backend, count in
+            let state = CompatWorkload.lookupNone.prepare(backend: backend, count: count)
+            #expect(state.nexus.numEntities == count)
+            let outcome = CompatWorkload.lookupNone.run(state, count: count)
+            #expect(outcome == CompatOutcome(operations: count, hits: 0, valueSum: 0))
+            #expect(state.nexus.numComponents == 0)
+        }
+    }
+
+    @Test
+    func lookupOneHitsEveryEntityWithItsValue() {
+        forEachFixture { backend, count in
+            let state = CompatWorkload.lookupOne.prepare(backend: backend, count: count)
+            let outcome = CompatWorkload.lookupOne.run(state, count: count)
+            #expect(outcome == CompatOutcome(operations: count, hits: count, valueSum: count * (count - 1) / 2))
+            #expect(state.nexus.numComponents == count * 2)
+        }
+    }
+
+    @Test
+    func lookupTwoPerformsTwoHitsPerEntity() {
+        forEachFixture { backend, count in
+            let state = CompatWorkload.lookupTwo.prepare(backend: backend, count: count)
+            let outcome = CompatWorkload.lookupTwo.run(state, count: count)
+            let indexSum = count * (count - 1) / 2
+            #expect(outcome == CompatOutcome(operations: count * 2, hits: count * 2, valueSum: indexSum * 3))
+        }
+    }
+
+    @Test
+    func lookupMixedThreeLooksUpCeilHalfOfTheEntities() {
+        forEachFixture { backend, count in
+            let state = CompatWorkload.lookupMixedThree.prepare(backend: backend, count: count)
+            let looked = (count + 1) / 2
+            #expect(state.nexus.numEntities == count)
+            #expect(state.entities.count == looked)
+            #expect(state.nexus.numComponents == count * 2 + looked)
+            let outcome = CompatWorkload.lookupMixedThree.run(state, count: count)
+            let evenIndexSum = stride(from: 0, to: count, by: 2).reduce(0, +)
+            #expect(outcome.operations == looked * 3)
+            #expect(outcome.hits == looked * 3)
+            #expect(outcome.valueSum == evenIndexSum * 6)
+        }
+    }
+
+    // MARK: - Mutation
+
+    @Test
+    func removeAddReturnsToStartingOccupancy() {
+        forEachFixture { backend, count in
+            let state = CompatWorkload.removeAdd.prepare(backend: backend, count: count)
+            let outcome = CompatWorkload.removeAdd.run(state, count: count)
+            #expect(outcome.operations == count)
+            #expect(outcome.hits == count)
+            #expect(state.nexus.numEntities == count)
+            #expect(state.nexus.numComponents == count * 2)
+            for (index, entity) in state.entities.enumerated() {
+                #expect(entity.get(CompatFirstComponent.self)?.value == index)
+                #expect(entity.get(CompatSecondComponent.self)?.value == index * 2)
+            }
+        }
+    }
+
+    @Test
+    func addRestoresComponentRemovedBeforeTiming() {
+        forEachFixture { backend, count in
+            let state = CompatWorkload.add.prepare(backend: backend, count: count)
+            #expect(state.nexus.numEntities == count)
+            #expect(state.nexus.numComponents == count)
+            #expect(state.entities.allSatisfy { !$0.has(CompatFirstComponent.self) })
+
+            let outcome = CompatWorkload.add.run(state, count: count)
+            #expect(outcome.operations == count)
+            #expect(outcome.hits == count)
+            #expect(state.nexus.numComponents == count * 2)
+            for (index, entity) in state.entities.enumerated() {
+                #expect(entity.get(CompatFirstComponent.self)?.value == index)
+            }
+        }
+    }
+
+    // MARK: - Repetition
+
+    @Test
+    func repeatedInvocationsOnFreshStateDoTheSameWork() {
+        for backend in CompatSuite.backends {
+            for workload in CompatWorkload.allCases {
+                var outcomes: [CompatOutcome] = []
+                var occupancy: [[Int]] = []
+                for _ in 0 ..< 3 {
+                    let state = workload.prepare(backend: backend, count: 17)
+                    outcomes.append(workload.run(state, count: 17))
+                    occupancy.append([state.nexus.numEntities, state.nexus.numComponents])
+                }
+                #expect(Set(outcomes.map(\.operations)).count == 1, "\(workload.identity)")
+                #expect(outcomes[0] == outcomes[1] && outcomes[1] == outcomes[2], "\(workload.identity)")
+                #expect(occupancy[0] == occupancy[1] && occupancy[1] == occupancy[2], "\(workload.identity)")
+            }
+        }
+    }
+
+    @Test
+    func repeatedRemoveAddOnSameStateKeepsOccupancy() {
+        for backend in CompatSuite.backends {
+            let state = CompatWorkload.removeAdd.prepare(backend: backend, count: 17)
+            let first = CompatWorkload.removeAdd.run(state, count: 17)
+            let second = CompatWorkload.removeAdd.run(state, count: 17)
+            #expect(first == second)
+            #expect(state.nexus.numComponents == 34)
+        }
     }
 }

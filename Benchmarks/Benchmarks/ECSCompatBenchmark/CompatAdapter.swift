@@ -5,15 +5,36 @@
 // `protocol Component: AnyObject` (FirebladeECS 1.x). The condition is never selected by ref name.
 import FirebladeECS
 
+// The minimal entity of the matrix carries two components (first, second); the mixed lookup workload adds a third.
+// Initializer shape `init(value:)` is the same in both models, so shared code never branches on the model.
 #if ECS_CLASS_COMPONENTS
 /// Class-component revision (`Component: AnyObject`) with its single, default storage.
-final class CompatProbeComponent: Component {
-    let value = 0
+final class CompatFirstComponent: Component {
+    let value: Int
+    init(value: Int) { self.value = value }
+}
+
+final class CompatSecondComponent: Component {
+    let value: Int
+    init(value: Int) { self.value = value }
+}
+
+final class CompatThirdComponent: Component {
+    let value: Int
+    init(value: Int) { self.value = value }
 }
 #else
 /// Value-component revision (`Component: Sendable`) with selectable storage backends.
-struct CompatProbeComponent: Component, Sendable {
-    var value = 0
+struct CompatFirstComponent: Component, Sendable {
+    var value: Int
+}
+
+struct CompatSecondComponent: Component, Sendable {
+    var value: Int
+}
+
+struct CompatThirdComponent: Component, Sendable {
+    var value: Int
 }
 #endif
 

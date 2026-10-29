@@ -8,7 +8,7 @@ import FirebladeECS
 #if ECS_CLASS_COMPONENTS
 /// Class-component revision (`Component: AnyObject`) with its single, default storage.
 final class CompatProbeComponent: Component {
-    var value = 0
+    let value = 0
 }
 #else
 /// Value-component revision (`Component: Sendable`) with selectable storage backends.

@@ -1,6 +1,6 @@
 # Git-ref Benchmark Suite — Living Plan
 
-**Status:** Steps 1–3 done. The user pre-approved all remaining gates for an unattended run (2026-10-29), limited to a low-count smoke in Step 12; see "Overnight delegation" below. Each gate passed under that delegation is logged there for the user's morning review.
+**Status:** Steps 1–11 done and the Step 12 smoke is complete (2026-10-29, gates passed under the user's overnight delegation; see "Overnight delegation"). Awaiting the user's morning review. The full-scale run needs separate approval.
 
 **Goal:** one repeatable ordo-one benchmark suite for committed FirebladeECS refs, one self-contained JSON result per ref, and a separate N-way Markdown/Mermaid report generator that consumes saved results without rerunning benchmarks.
 
@@ -183,6 +183,13 @@ The user approved every remaining gate in advance for an unattended run, with th
 - Known leftover: a `String(cString:)` deprecation warning in `HostFacts.swift`; it goes to the Step 11 lint pass.
 - Evidence: `make test-benchmarks` (59 + 9 + 36 tests), `make test-benchmark-scripts`, and a real `--refs 1.4.3,main` smoke whose report rendered.
 
+### Step 11 and Step 12 smoke result
+
+- Step 11 (`51c18173`..`a7197470`): `make benchmark-compare REFS=a,b,c [BENCHMARK_FILTER=]` and `make benchmark-report RESULTS="..." [REPORT_OUTPUT=] [REPORT_BASELINE=] [REPORT_TITLE=] [REPORT_OVERWRITE=1]`. The old two-ref scripts, their tests, `WORKTREE`, the `BASELINE_REF`/`CANDIDATE_REF`/`BENCHMARK_REPETITIONS` variables, and `Benchmarks/ComparisonHarness` are removed; `Benchmarks/README.md` documents the new flow. `make test`, `make test-benchmarks`, and `make test-benchmark-scripts` pass. Root `make lint` fails on root-package files that this branch does not change (the failures predate it), and it does not cover `Benchmarks/`. New benchmark sources were formatted, while some new test files still have formatter findings.
+- Step 12 smoke (`78c79b5c`): `REPORT.md` is now generated from run `Benchmarks/.results/20261029T223819Z` (`1.4.3` and `main` at 16 entities, uncommitted result JSON), configuration hash `45ffb08d…5cd8b`, with no host, toolchain, or configuration warnings.
+- **Measurement-count warning:** for 12 rows (all `component.add / 16`), the series have different sample counts, for example 8,235 on `1.4.3` against 10,000 on each `main` backend. Non-persistent workloads use the package's default iteration and duration limits, so a slower revision can hit the time limit first. At smoke scale this is expected; before a full run, decide whether non-persistent workloads should also pin iterations, or accept and document unequal sample counts.
+- **Before a full run (needs approval):** choose scales (the upstream range reaches 2,097,152 entities), estimate the duration from the smoke timing, and settle the sample-count policy above.
+
 ## Phases and review gates
 
 Each phase is a separate check-in; pause for user review before beginning the next.
@@ -192,7 +199,7 @@ Each phase is a separate check-in; pause for user review before beginning the ne
 - [x] **Shared suite and adapters** (Steps 3–7, gate passed under delegation 2026-10-29): consolidate/reuse applicable cases, preserve unrelated package benchmarks, and add correctness checks for population counts, operation counts, and state mutation.
 - [x] **Ref runner and results** (gate passed under delegation): support more than two committed refs, isolated SHA snapshots, consistent config, complete per-ref JSON, and clear failure for unsupported refs or missing capabilities.
 - [x] **Report-only path** (gate passed under delegation): validate N-way matching, all-statistic output, unit handling, missing values, zero baselines, Mermaid rendering, and that report generation does not invoke benchmarks.
-- [ ] **Compatibility and performance validation:** after approval, build/smoke against `1.4.3` and current, then run the full agreed workload set only after smoke results and resource cost are reviewed.
+- [ ] **Compatibility and performance validation** (smoke done; full run awaits approval): after approval, build/smoke against `1.4.3` and current, then run the full agreed workload set only after smoke results and resource cost are reviewed.
 
 ### Acceptance checks
 

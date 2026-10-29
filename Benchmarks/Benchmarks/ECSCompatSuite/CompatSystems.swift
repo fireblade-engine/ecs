@@ -69,6 +69,7 @@ struct CompatHealthPayload: Sendable {
     var maxhp: Int32 = 0
     var status: CompatStatusEffect = .spawn
 }
+
 struct CompatDamagePayload: Sendable { var atk: Int32 = 0, def: Int32 = 0 }
 struct CompatSpritePayload: Sendable { var character: UInt8 = 32 }
 /// Empty marker used by the component-event workloads.

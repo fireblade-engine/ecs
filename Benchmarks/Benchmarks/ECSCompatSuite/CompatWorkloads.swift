@@ -77,7 +77,9 @@ enum CompatWorkload: String, CaseIterable, Sendable {
     }
 
     /// Stable matrix identity.
-    var identity: String { rawValue }
+    var identity: String {
+        rawValue
+    }
 
     /// Name of the upstream benchmark this workload follows.
     var upstreamName: String {
@@ -227,9 +229,15 @@ enum CompatWorkload: String, CaseIterable, Sendable {
                     CompatThirdComponent(value: index * 3)
                 )
                 let removal = Self.mixedThreeRemovals(index: index, count: count)
-                if removal.first { entity.remove(CompatFirstComponent.self) }
-                if removal.second { entity.remove(CompatSecondComponent.self) }
-                if removal.third { entity.remove(CompatThirdComponent.self) }
+                if removal.first {
+                    entity.remove(CompatFirstComponent.self)
+                }
+                if removal.second {
+                    entity.remove(CompatSecondComponent.self)
+                }
+                if removal.third {
+                    entity.remove(CompatThirdComponent.self)
+                }
             }
             let family = nexus.family(requiresAll: CompatFirstComponent.self, CompatSecondComponent.self, CompatThirdComponent.self)
             return CompatState(nexus: nexus, family: CompatFamilyProbe(matched: family.count) {
@@ -272,7 +280,9 @@ enum CompatWorkload: String, CaseIterable, Sendable {
         case .destroyMinimal:
             for entity in state.entities {
                 outcome.operations += 1
-                if nexus.destroy(entity: entity) { outcome.hits += 1 }
+                if nexus.destroy(entity: entity) {
+                    outcome.hits += 1
+                }
             }
         case .lookupNone:
             // Results go to blackHole like the upstream locals; each get is counted, successful ones as hits.
@@ -280,14 +290,18 @@ enum CompatWorkload: String, CaseIterable, Sendable {
                 let third = entity.get(CompatThirdComponent.self)
                 blackHole(third)
                 outcome.operations += 1
-                if third != nil { outcome.hits += 1 }
+                if third != nil {
+                    outcome.hits += 1
+                }
             }
         case .lookupOne:
             for entity in state.entities {
                 let first = entity.get(CompatFirstComponent.self)
                 blackHole(first)
                 outcome.operations += 1
-                if first != nil { outcome.hits += 1 }
+                if first != nil {
+                    outcome.hits += 1
+                }
             }
         case .lookupTwo:
             for entity in state.entities {
@@ -297,8 +311,12 @@ enum CompatWorkload: String, CaseIterable, Sendable {
                 let second = entity.get(CompatSecondComponent.self)
                 blackHole(second)
                 outcome.operations += 2
-                if first != nil { outcome.hits += 1 }
-                if second != nil { outcome.hits += 1 }
+                if first != nil {
+                    outcome.hits += 1
+                }
+                if second != nil {
+                    outcome.hits += 1
+                }
             }
         case .lookupMixedThree:
             for entity in state.entities {
@@ -309,9 +327,15 @@ enum CompatWorkload: String, CaseIterable, Sendable {
                 blackHole(second)
                 blackHole(third)
                 outcome.operations += 3
-                if first != nil { outcome.hits += 1 }
-                if second != nil { outcome.hits += 1 }
-                if third != nil { outcome.hits += 1 }
+                if first != nil {
+                    outcome.hits += 1
+                }
+                if second != nil {
+                    outcome.hits += 1
+                }
+                if third != nil {
+                    outcome.hits += 1
+                }
             }
         case .iterationOne, .iterationTwo, .iterationMixedThree:
             outcome.operations = state.family?.visit() ?? 0

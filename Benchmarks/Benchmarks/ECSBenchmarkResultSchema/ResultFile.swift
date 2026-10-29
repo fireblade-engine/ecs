@@ -1,7 +1,8 @@
+import ECSCompatSuite
+
 // The per-ref result file: an app-owned wrapper with full provenance around the plugin's native baseline envelope.
 // The schema is specified in Documentation/Benchmarks/PLAN.md ("Step 8 design").
 import Foundation
-import ECSCompatSuite
 
 public enum ResultSchema {
     public static let name = "fireblade-ecs-benchmark-result"
@@ -99,7 +100,9 @@ public struct BenchmarkResultFile: Codable {
 
 public struct ResultError: Error, CustomStringConvertible {
     public let description: String
-    public init(_ description: String) { self.description = description }
+    public init(_ description: String) {
+        self.description = description
+    }
 }
 
 /// Configuration hash: SHA-256 over the suite SHA, the filter and the suite configuration (enabled metrics, iteration constants).

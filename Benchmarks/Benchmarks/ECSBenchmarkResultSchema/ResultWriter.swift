@@ -41,7 +41,9 @@ public enum ResultWriter {
         try require("requested ref", request.requestedRef)
         try require("suite filter", request.filter)
         try require("swift version text", request.swiftVersion)
-        if let batch = request.batchID { try require("batch id", batch) }
+        if let batch = request.batchID {
+            try require("batch id", batch)
+        }
         try requireSHA("ref SHA", request.refSHA)
         try requireSHA("suite SHA", request.suiteSHA)
         try ResultValidator.requireDate("run start", request.startedAt)
@@ -110,6 +112,7 @@ public enum ResultWriter {
                 var identity: String
                 var state: State
             }
+
             var pins: [Pin]
         }
         let data = try readFile(path, "Package.resolved")
@@ -127,7 +130,9 @@ public enum ResultWriter {
     }
 
     static func require(_ what: String, _ value: String) throws {
-        if value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { throw ResultError("missing required provenance: \(what)") }
+        if value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            throw ResultError("missing required provenance: \(what)")
+        }
     }
 
     static func requireSHA(_ what: String, _ value: String) throws {

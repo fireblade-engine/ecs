@@ -83,13 +83,15 @@ public enum ResultsCLI {
         var files: [BenchmarkResultFile] = []
         for path in paths {
             do {
-                files.append(try ResultValidator.validateFile(at: path))
+                try files.append(ResultValidator.validateFile(at: path))
             } catch {
                 throw ResultError("\(path): \(error)")
             }
         }
         var reportOptions = ReportOptions(baseline: options["baseline"])
-        if let title = options["title"] { reportOptions.title = title }
+        if let title = options["title"] {
+            reportOptions.title = title
+        }
         let rendered = try BenchmarkReport.render(files, options: reportOptions)
         for warning in rendered.warnings {
             FileHandle.standardError.write(Data("ECSBenchmarkResults: warning: \(warning)\n".utf8))

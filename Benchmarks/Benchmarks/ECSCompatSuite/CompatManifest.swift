@@ -29,9 +29,17 @@ public enum CompatManifest {
     /// Target name of the executable the Benchmark plugin runs.
     public static let benchmarkTarget = "ECSCompatBenchmark"
 
-    public static var componentModel: String { CompatSuite.componentModel }
-    public static var backends: [String] { CompatSuite.backends }
-    public static var metrics: [BenchmarkMetric] { CompatSuite.metrics }
+    public static var componentModel: String {
+        CompatSuite.componentModel
+    }
+
+    public static var backends: [String] {
+        CompatSuite.backends
+    }
+
+    public static var metrics: [BenchmarkMetric] {
+        CompatSuite.metrics
+    }
 
     public static var workloads: [Workload] {
         CompatWorkload.allCases.map { workload in

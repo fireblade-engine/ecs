@@ -43,7 +43,9 @@ public enum ResultValidator {
         guard file.schemaVersion == ResultSchema.version else { throw ResultError("unsupported schema version \(file.schemaVersion)") }
 
         try ResultWriter.require("run id", file.run.id)
-        if let batch = file.run.batchId { try ResultWriter.require("batch id", batch) }
+        if let batch = file.run.batchId {
+            try ResultWriter.require("batch id", batch)
+        }
         let started = try requireDate("run start", file.run.startedAt)
         let finished = try requireDate("run finish", file.run.finishedAt)
         guard finished >= started else { throw ResultError("run finished before it started") }
@@ -70,9 +72,13 @@ public enum ResultValidator {
         guard Set(workloadIdentities).count == workloadIdentities.count else { throw ResultError("duplicate workload identities") }
         for workload in file.workloads {
             guard ["equivalent", "adapted"].contains(workload.parityKind) else { throw ResultError("workload '\(workload.identity)' has unknown parity kind '\(workload.parityKind)'") }
-            if workload.parityKind == "adapted", (workload.parityReason ?? "").isEmpty { throw ResultError("adapted workload '\(workload.identity)' has no reason") }
+            if workload.parityKind == "adapted", (workload.parityReason ?? "").isEmpty {
+                throw ResultError("adapted workload '\(workload.identity)' has no reason")
+            }
         }
-        for entry in file.unsupported where entry.reason.isEmpty { throw ResultError("unsupported workload '\(entry.identity)' has no reason") }
+        for entry in file.unsupported where entry.reason.isEmpty {
+            throw ResultError("unsupported workload '\(entry.identity)' has no reason")
+        }
 
         // Every benchmark entry must match a baseline entry and an own workload; nothing may be left over on either side.
         guard !file.benchmarks.isEmpty else { throw ResultError("result file contains no benchmarks") }

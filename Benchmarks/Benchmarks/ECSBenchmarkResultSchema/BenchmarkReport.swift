@@ -130,7 +130,9 @@ struct ReportModel {
     /// number of measurements behind the same metric.
     private static func comparabilityWarnings(_ files: [BenchmarkResultFile], labels: [String], series: [ReportSeries]) -> [String] {
         var warnings: [String] = []
-        func describe(_ perInput: [String]) -> String { files.indices.map { "\(labels[$0]): \(perInput[$0])" }.joined(separator: "; ") }
+        func describe(_ perInput: [String]) -> String {
+            files.indices.map { "\(labels[$0]): \(perInput[$0])" }.joined(separator: "; ")
+        }
 
         let toolchains = files.map { "\($0.toolchain.swiftVersion.replacingOccurrences(of: "\n", with: " / ")) (\($0.toolchain.buildMode))" }
         if Set(toolchains).count > 1 {
@@ -152,7 +154,9 @@ struct ReportModel {
         let allKeys = Set(series.flatMap { $0.samples.keys })
         for key in allKeys.sorted(by: { ($0.identity, $0.scale, $0.metric) < ($1.identity, $1.scale, $1.metric) }) {
             let counts = Set(series.compactMap { $0.samples[key]?.measurementCount })
-            if counts.count > 1 { differing.append(key) }
+            if counts.count > 1 {
+                differing.append(key)
+            }
         }
         if !differing.isEmpty {
             let shown = differing.prefix(5).map { "`\($0.identity)` / \($0.scale) \($0.metric)" }.joined(separator: ", ")
@@ -168,7 +172,9 @@ struct ReportModel {
         for index in labels.indices {
             let count = (seen[labels[index]] ?? 0) + 1
             seen[labels[index]] = count
-            if count > 1 { labels[index] += " #\(count)" }
+            if count > 1 {
+                labels[index] += " #\(count)"
+            }
         }
         return labels
     }
@@ -176,15 +182,21 @@ struct ReportModel {
     /// Index of the series a series is compared with: the baseline series of the same backend, else the baseline's only backend.
     func pairedSeries(for index: Int) -> Int? {
         let candidates = series.indices.filter { series[$0].fileIndex == baselineIndex }
-        if let same = candidates.first(where: { series[$0].backend == series[index].backend }) { return same }
+        if let same = candidates.first(where: { series[$0].backend == series[index].backend }) {
+            return same
+        }
         return candidates.count == 1 ? candidates[0] : nil
     }
 
     var keys: [ReportKey] {
         let all = Set(series.flatMap { $0.samples.keys })
         return all.sorted { lhs, rhs in
-            if lhs.identity != rhs.identity { return lhs.identity < rhs.identity }
-            if lhs.scale != rhs.scale { return lhs.scale < rhs.scale }
+            if lhs.identity != rhs.identity {
+                return lhs.identity < rhs.identity
+            }
+            if lhs.scale != rhs.scale {
+                return lhs.scale < rhs.scale
+            }
             return metricOrder(lhs.metric) < metricOrder(rhs.metric)
         }
     }

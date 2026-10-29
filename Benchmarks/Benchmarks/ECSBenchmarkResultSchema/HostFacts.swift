@@ -1,8 +1,8 @@
 import Foundation
 #if canImport(Darwin)
-import Darwin
+    import Darwin
 #elseif canImport(Glibc)
-import Glibc
+    import Glibc
 #endif
 
 enum HostFacts {
@@ -16,20 +16,30 @@ enum HostFacts {
         _ = uname(&name)
         let machine = withUnsafeBytes(of: &name.machine) { String(cString: $0.bindMemory(to: CChar.self).baseAddress!) }
         #if os(macOS)
-        let osName: String? = "macOS"
+            let osName: String? = "macOS"
         #elseif os(Linux)
-        let osName: String? = "Linux"
+            let osName: String? = "Linux"
         #else
-        let osName: String? = nil
+            let osName: String? = nil
         #endif
         let cpu = cpuModel()?.trimmingCharacters(in: .whitespacesAndNewlines)
 
         var missing: [String] = []
-        if osName == nil { missing.append("OS name") }
-        if machine.isEmpty { missing.append("architecture") }
-        if cpu?.isEmpty ?? true { missing.append("CPU model") }
-        if info.processorCount <= 0 { missing.append("core count") }
-        if info.physicalMemory == 0 { missing.append("physical memory") }
+        if osName == nil {
+            missing.append("OS name")
+        }
+        if machine.isEmpty {
+            missing.append("architecture")
+        }
+        if cpu?.isEmpty ?? true {
+            missing.append("CPU model")
+        }
+        if info.processorCount <= 0 {
+            missing.append("core count")
+        }
+        if info.physicalMemory == 0 {
+            missing.append("physical memory")
+        }
         guard missing.isEmpty, let osName, let cpu else {
             throw ResultError("cannot determine host facts required by the result schema: \(missing.joined(separator: ", "))")
         }
@@ -45,17 +55,17 @@ enum HostFacts {
 
     private static func cpuModel() -> String? {
         #if canImport(Darwin)
-        var size = 0
-        guard sysctlbyname("machdep.cpu.brand_string", nil, &size, nil, 0) == 0, size > 1 else { return nil }
-        var buffer = [CChar](repeating: 0, count: size)
-        guard sysctlbyname("machdep.cpu.brand_string", &buffer, &size, nil, 0) == 0 else { return nil }
-        return String(cString: buffer)
+            var size = 0
+            guard sysctlbyname("machdep.cpu.brand_string", nil, &size, nil, 0) == 0, size > 1 else { return nil }
+            var buffer = [CChar](repeating: 0, count: size)
+            guard sysctlbyname("machdep.cpu.brand_string", &buffer, &size, nil, 0) == 0 else { return nil }
+            return String(decoding: buffer.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }, as: UTF8.self)
         #else
-        guard let text = try? String(contentsOfFile: "/proc/cpuinfo", encoding: .utf8) else { return nil }
-        for line in text.split(separator: "\n") where line.hasPrefix("model name") {
-            return line.split(separator: ":", maxSplits: 1).last.map { $0.trimmingCharacters(in: .whitespaces) }
-        }
-        return nil
+            guard let text = try? String(contentsOfFile: "/proc/cpuinfo", encoding: .utf8) else { return nil }
+            for line in text.split(separator: "\n") where line.hasPrefix("model name") {
+                return line.split(separator: ":", maxSplits: 1).last.map { $0.trimmingCharacters(in: .whitespaces) }
+            }
+            return nil
         #endif
     }
 }

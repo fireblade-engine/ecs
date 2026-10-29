@@ -41,7 +41,9 @@ struct ReportWriter {
         guard !model.warnings.isEmpty else { return }
         lines.append("## Warnings")
         lines.append("")
-        for warning in model.warnings { lines.append("- \(Self.text(warning))") }
+        for warning in model.warnings {
+            lines.append("- \(Self.text(warning))")
+        }
         lines.append("")
     }
 
@@ -67,7 +69,9 @@ struct ReportWriter {
                 ("Host", "\(file.host.osName) \(file.host.osVersion), \(file.host.architecture), \(file.host.cpuModel), \(file.host.coreCount) cores, \(file.host.physicalMemoryBytes) bytes memory"),
                 ("Packages", file.packages.map { "\($0.identity) \($0.version ?? "-") \($0.revision.prefix(12))" }.joined(separator: "; "))
             ]
-            for (name, value) in rows { lines.append("| \(name) | \(Self.cell(value)) |") }
+            for (name, value) in rows {
+                lines.append("| \(name) | \(Self.cell(value)) |")
+            }
             lines.append("")
         }
     }
@@ -79,13 +83,12 @@ struct ReportWriter {
         lines.append("| --- | --- |")
         for index in model.series.indices {
             let series = model.series[index]
-            let target: String
-            if series.fileIndex == model.baselineIndex {
-                target = "baseline"
+            let target: String = if series.fileIndex == model.baselineIndex {
+                "baseline"
             } else if let paired = model.pairedSeries(for: index) {
-                target = Self.cell(model.series[paired].label)
+                Self.cell(model.series[paired].label)
             } else {
-                target = "unavailable (the baseline has several backends and none is `\(Self.code(series.backend))`)"
+                "unavailable (the baseline has several backends and none is `\(Self.code(series.backend))`)"
             }
             lines.append("| \(Self.cell(series.label)) | \(target) |")
         }
@@ -161,7 +164,7 @@ struct ReportWriter {
             }
             var cells: [String] = []
             for index in model.series.indices {
-                cells.append(Self.cell(self.cell(index, key, statistic, unit, reference, comparable[index])))
+                cells.append(Self.cell(cell(index, key, statistic, unit, reference, comparable[index])))
             }
             lines.append("| \(statistic.label) | " + cells.joined(separator: " | ") + " |")
         }
@@ -178,8 +181,12 @@ struct ReportWriter {
     private func cell(_ index: Int, _ key: ReportKey, _ statistic: ReportStatistic, _ unit: ReportUnit, _ reference: ReportSample?, _ sample: ReportSample?) -> String {
         guard model.series[index].samples[key] != nil else { return "unavailable" }
         guard let sample else { return "unavailable (incompatible units)" }
-        if statistic == .count { return "\(sample.measurementCount)" }
-        if sample.isEmpty { return "unavailable (no measurements)" }
+        if statistic == .count {
+            return "\(sample.measurementCount)"
+        }
+        if sample.isEmpty {
+            return "unavailable (no measurements)"
+        }
         let value = sample.value(statistic)
         let text = ReportFormat.quantity(value, unit)
         guard model.series[index].fileIndex != model.baselineIndex else { return text }
@@ -189,11 +196,10 @@ struct ReportWriter {
         let baseValue = base.value(statistic)
         let delta = value - baseValue
         let absolute = ReportFormat.signed(delta / unit.divisor) + (unit.label.isEmpty ? "" : " \(unit.label)")
-        let verdict: String
-        if delta == 0 {
-            verdict = "unchanged"
+        let verdict: String = if delta == 0 {
+            "unchanged"
         } else {
-            verdict = (delta > 0) == sample.prefersLarger ? "better" : "worse"
+            (delta > 0) == sample.prefersLarger ? "better" : "worse"
         }
         if baseValue == 0 {
             return "\(text) (Δ \(absolute), ratio and change unavailable: zero baseline, \(verdict))"

@@ -67,9 +67,9 @@ enum CompatPopulation {
     }
 }
 
-private extension CompatPopulation {
+extension CompatPopulation {
     /// The reference creates every base entity and applies its removals before adding any player components.
-    static func createBaseEntities(nexus: Nexus, entityCount: Int, isMixed: Bool) -> [Entity] {
+    fileprivate static func createBaseEntities(nexus: Nexus, entityCount: Int, isMixed: Bool) -> [Entity] {
         var entities: [Entity] = []
         entities.reserveCapacity(entityCount)
         for index in 0 ..< entityCount {
@@ -79,15 +79,21 @@ private extension CompatPopulation {
                 CompatVelocity(CompatVelocityPayload()),
                 CompatData(CompatDataPayload())
             )
-            if fixture.removesPosition { entity.remove(CompatPosition.self) }
-            if fixture.removesVelocity { entity.remove(CompatVelocity.self) }
-            if fixture.removesData { entity.remove(CompatData.self) }
+            if fixture.removesPosition {
+                entity.remove(CompatPosition.self)
+            }
+            if fixture.removesVelocity {
+                entity.remove(CompatVelocity.self)
+            }
+            if fixture.removesData {
+                entity.remove(CompatData.self)
+            }
             entities.append(entity)
         }
         return entities
     }
 
-    static func makeFixture(
+    fileprivate static func makeFixture(
         at index: Int,
         removesPosition: Bool,
         removesVelocity: Bool,
@@ -103,27 +109,34 @@ private extension CompatPopulation {
         )
     }
 
-    static func mixedPlayerSelection(at index: Int, entityCount: Int) -> (addsPlayer: Bool, forcedType: CompatPlayerType?) {
+    fileprivate static func mixedPlayerSelection(at index: Int, entityCount: Int) -> (addsPlayer: Bool, forcedType: CompatPlayerType?) {
         let isEligible = entityCount >= 100 || index == 0 || index >= entityCount / 8
         guard isEligible else { return (false, nil) }
 
-        let ordinal: Int
-        if entityCount < 100, entityCount / 8 > 0 {
-            ordinal = index == 0 ? 0 : index - entityCount / 8 + 1
+        let ordinal: Int = if entityCount < 100, entityCount / 8 > 0 {
+            index == 0 ? 0 : index - entityCount / 8 + 1
         } else {
-            ordinal = index
+            index
         }
         let isSelected = entityCount < 100 && index == 0 || entityCount >= 100 || ordinal % 2 == 0
         guard isSelected else { return (false, nil) }
 
-        if index == 0 { return (true, .hero) }
-        if index % 6 == 0 { return (true, nil) }
-        if index % 4 == 0 { return (true, .hero) }
-        if index % 2 == 0 { return (true, .monster) }
+        if index == 0 {
+            return (true, .hero)
+        }
+        if index % 6 == 0 {
+            return (true, nil)
+        }
+        if index % 4 == 0 {
+            return (true, .hero)
+        }
+        if index % 2 == 0 {
+            return (true, .monster)
+        }
         return (false, nil)
     }
 
-    static func initializePlayer(at index: Int, forcedType: CompatPlayerType?) -> CompatPlayerInitialization {
+    fileprivate static func initializePlayer(at index: Int, forcedType: CompatPlayerType?) -> CompatPlayerInitialization {
         var player = CompatPlayerPayload(rng: CompatXoshiro128(seed: playerSeed(for: index)))
         let typeRoll = player.rng.range(1, 100)
         let type = forcedType ?? (typeRoll <= 3 ? .npc : typeRoll <= 30 ? .hero : .monster)
@@ -158,7 +171,7 @@ private extension CompatPopulation {
     }
 
     /// The reference seeds player RNGs from object addresses; ordinal seeds keep this workload reproducible instead.
-    static func playerSeed(for index: Int) -> UInt32 {
+    fileprivate static func playerSeed(for index: Int) -> UInt32 {
         0x6D2B_79F5 &+ UInt32(truncatingIfNeeded: index) &* 0x9E37_79B9
     }
 }

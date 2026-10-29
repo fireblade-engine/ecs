@@ -88,13 +88,12 @@ struct ReportSample {
         // Raw measurements of scaling-factor metrics cover `scalingFactor` iterations; throughput is stored per scaled
         // iteration (BenchmarkResult.convertScalingFactor). Normalising to one iteration makes differently scaled results comparable.
         let scaling = Double(result.scalingFactor.rawValue)
-        let factor: Double
-        if metric == .throughput {
-            factor = scaling
+        let factor: Double = if metric == .throughput {
+            scaling
         } else if metric.useScalingFactor {
-            factor = 1 / scaling
+            1 / scaling
         } else {
-            factor = 1
+            1
         }
 
         // `histogram` is a value type: this copy is read-only and leaves the statistics caches untouched.
@@ -116,7 +115,9 @@ struct ReportSample {
     }
 
     /// True when the metric has no measurements; only `measurementCount` is meaningful then.
-    var isEmpty: Bool { measurementCount == 0 }
+    var isEmpty: Bool {
+        measurementCount == 0
+    }
 
     /// Compatible samples share the dimension and the polarity.
     func isCompatible(with other: ReportSample) -> Bool {
@@ -141,8 +142,12 @@ enum ReportFormat {
         let decimals = min(9, max(0, 4 - magnitude))
         var text = String(format: "%.\(decimals)f", value)
         if text.contains(".") {
-            while text.hasSuffix("0") { text.removeLast() }
-            if text.hasSuffix(".") { text.removeLast() }
+            while text.hasSuffix("0") {
+                text.removeLast()
+            }
+            if text.hasSuffix(".") {
+                text.removeLast()
+            }
         }
         return text == "-0" ? "0" : text
     }

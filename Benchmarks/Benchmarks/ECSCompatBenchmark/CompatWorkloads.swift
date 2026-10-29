@@ -39,6 +39,8 @@ struct CompatState {
     let nexus: Nexus
     /// Family prepared before timing, for iteration workloads.
     var family: CompatFamilyProbe?
+    /// Persistent world of update and event workloads.
+    var runner: (any CompatPassRunner)?
     /// Entities the timed pass acts on (empty for creation workloads).
     var entities: [Entity]
 }
@@ -57,6 +59,12 @@ enum CompatWorkload: String, CaseIterable, Sendable {
     case iterationMixedThree = "iteration.mixed-three"
     case removeAdd = "component.remove-add"
     case add = "component.add"
+    case systemBasicUniform = "system.update.basic.uniform"
+    case systemBasicMixed = "system.update.basic.mixed"
+    case systemComplexUniform = "system.update.complex.uniform"
+    case systemComplexMixed = "system.update.complex.mixed"
+    case eventPublishMixed = "event.component.publish.mixed"
+    case eventPublishUpdateMixed = "event.component.publish-update.mixed"
 
     /// Scales shared by every scaled workload. `smallScale` is what smoke selections use.
     static let scales = [0, 1, 16, 1024]
@@ -87,6 +95,24 @@ enum CompatWorkload: String, CaseIterable, Sendable {
         case .iterationMixedThree: "IterateThreeComponentsWithMixedEntities"
         case .removeAdd: "RemoveAddComponent"
         case .add: "AddComponent"
+        case .systemBasicUniform: "SystemsUpdate"
+        case .systemBasicMixed: "SystemsUpdateMixedEntities"
+        case .systemComplexUniform: "ComplexSystemsUpdate"
+        case .systemComplexMixed: "ComplexSystemsUpdateMixedEntities"
+        case .eventPublishMixed: "PublishEventsViaComponentWithMixedEntities"
+        case .eventPublishUpdateMixed: "PublishAndUpdateEventsViaComponentWithMixedEntities"
+        }
+    }
+
+    /// Update and event workloads keep one world across passes and invocations (upstream does not reset between passes), so
+    /// their benchmarks build it in the benchmark setup phase instead of per invocation.
+    var persistsState: Bool {
+        switch self {
+        case .systemBasicUniform, .systemBasicMixed, .systemComplexUniform, .systemComplexMixed,
+             .eventPublishMixed, .eventPublishUpdateMixed:
+            true
+        default:
+            false
         }
     }
 
@@ -106,6 +132,14 @@ enum CompatWorkload: String, CaseIterable, Sendable {
             .equivalent
         case .add:
             .adapted("component one is removed from the whole batch before timing; upstream pauses to remove per entity")
+        case .systemBasicUniform, .systemBasicMixed:
+            .adapted("two-system set (movement, data) and population ported from the local reference update benchmark, upstream app composition unverified; value revisions write components back with set, class revisions mutate in place")
+        case .systemComplexUniform, .systemComplexMixed:
+            .adapted("seven-system set follows the local Update7SystemsOnly composition, upstream composition unverified; same population as the basic workloads; value revisions write components back with set, class revisions mutate in place")
+        case .eventPublishMixed:
+            .adapted("per-entity marker add then per-entity remove; no native type-wide component clear")
+        case .eventPublishUpdateMixed:
+            .adapted("effective upstream workload: Position+Velocity update, empty marker view visits zero, per-entity clear of an empty marker pool; no native type-wide component clear")
         }
     }
 
@@ -144,6 +178,14 @@ enum CompatWorkload: String, CaseIterable, Sendable {
             for entity in entities {
                 entity.remove(CompatFirstComponent.self)
             }
+        case .systemBasicUniform, .systemBasicMixed, .systemComplexUniform, .systemComplexMixed:
+            let isMixed = self == .systemBasicMixed || self == .systemComplexMixed
+            CompatPopulation.populate(nexus: nexus, entityCount: count, isMixed: isMixed)
+            let isComplex = self == .systemComplexUniform || self == .systemComplexMixed
+            return CompatState(nexus: nexus, runner: CompatUpdateWorld(nexus: nexus, isComplex: isComplex), entities: [])
+        case .eventPublishMixed, .eventPublishUpdateMixed:
+            CompatPopulation.populate(nexus: nexus, entityCount: count, isMixed: true)
+            return CompatState(nexus: nexus, runner: CompatEventWorld(nexus: nexus, withUpdate: self == .eventPublishUpdateMixed), entities: [])
         case .iterationOne:
             for index in 0 ..< count {
                 nexus.createEntity(with: CompatFirstComponent(value: index))
@@ -254,6 +296,9 @@ enum CompatWorkload: String, CaseIterable, Sendable {
             outcome.operations = state.entities.count * 3
         case .iterationOne, .iterationTwo, .iterationMixedThree:
             outcome.operations = state.family?.visit() ?? 0
+        case .systemBasicUniform, .systemBasicMixed, .systemComplexUniform, .systemComplexMixed,
+             .eventPublishMixed, .eventPublishUpdateMixed:
+            outcome = state.runner?.pass() ?? outcome
         case .removeAdd:
             for (index, entity) in state.entities.enumerated() {
                 outcome.operations += 1
@@ -291,4 +336,29 @@ enum CompatWorkload: String, CaseIterable, Sendable {
             nexus.createEntity(with: CompatFirstComponent(value: index), CompatSecondComponent(value: index * 2))
         }
     }
+}
+
+/// A reference workload with no applicable native operation on either revision. Step 8 emits these next to the results.
+struct CompatUnsupported: Equatable, Sendable {
+    let identity: String
+    let upstreamName: String
+    let reason: String
+
+    static let nativeBulk = "no native bulk operation; createEntities(count:) loops over per-entity creation and Family.destroyMembers destroys entity by entity"
+    static let dispatcher = "no arbitrary-event dispatcher or queue API"
+    static let observer = "no arbitrary-event observer or emit API; Nexus events are structural only"
+    static let receiver = "no arbitrary-event receiver or event-bus API"
+
+    static let all: [CompatUnsupported] = [
+        .init(identity: "entity.create.empty-bulk", upstreamName: "CreateEmptyEntitiesInBulk", reason: nativeBulk),
+        .init(identity: "entity.create.minimal-bulk", upstreamName: "CreateEntitiesInBulk", reason: nativeBulk),
+        .init(identity: "entity.destroy.minimal-bulk", upstreamName: "DestroyEntitiesInBulk", reason: nativeBulk),
+        .init(identity: "event.dispatch.enqueue-update.mixed", upstreamName: "EnqueueAndUpdateEventsViaDispatcherWithMixedEntities", reason: dispatcher),
+        .init(identity: "event.dispatch.enqueue-only.mixed", upstreamName: "EnqueueEventsViaDispatcherWithMixedEntities", reason: dispatcher),
+        .init(identity: "event.dispatch.update-only.mixed", upstreamName: "UpdateEventsViaDispatcherWithMixedEntities", reason: dispatcher),
+        .init(identity: "event.dispatch.trigger-update.mixed", upstreamName: "TriggerAndUpdateEventsViaDispatcherWithMixedEntities", reason: dispatcher),
+        .init(identity: "event.observer.enqueue-update.mixed", upstreamName: "EnqueueAndUpdateEventsViaObserverWithMixedEntities", reason: observer),
+        .init(identity: "event.observer.emit-update.mixed", upstreamName: "EmitAndUpdateEventsViaObserverWithMixedEntities", reason: observer),
+        .init(identity: "event.receiver.post-update.mixed", upstreamName: "PostAndUpdateEventsViaReceiverWithMixedEntities", reason: receiver)
+    ]
 }

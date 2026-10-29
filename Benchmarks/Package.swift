@@ -45,6 +45,30 @@ let package = Package(
                 .plugin(name: "BenchmarkPlugin", package: "benchmark")
             ]
         ),
+        // Wrapper schema, native-baseline mirror, writer and validator of the per-ref result file.
+        .target(
+            name: "ECSBenchmarkResultSchema",
+            dependencies: [
+                "ECSCompatSuite",
+                .product(name: "Benchmark", package: "benchmark")
+            ],
+            path: "Benchmarks/ECSBenchmarkResultSchema"
+        ),
+        .executableTarget(
+            name: "ECSBenchmarkResults",
+            dependencies: ["ECSBenchmarkResultSchema"],
+            path: "Benchmarks/ECSBenchmarkResults"
+        ),
+        .testTarget(
+            name: "ResultSchemaTests",
+            dependencies: [
+                "ECSBenchmarkResultSchema",
+                "ECSCompatSuite",
+                .product(name: "Benchmark", package: "benchmark")
+            ],
+            path: "Tests/ResultSchemaTests",
+            resources: [.copy("Fixtures")]
+        ),
         .testTarget(
             name: "CompatSuiteTests",
             dependencies: ["ECSCompatSuite"],

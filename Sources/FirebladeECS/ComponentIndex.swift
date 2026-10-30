@@ -116,8 +116,9 @@ extension Nexus {
     ///
     /// Superseded tables are never freed, so a reader that loaded an old pointer can never touch freed memory.
     /// They are kept alive by the registry, which is a process-lifetime singleton. Capacity doubles, so all retired
-    /// tables together are smaller than the current one: memory stays within about 3x the final table
-    /// (`32 * 2^ceil(log2(2n))` bytes for `n` types on 64-bit platforms; 16 KiB for 256 types).
+    /// tables together are smaller than the current one: total memory is about twice the final table.
+    /// A table with capacity `c` takes `16 * c + 16` bytes on 64-bit platforms and holds up to `c / 2` types, so 256 types
+    /// need a 512-slot table of about 8 KiB and about 16 KiB including retired tables.
     /// A reader on an old table may miss a type added later; it then takes the lock and sees the current table.
     @usableFromInline
     final class ComponentIndexRegistry: @unchecked Sendable {
@@ -129,9 +130,23 @@ extension Nexus {
         /// so absurd indices are rejected instead of allocating gigabytes.
         @usableFromInline static let indexLimit = 1 << 20
 
-        private static let initialCapacity = 16
-        private static let headerWords = 2
-        @usableFromInline static let hashMultiplier = UInt(truncatingIfNeeded: 0x9E37_79B9_7F4A_7C15 as UInt64)
+        @usableFromInline static let initialCapacity = 16
+        /// Words before the slots: capacity, then the hash shift. Each slot is two words: key, index.
+        @usableFromInline static let headerWords = 2
+        /// The 2^bitWidth / golden ratio Fibonacci multiplier for the pointer width (64-bit constant, truncated to the top bits on 32-bit).
+        @usableFromInline static let hashMultiplier = UInt(truncatingIfNeeded: 0x9E37_79B9_7F4A_7C15 as UInt64 >> UInt64(64 - UInt.bitWidth))
+
+        /// The key word of a slot; the index word follows it.
+        @inlinable
+        static func slotEntry(_ table: UnsafeMutablePointer<UInt>, _ slot: Int) -> UnsafeMutablePointer<UInt> {
+            table + (headerWords &+ 2 &* slot)
+        }
+
+        /// The first slot to probe for a key.
+        @inlinable
+        static func homeSlot(_ key: UInt, in table: UnsafeMutablePointer<UInt>) -> Int {
+            Int(bitPattern: (key &* hashMultiplier) >> table[1]) & (Int(bitPattern: table[0]) &- 1)
+        }
 
         /// A single word holding the address of the current table. Accessed only through acquire/release atomics.
         @usableFromInline let current: UnsafeMutablePointer<UInt>
@@ -153,7 +168,7 @@ extension Nexus {
         /// The index of a component type; takes the next free index on first use.
         /// - Parameter type: The component type.
         /// - Returns: The same index for every call with the same type.
-        /// - Complexity: O(1) for a registered type, lock-free and wait-free in practice (probe length is bounded by the load factor).
+        /// - Complexity: O(1) for a registered type, lock-free and wait-free; the probe length is bounded by the longest cluster of occupied slots, at most half the capacity.
         @inlinable
         func index(of type: any Component.Type) -> Int {
             let key = UInt(bitPattern: ObjectIdentifier(type))
@@ -166,9 +181,9 @@ extension Nexus {
         @inlinable
         static func lookup(_ key: UInt, in table: UnsafeMutablePointer<UInt>) -> Int? {
             let mask = Int(bitPattern: table[0]) &- 1
-            var slot = Int(bitPattern: (key &* hashMultiplier) >> table[1]) & mask
+            var slot = homeSlot(key, in: table)
             while true {
-                let entry = table + (2 &+ 2 &* slot)
+                let entry = slotEntry(table, slot)
                 let stored = frb_load_acquire(entry)
                 if stored == key {
                     return Int(bitPattern: entry[1])
@@ -202,14 +217,14 @@ extension Nexus {
             }
         }
 
-        private static func makeTable(capacity: Int, copying old: UnsafeMutablePointer<UInt>? = nil) -> UnsafeMutablePointer<UInt> {
+        static func makeTable(capacity: Int, copying old: UnsafeMutablePointer<UInt>? = nil) -> UnsafeMutablePointer<UInt> {
             let table = UnsafeMutablePointer<UInt>.allocate(capacity: headerWords + 2 * capacity)
             table.initialize(repeating: 0, count: headerWords + 2 * capacity)
             table[0] = UInt(capacity)
             table[1] = UInt(UInt.bitWidth - capacity.trailingZeroBitCount)
             if let old {
                 for slot in 0 ..< Int(bitPattern: old[0]) {
-                    let entry = old + (2 + 2 * slot)
+                    let entry = slotEntry(old, slot)
                     if entry[0] != 0 {
                         insert(entry[0], Int(bitPattern: entry[1]), into: table, publish: false)
                     }
@@ -219,13 +234,13 @@ extension Nexus {
         }
 
         /// Inserts a key that is not in the table yet. The index word is written before the key word is release-stored.
-        private static func insert(_ key: UInt, _ index: Int, into table: UnsafeMutablePointer<UInt>, publish: Bool) {
+        static func insert(_ key: UInt, _ index: Int, into table: UnsafeMutablePointer<UInt>, publish: Bool) {
             let mask = Int(bitPattern: table[0]) - 1
-            var slot = Int(bitPattern: (key &* hashMultiplier) >> table[1]) & mask
-            while table[2 + 2 * slot] != 0 {
+            var slot = homeSlot(key, in: table)
+            while slotEntry(table, slot)[0] != 0 {
                 slot = (slot + 1) & mask
             }
-            let entry = table + (2 + 2 * slot)
+            let entry = slotEntry(table, slot)
             entry[1] = UInt(bitPattern: index)
             if publish {
                 frb_store_release(entry, key)

@@ -9,7 +9,7 @@ public enum ResultsCLI {
                                 --package-resolved <path> --swift-version <text> [--batch-id <id>]
       ECSBenchmarkResults validate <result.json>
       ECSBenchmarkResults host-check
-      ECSBenchmarkResults report <result.json>... --output <report.md> [--baseline <requested-ref>] [--title <text>] [--overwrite]
+      ECSBenchmarkResults report <result.json>... --output-dir <dir> [--baseline <requested-ref>] [--title <text>] [--overwrite]
     """
 
     public static func run(_ arguments: [String]) -> Int32 {
@@ -75,10 +75,10 @@ public enum ResultsCLI {
                 index += 1
             }
         }
-        let options = try parseOptions(optionArguments, allowed: ["baseline", "title", "output"])
-        guard let output = options["output"] else { throw ResultError("missing required option --output") }
+        let options = try parseOptions(optionArguments, allowed: ["baseline", "title", "output-dir"])
+        guard let output = options["output-dir"] else { throw ResultError("missing required option --output-dir") }
         guard paths.count >= 2 else { throw ResultError("report needs at least two result files, got \(paths.count)\n\(usage)") }
-        try checkOutput(output, inputs: paths, overwrite: overwrite)
+        try checkOutputDirectory(output, inputs: paths, overwrite: overwrite)
 
         var files: [BenchmarkResultFile] = []
         for path in paths {
@@ -96,26 +96,53 @@ public enum ResultsCLI {
         for warning in rendered.warnings {
             FileHandle.standardError.write(Data("ECSBenchmarkResults: warning: \(warning)\n".utf8))
         }
-        do {
-            try Data(rendered.markdown.utf8).write(to: URL(fileURLWithPath: output), options: .atomic)
-        } catch {
-            throw ResultError("cannot write \(output): \(error)")
+        // The generated paths must not be inputs (checked again here because the file set is only known after rendering).
+        for file in rendered.files {
+            let target = output + "/" + file.path
+            for input in paths where canonical(input) == canonical(target) || sameFile(input, target) {
+                throw ResultError("report file \(target) is the input \(input); refusing to overwrite a result file")
+            }
         }
-        print("wrote \(output)")
+        try write(rendered.files, to: output)
+        print("wrote \(rendered.files.count) files to \(output)")
     }
 
-    /// Refuses an output that is (or links to) one of the inputs, and an existing output unless `overwrite` is set. Paths are
-    /// standardized and symlinks resolved; hard links are caught by file identity.
-    static func checkOutput(_ output: String, inputs: [String], overwrite: Bool) throws {
+    /// Replaces the generated files: stale `*.md` in `workloads/` and `*.svg` in `img/` from an earlier report are removed first, so
+    /// the directory never mixes two reports. Nothing else in the directory is touched.
+    private static func write(_ files: [RenderedFile], to directory: String) throws {
+        let fileManager = FileManager.default
+        do {
+            for (subdirectory, suffix) in [("workloads", ".md"), ("img", ".svg")] {
+                let path = directory + "/" + subdirectory
+                if let existing = try? fileManager.contentsOfDirectory(atPath: path) {
+                    for name in existing where name.hasSuffix(suffix) {
+                        try fileManager.removeItem(atPath: path + "/" + name)
+                    }
+                }
+            }
+            for file in files {
+                let url = URL(fileURLWithPath: directory + "/" + file.path)
+                try fileManager.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try Data(file.contents.utf8).write(to: url, options: .atomic)
+            }
+        } catch {
+            throw ResultError("cannot write \(directory): \(error)")
+        }
+    }
+
+    /// Refuses an output directory that is a file, that is (or links to) an input's directory entry, or that already holds
+    /// anything unless `overwrite` is set. Paths are standardized and symlinks resolved; hard links are caught by file identity.
+    static func checkOutputDirectory(_ output: String, inputs: [String], overwrite: Bool) throws {
         let fileManager = FileManager.default
         let target = canonical(output)
         for input in inputs where canonical(input) == target || sameFile(input, output) {
-            throw ResultError("--output \(output) is the input \(input); refusing to overwrite a result file")
+            throw ResultError("--output-dir \(output) is the input \(input); refusing to overwrite a result file")
         }
         var isDirectory: ObjCBool = false
         if fileManager.fileExists(atPath: output, isDirectory: &isDirectory) {
-            guard !isDirectory.boolValue else { throw ResultError("--output \(output) is a directory") }
-            guard overwrite else { throw ResultError("--output \(output) already exists; pass --overwrite to replace it") }
+            guard isDirectory.boolValue else { throw ResultError("--output-dir \(output) is a file, not a directory") }
+            let entries = (try? fileManager.contentsOfDirectory(atPath: output)) ?? []
+            guard entries.isEmpty || overwrite else { throw ResultError("--output-dir \(output) is not empty; pass --overwrite to replace the generated report files") }
         }
     }
 

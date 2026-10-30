@@ -65,7 +65,7 @@ enum ReportFixtures {
         )
     }
 
-    /// Class model, one backend. Zero baseline for `mallocCountTotal` of w2.
+    /// Class model, one backend. Scales 16, 64 and 4096 for w1 (the last lands in the large table). Zero baseline for `mallocCountTotal` of w2.
     static func classRef() -> BenchmarkResultFile {
         file(requested: "1.4.3", shaByte: "a", model: "class", backends: ["default"], entries: [
             Entry(identity: w1, backend: "default", scale: 16, results: [
@@ -75,6 +75,7 @@ enum ReportFixtures {
                 result(.peakMemoryResident, Array(repeating: 50_000_000, count: 4))
             ]),
             Entry(identity: w1, backend: "default", scale: 64, results: [result(.wallClock, spread(4))]),
+            Entry(identity: w1, backend: "default", scale: 4096, results: [result(.wallClock, spread(40))]),
             Entry(identity: w2, backend: "default", scale: 16, results: [
                 result(.wallClock, spread()),
                 result(.mallocCountTotal, [0, 0, 0])
@@ -90,6 +91,7 @@ enum ReportFixtures {
                 result(.cpuTotal, spread(500), timeUnits: .microseconds),
                 result(.peakMemoryResident, Array(repeating: 100_000_000, count: 4))
             ]),
+            Entry(identity: w1, backend: "archetype", scale: 4096, results: [result(.wallClock, spread(10))]),
             Entry(identity: w1, backend: "sparseSet", scale: 16, results: [
                 result(.wallClock, spread(), timeUnits: .nanoseconds),
                 result(.cpuTotal, spread()),

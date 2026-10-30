@@ -1,5 +1,6 @@
-// Report-only N-way comparison of saved result files, specified in PLAN.md ("Step 10 design"). A pure function from decoded
-// result files to a Markdown string: no file access, no processes, no benchmark runs, and the inputs are never mutated.
+// Report-only N-way comparison of saved result files, specified in PLAN.md ("Step 10 design" and "Report v2 design"). A pure
+// function from decoded result files to the contents of a report directory (REPORT.md, per-workload pages, SVG plots): no
+// file access, no processes, no benchmark runs, and the inputs are never mutated.
 import Benchmark
 import Foundation
 
@@ -14,8 +15,18 @@ public struct ReportOptions: Sendable {
     }
 }
 
+/// One file of the report directory.
+public struct RenderedFile: Equatable {
+    /// Relative to the report directory, with forward slashes.
+    public let path: String
+    public let contents: String
+}
+
 public struct RenderedReport {
+    /// REPORT.md, the overview.
     public let markdown: String
+    /// Every file of the report directory in a fixed order, REPORT.md first.
+    public let files: [RenderedFile]
     /// Also printed in the report's own warnings section.
     public let warnings: [String]
 }
@@ -45,7 +56,8 @@ public enum BenchmarkReport {
         let baselineIndex = try resolveBaseline(files, options.baseline)
         let model = ReportModel(files: files, baselineIndex: baselineIndex)
         var writer = ReportWriter(model: model, title: options.title)
-        return RenderedReport(markdown: writer.render(), warnings: model.warnings)
+        let files = writer.render()
+        return RenderedReport(markdown: files[0].contents, files: files, warnings: model.warnings)
     }
 
     static func resolveBaseline(_ files: [BenchmarkResultFile], _ requested: String?) throws -> Int {
@@ -121,14 +133,14 @@ struct ReportModel {
             let detail = files.indices.map { "\(labels[$0]): \(String(files[$0].suite.configurationHash.prefix(12)))" }.joined(separator: "; ")
             warnings.append("Configuration hashes differ across inputs (\(detail)); the runs did not use the same suite configuration, so differences may not reflect the refs alone.")
         }
-        warnings += Self.comparabilityWarnings(files, labels: labels, series: series)
+        warnings += Self.comparabilityWarnings(files, labels: labels)
         self.warnings = warnings
     }
 
     /// Differences between inputs that make a comparison less trustworthy: toolchain, host (without the physical memory size,
-    /// which can differ by reporting rounding between otherwise identical machines), the set of registered benchmarks, and the
-    /// number of measurements behind the same metric.
-    private static func comparabilityWarnings(_ files: [BenchmarkResultFile], labels: [String], series: [ReportSeries]) -> [String] {
+    /// which can differ by reporting rounding between otherwise identical machines), the set of registered benchmarks. Measurement counts
+    /// legitimately differ between series (time-based sampling), so the report states that once instead of warning.
+    private static func comparabilityWarnings(_ files: [BenchmarkResultFile], labels: [String]) -> [String] {
         var warnings: [String] = []
         func describe(_ perInput: [String]) -> String {
             files.indices.map { "\(labels[$0]): \(perInput[$0])" }.joined(separator: "; ")
@@ -149,18 +161,6 @@ struct ReportModel {
             let notEverywhere = union.filter { entry in sets.contains { !$0.contains(entry) } }.sorted()
             let shown = notEverywhere.prefix(5).map { "`\($0)`" }.joined(separator: ", ")
             warnings.append("The registered benchmark sets differ across inputs: \(notEverywhere.count) workload and scale combinations are not in every input (\(shown)\(notEverywhere.count > 5 ? ", ..." : "")).")
-        }
-        var differing: [ReportKey] = []
-        let allKeys = Set(series.flatMap { $0.samples.keys })
-        for key in allKeys.sorted(by: { ($0.identity, $0.scale, $0.metric) < ($1.identity, $1.scale, $1.metric) }) {
-            let counts = Set(series.compactMap { $0.samples[key]?.measurementCount })
-            if counts.count > 1 {
-                differing.append(key)
-            }
-        }
-        if !differing.isEmpty {
-            let shown = differing.prefix(5).map { "`\($0.identity)` / \($0.scale) \($0.metric)" }.joined(separator: ", ")
-            warnings.append("\(differing.count) metric rows have different measurement counts between series (\(shown)\(differing.count > 5 ? ", ..." : "")); see the measurements row of each table.")
         }
         return warnings
     }

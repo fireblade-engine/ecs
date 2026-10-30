@@ -135,30 +135,57 @@ struct ReportSample {
 }
 
 enum ReportFormat {
-    /// Five significant digits, trailing zeros trimmed, no exponent and no locale.
-    static func number(_ value: Double) -> String {
-        guard value != 0, value.isFinite else { return value.isFinite ? "0" : "unavailable" }
-        let magnitude = Int(floor(log10(abs(value))))
-        let decimals = min(9, max(0, 4 - magnitude))
-        var text = String(format: "%.\(decimals)f", value)
-        if text.contains(".") {
-            while text.hasSuffix("0") {
-                text.removeLast()
-            }
-            if text.hasSuffix(".") {
-                text.removeLast()
-            }
+    /// Significant digits the pinned Benchmark package measures: `Statistics` builds its HdrHistogram with
+    /// `SignificantDigits.three` by default (Statistics.init, `numberOfSignificantDigits`), and the result writer keeps that
+    /// default. Means and deviations are computed from histogram buckets, so digits beyond the third are quantization
+    /// artefacts, not measurement. The report therefore never shows more than this many significant digits for a measured
+    /// value; a result file recorded with more digits would need this constant raised (the schema does not store it).
+    static let significantDigits = 3
+
+    /// Decimals that show the smallest nonzero magnitude of a column (in the column's unit) with `significantDigits`.
+    /// Larger values of the column get fewer decimals in `text`, so none exceeds the digit budget. `cap` limits the decimals
+    /// where the inputs of a derived value were measured more coarsely.
+    static func columnDecimals(_ values: [Double], divisor: Double, cap: Int? = nil) -> Int {
+        let smallest = values.map { abs($0) / divisor }.filter { $0 > 0 && $0.isFinite }.min()
+        guard let smallest else { return 0 }
+        let decimals = max(0, significantDigits - 1 - Int(floor(log10(smallest) + 1e-12)))
+        return min(decimals, cap ?? decimals, 9)
+    }
+
+    /// One value of a column: rounded to `significantDigits` and shown with at most `columnDecimals` decimals. No exponent, no
+    /// locale, trailing zeros are kept only where the column's decimals require them.
+    static func text(_ value: Double, divisor: Double = 1, columnDecimals: Int, signed: Bool = false) -> String {
+        guard value.isFinite else { return "unavailable" }
+        let scaled = value / divisor
+        guard scaled != 0 else { return "0" }
+        func decimals(for magnitude: Double) -> Int {
+            min(columnDecimals, max(0, significantDigits - 1 - Int(floor(log10(abs(magnitude)) + 1e-12))))
         }
-        return text == "-0" ? "0" : text
+        var places = decimals(for: scaled)
+        var rounded = (scaled * pow(10, Double(places))).rounded() / pow(10, Double(places))
+        // Rounding can carry into the next magnitude (9.996 -> 10.00); drop the extra digit.
+        if rounded != 0, decimals(for: rounded) < places {
+            places = decimals(for: rounded)
+            rounded = (scaled * pow(10, Double(places))).rounded() / pow(10, Double(places))
+        }
+        guard rounded != 0 else { return "0" }
+        let body = String(format: "%.\(places)f", rounded)
+        return signed && rounded > 0 ? "+\(body)" : body
     }
 
-    static func signed(_ value: Double) -> String {
-        let text = number(value)
-        return value > 0 && !text.hasPrefix("-") ? "+\(text)" : text
+    /// Thousands separators for entity counts: 65,536.
+    static func grouped(_ value: Int) -> String {
+        let digits = Array(String(abs(value)))
+        var out = ""
+        for (offset, digit) in digits.enumerated() {
+            if offset > 0, (digits.count - offset) % 3 == 0 { out += "," }
+            out.append(digit)
+        }
+        return value < 0 ? "-" + out : out
     }
 
-    static func quantity(_ value: Double, _ unit: ReportUnit) -> String {
-        let text = number(value / unit.divisor)
-        return unit.label.isEmpty ? text : "\(text) \(unit.label)"
+    /// p-value with its relation: `p=0.012`, or `p<0.001` below three decimals.
+    static func probability(_ p: Double) -> String {
+        p < 0.001 ? "p<0.001" : String(format: "p=%.3f", p)
     }
 }

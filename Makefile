@@ -126,7 +126,7 @@ generate-docs-githubpages:
 # --- Benchmarks ---
 
 BENCHMARK_FILTER ?=
-REPORT_OUTPUT ?= Benchmarks/.results/report.md
+REPORT_DIR ?= Benchmarks/.results/report
 REPORT_BASELINE ?=
 REPORT_TITLE ?=
 REPORT_OVERWRITE ?=
@@ -143,11 +143,11 @@ benchmark-compare:
 	@if [ -z "$(REFS)" ]; then printf 'Set REFS to comma-separated Git refs, for example: make benchmark-compare REFS=1.4.3,main\n' >&2; exit 2; fi
 	./Scripts/benchmark-run-refs.sh --refs "$(REFS)" $(if $(BENCHMARK_FILTER),--filter "$(BENCHMARK_FILTER)")
 
-# Renders a Markdown report from saved result files only (at least two); it never runs benchmarks.
+# Renders a report directory (REPORT.md, workloads/, img/) from saved result files only (at least two); it never runs benchmarks.
 benchmark-report:
 	@if [ -z "$(RESULTS)" ]; then printf 'Set RESULTS to saved result files, for example: make benchmark-report RESULTS="a.json b.json"\n' >&2; exit 2; fi
 	swift build --package-path Benchmarks -c release --product ECSBenchmarkResults $(SWIFT_FLAGS)
-	$(RESULTS_TOOL) report $(RESULTS) --output "$(REPORT_OUTPUT)" $(if $(REPORT_BASELINE),--baseline "$(REPORT_BASELINE)") $(if $(REPORT_TITLE),--title "$(REPORT_TITLE)") $(if $(REPORT_OVERWRITE),--overwrite)
+	$(RESULTS_TOOL) report $(RESULTS) --output-dir "$(REPORT_DIR)" $(if $(REPORT_BASELINE),--baseline "$(REPORT_BASELINE)") $(if $(REPORT_TITLE),--title "$(REPORT_TITLE)") $(if $(REPORT_OVERWRITE),--overwrite)
 
 test-benchmarks:
 	cd Benchmarks && swift test $(SWIFT_FLAGS)

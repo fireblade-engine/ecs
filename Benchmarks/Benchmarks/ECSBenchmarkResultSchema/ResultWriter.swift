@@ -73,10 +73,19 @@ public enum ResultWriter {
             }
             let metrics = results.map(\.metric.description)
             let expected = CompatManifest.metrics.map(\.description)
-            guard Set(metrics) == Set(expected), metrics.count == expected.count else {
+            guard Set(metrics).count == metrics.count, Set(metrics).isSubset(of: expected) else {
                 throw ResultError("benchmark '\(identifier.name)' has metrics \(metrics.sorted()), expected \(expected.sorted())")
             }
-            benchmarks.append(ResultBenchmark(name: identifier.name, identity: parsed.identity, backend: parsed.backend, scale: parsed.scale))
+            // Only the metric the package may omit (throughput, see `ResultSchema.optionalMetric`) can be missing, and the file says so.
+            let missing = expected.filter { !metrics.contains($0) }
+            guard missing.allSatisfy({ $0 == ResultSchema.optionalMetric }) else {
+                throw ResultError("benchmark '\(identifier.name)' has metrics \(metrics.sorted()), expected \(expected.sorted()); only \(ResultSchema.optionalMetric) may be missing")
+            }
+            let unrecorded = missing.map { UnrecordedMetric(metric: $0, reason: ResultSchema.optionalMetricReason) }
+            benchmarks.append(ResultBenchmark(
+                name: identifier.name, identity: parsed.identity, backend: parsed.backend, scale: parsed.scale,
+                unrecordedMetrics: unrecorded.isEmpty ? nil : unrecorded
+            ))
         }
 
         let file = BenchmarkResultFile(

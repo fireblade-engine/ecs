@@ -1,3 +1,4 @@
+import Benchmark
 import ECSCompatSuite
 
 // The per-ref result file: an app-owned wrapper with full provenance around the plugin's native baseline envelope.
@@ -8,6 +9,14 @@ public enum ResultSchema {
     public static let name = "fireblade-ecs-benchmark-result"
     public static let version = 1
     public static let buildMode = "release"
+
+    /// The only configured metric the package may legitimately leave out of a benchmark: Benchmark 1.38.1 computes throughput as
+    /// `round(1e9 / ns)` per iteration and records it only `if throughput > 0` (BenchmarkExecutor.swift), so a benchmark whose
+    /// iterations all take about 2 s or longer has no throughput metric at all. Every other metric is mandatory.
+    public static var optionalMetric: String { BenchmarkMetric.throughput.description }
+
+    /// The recorded reason for a missing `optionalMetric`.
+    public static let optionalMetricReason = "throughput not recorded by Benchmark 1.38.1: an iteration of about 2 s or longer rounds to 0 operations per second and the package records only throughput above 0"
 
     /// The only Benchmark and hdrhistogram-swift revisions whose native encoding this tool reads and writes
     /// (Benchmarks/Package.resolved at the time of writing). Anything else is refused.
@@ -99,6 +108,28 @@ public struct ResultBenchmark: Codable, Equatable, Sendable {
     public var identity: String
     public var backend: String
     public var scale: Int
+    /// Configured metrics the package did not record for this benchmark, each with the reason. Optional and additive: absent
+    /// means every configured metric was recorded, so the schema version stays 1. Only `ResultSchema.optionalMetric` is allowed.
+    public var unrecordedMetrics: [UnrecordedMetric]?
+
+    public init(name: String, identity: String, backend: String, scale: Int, unrecordedMetrics: [UnrecordedMetric]? = nil) {
+        self.name = name
+        self.identity = identity
+        self.backend = backend
+        self.scale = scale
+        self.unrecordedMetrics = unrecordedMetrics
+    }
+}
+
+public struct UnrecordedMetric: Codable, Equatable, Sendable {
+    /// The metric's description, as in the baseline (for example `Throughput (# / s)`).
+    public var metric: String
+    public var reason: String
+
+    public init(metric: String, reason: String) {
+        self.metric = metric
+        self.reason = reason
+    }
 }
 
 public struct BenchmarkResultFile: Codable {

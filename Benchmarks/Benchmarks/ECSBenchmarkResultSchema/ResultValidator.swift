@@ -119,8 +119,23 @@ public enum ResultValidator {
             guard !results.isEmpty else { throw ResultError("benchmark '\(identifier.name)' has no metrics") }
             let metrics = results.map(\.metric.description)
             guard Set(metrics).count == metrics.count else { throw ResultError("benchmark '\(identifier.name)' repeats a metric") }
+            try checkUnrecorded(identifier.name, metrics, file.benchmarks.first { $0.name == identifier.name }?.unrecordedMetrics ?? [])
             // A metric without measurements (for example a counter that never fired) is valid data: the report prints it as
             // `unavailable`. Only structurally malformed statistics are rejected, and those fail to decode.
+        }
+    }
+
+    /// The only metric a file may claim as unrecorded is throughput, with a reason, and not while it is also present. Completeness
+    /// of the other metrics is not checked here (the validator accepts files of any adapter revision, and a metric without
+    /// measurements is valid data); the writer pins the full metric set and so refuses anything else missing.
+    private static func checkUnrecorded(_ name: String, _ metrics: [String], _ unrecorded: [UnrecordedMetric]) throws {
+        let optional = ResultSchema.optionalMetric
+        let listed = unrecorded.map(\.metric)
+        guard Set(listed).count == listed.count else { throw ResultError("benchmark '\(name)' lists an unrecorded metric twice") }
+        for entry in unrecorded {
+            guard entry.metric == optional else { throw ResultError("benchmark '\(name)' lists '\(entry.metric)' as unrecorded, but only \(optional) may be missing") }
+            guard !entry.reason.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { throw ResultError("benchmark '\(name)' lists unrecorded metric '\(entry.metric)' without a reason") }
+            guard !metrics.contains(entry.metric) else { throw ResultError("benchmark '\(name)' lists '\(entry.metric)' as unrecorded but also has it") }
         }
     }
 

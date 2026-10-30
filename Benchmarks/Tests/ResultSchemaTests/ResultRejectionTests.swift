@@ -269,6 +269,57 @@ struct ResultRejectionTests {
     }
 
     @Test
+    func writerRecordsMissingThroughputWithItsReason() throws {
+        var envelope = Support.syntheticEnvelope(variant: 0)
+        let key = try #require(envelope.results.keys.first)
+        envelope.results[key]?.removeAll { $0.metric == .throughput }
+        try withBaseline(envelope) { _, path in
+            let file = try ResultWriter.makeFile(Support.request(baseline: path), host: Support.host)
+            let unrecorded = try #require(file.benchmarks[0].unrecordedMetrics)
+            #expect(unrecorded == [UnrecordedMetric(metric: BenchmarkMetric.throughput.description, reason: ResultSchema.optionalMetricReason)])
+            #expect(unrecorded[0].reason.contains("Benchmark 1.38.1"))
+            // Survives the encode and validate round trip.
+            let decoded = try ResultValidator.decode(BenchmarkResultFile.encoder().encode(file))
+            #expect(decoded.benchmarks[0].unrecordedMetrics == unrecorded)
+        }
+    }
+
+    @Test
+    func writerStillRejectsOtherMissingMetrics() throws {
+        for metric in CompatManifest.metrics where metric != .throughput {
+            var envelope = Support.syntheticEnvelope(variant: 0)
+            let key = try #require(envelope.results.keys.first)
+            envelope.results[key]?.removeAll { $0.metric == metric }
+            try withBaseline(envelope) { _, path in
+                expectRejected("only") { _ = try ResultWriter.makeFile(Support.request(baseline: path), host: Support.host) }
+            }
+        }
+    }
+
+    @Test
+    func validatorAcceptsOnlyThroughputAsUnrecorded() throws {
+        var file = try ResultValidator.decode(validFileData())
+        let key = try #require(file.baseline.results.keys.first)
+        file.baseline.results[key]?.removeAll { $0.metric == .throughput }
+        let record = UnrecordedMetric(metric: ResultSchema.optionalMetric, reason: ResultSchema.optionalMetricReason)
+        file.benchmarks[0].unrecordedMetrics = [record]
+        try ResultValidator.validate(file)
+        // Empty reason.
+        file.benchmarks[0].unrecordedMetrics = [UnrecordedMetric(metric: ResultSchema.optionalMetric, reason: " ")]
+        expectRejected("without a reason") { try ResultValidator.validate(file) }
+        // Listed twice.
+        file.benchmarks[0].unrecordedMetrics = [record, record]
+        expectRejected("twice") { try ResultValidator.validate(file) }
+        // Another metric listed as unrecorded.
+        file.benchmarks[0].unrecordedMetrics = [record, UnrecordedMetric(metric: BenchmarkMetric.wallClock.description, reason: "x")]
+        expectRejected("only") { try ResultValidator.validate(file) }
+        // A recorded metric cannot also be listed as unrecorded.
+        var present = try ResultValidator.decode(validFileData())
+        present.benchmarks[0].unrecordedMetrics = [record]
+        expectRejected("also has it") { try ResultValidator.validate(present) }
+    }
+
+    @Test
     func validatorRejectsBenchmarkListThatDisagreesWithBaseline() throws {
         let renamed = try mutated { object in
             var benchmarks = object["benchmarks"] as? [[String: Any]] ?? []

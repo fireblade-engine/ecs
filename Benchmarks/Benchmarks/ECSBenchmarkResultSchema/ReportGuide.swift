@@ -18,6 +18,32 @@ struct ReportGuide {
         }
     }
 
+    /// Scale from which an example counts as representative; smaller scales are used only when nothing larger is eligible.
+    private static let representativeScale = 1_024
+
+    /// A cell is eligible as a worked example when it has entities and a speed CI of non-zero width (not a degenerate 1.00-1.00×).
+    private func isEligible(_ example: Example) -> Bool {
+        example.key.scale > 0 && (example.halfWidth ?? 0) > 0
+    }
+
+    /// Eligible examples, restricted to scales >= 1,024 when there are any.
+    private func preferred(_ examples: [Example]) -> [Example] {
+        let eligible = examples.filter(isEligible)
+        let large = eligible.filter { $0.key.scale >= Self.representativeScale }
+        return large.isEmpty ? eligible : large
+    }
+
+    /// The main CI example: at the nearest scale >= 1,024 (else the largest eligible scale) the workload with the median CI width.
+    private func typical(_ examples: [Example]) -> Example? {
+        let eligible = examples.filter(isEligible)
+        let scales = Set(eligible.map(\.key.scale))
+        guard let scale = scales.filter({ $0 >= Self.representativeScale }).min() ?? scales.max() else { return nil }
+        let pool = eligible.filter { $0.key.scale == scale }.enumerated().sorted {
+            ($0.element.halfWidth!, $0.offset) < ($1.element.halfWidth!, $1.offset)
+        }.map(\.element)
+        return pool[pool.count / 2]
+    }
+
     private var delta: Double { ReportStatistics.defaultDelta }
     private var level: String { ReportWriter.percent(ReportStatistics.significanceLevel) }
     private var zone: String { ReportWriter.percent(delta) }
@@ -82,12 +108,16 @@ struct ReportGuide {
         lines.append("- Every number here is measured with noise, so a single speed such as 2.0× could have come out 1.9× or 2.1× in another session. The **confidence interval (CI)** is the range that, with 95% confidence (nominal; the exact coverage is in the methods), contains the true value.")
         lines.append("- `CI low` and `CI high` are its two ends. Read the pair as \"the truth is very likely between these\".")
         lines.append("- **Narrow** CI: the estimate is precise, you can trust the digits you see. **Wide** CI: the data cannot pin the value down; look for more replicates before drawing a conclusion.")
-        if let first = withInterval.first, let text = interval(first.comparison) {
-            let low = ratio(first.comparison.ciLow!), high = ratio(first.comparison.ciHigh!)
-            lines.append("- **Example from this report:** \(place(first)): \(text) → the true speedup is very likely between \(low)× and \(high)×.")
-            let ordered = withInterval.sorted { $0.halfWidth! < $1.halfWidth! }
-            if let narrow = ordered.first, let wide = ordered.last, ordered.count > 1 {
-                lines.append("- Narrowest CI in this report: \(place(narrow)), ±\(String(format: "%.1f", narrow.halfWidth! * 100))% around the speed (\(interval(narrow.comparison)!)). Widest: \(place(wide)), ±\(String(format: "%.1f", wide.halfWidth! * 100))% (\(interval(wide.comparison)!)).")
+        if !withInterval.isEmpty {
+            if let first = typical(withInterval), let text = interval(first.comparison) {
+                let low = ratio(first.comparison.ciLow!), high = ratio(first.comparison.ciHigh!)
+                lines.append("- **Example from this report:** \(place(first)): \(text) → the true speedup is very likely between \(low)× and \(high)×.")
+                let ordered = withInterval.filter(isEligible).sorted { $0.halfWidth! < $1.halfWidth! }
+                if let narrow = ordered.first, let wide = ordered.last, ordered.count > 1 {
+                    lines.append("- Narrowest CI in this report: \(place(narrow)), ±\(String(format: "%.1f", narrow.halfWidth! * 100))% around the speed (\(interval(narrow.comparison)!)). Widest: \(place(wide)), ±\(String(format: "%.1f", wide.halfWidth! * 100))% (\(interval(wide.comparison)!)).")
+                }
+            } else {
+                lines.append("- **Example:** no comparison has a CI with a non-zero width at more than 0 entities, so there is no meaningful interval to show.")
             }
         } else if let any = all.first, let speed = any.comparison.speed {
             lines.append("- **Example from this report:** \(place(any)): speed \(ratio(speed))× is a single ratio of two numbers; with one replicate on a side there is no CI, so inference is unavailable and it cannot be called an improvement or a regression.")
@@ -112,12 +142,15 @@ struct ReportGuide {
         if !counted.isEmpty {
             lines.append("- **In this report:** \(count { $0 == .faster }) faster, \(count { $0 == .slower }) slower, \(count { $0 == .equivalent }) equivalent, \(count { $0 == .inconclusive }) inconclusive, \(count { if case .notAvailable = $0 { true } else { false } }) n/a.")
             func line(_ label: String, _ verdict: ReportStatistics.Verdict) -> String? {
-                guard let example = all.first(where: { $0.comparison.verdict == verdict }), let text = interval(example.comparison) else { return nil }
+                guard count({ $0 == verdict }) > 0 else { return nil }
+                guard let example = preferred(all).first(where: { $0.comparison.verdict == verdict }), let text = interval(example.comparison) else {
+                    return "- Example `\(label)`: none among the cells with entities and a non-zero CI width."
+                }
                 let q = example.comparison.q.map { ", q \(ReportFormat.qValue($0))" } ?? ""
                 return "- Example `\(label)`: \(place(example)): \(text)\(q)."
             }
             lines += [line("faster", .faster), line("slower", .slower), line("equivalent", .equivalent)].compactMap { $0 }
-            if let tricky = all.first(where: { item in
+            if let tricky = preferred(all).first(where: { item in
                 guard item.comparison.verdict == .inconclusive, let q = item.comparison.q, q < ReportStatistics.significanceLevel else { return false }
                 return true
             }), let text = interval(tricky.comparison) {
@@ -137,7 +170,7 @@ struct ReportGuide {
         lines.append("- **Error bars** (and the CI columns) show the uncertainty of the *median across runs*: how much it would move if you repeated the whole measurement. More replicates make them shorter.")
         lines.append("- The **light band** shows the *spread of single iterations inside one run* (p25 to p75, the IQR). It says how steady one iteration is, and more replicates do not make it narrower.")
         lines.append("- They answer different questions: a workload can be very jittery (wide band) and still have a precisely known median (short bars), or the other way round.")
-        if let example = withInterval.first(where: { model.series[$0.series].cells[$0.key]?.interval != nil }),
+        if let example = typical(withInterval.filter { model.series[$0.series].cells[$0.key]?.interval != nil }),
            let cell = model.series[example.series].cells[example.key], let ci = cell.interval {
             let unit = cell.dimension.unit(fitting: [cell.median])
             let values = [cell.median, ci.low, ci.high, cell.iqrLow, cell.iqrHigh]

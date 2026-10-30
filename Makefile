@@ -138,10 +138,12 @@ benchmark:
 
 # Measures the shared compatibility suite at each committed ref (comma-separated tags, branches or SHAs) in isolated
 # snapshots and saves one validated result file per ref under Benchmarks/.results/<UTC timestamp>/.
+# REPLICATES=k (default 1) builds each ref once and runs k interleaved rounds in a seeded shuffled order (SEED=n, random and
+# recorded by default), one result file per replicate.
 # Without BENCHMARK_FILTER only the smallest scale of every workload runs; BENCHMARK_FILTER='.*' selects everything.
 benchmark-compare:
 	@if [ -z "$(REFS)" ]; then printf 'Set REFS to comma-separated Git refs, for example: make benchmark-compare REFS=1.4.3,main\n' >&2; exit 2; fi
-	./Scripts/benchmark-run-refs.sh --refs "$(REFS)" $(if $(BENCHMARK_FILTER),--filter "$(BENCHMARK_FILTER)")
+	./Scripts/benchmark-run-refs.sh --refs "$(REFS)" $(if $(BENCHMARK_FILTER),--filter "$(BENCHMARK_FILTER)") $(if $(REPLICATES),--replicates "$(REPLICATES)") $(if $(SEED),--seed "$(SEED)")
 
 # Renders a report directory (REPORT.md, workloads/, img/) from saved result files only (at least two); it never runs benchmarks.
 benchmark-report:

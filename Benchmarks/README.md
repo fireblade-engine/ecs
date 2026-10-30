@@ -70,7 +70,18 @@ Selection:
 - **Smoke (default):** without a filter only the smallest scale of every workload runs.
 - **Full:** `BENCHMARK_FILTER='.*' make benchmark-compare REFS=...` runs every workload and scale. `BENCHMARK_FILTER` takes a regular expression that must match the whole benchmark name (the package uses `wholeMatch`, so `/ 16$` alone selects nothing; write `.* / 16$`), for example `BENCHMARK_FILTER='iteration\..* / 16'`; in a Makefile recipe or inline `make` assignment a literal `$` must be written `$$`. A filter that matches nothing fails before measuring, naming the filter.
 
-The runner script offers more options (`--suite-ref`, `--out`); running it without arguments prints the usage.
+Replicates:
+
+```sh
+make benchmark-compare REFS=1.4.3,main REPLICATES=10 [SEED=42]
+```
+
+- **Build once, run k times:** each ref is prepared and built once. Then `REPLICATES` interleaved rounds follow, and each round runs every ref once as a fresh process of the prepared snapshot. The order within a round is a deterministic shuffle of the seed and the round number, so the same `SEED` reproduces the same order. Without `SEED` a random seed is chosen. It is printed and recorded in every result.
+- **Files:** one self-contained result per replicate, `<ref>-<sha12>.r<NN>.json`, so a directory listing sorts by ref and then replicate. Each records `run.replicate` (`index`, `count`, `round`, `position`, `seed`); `run.startedAt` and `run.finishedAt` are that replicate's own start and end, and the batch id is shared. The host is checked before every replicate.
+- **Failure:** the first failing build or replicate ends the run, and the replicates that finished are kept.
+- **One replicate (default):** the refs run once each in the given order (no shuffle) and files keep the `<ref>-<sha12>.json` names without replicate fields. A file without `run.replicate` counts as replicate 1 of 1.
+
+The runner script offers more options (`--suite-ref`, `--out`, `--replicates`, `--seed`); running it without arguments prints the usage.
 
 ## Result files
 
@@ -104,7 +115,7 @@ Tables are HTML (`colspan` header: ref, backend, columns) so GitHub and VS Code 
 | Target | Purpose |
 | :--- | :--- |
 | `make benchmark` | Run the broad package benchmarks of this package |
-| `make benchmark-compare REFS=a,b,c [BENCHMARK_FILTER=...]` | Measure refs and save one validated result file each |
+| `make benchmark-compare REFS=a,b,c [BENCHMARK_FILTER=...] [REPLICATES=k] [SEED=n]` | Measure refs and save one validated result file per ref and replicate |
 | `make benchmark-report RESULTS="a.json b.json" [REPORT_DIR=...] [REPORT_BASELINE=...] [REPORT_TITLE=...] [REPORT_OVERWRITE=1]` | Render a report directory from saved results |
 | `make test-benchmarks` | Swift tests of this package |
 | `make test-benchmark-scripts` | Shell tests of the runner and snapshot scripts |

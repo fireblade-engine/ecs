@@ -1,7 +1,7 @@
 // Hand-written SVG plots for the report (PLAN "Statistical design v3"). Adapted from the look of upstream's plotly figures: log10
 // time axis with decade ticks, log2 entity-count axis, one line per series. Layers: the median line, distribution-free CI error
 // bars of the median over replicates, and a light band for the typical within-run IQR (spread of the measurements, not
-// uncertainty). A relative plot shows speed against the baseline with a CI ribbon and the +-delta zone. Light/dark theme inside the
+// uncertainty). A relative plot shows speed against the baseline with a CI ribbon and the ±delta zone. Light/dark theme inside the
 // SVG. Pure string building: deterministic, no dependencies, no file access.
 import Foundation
 
@@ -57,6 +57,19 @@ enum ReportPlot {
     /// Okabe-Ito based, colour-blind safe; the dark variants are lighter to keep contrast on a dark background.
     static let lightPalette = ["#0072B2", "#D55E00", "#009E73", "#CC79A7", "#E69F00", "#56B4E9", "#6E6E6E"]
     static let darkPalette = ["#5AB4F0", "#F28C42", "#2FD0A0", "#E69BC4", "#F2B83A", "#8FD0F5", "#B4B4B4"]
+
+    /// Error bars use a high-contrast shade of the series hue: darker than the line in the light theme, lighter in the dark theme.
+    static let lightErrorPalette = lightPalette.map { shade($0, toward: 0, amount: 0.5) }
+    static let darkErrorPalette = darkPalette.map { shade($0, toward: 255, amount: 0.45) }
+
+    /// Mixes a `#RRGGBB` colour with black (`toward` 0) or white (255) by `amount`.
+    static func shade(_ hex: String, toward: Int, amount: Double) -> String {
+        let value = Int(hex.dropFirst(), radix: 16) ?? 0
+        let channels = [(value >> 16) & 255, (value >> 8) & 255, value & 255].map { channel in
+            Int((Double(channel) + (Double(toward) - Double(channel)) * amount).rounded())
+        }
+        return "#" + channels.map { String(format: "%02X", $0) }.joined()
+    }
 
     // MARK: Axis helpers (internal for tests)
 
@@ -145,9 +158,10 @@ enum ReportPlot {
 
     /// Error bar of a CI in plot coordinates, clipped to the plot floor.
     private static func errorBar(x: Double, yLow: Double, yHigh: Double, color: String) -> String {
-        let cap = 3.0
+        // Caps at least 10 px wide (half width 5) so a tiny interval still reads as an error bar.
+        let cap = 5.0
         let path = "M\(fmt(x)),\(fmt(yHigh))V\(fmt(yLow))M\(fmt(x - cap)),\(fmt(yHigh))H\(fmt(x + cap))M\(fmt(x - cap)),\(fmt(yLow))H\(fmt(x + cap))"
-        return #"<path class="errbar \#(color)" d="\#(path)"/>"#
+        return #"<path class="errbar e\#(color.dropFirst())" d="\#(path)"/>"#
     }
 
     private static func coverageText(_ series: [ReportPlotSeries]) -> String? {
@@ -204,7 +218,7 @@ enum ReportPlot {
         log2XAxis(&out, exponents: exponents, xLow: xLow, xHigh: xHigh)
         frame(&out, xTitle: "Entities (log2 scale)", yTitle: "\(yTitle)\(unit.label.isEmpty ? "" : " (\(unit.label))"), log10 scale")
 
-        // Bands first, then lines, error bars and markers, so the lines stay readable on top of every band.
+        // Bands first, then lines, markers and error bars last, so the bars stay visible on top of the markers.
         out.append(#"<g clip-path="url(#plot-area)">"#)
         for entry in series {
             let color = "c\(entry.colorIndex % lightPalette.count)"
@@ -232,17 +246,17 @@ enum ReportPlot {
             let color = "c\(entry.colorIndex % lightPalette.count)"
             for scale in scales {
                 guard let point = entry.points[scale], point.median > 0 else { continue }
-                if let low = point.ciLow, let high = point.ciHigh {
-                    let lowShown = max(shown(low, scale), floorValue)
-                    out.append(errorBar(x: xPosition(scale), yLow: yPosition(lowShown), yHigh: yPosition(max(shown(high, scale), lowShown)), color: color))
-                }
+                out.append(marker(shape: entry.colorIndex, x: xPosition(scale), y: yPosition(shown(point.median, scale)), hollow: !point.hasInterval, color: color))
             }
         }
         for entry in series {
             let color = "c\(entry.colorIndex % lightPalette.count)"
             for scale in scales {
                 guard let point = entry.points[scale], point.median > 0 else { continue }
-                out.append(marker(shape: entry.colorIndex, x: xPosition(scale), y: yPosition(shown(point.median, scale)), hollow: !point.hasInterval, color: color))
+                if let low = point.ciLow, let high = point.ciHigh {
+                    let lowShown = max(shown(low, scale), floorValue)
+                    out.append(errorBar(x: xPosition(scale), yLow: yPosition(lowShown), yHigh: yPosition(max(shown(high, scale), lowShown)), color: color))
+                }
             }
         }
         out.append("</g>")
@@ -252,10 +266,21 @@ enum ReportPlot {
         return out.joined(separator: "\n") + "\n"
     }
 
+    /// "largest CI: ±1.8%" for the biggest half-width of an interval relative to its centre; explains bars too small to see.
+    static func largestIntervalText(_ halfWidths: [Double]) -> String? {
+        guard let largest = halfWidths.filter(\.isFinite).max() else { return nil }
+        return "largest CI: ±\(String(format: "%.1f", largest * 100))%"
+    }
+
     private static func notes(_ series: [ReportPlotSeries], scaleZeroOmitted: Bool) -> [String] {
         var notes = ["Line: median over replicates"]
         if let coverage = coverageText(series) {
             notes.append("Error bars: CI of the median, \(coverage)")
+            let halves = series.flatMap { $0.points.values }.compactMap { point -> Double? in
+                guard let low = point.ciLow, let high = point.ciHigh, point.median > 0 else { return nil }
+                return (high - low) / 2 / point.median
+            }
+            if let text = largestIntervalText(halves) { notes.append("  (\(text))") }
         } else {
             notes.append("No error bars: too few replicates for a CI")
         }
@@ -318,15 +343,15 @@ enum ReportPlot {
         for entry in series {
             let color = "c\(entry.colorIndex % lightPalette.count)"
             for scale in scales {
-                guard let point = entry.points[scale], let low = point.ciLow, let high = point.ciHigh else { continue }
-                out.append(errorBar(x: xPosition(Double(scale)), yLow: yPosition(low / unit.divisor), yHigh: yPosition(high / unit.divisor), color: color))
+                guard let point = entry.points[scale] else { continue }
+                out.append(marker(shape: entry.colorIndex, x: xPosition(Double(scale)), y: yPosition(point.median / unit.divisor), hollow: !point.hasInterval, color: color))
             }
         }
         for entry in series {
             let color = "c\(entry.colorIndex % lightPalette.count)"
             for scale in scales {
-                guard let point = entry.points[scale] else { continue }
-                out.append(marker(shape: entry.colorIndex, x: xPosition(Double(scale)), y: yPosition(point.median / unit.divisor), hollow: !point.hasInterval, color: color))
+                guard let point = entry.points[scale], let low = point.ciLow, let high = point.ciHigh else { continue }
+                out.append(errorBar(x: xPosition(Double(scale)), yLow: yPosition(low / unit.divisor), yHigh: yPosition(high / unit.divisor), color: color))
             }
         }
         out.append("</g>")
@@ -411,7 +436,7 @@ enum ReportPlot {
         return ticks.isEmpty ? [1] : ticks
     }
 
-    /// Speed (×) against the baseline versus entity count: log y axis, CI ribbon, shaded +-delta zone, reference line at 1x,
+    /// Speed (×) against the baseline versus entity count: log y axis, CI ribbon, shaded ±delta zone, reference line at 1x,
     /// filled markers for significant verdicts, hollow otherwise. Nil when no series has a point at a positive entity count.
     static func renderRelative(title: String, baselineLabel: String, delta: Double, series: [ReportRelativeSeries]) -> String? {
         let scales = Set(series.flatMap { $0.points.keys }).filter { $0 > 0 }.sorted()
@@ -481,16 +506,20 @@ enum ReportPlot {
         out.append("</g>")
 
         let anyInterval = series.contains { $0.points.values.contains { $0.ciLow != nil } }
-        var notes = [
-            "Line: speed = baseline / series (Hodges-Lehmann)",
+        let relativeNotes: [String?] = [
+            "Line: speed = baseline / series (Hodges–Lehmann)",
             anyInterval ? "Ribbon: 95% CI of the speed" : "No ribbon: too few replicates for a CI",
-            "Shaded zone: +-\(String(format: "%g", delta * 100))% (equivalence zone)",
-            "Reference line: 1x, equal to the baseline",
+            largestIntervalText(series.flatMap { $0.points.values }.compactMap { point -> Double? in
+                guard let low = point.ciLow, let high = point.ciHigh, point.speed > 0 else { return nil }
+                return (high - low) / 2 / point.speed
+            }).map { "  (\($0))" },
+            "Shaded zone: ±\(String(format: "%g", delta * 100))% (equivalence zone)",
+            "Reference line: 1×, equal to the baseline",
             "Filled marker: significant faster or slower",
             "Hollow marker: not significant or n/a",
             "Entity count 0 is omitted (log axis)"
         ]
-        if series.isEmpty { notes = [] }
+        let notes = series.isEmpty ? [] : relativeNotes.compactMap { $0 }
         legend(&out, series: series.map { ($0.label, $0.colorIndex, false) }, notes: notes)
         out.append("</svg>")
         return out.joined(separator: "\n") + "\n"
@@ -531,7 +560,7 @@ enum ReportPlot {
 
     private static func marker(shape: Int, x: Double, y: Double, hollow: Bool, color: String) -> String {
         let attributes = #"class="marker \#(color)\#(hollow ? " hollow" : "")""#
-        let r = 4.0
+        let r = 3.0
         switch shape % 4 {
         case 0:
             return #"<circle \#(attributes) cx="\#(fmt(x))" cy="\#(fmt(y))" r="\#(fmt(r))"/>"#
@@ -570,16 +599,18 @@ enum ReportPlot {
             ".title{font-size:17px;font-weight:600}.axis-title{font-size:13px}.tick{font-size:12px}.legend{font-size:12px}.legend-title{font-size:13px;font-weight:600}.note{font-size:11px;fill:#59636e}",
             ".grid{stroke:#c3cad2;stroke-width:1}.minor{stroke:#e6e9ed;stroke-width:1}.axis{stroke:#59636e;stroke-width:1}.frame{fill:none;stroke:#59636e;stroke-width:1}",
             ".line{fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round}.baseline{stroke-dasharray:7 4}",
-            ".band{fill:currentColor;fill-opacity:.14;stroke:none}.ribbon{fill:currentColor;fill-opacity:.2;stroke:none}.errbar{fill:none;stroke:currentColor;stroke-width:1.4}",
+            ".band{fill:currentColor;fill-opacity:.16;stroke:currentColor;stroke-opacity:.4;stroke-width:1;stroke-linejoin:round}.ribbon{fill:currentColor;fill-opacity:.2;stroke:none}.errbar{fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:butt}",
             ".zone{fill:#59636e;fill-opacity:.14;stroke:none}.ref{stroke:#1f2328;stroke-width:1;stroke-dasharray:2 3}",
-            ".marker{fill:currentColor;stroke:currentColor;stroke-width:1.6}.marker.hollow{fill:none}"
+            ".marker{fill:currentColor;stroke:currentColor;stroke-width:1.4}.marker.hollow{fill:none}"
         ]
         css += lightPalette.enumerated().map { ".c\($0.offset){color:\($0.element)}" }
+        css += lightErrorPalette.enumerated().map { ".errbar.e\($0.offset){color:\($0.element)}" }
         var dark = [
             "text{fill:#e6edf3}.note{fill:#9198a1}",
             ".grid{stroke:#4a525c}.minor{stroke:#2d333b}.axis,.frame{stroke:#9198a1}.zone{fill:#9198a1}.ref{stroke:#e6edf3}"
         ]
         dark += darkPalette.enumerated().map { ".c\($0.offset){color:\($0.element)}" }
+        dark += darkErrorPalette.enumerated().map { ".errbar.e\($0.offset){color:\($0.element)}" }
         return "<style>\n" + css.joined(separator: "\n") + "\n@media (prefers-color-scheme: dark){\n" + dark.joined(separator: "\n") + "\n}\n</style>"
     }
 

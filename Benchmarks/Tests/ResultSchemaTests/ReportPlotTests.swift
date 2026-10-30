@@ -68,6 +68,40 @@ struct ReportPlotTests {
     }
 
     @Test
+    func errorBarsAreDrawnAboveMarkersInAContrastingShadeWithWideCaps() throws {
+        let svg = try #require(ReportPlot.render(title: "w", yTitle: "t", perEntity: false, series: sample))
+        let lines = svg.components(separatedBy: "\n")
+        let lastMarker = try #require(lines.lastIndex { $0.hasPrefix("<circle class=\"marker") || $0.hasPrefix("<rect class=\"marker") })
+        let firstBar = try #require(lines.firstIndex { $0.hasPrefix("<path class=\"errbar") })
+        // Plot markers come before the first bar; the legend markers come after the plot group and are the only later ones.
+        #expect(lines[firstBar...].filter { $0.contains("class=\"marker") }.count == 2, "only the two legend markers follow the bars")
+        #expect(lastMarker > firstBar)
+        #expect(svg.contains(".errbar.e0{color:\(ReportPlot.lightErrorPalette[0])}"))
+        #expect(svg.contains(".errbar.e0{color:\(ReportPlot.darkErrorPalette[0])}"))
+        #expect(ReportPlot.lightErrorPalette[0] != ReportPlot.lightPalette[0] && ReportPlot.darkErrorPalette[0] != ReportPlot.darkPalette[0])
+        #expect(ReportPlot.shade("#808080", toward: 0, amount: 0.5) == "#404040")
+        #expect(svg.contains("stroke-width:2.4"), "bars are thicker than the 2 px line")
+        // Cap half width 5: even a one-pixel interval has a 10 px wide cap.
+        let flat = series("flat", color: 0, [1: point(100, ci: (100, 100)), 2: point(200, ci: (200, 200))])
+        let flatSVG = try #require(ReportPlot.render(title: "w", yTitle: "t", perEntity: false, series: [flat]))
+        let bar = try #require(flatSVG.components(separatedBy: "\n").first { $0.hasPrefix("<path class=\"errbar") })
+        let caps = bar.components(separatedBy: "H").dropFirst().compactMap { Double($0.prefix { $0 != "M" && $0 != "\"" }) }
+        let starts = bar.components(separatedBy: "M").dropFirst().compactMap { Double($0.prefix { $0 != "," }) }
+        #expect(caps.count >= 2 && starts.count >= 2 && caps.allSatisfy { $0 > 0 })
+        #expect(zip(caps, starts.dropFirst()).allSatisfy { abs($0 - $1 - 10) < 0.02 }, "caps are 10 px wide")
+    }
+
+    @Test
+    func bandHasAnOutlineAndCaptionStatesTheLargestInterval() throws {
+        let svg = try #require(ReportPlot.render(title: "w", yTitle: "t", perEntity: false, series: sample))
+        #expect(svg.contains("stroke-opacity:.4"), "narrow bands stay visible through their outline")
+        // Largest half-width of the sample: 500/2 -> point 1 of main is (650-400)/2/500 = 25%.
+        #expect(svg.contains("(largest CI: ±25.0%)"))
+        #expect(ReportPlot.largestIntervalText([]) == nil)
+        #expect(ReportPlot.largestIntervalText([0.018, 0.004]) == "largest CI: ±1.8%")
+    }
+
+    @Test
     func missingIntervalsAreMarkedNotDrawn() throws {
         let plain = series("k1", color: 0, [1: point(100, k: 1), 2: point(200, k: 1), 4: point(400, k: 1)])
         let svg = try #require(ReportPlot.render(title: "w", yTitle: "t", perEntity: false, series: [plain]))
@@ -93,7 +127,9 @@ struct ReportPlotTests {
         #expect(squares.filter { $0.contains("hollow") }.count == 2)
         // The ribbon spans the first three points only; the fourth has no CI.
         #expect(lines.filter { $0.hasPrefix(#"<polygon class="ribbon"#) }.count == 1)
-        #expect(svg.contains("Shaded zone: +-5% (equivalence zone)") && svg.contains("Reference line: 1x"))
+        #expect(svg.contains("Shaded zone: ±5% (equivalence zone)") && svg.contains("Reference line: 1×"))
+        #expect(!svg.contains("+-"), "no ASCII stand-in for ±")
+        #expect(svg.contains("(largest CI: ±"))
         #expect(svg.contains("Speed vs 1.4.3"))
         #expect(!svg.contains("nan") && !svg.contains("inf"))
         #expect(ReportPlot.renderRelative(title: "w", baselineLabel: "b", delta: 0.05, series: []) == nil)

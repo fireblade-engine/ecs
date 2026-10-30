@@ -39,9 +39,16 @@ cat > "$stub" <<'STUB'
 set -euo pipefail
 ref=$1; shift
 echo "$ref $*" >> "$STUB_LOG"
-repo="" suite="" out="" result="" requested="" batch=""
+repo="" suite="" out="" result="" requested="" batch="" build=0 reuse=0 rep="" reps="" round="" position="" seed=""
 while (($#)); do
     case $1 in
+        --build-only) build=1 ;;
+        --reuse) reuse=1 ;;
+        --replicate) rep=$2 ;;
+        --replicates) reps=$2 ;;
+        --round) round=$2 ;;
+        --position) position=$2 ;;
+        --seed) seed=$2 ;;
         --repo) repo=$2 ;;
         --suite-ref) suite=$2 ;;
         --out) out=$2 ;;
@@ -52,16 +59,30 @@ while (($#)); do
     shift
 done
 [[ -z ${STUB_MOVE_ONCE:-} || -e $STUB_MOVE_ONCE ]] || { touch "$STUB_MOVE_ONCE"; git -C "$repo" branch -f movable t-three; }
+if ((build)); then
+    [[ ${STUB_FAIL_BUILD_REF:-} != "$requested" ]] || exit 9
+    mkdir "$out"
+    exit 0
+fi
+if ((reuse)); then
+    [[ -d $out ]] || { echo "stub: --reuse of an unprepared snapshot" >&2; exit 8; }
+    [[ -z ${STUB_FAIL_AT:-} || ${STUB_FAIL_AT} != "$requested:$round" ]] || exit 7
+else
+    mkdir "$out"
+fi
 [[ ${STUB_FAIL_REF:-} != "$requested" ]] || exit 7
-mkdir "$out"
 hash=HASH
 [[ ${STUB_SKEW_REF:-} != "$requested" ]] || hash=OTHER
 swift_version="swift 6"
 [[ ${STUB_TOOLCHAIN_REF:-} != "$requested" ]] || swift_version="swift 7"
 sha=$(git -C "$repo" rev-parse "$ref^{commit}")
 [[ ${STUB_WRONG_SHA_REF:-} != "$requested" ]] || sha=$(printf 'e%.0s' {1..40})
-jq -n --arg r "$sha" --arg s "$suite" --arg h "$hash" --arg b "$batch" --arg v "$swift_version" --arg q "$requested" \
-    '{run: {batchId: $b}, ref: {requested: $q, sha: $r}, suite: {sha: $s, configurationHash: $h}, toolchain: {swiftVersion: $v},
+replicate=null
+[[ -z $rep ]] || replicate=$(jq -n --argjson i "$rep" --argjson c "$reps" --argjson r "$round" --argjson p "$position" --argjson s "$seed" \
+    '{index: $i, count: $c, round: $r, position: $p, seed: $s}')
+[[ ${STUB_BAD_REPLICATE_REF:-} != "$requested" ]] || replicate=$(jq -n '{index: 1, count: 1, round: 1, position: 1, seed: 0}')
+jq -n --argjson rp "$replicate" --arg r "$sha" --arg s "$suite" --arg h "$hash" --arg b "$batch" --arg v "$swift_version" --arg q "$requested" \
+    '{run: ({batchId: $b} + (if $rp == null then {} else {replicate: $rp} end)), ref: {requested: $q, sha: $r}, suite: {sha: $s, configurationHash: $h}, toolchain: {swiftVersion: $v},
       host: {cpuModel: "cpu", physicalMemoryBytes: 1}, benchmarks: [{identity: "w", scale: 16}]}' > "$result"
 STUB
 chmod +x "$stub"
@@ -69,7 +90,7 @@ export BENCHMARK_SNAPSHOT_SCRIPT="$stub" STUB_LOG="$test_root/calls.log"
 
 run() { "$script" --repo "$fixture" "$@"; }
 calls() { if [[ -f $STUB_LOG ]]; then wc -l < "$STUB_LOG" | tr -d ' '; else echo 0; fi; }
-reset() { rm -f "$STUB_LOG"; unset STUB_FAIL_REF STUB_SKEW_REF STUB_TOOLCHAIN_REF STUB_WRONG_SHA_REF STUB_MOVE_ONCE; }
+reset() { rm -f "$STUB_LOG"; unset STUB_FAIL_BUILD_REF STUB_FAIL_AT STUB_BAD_REPLICATE_REF STUB_FAIL_REF STUB_SKEW_REF STUB_TOOLCHAIN_REF STUB_WRONG_SHA_REF STUB_MOVE_ONCE; }
 
 # Validation precedes any execution: one bad ref anywhere means no snapshot call at all.
 bad_cases=(
@@ -207,4 +228,123 @@ export STUB_FAIL_REF=t-one
 if run --refs t-one --out "$test_root/empty-fail" > /dev/null 2>&1; then fail 'failing sole ref must fail'; fi
 [[ ! -e $test_root/empty-fail ]] || fail 'a run without results must not leave a run directory'
 
+GOLDEN_ORDERS=' t-two t-three t-one| t-three t-two t-one| t-three t-two t-one|'
+# --- Replicates ---------------------------------------------------------------------------------------------------------
+run_lines() { grep -- '--reuse' "$STUB_LOG" || true; }
+build_lines() { grep -- '--build-only' "$STUB_LOG" || true; }
+orders() { # prints one line per round: refs in execution order (by requested name)
+    run_lines | sed -E 's/.*--requested ([^ ]+) .*--round ([0-9]+) .*/\2 \1/' | sort -n -s -k1,1 | awk '{a[$1]=a[$1] " " $2} END {for (r = 1; r in a; r++) print a[r]}'
+}
+
+for bad in '--replicates 0' '--replicates x' '--replicates 10000' '--seed -1' '--seed x' '--seed 4294967296'; do
+    reset
+    # shellcheck disable=SC2086
+    if run --refs t-one,t-two $bad --out "$test_root/badrep" > /dev/null 2>&1; then fail "'$bad' must be rejected"; fi
+    assert_eq "$(calls)" 0 "'$bad' must not start snapshots"
+done
+
+# Build once per ref, K interleaved rounds, every round runs every ref once, sorted file naming.
+reset
+out_rep="$test_root/rep"
+stdout=$(run --refs "t-one,t-two,t-three" --replicates 4 --seed 42 --out "$out_rep" 2> "$test_root/rep.err")
+assert_eq "$(build_lines | wc -l | tr -d ' ')" 3 'each ref is built exactly once'
+assert_eq "$(run_lines | wc -l | tr -d ' ')" 12 'K runs per ref'
+assert_eq "$(calls)" 15 'only builds and runs reach the snapshot script'
+assert_eq "$(build_lines | grep -c -- '--result' || true)" 0 'builds never measure'
+assert_eq "$(run_lines | grep -c -- '--build-only' || true)" 0 'runs never rebuild'
+assert_eq "$(ls "$out_rep" | wc -l | tr -d ' ')" 12 'one result file per replicate and nothing else'
+assert_eq "$(ls -A "$out_rep" | wc -l | tr -d ' ')" 12 'no staged or failed leftovers'
+for n in one two three; do
+    for r in 01 02 03 04; do
+        [[ -f $out_rep/t-$n-$(sha_of "t-$n" | cut -c1-12).r$r.json ]] || fail "missing replicate $r of t-$n"
+    done
+done
+assert_eq "$(grep -c '^result: ' <<< "$stdout")" 12 'stdout lists every replicate'
+assert_eq "$(grep '^result: ' <<< "$stdout")" "$(grep '^result: ' <<< "$stdout" | LC_ALL=C sort)" 'result lines are sorted by ref, then replicate'
+for n in one two three; do
+    f="$out_rep/t-$n-$(sha_of "t-$n" | cut -c1-12).r03.json"
+    assert_eq "$(jq -c '.run.replicate | [.index, .count, .round, .seed]' "$f")" '[3,4,3,42]' "replicate fields of t-$n r03"
+done
+assert_eq "$(jq -r '.run.batchId' "$out_rep"/*.json | sort -u | wc -l | tr -d ' ')" 1 'all replicates share one batch id'
+assert_eq "$(jq -r '"\(.run.replicate.round) \(.run.replicate.position)"' "$out_rep"/*.json | sort | uniq | wc -l | tr -d ' ')" 12 'every (round, position) slot is used once for 3 refs and 4 rounds'
+grep -q 'seed 42' "$test_root/rep.err" || fail 'the seed must be reported'
+# Interleaved: no ref runs a second time before every ref ran in the round, and builds precede all runs.
+first_run=$(grep -n -- '--reuse' "$STUB_LOG" | head -1 | cut -d: -f1)
+assert_eq "$(head -n $((first_run - 1)) "$STUB_LOG" | grep -c -- '--build-only')" 3 'all builds precede the first run'
+per_round=$(orders)
+assert_eq "$(wc -l <<< "$per_round" | tr -d ' ')" 4 'four rounds'
+while read -r line; do
+    assert_eq "$(tr ' ' '\n' <<< "$line" | sort | tr '\n' ' ')" 't-one t-three t-two ' "round '$line' must run every ref exactly once"
+done <<< "$per_round"
+# Round order in the log is contiguous: rounds are not mixed.
+assert_eq "$(run_lines | sed -E 's/.*--round ([0-9]+) .*/\1/' | tr '\n' ' ')" '1 1 1 2 2 2 3 3 3 4 4 4 ' 'rounds run one after another'
+# The recorded position matches the execution order within the round.
+assert_eq "$(run_lines | sed -E 's/.*--position ([0-9]+) .*/\1/' | tr '\n' ' ')" '1 2 3 1 2 3 1 2 3 1 2 3 ' 'positions count within each round'
+
+# Same seed gives the same order; different seeds give different orders somewhere.
+reset
+run --refs "t-one,t-two,t-three" --replicates 12 --seed 42 --out "$test_root/rep-a" > /dev/null 2>&1
+orders_a=$(orders)
+reset
+run --refs "t-one,t-two,t-three" --replicates 12 --seed 42 --out "$test_root/rep-b" > /dev/null 2>&1
+assert_eq "$(orders)" "$orders_a" 'the same seed must give the same order'
+reset
+run --refs "t-one,t-two,t-three" --replicates 12 --seed 43 --out "$test_root/rep-c" > /dev/null 2>&1
+[[ $(orders) != "$orders_a" ]] || fail 'a different seed must change the order somewhere'
+[[ $(sort -u <<< "$orders_a" | wc -l | tr -d ' ') -gt 1 ]] || fail 'rounds must not all use the same order'
+# Golden orders pin the shuffle across bash versions (macOS ships bash 3.2).
+assert_eq "$(head -3 <<< "$orders_a" | tr '\n' '|')" "$GOLDEN_ORDERS" 'shuffle must be identical on every bash'
+if [[ -x /bin/bash ]]; then
+    reset
+    /bin/bash "$script" --repo "$fixture" --refs "t-one,t-two,t-three" --replicates 12 --seed 42 --out "$test_root/rep-d" > /dev/null 2>&1
+    assert_eq "$(orders)" "$orders_a" '/bin/bash must give the same order'
+fi
+
+# Without --seed a seed is chosen, reported, recorded in every file, and reusable to reproduce the order.
+reset
+run --refs "t-one,t-two" --replicates 2 --out "$test_root/rep-r" > /dev/null 2> "$test_root/rep-r.err"
+rseed=$(jq -r '.run.replicate.seed' "$test_root"/rep-r/*.json | sort -u)
+[[ $rseed =~ ^[0-9]+$ ]] || fail "a random seed must be recorded (got '$rseed')"
+grep -q "seed $rseed" "$test_root/rep-r.err" || fail 'the random seed must be reported'
+
+# K = 1 stays backward compatible: given order, one call per ref, old file names, no replicate fields, no builds.
+reset
+out_k1="$test_root/k1"
+run --refs "t-one,t-two,t-three" --replicates 1 --seed 5 --out "$out_k1" > /dev/null 2>&1
+assert_eq "$(calls)" 3 'K=1 uses one snapshot call per ref'
+assert_eq "$(build_lines | wc -l | tr -d ' ')" 0 'K=1 does not split build and run'
+assert_eq "$(sed -E 's/^[0-9a-f]+ --requested ([^ ]+) .*/\1/' "$STUB_LOG" | tr '\n' ' ')" 't-one t-two t-three ' 'K=1 keeps the given order'
+assert_eq "$(ls "$out_k1" | wc -l | tr -d ' ')" 3 'K=1 writes one file per ref'
+[[ -f $out_k1/t-two-$(sha_of t-two | cut -c1-12).json ]] || fail 'K=1 keeps the old file names'
+assert_eq "$(jq -r '.run | has("replicate")' "$out_k1"/*.json | sort -u)" false 'K=1 writes no replicate fields'
+
+# A failure mid-round keeps the completed replicates and stops everything else.
+reset
+export STUB_FAIL_AT=t-two:3
+out_mid="$test_root/mid"
+if run --refs "t-one,t-two,t-three" --replicates 4 --seed 42 --out "$out_mid" > /dev/null 2> "$test_root/mid.err"; then fail 'a failing replicate must fail the run'; fi
+grep -q 't-two failed in round 3' "$test_root/mid.err" || fail 'the failing ref and round must be reported'
+# Rounds 1 and 2 completed (6 files); round 3 stopped at t-two, so the refs ordered before it in the shuffle have a round-3 file.
+done_round3=$(ls "$out_mid" | grep -c '\.r03\.json' || true)
+assert_eq "$(ls "$out_mid" | grep -c -e '\.r01\.json' -e '\.r02\.json')" 6 'completed rounds are kept'
+assert_eq "$(ls "$out_mid" | grep -c '\.r04\.json' || true)" 0 'later rounds never start'
+assert_eq "$(run_lines | grep -c -- '--round 3 ')" $((done_round3 + 1)) 'the run stops at the failing replicate'
+assert_eq "$(ls -A "$out_mid" | grep -c partial || true)" 0 'no staged file may remain'
+[[ ! -e $out_mid/t-two-$(sha_of t-two | cut -c1-12).r03.json ]] || fail 'the failed replicate has no result'
+
+# A build failure stops before any measurement.
+reset
+export STUB_FAIL_BUILD_REF=t-two
+if run --refs "t-one,t-two" --replicates 2 --seed 1 --out "$test_root/buildfail" > /dev/null 2> "$test_root/buildfail.err"; then fail 'a failing build must fail the run'; fi
+assert_eq "$(run_lines | wc -l | tr -d ' ')" 0 'nothing is measured when a build fails'
+[[ ! -e $test_root/buildfail ]] || fail 'a run without results must not leave a run directory'
+
+# Replicate fields that differ from the request are rejected and kept.
+reset
+export STUB_BAD_REPLICATE_REF=t-one
+if run --refs "t-one,t-two" --replicates 2 --seed 9 --out "$test_root/badrp" > /dev/null 2> "$test_root/badrp.err"; then fail 'wrong replicate fields must fail the run'; fi
+grep -q 'replicate fields' "$test_root/badrp.err" || fail 'wrong replicate fields must be reported'
+assert_eq "$(ls "$test_root/badrp/.failed" | wc -l | tr -d ' ')" 1 'the rejected replicate is kept under .failed'
+
 printf 'benchmark-run-refs tests passed\n'
+

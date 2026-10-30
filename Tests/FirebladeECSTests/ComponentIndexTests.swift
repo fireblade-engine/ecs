@@ -5,6 +5,7 @@
 //  Created by Christian Treffs on 25.10.26.
 //
 
+import Foundation
 import Testing
 @testable import FirebladeECS
 
@@ -128,5 +129,161 @@ private func manyTypes() -> [any Component.Type] {
         #expect(first < second && second < third)
         #expect(third < Nexus.ComponentIndexRegistry.shared.count)
         #expect(First.componentIndex == first)
+    }
+}
+
+private typealias Registry = Nexus.ComponentIndexRegistry
+
+@Suite struct ComponentIndexTableTests {
+    /// Fresh keys (non-zero, distinct) whose home slot in a table of this capacity is `slot`.
+    private func keys(homing slot: Int, in table: UnsafeMutablePointer<UInt>, count: Int, after start: UInt = 1) -> [UInt] {
+        var found: [UInt] = []
+        var key = start
+        while found.count < count {
+            if Registry.homeSlot(key, in: table) == slot { found.append(key) }
+            key += 1
+        }
+        return found
+    }
+
+    @Test func collisionsProbeLinearlyAndWrapAround() {
+        let table = Registry.makeTable(capacity: 16)
+        defer { table.deallocate() }
+        let last = 15
+        let colliding = keys(homing: last, in: table, count: 4)
+        for (offset, key) in colliding.enumerated() {
+            Registry.insert(key, 100 + offset, into: table, publish: true)
+        }
+        // first key sits in its home slot, the others wrapped to slots 0, 1, 2
+        #expect(Registry.slotEntry(table, last)[0] == colliding[0])
+        for offset in 1 ..< 4 {
+            #expect(Registry.slotEntry(table, offset - 1)[0] == colliding[offset])
+        }
+        for (offset, key) in colliding.enumerated() {
+            #expect(Registry.lookup(key, in: table) == 100 + offset)
+        }
+        // a key probing through the cluster ends at the first empty slot
+        let absent = keys(homing: last, in: table, count: 1, after: colliding[3] + 1)[0]
+        #expect(Registry.lookup(absent, in: table) == nil)
+        #expect(Registry.lookup(keys(homing: 7, in: table, count: 1)[0], in: table) == nil)
+    }
+
+    @Test func growthKeepsEntriesAndLeavesTheOldTableReadable() {
+        let old = Registry.makeTable(capacity: 16)
+        defer { old.deallocate() }
+        let all = Array(1 ... 8).map { UInt($0) * 0x1000 + 8 }
+        for (index, key) in all.enumerated() {
+            Registry.insert(key, index, into: old, publish: true)
+        }
+        let grown = Registry.makeTable(capacity: 32, copying: old)
+        defer { grown.deallocate() }
+        let late: UInt = 0xABCD0
+        Registry.insert(late, 8, into: grown, publish: true)
+        for (index, key) in all.enumerated() {
+            #expect(Registry.lookup(key, in: grown) == index)
+            // a reader still holding the old table keeps seeing its entries
+            #expect(Registry.lookup(key, in: old) == index)
+        }
+        #expect(Registry.lookup(late, in: grown) == 8)
+        // the stale reader misses the late key, which is what sends it to the locked path
+        #expect(Registry.lookup(late, in: old) == nil)
+    }
+
+    @Test func missFallsBackToTheLockedPathAndIsIdempotent() {
+        let registry = Registry.shared
+        let key = UInt(bitPattern: ObjectIdentifier(Wrapped<Tag0>.self)) &+ 1 // never a real metatype address
+        let table = UnsafeMutablePointer<UInt>(bitPattern: registry.current.pointee).unsafelyUnwrapped
+        #expect(Registry.lookup(key, in: table) == nil)
+        let index = registry.register(key)
+        #expect(registry.register(key) == index)
+        let after = UnsafeMutablePointer<UInt>(bitPattern: registry.current.pointee).unsafelyUnwrapped
+        #expect(Registry.lookup(key, in: after) == index)
+    }
+}
+
+private final class StartGate: @unchecked Sendable {
+    private var arrived = 0
+    private let total: Int
+    init(_ total: Int) { self.total = total }
+    private let mutex = NSLock()
+    func wait() {
+        mutex.lock(); arrived += 1; mutex.unlock()
+        while true {
+            mutex.lock(); let done = arrived >= total; mutex.unlock()
+            if done { return }
+            sched_yield()
+        }
+    }
+}
+
+private struct Fresh<T, U>: Component, Sendable {}
+
+@Suite struct ComponentIndexThreadTests {
+    @Test func readersAndWritersOnRealThreadsAgree() {
+        let readers = 8, writers = 8
+        let gate = StartGate(readers + writers)
+        let group = DispatchGroup()
+        let results = ResultBox()
+        // Each writer registers its own fresh specializations (forcing table growth) plus a shared set.
+        let shared = manyTypes()
+        for writer in 0 ..< writers {
+            group.enter()
+            let thread = Thread {
+                gate.wait()
+                var seen: [Int] = []
+                for i in 0 ..< 64 {
+                    seen.append(Registry.shared.index(of: Fresh<Wrapped<Tag0>, Wrapped<Tag1>>.self))
+                    seen.append(Registry.shared.index(of: shared[(i + writer * 5) % shared.count]))
+                    _ = Registry.shared.index(of: freshType(i &+ writer))
+                }
+                results.append(seen)
+                group.leave()
+            }
+            thread.start()
+        }
+        for _ in 0 ..< readers {
+            group.enter()
+            let thread = Thread {
+                gate.wait()
+                var seen: [Int] = []
+                for _ in 0 ..< 200 {
+                    for type in shared { seen.append(Registry.shared.index(of: type)) }
+                }
+                results.append(seen)
+                group.leave()
+            }
+            thread.start()
+        }
+        group.wait()
+        // every observer agrees per type: the shared types keep one index throughout
+        let expected = shared.map { Registry.shared.index(of: $0) }
+        #expect(Set(expected).count == expected.count)
+        for seen in results.value where seen.count == 200 * shared.count {
+            for (position, index) in seen.enumerated() {
+                #expect(index == expected[position % shared.count])
+            }
+        }
+        #expect(Registry.shared.index(of: Fresh<Wrapped<Tag0>, Wrapped<Tag1>>.self) == Fresh<Wrapped<Tag0>, Wrapped<Tag1>>.componentIndex)
+    }
+}
+
+private final class ResultBox: @unchecked Sendable {
+    private let mutex = NSLock()
+    private var stored: [[Int]] = []
+    func append(_ value: [Int]) { mutex.lock(); stored.append(value); mutex.unlock() }
+    var value: [[Int]] { mutex.lock(); defer { mutex.unlock() }; return stored }
+}
+
+/// A few dozen distinct fresh types selected by number.
+private func freshType(_ n: Int) -> any Component.Type {
+    switch n % 8 {
+    case 0: Fresh<Tag0, Tag1>.self
+    case 1: Fresh<Tag1, Tag2>.self
+    case 2: Fresh<Tag2, Tag3>.self
+    case 3: Fresh<Tag3, Tag4>.self
+    case 4: Fresh<Tag4, Tag5>.self
+    case 5: Fresh<Tag5, Tag6>.self
+    case 6: Fresh<Tag6, Tag7>.self
+    default: Fresh<Tag7, Tag0>.self
     }
 }

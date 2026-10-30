@@ -53,7 +53,10 @@ private struct ConcurrentlyIndexed: Component, Sendable {}
     }
 }
 
-private struct Wrapped<T>: Component, Sendable {}
+private struct Scoped<M, T>: Component, Sendable {}
+private enum ConcurrencyMarker {}
+private enum ThreadMarker {}
+private enum MissMarker {}
 private enum Tag0 {}
 private enum Tag1 {}
 private enum Tag2 {}
@@ -63,18 +66,18 @@ private enum Tag5 {}
 private enum Tag6 {}
 private enum Tag7 {}
 
-/// Many distinct types from generic specializations: `Wrapped<Tag>`, `Wrapped<Wrapped<Tag>>`, ...
-private func manyTypes() -> [any Component.Type] {
+/// Many distinct types from generic specializations: `Scoped<M, Tag>`, `Scoped<M, Scoped<M, Tag>>`, ...
+private func manyTypes<M>(_: M.Type) -> [any Component.Type] {
     var types: [any Component.Type] = []
     func add<T>(_: T.Type) {
-        types.append(Wrapped<T>.self)
-        types.append(Wrapped<Wrapped<T>>.self)
-        types.append(Wrapped<Wrapped<Wrapped<T>>>.self)
-        types.append(Wrapped<[T]>.self)
-        types.append(Wrapped<T?>.self)
-        types.append(Wrapped<(T, T)>.self)
-        types.append(Wrapped<[[T]]>.self)
-        types.append(Wrapped<[T]?>.self)
+        types.append(Scoped<M, T>.self)
+        types.append(Scoped<M, Scoped<M, T>>.self)
+        types.append(Scoped<M, Scoped<M, Scoped<M, T>>>.self)
+        types.append(Scoped<M, [T]>.self)
+        types.append(Scoped<M, T?>.self)
+        types.append(Scoped<M, (T, T)>.self)
+        types.append(Scoped<M, [[T]]>.self)
+        types.append(Scoped<M, [T]?>.self)
     }
     add(Tag0.self); add(Tag1.self); add(Tag2.self); add(Tag3.self)
     add(Tag4.self); add(Tag5.self); add(Tag6.self); add(Tag7.self)
@@ -85,7 +88,7 @@ private func manyTypes() -> [any Component.Type] {
 
 @Suite struct ComponentIndexConcurrencyTests {
     @Test func manyThreadsRegisterOverlappingSetsAndAgree() async {
-        let types = manyTypes()
+        let types = manyTypes(ConcurrencyMarker.self)
         let before = Nexus.ComponentIndexRegistry.shared.count
         let results = await withTaskGroup(of: [Int].self) { group in
             for thread in 0 ..< 16 {
@@ -194,7 +197,7 @@ private typealias Registry = Nexus.ComponentIndexRegistry
 
     @Test func missFallsBackToTheLockedPathAndIsIdempotent() {
         let registry = Registry.shared
-        let key = UInt(bitPattern: ObjectIdentifier(Wrapped<Tag0>.self)) &+ 1 // never a real metatype address
+        let key = UInt(bitPattern: ObjectIdentifier(Scoped<MissMarker, Tag0>.self)) &+ 1 // never a real metatype address
         let table = UnsafeMutablePointer<UInt>(bitPattern: registry.current.pointee).unsafelyUnwrapped
         #expect(Registry.lookup(key, in: table) == nil)
         let index = registry.register(key)
@@ -207,17 +210,22 @@ private typealias Registry = Nexus.ComponentIndexRegistry
 #if !os(WASI) // WASI has no threads, Thread and DispatchGroup are unavailable
 
 private final class StartGate: @unchecked Sendable {
+    private let condition = NSCondition()
     private var arrived = 0
     private let total: Int
+
     init(_ total: Int) { self.total = total }
-    private let mutex = NSLock()
+
+    /// Blocks until all `total` threads have arrived, then releases them together.
     func wait() {
-        mutex.lock(); arrived += 1; mutex.unlock()
-        while true {
-            mutex.lock(); let done = arrived >= total; mutex.unlock()
-            if done { return }
-            sched_yield()
+        condition.lock()
+        arrived += 1
+        if arrived >= total {
+            condition.broadcast()
+        } else {
+            while arrived < total { condition.wait() }
         }
+        condition.unlock()
     }
 }
 
@@ -230,14 +238,14 @@ private struct Fresh<T, U>: Component, Sendable {}
         let group = DispatchGroup()
         let results = ResultBox()
         // Each writer registers its own fresh specializations (forcing table growth) plus a shared set.
-        let shared = manyTypes()
+        let shared = manyTypes(ThreadMarker.self)
         for writer in 0 ..< writers {
             group.enter()
             let thread = Thread {
                 gate.wait()
                 var seen: [Int] = []
                 for i in 0 ..< 64 {
-                    seen.append(Registry.shared.index(of: Fresh<Wrapped<Tag0>, Wrapped<Tag1>>.self))
+                    seen.append(Registry.shared.index(of: Fresh<ThreadMarker, Tag1>.self))
                     seen.append(Registry.shared.index(of: shared[(i + writer * 5) % shared.count]))
                     _ = Registry.shared.index(of: freshType(i &+ writer))
                 }
@@ -268,7 +276,7 @@ private struct Fresh<T, U>: Component, Sendable {}
                 #expect(index == expected[position % shared.count])
             }
         }
-        #expect(Registry.shared.index(of: Fresh<Wrapped<Tag0>, Wrapped<Tag1>>.self) == Fresh<Wrapped<Tag0>, Wrapped<Tag1>>.componentIndex)
+        #expect(Registry.shared.index(of: Fresh<ThreadMarker, Tag1>.self) == Fresh<ThreadMarker, Tag1>.componentIndex)
     }
 }
 

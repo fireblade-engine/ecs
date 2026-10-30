@@ -15,10 +15,12 @@ public struct WriteRequest {
     public var packageResolvedPath: String
     public var swiftVersion: String
     public var batchID: String?
+    public var replicate: ResultReplicate?
 
     public init(
         baselinePath: String, runID: String, startedAt: String, finishedAt: String, requestedRef: String, refSHA: String,
-        suiteSHA: String, filter: String, packageResolvedPath: String, swiftVersion: String, batchID: String? = nil
+        suiteSHA: String, filter: String, packageResolvedPath: String, swiftVersion: String, batchID: String? = nil,
+        replicate: ResultReplicate? = nil
     ) {
         self.batchID = batchID
         self.baselinePath = baselinePath
@@ -31,6 +33,7 @@ public struct WriteRequest {
         self.filter = filter
         self.packageResolvedPath = packageResolvedPath
         self.swiftVersion = swiftVersion
+        self.replicate = replicate
     }
 }
 
@@ -79,7 +82,7 @@ public enum ResultWriter {
         let file = BenchmarkResultFile(
             schema: ResultSchema.name,
             schemaVersion: ResultSchema.version,
-            run: ResultRun(id: request.runID, startedAt: request.startedAt, finishedAt: request.finishedAt, batchId: request.batchID),
+            run: ResultRun(id: request.runID, startedAt: request.startedAt, finishedAt: request.finishedAt, batchId: request.batchID, replicate: request.replicate),
             ref: ResultRef(requested: request.requestedRef, sha: request.refSHA, componentModel: CompatManifest.componentModel, backends: CompatManifest.backends),
             suite: ResultSuite(
                 sha: request.suiteSHA,

@@ -37,6 +37,30 @@ public struct ResultRun: Codable, Equatable, Sendable {
     /// One id per runner invocation (`Scripts/benchmark-run-refs.sh`), shared by all results of that invocation. Optional and
     /// additive: files without it still decode and validate, so the schema version stays 1.
     public var batchId: String?
+    /// Position of this result in a replicated run (`Scripts/benchmark-run-refs.sh --replicates`). Optional and additive: a file
+    /// without it counts as replicate 1 of 1. `startedAt`/`finishedAt` above are the replicate's own start and end.
+    public var replicate: ResultReplicate?
+}
+
+public struct ResultReplicate: Codable, Equatable, Sendable {
+    /// 1-based index of this replicate of its ref.
+    public var index: Int
+    /// Number of replicates requested per ref.
+    public var count: Int
+    /// 1-based round in which the replicate ran (each round runs every ref once).
+    public var round: Int
+    /// 1-based position of the ref within its round's shuffled order.
+    public var position: Int
+    /// Seed of the deterministic per-round shuffle.
+    public var seed: UInt64
+
+    public init(index: Int, count: Int, round: Int, position: Int, seed: UInt64) {
+        self.index = index
+        self.count = count
+        self.round = round
+        self.position = position
+        self.seed = seed
+    }
 }
 
 public struct ResultRef: Codable, Equatable, Sendable {

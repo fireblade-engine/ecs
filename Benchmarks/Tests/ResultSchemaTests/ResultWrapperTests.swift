@@ -36,6 +36,23 @@ struct ResultWrapperTests {
     }
 
     @Test
+    func replicateProvenanceRoundTripsAndIsOptional() throws {
+        let (plain, request) = try makeFile()
+        #expect(plain.run.replicate == nil)
+        #expect(!String(decoding: try BenchmarkResultFile.encoder().encode(plain), as: UTF8.self).contains("replicate"))
+
+        var replicated = request
+        replicated.replicate = ResultReplicate(index: 3, count: 10, round: 3, position: 2, seed: 18_446_744_073_709_551_615)
+        let directory = try Support.scratchDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        replicated.baselinePath = try Support.writeEnvelope(Support.syntheticEnvelope(variant: 0), in: directory)
+        let file = try ResultWriter.makeFile(replicated, host: Support.host)
+        let decoded = try ResultValidator.decode(BenchmarkResultFile.encoder().encode(file))
+        #expect(decoded.run.replicate == replicated.replicate)
+        #expect(decoded.run.startedAt == replicated.startedAt && decoded.run.finishedAt == replicated.finishedAt)
+    }
+
+    @Test
     func packagesListEveryResolvedPin() throws {
         let (file, _) = try makeFile()
         let resolved = try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: Support.realPackageResolved))) as? [String: Any]

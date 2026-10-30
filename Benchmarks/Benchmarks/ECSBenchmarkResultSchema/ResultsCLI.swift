@@ -7,6 +7,7 @@ public enum ResultsCLI {
       ECSBenchmarkResults write --baseline <path> --out <path> --run-id <id> --started <iso8601> --finished <iso8601>
                                 --ref <requested> --ref-sha <sha> --suite-sha <sha> --filter <regex>
                                 --package-resolved <path> --swift-version <text> [--batch-id <id>]
+                                [--replicate <i> --replicates <k> --round <r> --position <p> --seed <s>]
       ECSBenchmarkResults validate <result.json>
       ECSBenchmarkResults host-check
       ECSBenchmarkResults report <result.json>... --output-dir <dir> [--baseline <requested-ref>] [--title <text>] [--overwrite]
@@ -39,16 +40,30 @@ public enum ResultsCLI {
 
     private static func write(_ arguments: [String]) throws {
         let options = try parseOptions(arguments, allowed: [
-            "baseline", "out", "run-id", "started", "finished", "ref", "ref-sha", "suite-sha", "filter", "package-resolved", "swift-version", "batch-id"
+            "baseline", "out", "run-id", "started", "finished", "ref", "ref-sha", "suite-sha", "filter", "package-resolved", "swift-version", "batch-id",
+            "replicate", "replicates", "round", "position", "seed"
         ])
         func value(_ key: String) throws -> String {
             guard let value = options[key] else { throw ResultError("missing required option --\(key)") }
             return value
         }
+        let replicateKeys = ["replicate", "replicates", "round", "position", "seed"]
+        var replicate: ResultReplicate?
+        if replicateKeys.contains(where: { options[$0] != nil }) {
+            func number<T: FixedWidthInteger>(_ key: String, as _: T.Type) throws -> T {
+                guard let text = options[key] else { throw ResultError("replicate options must be given together; missing --\(key)") }
+                guard let parsed = T(text) else { throw ResultError("--\(key) must be a non-negative integer, got '\(text)'") }
+                return parsed
+            }
+            replicate = try ResultReplicate(
+                index: number("replicate", as: Int.self), count: number("replicates", as: Int.self), round: number("round", as: Int.self),
+                position: number("position", as: Int.self), seed: number("seed", as: UInt64.self)
+            )
+        }
         let request = try WriteRequest(
             baselinePath: value("baseline"), runID: value("run-id"), startedAt: value("started"), finishedAt: value("finished"),
             requestedRef: value("ref"), refSHA: value("ref-sha"), suiteSHA: value("suite-sha"), filter: value("filter"),
-            packageResolvedPath: value("package-resolved"), swiftVersion: value("swift-version"), batchID: options["batch-id"]
+            packageResolvedPath: value("package-resolved"), swiftVersion: value("swift-version"), batchID: options["batch-id"], replicate: replicate
         )
         let output = try value("out")
         try ResultWriter.write(request, to: output)

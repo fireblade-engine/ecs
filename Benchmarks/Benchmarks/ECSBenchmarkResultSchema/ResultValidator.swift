@@ -46,6 +46,16 @@ public enum ResultValidator {
         if let batch = file.run.batchId {
             try ResultWriter.require("batch id", batch)
         }
+        if let replicate = file.run.replicate {
+            guard replicate.count >= 1 else { throw ResultError("replicate count must be at least 1, got \(replicate.count)") }
+            guard (1 ... replicate.count).contains(replicate.index) else {
+                throw ResultError("replicate index \(replicate.index) is outside 1...\(replicate.count)")
+            }
+            guard (1 ... replicate.count).contains(replicate.round) else {
+                throw ResultError("replicate round \(replicate.round) is outside 1...\(replicate.count)")
+            }
+            guard replicate.position >= 1 else { throw ResultError("replicate position must be at least 1, got \(replicate.position)") }
+        }
         let started = try requireDate("run start", file.run.startedAt)
         let finished = try requireDate("run finish", file.run.finishedAt)
         guard finished >= started else { throw ResultError("run finished before it started") }

@@ -190,6 +190,18 @@ The user approved every remaining gate in advance for an unattended run, with th
 - **Measurement-count warning:** for 12 rows (all `component.add / 16`), the series have different sample counts, for example 8,235 on `1.4.3` against 10,000 on each `main` backend. Non-persistent workloads use the package's default iteration and duration limits, so a slower revision can hit the time limit first. At smoke scale this is expected; before a full run, decide whether non-persistent workloads should also pin iterations, or accept and document unequal sample counts.
 - **Before a full run (needs approval):** choose scales (the upstream range reaches 2,097,152 entities), estimate the duration from the smoke timing, and settle the sample-count policy above.
 
+### Upstream-aligned scales and sampling (user decision 2026-10-30: "as close as possible to the reference")
+
+Verified at the pinned upstream revision: every registration applies `BEDefaultArguments` = `CreateRange(0, 2'097'152, 2)` (`benchmark/benchmarks/basic.cpp`, `basic.h:38–39`). Google Benchmark's `AddRange` expands this to 0 and every power of two through 2,097,152 (23 scales). Upstream sets no iterations, minimum time, or repetitions and runs with only `--benchmark_format=json` (`taskfiles/Utils.yml:6`). Google Benchmark defaults therefore apply: a time-based loop until about 0.5 s of measured time (paused time excluded), no warmup, one repetition. Its report uses only `real_time`, the mean per iteration (`scripts/gen-benchmark-report/.../core.py:80`).
+
+Changes to the shared suite:
+
+- **Scales:** all workloads use the 23 upstream scales; `entity.create.no-entities` stays a single case.
+- **Setup lifetime as upstream:** state built once before the timed loop and kept across iterations for `entity.lookup.*`, `component.remove-add`, `iteration.*`, `system.update.*`, and `event.component.*`. Fresh untimed per-iteration state only where upstream pauses timing per iteration: `entity.create.*`, `entity.destroy.minimal`, and `component.add`.
+- **Sampling as upstream:** time-based for every workload, including persistent ones (the fixed 10 + 100 passes are removed): `maxDuration` 0.5 s, `warmupIterations` 0, and `maxIterations` high enough not to bind first (Google Benchmark's own cap is 1e9).
+- **Unavoidable difference:** the Benchmark package's budget is wall time since the benchmark started, including untimed setup, and it has no minimum iteration count. Workloads with per-iteration setup (create, destroy, add) therefore get less measured time than upstream's 0.5 s, especially at large scales. This is recorded in each affected parity note. Persistent workloads accept, as upstream does, that the pass count and world state can differ by revision.
+- The configuration hash and its golden test change accordingly. Full-run approval still requires an intermediate run up to 65,536 entities to measure cost.
+
 ## Phases and review gates
 
 Each phase is a separate check-in; pause for user review before beginning the next.

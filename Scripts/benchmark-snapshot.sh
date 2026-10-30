@@ -201,8 +201,9 @@ if [[ -n $result ]]; then
     "$bin_path/ECSBenchmarkResults" host-check || die "host facts are not available; nothing was measured"
 fi
 
-# The filter must select something; an empty selection would otherwise "succeed" with no measurements.
-matches=$(swift package --disable-automatic-resolution ${swift_flags[@]+"${swift_flags[@]}"} benchmark list --target ECSCompatBenchmark | grep -Ec -- "$filter" || true)
+# The filter must select something; an empty selection would otherwise "succeed" with no measurements. The plugin
+# whole-matches benchmark names (BenchmarkRunner.swift: name.wholeMatch(of: Regex(filter))), so anchor the same way.
+matches=$(swift package --disable-automatic-resolution ${swift_flags[@]+"${swift_flags[@]}"} benchmark list --target ECSCompatBenchmark | grep -Ec -- "^($filter)\$" || true)
 ((matches > 0)) || die "filter matches no benchmarks: $filter"
 
 # Package options must precede the plugin command; the resolved file was already enforced above.

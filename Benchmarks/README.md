@@ -68,7 +68,7 @@ The command prints one `result: <path>` line per ref. Files land in a new run di
 Selection:
 
 - **Smoke (default):** without a filter only the smallest scale of every workload runs.
-- **Full:** `BENCHMARK_FILTER='.*' make benchmark-compare REFS=...` runs every workload and scale. `BENCHMARK_FILTER` takes any regular expression over benchmark names, for example `BENCHMARK_FILTER='^iteration\..* / 16$'`; a filter that matches nothing fails before measuring.
+- **Full:** `BENCHMARK_FILTER='.*' make benchmark-compare REFS=...` runs every workload and scale. `BENCHMARK_FILTER` takes a regular expression that must match the whole benchmark name (the package uses `wholeMatch`, so `/ 16$` alone selects nothing; write `.* / 16$`), for example `BENCHMARK_FILTER='iteration\..* / 16'`; in a Makefile recipe or inline `make` assignment a literal `$` must be written `$$`. A filter that matches nothing fails before measuring, naming the filter.
 
 The runner script offers more options (`--suite-ref`, `--out`); running it without arguments prints the usage.
 

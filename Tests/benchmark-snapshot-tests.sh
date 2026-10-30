@@ -304,6 +304,14 @@ fi
 grep -q 'matches no benchmarks' "$test_root/nomatch.err" || fail 'an empty filter selection must be reported'
 grep -q 'baseline update\|benchmark --target' "$STUB_LOG" && fail 'nothing may run when the filter matches nothing'
 
+# The plugin whole-matches names, so a partial-only filter ('/ 1' matches "alpha / 16" only as a substring) is refused.
+: > "$STUB_LOG"
+if PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/partial" --filter '/ 1' > /dev/null 2> "$test_root/partial.err"; then
+    fail 'a partial-only filter must fail like the plugin whole-match'
+fi
+grep -q 'filter matches no benchmarks: / 1' "$test_root/partial.err" || fail 'a partial-only filter must be reported with its text'
+grep -q 'baseline update\|benchmark --target' "$STUB_LOG" && fail 'nothing may run for a partial-only filter'
+
 # Without --result the previous behavior stands: a plain benchmark run, no baseline, no result tool.
 : > "$STUB_LOG"
 PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/plain" > /dev/null || fail 'plain run must succeed with stubs'

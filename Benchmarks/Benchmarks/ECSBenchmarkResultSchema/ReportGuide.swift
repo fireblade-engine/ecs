@@ -71,12 +71,23 @@ struct ReportGuide {
         "`\(ReportWriter.code(example.key.identity))` at \(ReportFormat.grouped(example.key.scale)) entities, `\(ReportWriter.code(model.series[example.series].label))`"
     }
 
-    private func interval(_ comparison: ReportComparison) -> String? {
+    /// Speed and CI ends; when the ends would print equal at 3 significant digits, both ends get extra decimals until they differ.
+    private func ends(_ comparison: ReportComparison) -> (low: String, high: String)? {
         guard let low = comparison.ciLow, let high = comparison.ciHigh, let speed = comparison.speed else { return nil }
-        var decimals = ReportFormat.columnDecimals([speed, low, high], divisor: 1)
-        // Tiny intervals must not collapse to "1.10–1.10": add digits until the two ends differ.
-        while low < high, decimals < 9, ratio(low, decimals: decimals) == ratio(high, decimals: decimals) { decimals += 1 }
-        return "speed \(ratio(speed, decimals: decimals))×, CI \(ratio(low, decimals: decimals))–\(ratio(high, decimals: decimals))×"
+        let decimals = ReportFormat.columnDecimals([speed, low, high], divisor: 1)
+        var shown = (ratio(low, decimals: decimals), ratio(high, decimals: decimals))
+        var extra = decimals
+        while low < high, shown.0 == shown.1, extra < 9 {
+            extra += 1
+            shown = (String(format: "%.\(extra)f", low), String(format: "%.\(extra)f", high))
+        }
+        return shown
+    }
+
+    private func interval(_ comparison: ReportComparison) -> String? {
+        guard let speed = comparison.speed, let shown = ends(comparison) else { return nil }
+        let decimals = ReportFormat.columnDecimals([speed, comparison.ciLow!, comparison.ciHigh!], divisor: 1)
+        return "speed \(ratio(speed, decimals: decimals))×, CI \(shown.low)–\(shown.high)×"
     }
 
     func lines() -> [String] {
@@ -112,7 +123,7 @@ struct ReportGuide {
         lines.append("- **Narrow** CI: the estimate is precise, you can trust the digits you see. **Wide** CI: the data cannot pin the value down; look for more replicates before drawing a conclusion.")
         if !withInterval.isEmpty {
             if let first = typical(withInterval), let text = interval(first.comparison) {
-                let low = ratio(first.comparison.ciLow!), high = ratio(first.comparison.ciHigh!)
+                let low = ends(first.comparison)!.low, high = ends(first.comparison)!.high
                 lines.append("- **Example from this report:** \(place(first)): \(text) → the true speedup is very likely between \(low)× and \(high)×.")
                 let ordered = withInterval.filter(isEligible).sorted { $0.halfWidth! < $1.halfWidth! }
                 if let narrow = ordered.first, let wide = ordered.last, ordered.count > 1 {

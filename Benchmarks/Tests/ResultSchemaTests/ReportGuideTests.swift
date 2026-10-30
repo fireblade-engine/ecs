@@ -68,6 +68,18 @@ struct ReportGuideTests {
     }
 
     @Test
+    func guideNeverPrintsEqualEndsForAnIntervalWithWidth() throws {
+        // Replicated medians differing by a few ppm give a CI far narrower than 3 significant digits.
+        let files = GuideFixtures.ref("1.4.3", "a", model: "class", k: 10) { _, i in 1_000_000 + i }
+            + GuideFixtures.ref("main", "b", model: "value", k: 10) { _, i in 1_000_000 + i + 2 * (i % 3) }
+        let body = try guide(report(files))
+        let pattern = try Regex(#"CI ([0-9.,]+)–([0-9.,]+)×"#)
+        for match in body.matches(of: pattern) {
+            #expect(match.output[1].substring != match.output[2].substring, Comment(rawValue: String(match.output[0].substring ?? "")))
+        }
+    }
+
+    @Test
     func tinyIntervalsKeepDistinctBoundsAndSignificantHalfWidths() {
         #expect(ReportFormat.relativePercent(0.00034) == "0.034")
         #expect(ReportFormat.relativePercent(0.25) == "25")

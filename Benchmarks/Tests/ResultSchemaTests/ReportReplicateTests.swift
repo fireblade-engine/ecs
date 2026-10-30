@@ -268,10 +268,11 @@ struct ReportReplicateTests {
         #expect(relative.contains(#"<rect class="zone""#) && relative.contains(#"<polygon class="ribbon"#) && relative.contains(#"<line class="ref""#))
         #expect(!relative.components(separatedBy: "\n").contains { $0.contains("marker c1 hollow") }, "all points are significant: filled")
         #expect(try svg("total-linear").contains("Entities (linear scale)"))
-        // REPORT.md embeds per-entity, total and relative; the detail page adds the linear plot.
+        // REPORT.md and the detail page embed per-entity, total, the linear total and relative, in that order.
         let report = try #require(files.first { $0.path == "REPORT.md" }).contents
         #expect(report.contains("(img/\(F.w1)-per-entity.svg)") && report.contains("(img/\(F.w1)-total.svg)") && report.contains("(img/\(F.w1)-relative.svg)"))
-        #expect(!report.contains("total-linear"))
+        let total = try #require(report.range(of: "(img/\(F.w1)-total.svg)")), linear = try #require(report.range(of: "(img/\(F.w1)-total-linear.svg)"))
+        #expect(total.upperBound <= linear.lowerBound && linear.upperBound <= report.range(of: "(img/\(F.w1)-relative.svg)")!.lowerBound)
         #expect(try #require(files.first { $0.path == "workloads/\(F.w1).md" }).contents.contains("(../img/\(F.w1)-total-linear.svg)"))
     }
 

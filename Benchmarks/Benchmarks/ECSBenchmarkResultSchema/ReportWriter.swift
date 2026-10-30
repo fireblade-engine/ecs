@@ -83,7 +83,7 @@ struct ReportWriter {
             let name = names[identity]!
             lines.append("[All metrics, means, percentiles and the linear plot](workloads/\(name).md)")
             lines.append("")
-            figures(identity, name, plots[identity]!, prefix: "", detail: false)
+            figures(identity, name, plots[identity]!, prefix: "")
             wallClockTables(identity, headingLevel: 4)
         }
         methods()
@@ -263,12 +263,12 @@ struct ReportWriter {
 
     // MARK: Workload sections
 
-    private mutating func figures(_ identity: String, _ name: String, _ plots: Plots, prefix: String, detail: Bool) {
+    private mutating func figures(_ identity: String, _ name: String, _ plots: Plots, prefix: String) {
         let entries: [(String?, String, String)] = [
             (plots.perEntity, "per-entity", "wall-clock cost per entity"),
             (plots.total, "total", "wall-clock time per iteration"),
-            (plots.relative, "relative", "speed against the baseline"),
-            (detail ? plots.linear : nil, "total-linear", "wall-clock time per iteration, linear axes")
+            (plots.linear, "total-linear", "wall-clock time per iteration, linear axes"),
+            (plots.relative, "relative", "speed against the baseline")
         ]
         for (svg, suffix, caption) in entries where svg != nil {
             lines.append("![\(Self.text(identity)): \(caption)](\(prefix)img/\(name)-\(suffix).svg)")
@@ -313,7 +313,7 @@ struct ReportWriter {
         if !parity.isEmpty { lines.append("") }
         lines.append("`median`, `CI low`, `CI high`, `replicates` and `iterations` are defined in the [report](../REPORT.md). `mean` is the median over replicates of each replicate's mean per iteration; it is descriptive (upstream parity), not an inference input. Percentile columns are the median over replicates of each replicate's percentile.")
         lines.append("")
-        figures(identity, name, plots, prefix: "../", detail: true)
+        figures(identity, name, plots, prefix: "../")
         let metrics = model.keys.filter { $0.identity == identity }.map(\.metric).uniqued()
         for metric in metrics {
             let scales = Set(model.keys.filter { $0.identity == identity && $0.metric == metric }.map(\.scale)).sorted()

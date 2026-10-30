@@ -276,7 +276,7 @@ Replaces the dispersion and `sig.` parts of Report v2. Upstream scales, sampling
   - a median line with CI error bars
   - a light band for the typical within-run IQR (per scale, the median over replicates of each replicate's p25 and p75), labelled as within-run spread, not uncertainty
 - **New relative plot:** `speed (×)` vs scale on a log y-axis, with a CI ribbon, the ±δ zone shaded and a reference line at 1×.
-- **Detail pages:** add a linear total-time plot. There is no linear per-entity plot, because it carries no information below about 1% of the x range.
+- **Linear plot:** a linear total-time plot after the log-log total plot, in `REPORT.md` and on the detail pages. There is no linear per-entity plot, because it carries no information below about 1% of the x range.
 - **Tables** (units in headers):
   - per series: `median`, `CI low`, `CI high`, `replicates`, `iterations`
   - per comparison: `speed (×)`, `CI low (×)`, `CI high (×)`, `change (%)`, `q`, `verdict`

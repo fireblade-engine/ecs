@@ -67,7 +67,9 @@ let package = Package(
         .package(url: "https://github.com/swiftlang/swift-syntax.git", "600.0.0" ..< "700.0.0")
     ],
     targets: [
+        .target(name: "CFirebladeAtomics"),
         .target(name: "FirebladeECS",
+                dependencies: ["CFirebladeAtomics"],
                 swiftSettings: [.enableUpcomingFeature("StrictConcurrency")]),
         .target(name: "FirebladeFSM",
                 dependencies: ["FirebladeECS"],

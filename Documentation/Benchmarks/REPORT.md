@@ -53,8 +53,8 @@ Short version: look at `speed (×)` (above 1 the series is faster than the basel
 - Every number here is measured with noise, so a single speed such as 2.0× could have come out 1.9× or 2.1× in another session. The **confidence interval (CI)** is the range that, with 95% confidence (nominal; the exact coverage is in the methods), contains the true value.
 - `CI low` and `CI high` are its two ends. Read the pair as "the truth is very likely between these".
 - **Narrow** CI: the estimate is precise, you can trust the digits you see. **Wide** CI: the data cannot pin the value down; look for more replicates before drawing a conclusion.
-- **Example from this report:** `component.add` at 0 entities, `main (value, archetype)`: speed 1.00×, CI 1.00–1.00× → the true speedup is very likely between 1.00× and 1.00×.
-- Narrowest CI in this report: `component.add` at 0 entities, `main (value, archetype)`, ±0.0% around the speed (speed 1.00×, CI 1.00–1.00×). Widest: `entity.lookup.one` at 1 entities, `main (value, sparseSet)`, ±25.0% (speed 1.00×, CI 0.988–1.49×).
+- **Example from this report:** `iteration.two` at 1,024 entities, `main (value, archetype)`: speed 68.4×, CI 67.5–69.4× → the true speedup is very likely between 67.5× and 69.4×.
+- Narrowest CI in this report: `entity.lookup.one` at 32 entities, `main (value, archetype)`, ±0.0% around the speed (speed 1.10×, CI 1.10–1.10×). Widest: `entity.lookup.one` at 1 entities, `main (value, sparseSet)`, ±25.0% (speed 1.00×, CI 0.988–1.49×).
 
 ### 2. How the verdict is decided
 
@@ -64,17 +64,16 @@ A verdict is given only for wall clock and only when both refs have at least 2 r
 - `inconclusive`: everything else. A significant test is not enough: if the CI still overlaps the zone, the effect could be smaller than 5% and not worth acting on, so the honest answer is "cannot tell yet".
 - `n/a (k replicates)`: a side has fewer than 2 replicates.
 - **In this report:** 688 faster, 55 slower, 56 equivalent, 31 inconclusive, 0 n/a.
-- Example `faster`: `component.add` at 1 entities, `main (value, archetype)`: speed 138×, CI 137–154×, q <0.001.
-- Example `slower`: `entity.create.empty` at 1 entities, `main (value, archetype)`: speed 0.749×, CI 0.667–0.749×, q <0.001.
-- Example `equivalent`: `component.add` at 0 entities, `main (value, archetype)`: speed 1.00×, CI 1.00–1.00×, q 1.000.
-- Example of "significant but `inconclusive`": `entity.lookup.one` at 1 entities, `main (value, archetype)`: speed 1.23×, CI 1.00–1.51×, q 0.039. The difference is real (q < 5%) but the CI reaches into the ±5% zone, so it may be negligible.
+- Example `faster`: `component.add` at 1,024 entities, `main (value, archetype)`: speed 2.95×, CI 2.93–2.98×, q <0.001.
+- Example `slower`: `entity.lookup.none` at 1,024 entities, `main (value, archetype)`: speed 0.498×, CI 0.492–0.502×, q <0.001.
+- Example `equivalent`: `entity.lookup.two` at 1,024 entities, `main (value, archetype)`: speed 0.992×, CI 0.983–1.00×, q 0.322.
 
 ### 3. Error bars are not the light band
 
 - **Error bars** (and the CI columns) show the uncertainty of the *median across runs*: how much it would move if you repeated the whole measurement. More replicates make them shorter.
 - The **light band** shows the *spread of single iterations inside one run* (p25 to p75, the IQR). It says how steady one iteration is, and more replicates do not make it narrower.
 - They answer different questions: a workload can be very jittery (wide band) and still have a precisely known median (short bars), or the other way round.
-- **Example from this report:** `component.add` at 0 entities, `main (value, archetype)` (wall clock): median 42.0 ns; error bar (CI of the median over 10 replicates) 42.0–42.0 ns; light band (IQR of single iterations) 41.0–42.0 ns.
+- **Example from this report:** `iteration.two` at 1,024 entities, `main (value, archetype)` (wall clock): median 1.92 μs; error bar (CI of the median over 10 replicates) 1.92–1.96 μs; light band (IQR of single iterations) 1.90–1.96 μs.
 
 ### 4. Reading the plots
 

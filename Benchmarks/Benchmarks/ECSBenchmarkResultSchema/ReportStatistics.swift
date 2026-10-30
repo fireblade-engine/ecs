@@ -325,30 +325,29 @@ enum ReportStatistics {
         return result
     }
 
-    /// Exact null distribution of S for a multiset with the given tie group sizes (all distinct orderings equally likely),
-    /// by enumerating distinct orderings; feasible for n <= 10.
+    /// Exact null distribution of S for a multiset with the given tie group sizes (all distinct orderings equally likely).
+    /// Dynamic programming over how many items of each group are placed so far (at most prod(size + 1) states, instead of
+    /// enumerating all distinct orderings, which is factorial); the counts are exact integers, as before.
     static func kendallTiedDistribution(groupSizes: [Int]) -> [Int: Double] {
-        var remaining = groupSizes
-        let n = groupSizes.reduce(0, +)
-        var counts: [Int: Double] = [:]
-        var total = 0.0
         // Placed per group (group index = value order); S grows by (#earlier smaller) - (#earlier larger) for each placement.
-        func place(_ depth: Int, _ s: Int) {
-            if depth == n {
-                counts[s, default: 0] += 1
-                total += 1
-                return
+        var layer: [[Int]: [Int: Double]] = [Array(repeating: 0, count: groupSizes.count): [0: 1]]
+        for _ in 0 ..< groupSizes.reduce(0, +) {
+            var next: [[Int]: [Int: Double]] = [:]
+            for (placed, distribution) in layer {
+                for g in groupSizes.indices where placed[g] < groupSizes[g] {
+                    let smaller = placed[..<g].reduce(0, +)
+                    let larger = placed[(g + 1)...].reduce(0, +)
+                    var advanced = placed
+                    advanced[g] += 1
+                    for (s, count) in distribution {
+                        next[advanced, default: [:]][s + smaller - larger, default: 0] += count
+                    }
+                }
             }
-            for g in remaining.indices where remaining[g] > 0 {
-                let placed = (0..<groupSizes.count).map { groupSizes[$0] - remaining[$0] }
-                let smaller = placed[..<g].reduce(0, +)
-                let larger = placed[(g + 1)...].reduce(0, +)
-                remaining[g] -= 1
-                place(depth + 1, s + smaller - larger)
-                remaining[g] += 1
-            }
+            layer = next
         }
-        place(0, 0)
+        let counts = layer.values.first ?? [:]
+        let total = counts.values.reduce(0, +)
         return counts.mapValues { $0 / total }
     }
 

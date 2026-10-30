@@ -202,6 +202,28 @@ Changes to the shared suite:
 - **Unavoidable difference:** the Benchmark package's budget is wall time since the benchmark started, including untimed setup, and it has no minimum iteration count. Workloads with per-iteration setup (create, destroy, add) therefore get less measured time than upstream's 0.5 s, especially at large scales. This is recorded in each affected parity note. Persistent workloads accept, as upstream does, that the pass count and world state can differ by revision.
 - The configuration hash and its golden test change accordingly. Full-run approval still requires an intermediate run up to 65,536 entities to measure cost.
 
+### Report v2 design (user decisions 2026-10-30; replaces the Step 10 layout)
+
+Modeled on upstream's README generator (`scripts/gen-benchmark-report`, MIT, Python/pandas/plotly/kaleido). Its design is adapted in the Swift `report` command with no new dependencies; its code is not used. Upstream uses only the mean (`real_time`) and has no dispersion, so the plots and tables add our richer data.
+
+- **Output directory** (`report --output-dir DIR`, with the existing overwrite guard applied to the directory): `DIR/REPORT.md` (overview), `DIR/workloads/<identity>.md` (all metrics and statistics), and `DIR/img/<identity>-{per-entity,total}.svg`.
+- **No Mermaid.** For each workload, two SVG plots like upstream's, written directly by the tool:
+  - axes and lines: log-log, wall-clock mean per iteration, one line per series (ref × backend); x is the entity count (scale 0 is omitted on a log axis, stated in a caption)
+  - plot 1: cost per entity (mean ÷ N); plot 2: total time per iteration
+  - dispersion: a shaded ±sd band per series, clipped to the plot floor when mean − sd ≤ 0
+  - low-sample points: a series point with n = 1 has no band and a hollow marker; points with n < 5 are flagged in the legend or caption
+  - rendering: fixed colour per series, readable in light and dark themes (`prefers-color-scheme` inside the SVG), deterministic output, well-formed XML
+- **Tables:** HTML tables (GitHub and VS Code render `colspan`) with three header levels: ref (component model), backend, then value columns.
+  - **Columns:** baseline series get `mean (unit)`, `±sd (unit)`, `n`; other series add `Δ mean (unit)`, `speed (×)`, `change (%)`, `sig.`.
+  - **Units:** every unit is in its column header and applies to the whole column; each different unit gets its own column. The unit is chosen once per column per table.
+  - **Rows:** one per entity count, split into small (≤ 1,024) and large tables like upstream, with decimals fitted to the column and no more precision than the package measured.
+  - `sig.` is a two-sided Welch t-test at α = 0.05 on mean, sd, and n; `n/a` when either side has n < 2. The report notes that this is an approximation for skewed timing distributions.
+- **REPORT.md:**
+  - order: header, then a summary table (one row per workload; `speed (×)` per non-baseline series at 1,024, 65,536, and the largest available scale), then one section per workload with both plots and the wall-clock small and large tables, then provenance, parity notes and the unsupported list
+  - per-workload files: the same table layout for every metric, plus percentile tables
+  - The sample-count warning becomes one note, since time-based sampling makes counts differ by design.
+- **Approval:** the user approves a test render from the intermediate run `Benchmarks/.results/20261030T092516Z` before the full run.
+
 ## Phases and review gates
 
 Each phase is a separate check-in; pause for user review before beginning the next.

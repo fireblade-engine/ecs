@@ -72,6 +72,8 @@ struct ReportWriter {
         lines = []
         lines.append("# \(Self.text(title))")
         lines.append("")
+        lines.append("Jump to: [Glossary](#\(ReportGlossary.anchor)) · [Methods](#methods)")
+        lines.append("")
         header()
         warnings()
         summary(identities, names)
@@ -86,6 +88,7 @@ struct ReportWriter {
             figures(identity, name, plots[identity]!, prefix: "")
             wallClockTables(identity, headingLevel: 4)
         }
+        lines += ReportGlossary.lines()
         methods()
         provenance()
         pairing()
@@ -298,7 +301,7 @@ struct ReportWriter {
         lines = []
         lines.append("# `\(Self.code(identity))`")
         lines.append("")
-        lines.append("[Back to the report](../REPORT.md). \(Self.text(title)).")
+        lines.append("[Back to the report](../REPORT.md) · [Glossary](../REPORT.md#\(ReportGlossary.anchor)). \(Self.text(title)).")
         lines.append("")
         var parity: [String: [String]] = [:]
         for group in model.groups {

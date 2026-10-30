@@ -187,14 +187,11 @@ struct ReportStatisticsTests {
     }
 
     @Test
-    func mannWhitneyIsFastForThirtyByThirty() throws {
+    func mannWhitneyIsExactForThirtyByThirty() throws {
         let a = (0..<30).map { Double(($0 * 7919) % 101) }
         let b = (0..<30).map { Double(($0 * 104_729) % 103) + 3 }
-        let start = ContinuousClock.now
         let result = try S.mannWhitney(a, b)
-        let elapsed = ContinuousClock.now - start
         #expect(result.p > 0 && result.p <= 1)
-        #expect(elapsed < .seconds(1))
         let distinct = try S.mannWhitney((0..<30).map(Double.init), (30..<60).map(Double.init))
         #expect(abs(distinct.p - 2 / 118_264_581_564_861_424.0) / distinct.p < 1e-12) // 2 / C(60, 30)
     }

@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" role="img" aria-label="entity.lookup.none: wall-clock cost per entity">
+<title>entity.lookup.none: wall-clock cost per entity</title>
+<style>
+text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;fill:#1f2328}
+.title{font-size:17px;font-weight:600}.axis-title{font-size:13px}.tick{font-size:12px}.legend{font-size:12px}.legend-title{font-size:13px;font-weight:600}.note{font-size:11px;fill:#59636e}
+.grid{stroke:#c3cad2;stroke-width:1}.minor{stroke:#e6e9ed;stroke-width:1}.axis{stroke:#59636e;stroke-width:1}.frame{fill:none;stroke:#59636e;stroke-width:1}
+.line{fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round}.baseline{stroke-dasharray:7 4}
+.band{fill:currentColor;fill-opacity:.16;stroke:currentColor;stroke-opacity:.4;stroke-width:1;stroke-linejoin:round}.ribbon{fill:currentColor;fill-opacity:.2;stroke:none}.errbar{fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:butt}
+.zone{fill:#59636e;fill-opacity:.14;stroke:none}.ref{stroke:#1f2328;stroke-width:1;stroke-dasharray:2 3}
+.marker{fill:currentColor;stroke:currentColor;stroke-width:1.4}.marker.hollow{fill:none}
+.c0{color:#0072B2}
+.c1{color:#D55E00}
+.c2{color:#009E73}
+.c3{color:#CC79A7}
+.c4{color:#E69F00}
+.c5{color:#56B4E9}
+.c6{color:#6E6E6E}
+.errbar.e0{color:#003959}
+.errbar.e1{color:#6B2F00}
+.errbar.e2{color:#004F3A}
+.errbar.e3{color:#663D54}
+.errbar.e4{color:#735000}
+.errbar.e5{color:#2B5A75}
+.errbar.e6{color:#373737}
+@media (prefers-color-scheme: dark){
+text{fill:#e6edf3}.note{fill:#9198a1}
+.grid{stroke:#4a525c}.minor{stroke:#2d333b}.axis,.frame{stroke:#9198a1}.zone{fill:#9198a1}.ref{stroke:#e6edf3}
+.c0{color:#5AB4F0}
+.c1{color:#F28C42}
+.c2{color:#2FD0A0}
+.c3{color:#E69BC4}
+.c4{color:#F2B83A}
+.c5{color:#8FD0F5}
+.c6{color:#B4B4B4}
+.errbar.e0{color:#A4D6F7}
+.errbar.e1{color:#F8C097}
+.errbar.e2{color:#8DE5CB}
+.errbar.e3{color:#F1C8DF}
+.errbar.e4{color:#F8D893}
+.errbar.e5{color:#C1E5FA}
+.errbar.e6{color:#D6D6D6}
+}
+</style>
+<clipPath id="plot-area"><rect x="80" y="58" width="588" height="404"/></clipPath>
+<text class="title" x="80" y="30">entity.lookup.none: wall-clock cost per entity</text>
+<line class="minor" x1="80" x2="668" y1="340.38" y2="340.38"/>
+<line class="minor" x1="80" x2="668" y1="269.24" y2="269.24"/>
+<line class="minor" x1="80" x2="668" y1="218.77" y2="218.77"/>
+<line class="minor" x1="80" x2="668" y1="179.62" y2="179.62"/>
+<line class="minor" x1="80" x2="668" y1="147.63" y2="147.63"/>
+<line class="minor" x1="80" x2="668" y1="120.58" y2="120.58"/>
+<line class="minor" x1="80" x2="668" y1="97.15" y2="97.15"/>
+<line class="minor" x1="80" x2="668" y1="76.49" y2="76.49"/>
+<line class="grid" x1="80" x2="668" y1="462" y2="462"/>
+<text class="tick" text-anchor="end" x="72" y="466">10</text>
+<line class="grid" x1="80" x2="668" y1="58" y2="58"/>
+<text class="tick" text-anchor="end" x="72" y="62">100</text>
+<line class="grid" x1="93.36" x2="93.36" y1="58" y2="462"/>
+<line class="axis" x1="93.36" x2="93.36" y1="462" y2="468"/>
+<text class="tick" text-anchor="middle" x="93.36" y="482">1</text>
+<line class="minor" x1="120.09" x2="120.09" y1="58" y2="462"/>
+<line class="axis" x1="120.09" x2="120.09" y1="462" y2="465"/>
+<line class="minor" x1="146.82" x2="146.82" y1="58" y2="462"/>
+<line class="axis" x1="146.82" x2="146.82" y1="462" y2="465"/>
+<line class="minor" x1="173.55" x2="173.55" y1="58" y2="462"/>
+<line class="axis" x1="173.55" x2="173.55" y1="462" y2="465"/>
+<line class="grid" x1="200.27" x2="200.27" y1="58" y2="462"/>
+<line class="axis" x1="200.27" x2="200.27" y1="462" y2="468"/>
+<text class="tick" text-anchor="middle" x="200.27" y="482">16</text>
+<line class="minor" x1="227" x2="227" y1="58" y2="462"/>
+<line class="axis" x1="227" x2="227" y1="462" y2="465"/>
+<line class="minor" x1="253.73" x2="253.73" y1="58" y2="462"/>
+<line class="axis" x1="253.73" x2="253.73" y1="462" y2="465"/>
+<line class="minor" x1="280.45" x2="280.45" y1="58" y2="462"/>
+<line class="axis" x1="280.45" x2="280.45" y1="462" y2="465"/>
+<line class="grid" x1="307.18" x2="307.18" y1="58" y2="462"/>
+<line class="axis" x1="307.18" x2="307.18" y1="462" y2="468"/>
+<text class="tick" text-anchor="middle" x="307.18" y="482">256</text>
+<line class="minor" x1="333.91" x2="333.91" y1="58" y2="462"/>
+<line class="axis" x1="333.91" x2="333.91" y1="462" y2="465"/>
+<line class="minor" x1="360.64" x2="360.64" y1="58" y2="462"/>
+<line class="axis" x1="360.64" x2="360.64" y1="462" y2="465"/>
+<line class="minor" x1="387.36" x2="387.36" y1="58" y2="462"/>
+<line class="axis" x1="387.36" x2="387.36" y1="462" y2="465"/>
+<line class="grid" x1="414.09" x2="414.09" y1="58" y2="462"/>
+<line class="axis" x1="414.09" x2="414.09" y1="462" y2="468"/>
+<text class="tick" text-anchor="middle" x="414.09" y="482">4K</text>
+<line class="minor" x1="440.82" x2="440.82" y1="58" y2="462"/>
+<line class="axis" x1="440.82" x2="440.82" y1="462" y2="465"/>
+<line class="minor" x1="467.55" x2="467.55" y1="58" y2="462"/>
+<line class="axis" x1="467.55" x2="467.55" y1="462" y2="465"/>
+<line class="minor" x1="494.27" x2="494.27" y1="58" y2="462"/>
+<line class="axis" x1="494.27" x2="494.27" y1="462" y2="465"/>
+<line class="grid" x1="521" x2="521" y1="58" y2="462"/>
+<line class="axis" x1="521" x2="521" y1="462" y2="468"/>
+<text class="tick" text-anchor="middle" x="521" y="482">64K</text>
+<line class="minor" x1="547.73" x2="547.73" y1="58" y2="462"/>
+<line class="axis" x1="547.73" x2="547.73" y1="462" y2="465"/>
+<line class="minor" x1="574.45" x2="574.45" y1="58" y2="462"/>
+<line class="axis" x1="574.45" x2="574.45" y1="462" y2="465"/>
+<line class="minor" x1="601.18" x2="601.18" y1="58" y2="462"/>
+<line class="axis" x1="601.18" x2="601.18" y1="462" y2="465"/>
+<line class="grid" x1="627.91" x2="627.91" y1="58" y2="462"/>
+<line class="axis" x1="627.91" x2="627.91" y1="462" y2="468"/>
+<text class="tick" text-anchor="middle" x="627.91" y="482">1M</text>
+<line class="grid" x1="654.64" x2="654.64" y1="58" y2="462"/>
+<line class="axis" x1="654.64" x2="654.64" y1="462" y2="468"/>
+<text class="tick" text-anchor="middle" x="654.64" y="482">2M</text>
+<rect class="frame" x="80" y="58" width="588" height="404"/>
+<text class="axis-title" text-anchor="middle" x="374" y="508">Entities (log2 scale)</text>
+<text class="axis-title" text-anchor="middle" transform="translate(22 260) rotate(-90)">Median time per entity (ns), log10 scale</text>
+<g clip-path="url(#plot-area)">
+<polygon class="band c0" points="93.36,89.64 120.09,210.21 146.82,235.44 173.55,293.51 200.27,312.56 227,344.55 253.73,344.55 280.45,356.52 307.18,359.75 333.91,362.51 360.64,361.95 387.36,361.72 414.09,363.27 440.82,361.4 467.55,363.34 494.27,363.11 521,363.11 547.73,361.32 574.45,363.03 601.18,363.03 627.91,363.19 654.64,362.02 654.64,363.97 627.91,365.78 601.18,366.1 574.45,366.26 547.73,366.42 521,366.81 494.27,366.81 467.55,366.66 440.82,366.66 414.09,366.58 387.36,366.5 360.64,365.87 333.91,365.41 307.18,362.91 280.45,359.71 253.73,350.54 227,344.55 200.27,333.4 173.55,294.35 146.82,262.08 120.09,212.31 93.36,210.21"/>
+<polygon class="band c1" points="93.36,88.59 120.09,140.46 146.82,171.89 173.55,190.94 200.27,211.78 227,228.78 253.73,234.98 280.45,238.06 307.18,238.57 333.91,238.95 360.64,239.25 387.36,239.71 414.09,239.48 440.82,237.48 467.55,237.79 494.27,240.02 521,237.86 547.73,239.55 574.45,239.71 601.18,239.01 627.91,239.01 654.64,239.01 654.64,241.65 627.91,240.25 601.18,241.73 574.45,242.82 547.73,243.06 521,242.43 494.27,243.38 467.55,243.3 440.82,240.87 414.09,243.38 387.36,243.3 360.64,243.22 333.91,242.76 307.18,242.61 280.45,241.3 253.73,238.25 227,234.98 200.27,222.93 173.55,211.78 146.82,172.73 120.09,140.46 93.36,90.69"/>
+<polygon class="band c2" points="93.36,88.59 120.09,140.46 146.82,172.73 173.55,190.94 200.27,211.78 227,228.78 253.73,236.57 280.45,238.21 307.18,239.73 333.91,239.25 360.64,241.03 387.36,241.34 414.09,240.72 440.82,241.65 467.55,241.26 494.27,239.17 521,241.57 547.73,239.79 574.45,241.26 601.18,241.41 627.91,241.57 654.64,240.17 654.64,242.51 627.91,242.98 601.18,243.77 574.45,242.9 547.73,244.32 521,244.8 494.27,244.72 467.55,245.2 440.82,245.04 414.09,245.04 387.36,244.96 360.64,244.57 333.91,244.57 307.18,243.79 280.45,243.02 253.73,241.34 227,234.98 200.27,222.93 173.55,211.78 146.82,211.25 120.09,140.46 93.36,90.69"/>
+<polyline class="line c0 baseline" points="93.36,90.69 120.09,212.31 146.82,262.08 173.55,294.35 200.27,332.87 227,344.55 253.73,350.54 280.45,359.71 307.18,362.14 333.91,364.62 360.64,364.53 387.36,365.71 414.09,366.26 440.82,366.34 467.55,363.73 494.27,365.39 521,365.54 547.73,364.28 574.45,363.34 601.18,364.76 627.91,363.42 654.64,363.27"/>
+<polyline class="line c1" points="93.36,90.69 120.09,140.46 146.82,172.73 173.55,211.25 200.27,222.93 227,228.93 253.73,238.09 280.45,239.75 307.18,241.75 333.91,240.49 360.64,241.34 387.36,240.64 414.09,240.64 440.82,238.71 467.55,240.48 494.27,240.79 521,239.32 547.73,240.33 574.45,240.4 601.18,240.33 627.91,240.02 654.64,240.17"/>
+<polyline class="line c2" points="93.36,90.69 120.09,140.46 146.82,172.73 173.55,211.25 200.27,222.93 227,234.98 253.73,239.71 280.45,241.3 307.18,242.61 333.91,243.78 360.64,241.73 387.36,243.22 414.09,241.88 440.82,241.88 467.55,241.88 494.27,241.88 521,241.88 547.73,241.73 574.45,241.73 601.18,242.12 627.91,241.81 654.64,241.65"/>
+<circle class="marker c0" cx="93.36" cy="90.69" r="3"/>
+<circle class="marker c0" cx="120.09" cy="212.31" r="3"/>
+<circle class="marker c0" cx="146.82" cy="262.08" r="3"/>
+<circle class="marker c0" cx="173.55" cy="294.35" r="3"/>
+<circle class="marker c0" cx="200.27" cy="332.87" r="3"/>
+<circle class="marker c0" cx="227" cy="344.55" r="3"/>
+<circle class="marker c0" cx="253.73" cy="350.54" r="3"/>
+<circle class="marker c0" cx="280.45" cy="359.71" r="3"/>
+<circle class="marker c0" cx="307.18" cy="362.14" r="3"/>
+<circle class="marker c0" cx="333.91" cy="364.62" r="3"/>
+<circle class="marker c0" cx="360.64" cy="364.53" r="3"/>
+<circle class="marker c0" cx="387.36" cy="365.71" r="3"/>
+<circle class="marker c0" cx="414.09" cy="366.26" r="3"/>
+<circle class="marker c0" cx="440.82" cy="366.34" r="3"/>
+<circle class="marker c0" cx="467.55" cy="363.73" r="3"/>
+<circle class="marker c0" cx="494.27" cy="365.39" r="3"/>
+<circle class="marker c0" cx="521" cy="365.54" r="3"/>
+<circle class="marker c0" cx="547.73" cy="364.28" r="3"/>
+<circle class="marker c0" cx="574.45" cy="363.34" r="3"/>
+<circle class="marker c0" cx="601.18" cy="364.76" r="3"/>
+<circle class="marker c0" cx="627.91" cy="363.42" r="3"/>
+<circle class="marker c0" cx="654.64" cy="363.27" r="3"/>
+<rect class="marker c1" x="90.36" y="87.69" width="6" height="6"/>
+<rect class="marker c1" x="117.09" y="137.46" width="6" height="6"/>
+<rect class="marker c1" x="143.82" y="169.73" width="6" height="6"/>
+<rect class="marker c1" x="170.55" y="208.25" width="6" height="6"/>
+<rect class="marker c1" x="197.27" y="219.93" width="6" height="6"/>
+<rect class="marker c1" x="224" y="225.93" width="6" height="6"/>
+<rect class="marker c1" x="250.73" y="235.09" width="6" height="6"/>
+<rect class="marker c1" x="277.45" y="236.75" width="6" height="6"/>
+<rect class="marker c1" x="304.18" y="238.75" width="6" height="6"/>
+<rect class="marker c1" x="330.91" y="237.49" width="6" height="6"/>
+<rect class="marker c1" x="357.64" y="238.34" width="6" height="6"/>
+<rect class="marker c1" x="384.36" y="237.64" width="6" height="6"/>
+<rect class="marker c1" x="411.09" y="237.64" width="6" height="6"/>
+<rect class="marker c1" x="437.82" y="235.71" width="6" height="6"/>
+<rect class="marker c1" x="464.55" y="237.48" width="6" height="6"/>
+<rect class="marker c1" x="491.27" y="237.79" width="6" height="6"/>
+<rect class="marker c1" x="518" y="236.32" width="6" height="6"/>
+<rect class="marker c1" x="544.73" y="237.33" width="6" height="6"/>
+<rect class="marker c1" x="571.45" y="237.4" width="6" height="6"/>
+<rect class="marker c1" x="598.18" y="237.33" width="6" height="6"/>
+<rect class="marker c1" x="624.91" y="237.02" width="6" height="6"/>
+<rect class="marker c1" x="651.64" y="237.17" width="6" height="6"/>
+<polygon class="marker c2" points="93.36,86.69 97.36,93.69 89.36,93.69"/>
+<polygon class="marker c2" points="120.09,136.46 124.09,143.46 116.09,143.46"/>
+<polygon class="marker c2" points="146.82,168.73 150.82,175.73 142.82,175.73"/>
+<polygon class="marker c2" points="173.55,207.25 177.55,214.25 169.55,214.25"/>
+<polygon class="marker c2" points="200.27,218.93 204.27,225.93 196.27,225.93"/>
+<polygon class="marker c2" points="227,230.98 231,237.98 223,237.98"/>
+<polygon class="marker c2" points="253.73,235.71 257.73,242.71 249.73,242.71"/>
+<polygon class="marker c2" points="280.45,237.3 284.45,244.3 276.45,244.3"/>
+<polygon class="marker c2" points="307.18,238.61 311.18,245.61 303.18,245.61"/>
+<polygon class="marker c2" points="333.91,239.78 337.91,246.78 329.91,246.78"/>
+<polygon class="marker c2" points="360.64,237.73 364.64,244.73 356.64,244.73"/>
+<polygon class="marker c2" points="387.36,239.22 391.36,246.22 383.36,246.22"/>
+<polygon class="marker c2" points="414.09,237.88 418.09,244.88 410.09,244.88"/>
+<polygon class="marker c2" points="440.82,237.88 444.82,244.88 436.82,244.88"/>
+<polygon class="marker c2" points="467.55,237.88 471.55,244.88 463.55,244.88"/>
+<polygon class="marker c2" points="494.27,237.88 498.27,244.88 490.27,244.88"/>
+<polygon class="marker c2" points="521,237.88 525,244.88 517,244.88"/>
+<polygon class="marker c2" points="547.73,237.73 551.73,244.73 543.73,244.73"/>
+<polygon class="marker c2" points="574.45,237.73 578.45,244.73 570.45,244.73"/>
+<polygon class="marker c2" points="601.18,238.12 605.18,245.12 597.18,245.12"/>
+<polygon class="marker c2" points="627.91,237.81 631.91,244.81 623.91,244.81"/>
+<polygon class="marker c2" points="654.64,237.65 658.64,244.65 650.64,244.65"/>
+<path class="errbar e0" d="M93.36,90.69V90.69M88.36,90.69H98.36M88.36,90.69H98.36"/>
+<path class="errbar e0" d="M120.09,210.21V212.31M115.09,210.21H125.09M115.09,212.31H125.09"/>
+<path class="errbar e0" d="M146.82,262.08V262.08M141.82,262.08H151.82M141.82,262.08H151.82"/>
+<path class="errbar e0" d="M173.55,294.35V294.35M168.55,294.35H178.55M168.55,294.35H178.55"/>
+<path class="errbar e0" d="M200.27,312.56V333.4M195.27,312.56H205.27M195.27,333.4H205.27"/>
+<path class="errbar e0" d="M227,344.55V344.55M222,344.55H232M222,344.55H232"/>
+<path class="errbar e0" d="M253.73,350.4V350.54M248.73,350.4H258.73M248.73,350.54H258.73"/>
+<path class="errbar e0" d="M280.45,356.68V359.71M275.45,356.68H285.45M275.45,359.71H285.45"/>
+<path class="errbar e0" d="M307.18,358.15V362.91M302.18,358.15H312.18M302.18,362.91H312.18"/>
+<path class="errbar e0" d="M333.91,362.12V364.62M328.91,362.12H338.91M328.91,364.62H338.91"/>
+<path class="errbar e0" d="M360.64,362.57V365.4M355.64,362.57H365.64M355.64,365.4H365.64"/>
+<path class="errbar e0" d="M387.36,362.88V366.18M382.36,362.88H392.36M382.36,366.18H392.36"/>
+<path class="errbar e0" d="M414.09,363.19V366.5M409.09,363.19H419.09M409.09,366.5H419.09"/>
+<path class="errbar e0" d="M440.82,363.34V366.66M435.82,363.34H445.82M435.82,366.66H445.82"/>
+<path class="errbar e0" d="M467.55,363.34V366.66M462.55,363.34H472.55M462.55,366.66H472.55"/>
+<path class="errbar e0" d="M494.27,363.5V366.66M489.27,363.5H499.27M489.27,366.66H499.27"/>
+<path class="errbar e0" d="M521,363.5V366.34M516,363.5H526M516,366.34H526"/>
+<path class="errbar e0" d="M547.73,363.19V366.34M542.73,363.19H552.73M542.73,366.34H552.73"/>
+<path class="errbar e0" d="M574.45,363.19V366.5M569.45,363.19H579.45M569.45,366.5H579.45"/>
+<path class="errbar e0" d="M601.18,362.41V366.34M596.18,362.41H606.18M596.18,366.34H606.18"/>
+<path class="errbar e0" d="M627.91,363.19V366.18M622.91,363.19H632.91M622.91,366.18H632.91"/>
+<path class="errbar e0" d="M654.64,361.32V366.18M649.64,361.32H659.64M649.64,366.18H659.64"/>
+<path class="errbar e1" d="M93.36,88.59V90.69M88.36,88.59H98.36M88.36,90.69H98.36"/>
+<path class="errbar e1" d="M120.09,140.46V140.46M115.09,140.46H125.09M115.09,140.46H125.09"/>
+<path class="errbar e1" d="M146.82,172.73V172.73M141.82,172.73H151.82M141.82,172.73H151.82"/>
+<path class="errbar e1" d="M173.55,190.94V211.78M168.55,190.94H178.55M168.55,211.78H178.55"/>
+<path class="errbar e1" d="M200.27,222.93V222.93M195.27,222.93H205.27M195.27,222.93H205.27"/>
+<path class="errbar e1" d="M227,228.93V228.93M222,228.93H232M222,228.93H232"/>
+<path class="errbar e1" d="M253.73,231.93V238.09M248.73,231.93H258.73M248.73,238.09H258.73"/>
+<path class="errbar e1" d="M280.45,238.21V241.3M275.45,238.21H285.45M275.45,241.3H285.45"/>
+<path class="errbar e1" d="M307.18,238.96V242.22M302.18,238.96H312.18M302.18,242.22H312.18"/>
+<path class="errbar e1" d="M333.91,238.49V242.52M328.91,238.49H338.91M328.91,242.52H338.91"/>
+<path class="errbar e1" d="M360.64,240.49V242.83M355.64,240.49H365.64M355.64,242.83H365.64"/>
+<path class="errbar e1" d="M387.36,238.33V243.3M382.36,238.33H392.36M382.36,243.3H392.36"/>
+<path class="errbar e1" d="M414.09,239.25V243.14M409.09,239.25H419.09M409.09,243.14H419.09"/>
+<path class="errbar e1" d="M440.82,237.56V240.48M435.82,237.56H445.82M435.82,240.48H445.82"/>
+<path class="errbar e1" d="M467.55,238.02V241.1M462.55,238.02H472.55M462.55,241.1H472.55"/>
+<path class="errbar e1" d="M494.27,238.02V243.3M489.27,238.02H499.27M489.27,243.3H499.27"/>
+<path class="errbar e1" d="M521,237.25V240.33M516,237.25H526M516,240.33H526"/>
+<path class="errbar e1" d="M547.73,239.55V240.95M542.73,239.55H552.73M542.73,240.95H552.73"/>
+<path class="errbar e1" d="M574.45,239.86V242.51M569.45,239.86H579.45M569.45,242.51H579.45"/>
+<path class="errbar e1" d="M601.18,239.4V241.1M596.18,239.4H606.18M596.18,241.1H606.18"/>
+<path class="errbar e1" d="M627.91,236.65V240.33M622.91,236.65H632.91M622.91,240.33H632.91"/>
+<path class="errbar e1" d="M654.64,239.4V241.26M649.64,239.4H659.64M649.64,241.26H659.64"/>
+<path class="errbar e2" d="M93.36,90.69V90.69M88.36,90.69H98.36M88.36,90.69H98.36"/>
+<path class="errbar e2" d="M120.09,140.46V140.46M115.09,140.46H125.09M115.09,140.46H125.09"/>
+<path class="errbar e2" d="M146.82,172.73V172.73M141.82,172.73H151.82M141.82,172.73H151.82"/>
+<path class="errbar e2" d="M173.55,190.94V211.78M168.55,190.94H178.55M168.55,211.78H178.55"/>
+<path class="errbar e2" d="M200.27,222.93V222.93M195.27,222.93H205.27M195.27,222.93H205.27"/>
+<path class="errbar e2" d="M227,234.98V234.98M222,234.98H232M222,234.98H232"/>
+<path class="errbar e2" d="M253.73,235.06V241.34M248.73,235.06H258.73M248.73,241.34H258.73"/>
+<path class="errbar e2" d="M280.45,238.21V243.02M275.45,238.21H285.45M275.45,243.02H285.45"/>
+<path class="errbar e2" d="M307.18,241.28V243.79M302.18,241.28H312.18M302.18,243.79H312.18"/>
+<path class="errbar e2" d="M333.91,239.25V244.25M328.91,239.25H338.91M328.91,244.25H338.91"/>
+<path class="errbar e2" d="M360.64,241.58V244.57M355.64,241.58H365.64M355.64,244.57H365.64"/>
+<path class="errbar e2" d="M387.36,241.42V244.88M382.36,241.42H392.36M382.36,244.88H392.36"/>
+<path class="errbar e2" d="M414.09,239.71V245.04M409.09,239.71H419.09M409.09,245.04H419.09"/>
+<path class="errbar e2" d="M440.82,239.86V245.04M435.82,239.86H445.82M435.82,245.04H445.82"/>
+<path class="errbar e2" d="M467.55,239.86V244.56M462.55,239.86H472.55M462.55,244.56H472.55"/>
+<path class="errbar e2" d="M494.27,239.71V242.82M489.27,239.71H499.27M489.27,242.82H499.27"/>
+<path class="errbar e2" d="M521,241.88V244.88M516,241.88H526M516,244.88H526"/>
+<path class="errbar e2" d="M547.73,240.64V244.72M542.73,240.64H552.73M542.73,244.72H552.73"/>
+<path class="errbar e2" d="M574.45,241.57V244.56M569.45,241.57H579.45M569.45,244.56H579.45"/>
+<path class="errbar e2" d="M601.18,239.71V244.56M596.18,239.71H606.18M596.18,244.56H606.18"/>
+<path class="errbar e2" d="M627.91,240.64V244.4M622.91,240.64H632.91M622.91,244.4H632.91"/>
+<path class="errbar e2" d="M654.64,238.94V244.4M649.64,238.94H659.64M649.64,244.4H659.64"/>
+</g>
+<text class="legend-title" x="692" y="66">Series</text>
+<line class="line c0 baseline" x1="692" x2="718" y1="82" y2="82"/>
+<circle class="marker c0" cx="705" cy="82" r="3"/>
+<text class="legend" x="726" y="86">1.4.3 (class, default) (baseline)<title>1.4.3 (class, default) (baseline)</title></text>
+<line class="line c1" x1="692" x2="718" y1="104" y2="104"/>
+<rect class="marker c1" x="702" y="101" width="6" height="6"/>
+<text class="legend" x="726" y="108">main (value, archetype)<title>main (value, archetype)</title></text>
+<line class="line c2" x1="692" x2="718" y1="126" y2="126"/>
+<polygon class="marker c2" points="705,122 709,129 701,129"/>
+<text class="legend" x="726" y="130">main (value, sparseSet)<title>main (value, sparseSet)</title></text>
+<text class="note" x="692" y="160" xml:space="preserve">Line: median over replicates</text>
+<text class="note" x="692" y="177" xml:space="preserve">Error bars: CI of the median, 97.9%</text>
+<text class="note" x="692" y="194" xml:space="preserve">  (largest CI: ±6.3%)</text>
+<text class="note" x="692" y="211" xml:space="preserve">Light band: within-run IQR (p25 to p75),</text>
+<text class="note" x="692" y="228" xml:space="preserve">  spread of one run, not uncertainty</text>
+<text class="note" x="692" y="245" xml:space="preserve">Dashed line: baseline</text>
+<text class="note" x="692" y="262" xml:space="preserve">Entity count 0 is omitted (log axis)</text>
+</svg>

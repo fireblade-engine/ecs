@@ -116,7 +116,7 @@ struct ReportWriter {
         lines.append("- Selection filter: " + filters.map { "`\(Self.code($0))`" }.joined(separator: ", "))
         lines.append("- Every replicate is an independent process; the replicate is the unit of analysis. `median` is the median over replicates of each replicate's median per iteration. `CI low` and `CI high` bound the 95% distribution-free confidence interval of that median (exact coverage in the methods section). `replicates` is the number of replicates behind the value, `iterations` the median number of measurements per replicate (time-based sampling, so it differs between series by design).")
         lines.append("- Non-baseline series add, for wall clock only, `speed (×)` = baseline ÷ series (above 1 is faster) with its exact 95% CI, `change (%)` = (1 ÷ speed − 1) × 100, `q` (Benjamini–Hochberg adjusted p of an exact Mann–Whitney test across every wall-clock comparison of this report) and a `verdict`: `faster`/`slower` need q < \(Self.percent(ReportStatistics.significanceLevel)) and a CI entirely outside the ±\(Self.percent(ReportStatistics.defaultDelta)) zone, `equivalent` needs the CI entirely inside it. Other metrics are descriptive only.")
-        lines.append("- Every unit is in its column header and applies to the whole column of that table. Values keep at most the \(ReportFormat.significantDigits) significant digits the package measured. Anything missing or not comparable is `unavailable` (hover for the reason), never zero. `n/a (k replicates)` means the statistic needs more replicates.")
+        lines.append("- Every unit is in its column header and applies to the whole column of that table. Values keep at most the \(ReportFormat.significantDigits) significant digits the package measured. Anything missing or not comparable is `unavailable`, and a metric the package did not record (throughput of an iteration of about 2 s or longer) is `n/a` (hover for the reason), never zero. `n/a (k replicates)` means the statistic needs more replicates.")
         lines.append("- Plots show the wall-clock median per iteration on log-log axes with CI error bars and a light within-run IQR band (spread of the measurements inside a run, not uncertainty); entity count 0 cannot sit on a log axis and appears in the tables only.")
         lines.append("")
     }
@@ -140,6 +140,7 @@ struct ReportWriter {
     /// The series' cell for `key`, or the reason it cannot be used.
     private func resolve(_ series: Int, _ key: ReportKey) -> (cell: ReportCell?, reason: String?) {
         guard let cell = model.series[series].cells[key] else {
+            if let reason = model.series[series].notRecorded[key] { return (nil, HTMLCell.notRecordedPrefix + reason) }
             return (nil, model.series[series].replicates[key] == nil ? "not measured for this series" : "no measurements")
         }
         guard let reference = referenceCell(key), cell.isCompatible(with: reference) else { return (nil, "incompatible units or polarity") }

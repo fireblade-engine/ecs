@@ -274,6 +274,24 @@ struct ReportTests {
     }
 
     @Test
+    func unrecordedThroughputIsNotAvailableWithTheStatedReason() throws {
+        var baseline = ReportFixtures.classRef()
+        let index = try #require(baseline.benchmarks.firstIndex { $0.identity == ReportFixtures.w1 && $0.scale == 64 })
+        baseline.benchmarks[index].unrecordedMetrics = [UnrecordedMetric(metric: ResultSchema.optionalMetric, reason: ResultSchema.optionalMetricReason)]
+        try ResultValidator.validate(baseline)
+        let files = try renderFiles([baseline, ReportFixtures.valueRef()])
+        let page = try #require(files["workloads/\(ReportFixtures.w1).md"])
+        let throughput = try table(page, section: "## Throughput", heading: "### Throughput (# / s): Entity counts up to 1,024")
+        let row = try body(throughput, "64")
+        #expect(row[1] == "n/a" && row[2] == "n/a" && row[3] == "n/a")
+        #expect(page.contains(#"title="not recorded: \#(ResultSchema.optionalMetricReason)">n/a</td>"#))
+        // Wall clock of the same cell is untouched.
+        let time = try table(page, heading: "### Time (wall clock): Entity counts up to 1,024")
+        #expect(try body(time, "64")[1] != "n/a")
+        #expect(try ReportGlossary.covers("n/a"))
+    }
+
+    @Test
     func throughputIsLargerIsBetterAndOnlyDescribed() throws {
         let page = try #require(renderFiles(all)["workloads/\(ReportFixtures.w1).md"])
         #expect(page.contains("## Throughput (# / s) (larger is better)"))

@@ -2,6 +2,7 @@
 // function from decoded result files to the contents of a report directory (REPORT.md, per-workload pages, SVG plots): no
 // file access, no processes, no benchmark runs, and the inputs are never mutated.
 import Benchmark
+import ECSCompatSuite
 import Foundation
 
 public struct ReportOptions: Sendable {
@@ -104,6 +105,8 @@ struct ReportSeries {
     var replicates: [ReportKey: [ReportReplicateSample]] = [:]
     /// Per-cell aggregate over replicates; filled by the model.
     var cells: [ReportKey: ReportCell] = [:]
+    /// Cells the package did not record, with the reason the result file states (see `ResultBenchmark.unrecordedMetrics`).
+    var notRecorded: [ReportKey: String] = [:]
 }
 
 struct ReportModel {
@@ -179,6 +182,13 @@ struct ReportModel {
                 let round = file.run.replicate?.round ?? 1
                 for (identifier, results) in file.baseline.results.sorted(by: { $0.key.name < $1.key.name }) {
                     guard let benchmark = byName[identifier.name] else { continue }
+                    for entry in benchmark.unrecordedMetrics ?? [] {
+                        let key = ReportKey(identity: benchmark.identity, scale: benchmark.scale, metric: entry.metric)
+                        perBackend[benchmark.backend]?.notRecorded[key] = entry.reason
+                        if metrics[entry.metric] == nil, let native = CompatManifest.metrics.first(where: { $0.description == entry.metric }) {
+                            metrics[entry.metric] = native
+                        }
+                    }
                     for result in results {
                         metrics[result.metric.description] = result.metric
                         let key = ReportKey(identity: benchmark.identity, scale: benchmark.scale, metric: result.metric.description)
@@ -304,14 +314,14 @@ struct ReportModel {
             return "\(rank)-\(description)"
         }
         let order = Dictionary(uniqueKeysWithValues: Set(metrics.keys).map { ($0, metricOrder($0)) })
-        return Set(series.flatMap { $0.replicates.keys }).sorted { lhs, rhs in
+        return Set(series.flatMap { Array($0.replicates.keys) + Array($0.notRecorded.keys) }).sorted { lhs, rhs in
             if lhs.identity != rhs.identity {
                 return lhs.identity < rhs.identity
             }
             if lhs.scale != rhs.scale {
                 return lhs.scale < rhs.scale
             }
-            return order[lhs.metric]! < order[rhs.metric]!
+            return (order[lhs.metric] ?? lhs.metric) < (order[rhs.metric] ?? rhs.metric)
         }
     }
 

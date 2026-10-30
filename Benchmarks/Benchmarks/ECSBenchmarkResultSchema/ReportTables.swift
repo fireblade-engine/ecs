@@ -12,8 +12,11 @@ struct HTMLCell {
         self.title = title
     }
 
+    /// Prefix of the reason of a metric the package did not record (stated by the result file); such a cell reads `n/a`.
+    static let notRecordedPrefix = "not recorded: "
+
     static func unavailable(_ reason: String) -> HTMLCell {
-        HTMLCell("unavailable", title: reason)
+        HTMLCell(reason.hasPrefix(notRecordedPrefix) ? "n/a" : "unavailable", title: reason)
     }
 }
 

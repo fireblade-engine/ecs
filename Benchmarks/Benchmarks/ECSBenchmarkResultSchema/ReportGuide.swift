@@ -73,7 +73,9 @@ struct ReportGuide {
 
     private func interval(_ comparison: ReportComparison) -> String? {
         guard let low = comparison.ciLow, let high = comparison.ciHigh, let speed = comparison.speed else { return nil }
-        let decimals = ReportFormat.columnDecimals([speed, low, high], divisor: 1)
+        var decimals = ReportFormat.columnDecimals([speed, low, high], divisor: 1)
+        // Tiny intervals must not collapse to "1.10–1.10": add digits until the two ends differ.
+        while low < high, decimals < 9, ratio(low, decimals: decimals) == ratio(high, decimals: decimals) { decimals += 1 }
         return "speed \(ratio(speed, decimals: decimals))×, CI \(ratio(low, decimals: decimals))–\(ratio(high, decimals: decimals))×"
     }
 
@@ -114,7 +116,7 @@ struct ReportGuide {
                 lines.append("- **Example from this report:** \(place(first)): \(text) → the true speedup is very likely between \(low)× and \(high)×.")
                 let ordered = withInterval.filter(isEligible).sorted { $0.halfWidth! < $1.halfWidth! }
                 if let narrow = ordered.first, let wide = ordered.last, ordered.count > 1 {
-                    lines.append("- Narrowest CI in this report: \(place(narrow)), ±\(String(format: "%.1f", narrow.halfWidth! * 100))% around the speed (\(interval(narrow.comparison)!)). Widest: \(place(wide)), ±\(String(format: "%.1f", wide.halfWidth! * 100))% (\(interval(wide.comparison)!)).")
+                    lines.append("- Narrowest CI in this report: \(place(narrow)), ±\(ReportFormat.relativePercent(narrow.halfWidth!))% around the speed (\(interval(narrow.comparison)!)). Widest: \(place(wide)), ±\(ReportFormat.relativePercent(wide.halfWidth!))% (\(interval(wide.comparison)!)).")
                 }
             } else {
                 lines.append("- **Example:** no comparison has a CI with a non-zero width at more than 0 entities, so there is no meaningful interval to show.")

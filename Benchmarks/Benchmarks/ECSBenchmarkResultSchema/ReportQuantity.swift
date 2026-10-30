@@ -149,6 +149,14 @@ enum ReportFormat {
     /// Decimals that show the smallest nonzero magnitude of a column (in the column's unit) with `significantDigits`.
     /// Larger values of the column get fewer decimals in `text`, so none exceeds the digit budget. `cap` limits the decimals
     /// where the inputs of a derived value were measured more coarsely.
+    /// A relative half-width (fraction) as percent text with 2 significant digits and no thousands separators: 0.00034 -> "0.034", 0.25 -> "25".
+    static func relativePercent(_ fraction: Double) -> String {
+        let percent = abs(fraction) * 100
+        guard percent.isFinite, percent > 0 else { return "0" }
+        let decimals = min(9, max(0, 1 - Int(floor(log10(percent) + 1e-12))))
+        return String(format: "%.\(decimals)f", percent)
+    }
+
     static func columnDecimals(_ values: [Double], divisor: Double, cap: Int? = nil) -> Int {
         let smallest = values.map { abs($0) / divisor }.filter { $0 > 0 && $0.isFinite }.min()
         guard let smallest else { return 0 }

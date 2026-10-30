@@ -269,7 +269,7 @@ enum ReportPlot {
     /// "largest CI: ±1.8%" for the biggest half-width of an interval relative to its centre; explains bars too small to see.
     static func largestIntervalText(_ halfWidths: [Double]) -> String? {
         guard let largest = halfWidths.filter(\.isFinite).max() else { return nil }
-        return "largest CI: ±\(String(format: "%.1f", largest * 100))%"
+        return "largest CI: ±\(ReportFormat.relativePercent(largest))%"
     }
 
     private static func notes(_ series: [ReportPlotSeries], scaleZeroOmitted: Bool) -> [String] {

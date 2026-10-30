@@ -68,6 +68,14 @@ struct ReportGuideTests {
     }
 
     @Test
+    func tinyIntervalsKeepDistinctBoundsAndSignificantHalfWidths() {
+        #expect(ReportFormat.relativePercent(0.00034) == "0.034")
+        #expect(ReportFormat.relativePercent(0.25) == "25")
+        #expect(ReportFormat.relativePercent(0.018) == "1.8")
+        #expect(ReportFormat.relativePercent(0) == "0")
+    }
+
+    @Test
     func singleReplicateStatesThatInferenceIsUnavailable() throws {
         let body = try guide(report(GuideFixtures.single()))
         #expect(body.contains("**Inference is unavailable in this report.**"))

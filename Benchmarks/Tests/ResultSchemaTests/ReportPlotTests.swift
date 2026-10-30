@@ -96,9 +96,11 @@ struct ReportPlotTests {
         let svg = try #require(ReportPlot.render(title: "w", yTitle: "t", perEntity: false, series: sample))
         #expect(svg.contains("stroke-opacity:.4"), "narrow bands stay visible through their outline")
         // Largest half-width of the sample: 500/2 -> point 1 of main is (650-400)/2/500 = 25%.
-        #expect(svg.contains("(largest CI: ±25.0%)"))
+        #expect(svg.contains("(largest CI: ±25%)"))
         #expect(ReportPlot.largestIntervalText([]) == nil)
         #expect(ReportPlot.largestIntervalText([0.018, 0.004]) == "largest CI: ±1.8%")
+        #expect(ReportPlot.largestIntervalText([0.00034, 0.0001]) == "largest CI: ±0.034%")
+        #expect(ReportPlot.largestIntervalText([0.0]) == "largest CI: ±0%")
     }
 
     @Test

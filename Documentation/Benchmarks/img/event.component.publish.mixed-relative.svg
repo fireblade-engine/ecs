@@ -173,7 +173,7 @@ text{fill:#e6edf3}.note{fill:#9198a1}
 <text class="legend" x="726" y="108">main (value, sparseSet)<title>main (value, sparseSet)</title></text>
 <text class="note" x="692" y="138" xml:space="preserve">Line: speed = baseline / series (Hodges–Lehmann)</text>
 <text class="note" x="692" y="155" xml:space="preserve">Ribbon: 95% CI of the speed</text>
-<text class="note" x="692" y="172" xml:space="preserve">  (largest CI: ±12.6%)</text>
+<text class="note" x="692" y="172" xml:space="preserve">  (largest CI: ±13%)</text>
 <text class="note" x="692" y="189" xml:space="preserve">Shaded zone: ±5% (equivalence zone)</text>
 <text class="note" x="692" y="206" xml:space="preserve">Reference line: 1×, equal to the baseline</text>
 <text class="note" x="692" y="223" xml:space="preserve">Filled marker: significant faster or slower</text>

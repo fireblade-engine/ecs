@@ -225,7 +225,7 @@ text{fill:#e6edf3}.note{fill:#9198a1}
 <text class="legend" x="726" y="130">main (value, sparseSet)<title>main (value, sparseSet)</title></text>
 <text class="note" x="692" y="160" xml:space="preserve">Line: median over replicates</text>
 <text class="note" x="692" y="177" xml:space="preserve">Error bars: CI of the median, 97.9%</text>
-<text class="note" x="692" y="194" xml:space="preserve">  (largest CI: ±16.4%)</text>
+<text class="note" x="692" y="194" xml:space="preserve">  (largest CI: ±16%)</text>
 <text class="note" x="692" y="211" xml:space="preserve">Light band: within-run IQR (p25 to p75),</text>
 <text class="note" x="692" y="228" xml:space="preserve">  spread of one run, not uncertainty</text>
 <text class="note" x="692" y="245" xml:space="preserve">Dashed line: baseline</text>

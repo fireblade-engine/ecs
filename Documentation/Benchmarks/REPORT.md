@@ -54,7 +54,7 @@ Short version: look at `speed (×)` (above 1 the series is faster than the basel
 - `CI low` and `CI high` are its two ends. Read the pair as "the truth is very likely between these".
 - **Narrow** CI: the estimate is precise, you can trust the digits you see. **Wide** CI: the data cannot pin the value down; look for more replicates before drawing a conclusion.
 - **Example from this report:** `iteration.two` at 1,024 entities, `main (value, archetype)`: speed 68.4×, CI 67.5–69.4× → the true speedup is very likely between 67.5× and 69.4×.
-- Narrowest CI in this report: `entity.lookup.one` at 32 entities, `main (value, archetype)`, ±0.0% around the speed (speed 1.10×, CI 1.10–1.10×). Widest: `entity.lookup.one` at 1 entities, `main (value, sparseSet)`, ±25.0% (speed 1.00×, CI 0.988–1.49×).
+- Narrowest CI in this report: `entity.lookup.one` at 32 entities, `main (value, archetype)`, ±0.041% around the speed (speed 1.10×, CI 1.1026–1.1035×). Widest: `entity.lookup.one` at 1 entities, `main (value, sparseSet)`, ±25% (speed 1.00×, CI 0.988–1.49×).
 
 ### 2. How the verdict is decided
 

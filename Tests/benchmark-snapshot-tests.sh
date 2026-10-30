@@ -7,6 +7,9 @@ repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 script="$repo_root/Scripts/benchmark-snapshot.sh"
 test_root=$(mktemp -d "${TMPDIR:-/tmp}/benchmark-snapshot-tests.XXXXXXXX")
 trap 'rm -rf "$test_root"' EXIT
+# Private TMPDIR: temporary snapshots made by the script under test are counted here, unaffected by other processes.
+export TMPDIR="$test_root/tmp"
+mkdir -p "$TMPDIR"
 
 fail() {
     printf 'FAIL: %s\n' "$1" >&2
@@ -124,7 +127,8 @@ grep -q 'jq is required' "$test_root/nojq.err" || fail 'missing jq must be repor
 [[ ! -e $test_root/nojq-out ]] || fail 'missing jq must not create the snapshot'
 
 # A temporary snapshot is removed when the run fails; an explicit --out is kept.
-tmp_before=$(ls -d "${TMPDIR:-/tmp}"/benchmark-snapshot.* 2> /dev/null | wc -l)
+count_tmp_snapshots() { find "$TMPDIR" -maxdepth 1 -name 'benchmark-snapshot.*' | wc -l | tr -d ' '; }
+tmp_before=$(count_tmp_snapshots)
 printf 'fake\n' > "$fixture/Benchmarks/Benchmarks/ECSCompatBenchmark/Suite.swift"
 git -C "$fixture" checkout -q -- Benchmarks
 cat > "$test_root/failing-swift" <<'STUB'
@@ -135,7 +139,7 @@ mkdir -p "$test_root/failbin"
 cp "$test_root/failing-swift" "$test_root/failbin/swift"
 chmod +x "$test_root/failbin/swift"
 if PATH="$test_root/failbin:$PATH" "$script" --repo "$fixture" class-rev > /dev/null 2>&1; then fail 'failing swift must fail the run'; fi
-assert_eq "$(ls -d "${TMPDIR:-/tmp}"/benchmark-snapshot.* 2> /dev/null | wc -l)" "$tmp_before" 'a failed temporary snapshot must be removed'
+assert_eq "$(count_tmp_snapshots)" "$tmp_before" 'a failed temporary snapshot must be removed'
 if PATH="$test_root/failbin:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/kept" > /dev/null 2>&1; then fail 'failing swift must fail the run'; fi
 [[ -d $test_root/kept/ecs ]] || fail 'an explicit --out must be kept after a failure'
 

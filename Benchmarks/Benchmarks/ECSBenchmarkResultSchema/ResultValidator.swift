@@ -36,6 +36,15 @@ public enum ResultValidator {
         try decode(ResultWriter.readFile(path, "result file"))
     }
 
+    /// Like `validateFile(at:)`, for the report only: the histogram counts are read by a linear scan instead of `JSONDecoder`
+    /// (see `StrippedResultFile`). The decoded file's native histograms are not usable; the report reads `storedHistograms`.
+    static func loadForReport(at path: String) throws -> BenchmarkResultFile {
+        let stripped = try StrippedResultFile(ResultWriter.readFile(path, "result file"))
+        var file = try decode(stripped.data)
+        file.storedHistograms = stripped.histograms
+        return file
+    }
+
     /// Consistency checks of a decoded file. Does not compare against the validating binary's own suite, so results of any
     /// revision's adapter validate; the writer additionally pins names and metrics to its own suite.
     public static func validate(_ file: BenchmarkResultFile) throws {

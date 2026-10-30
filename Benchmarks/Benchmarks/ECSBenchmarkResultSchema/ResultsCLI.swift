@@ -98,7 +98,7 @@ public enum ResultsCLI {
         var files: [BenchmarkResultFile] = []
         for path in paths {
             do {
-                try files.append(ResultValidator.validateFile(at: path))
+                try files.append(ResultValidator.loadForReport(at: path))
             } catch {
                 throw ResultError("\(path): \(error)")
             }

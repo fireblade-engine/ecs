@@ -67,7 +67,8 @@ struct ReportSample {
     /// Values at `Statistics.defaultPercentilesToCalculate`, in that order.
     let percentiles: [Double]
 
-    init(_ result: BenchmarkResult) {
+    /// `stored` holds the histograms of a file read by `ResultValidator.loadForReport`, whose native histograms have no counts.
+    init(_ result: BenchmarkResult, stored: [UInt64: StoredHistogram] = [:]) {
         let metric = result.metric
         dimension = ReportDimension(metric)
         let statistics = result.statistics
@@ -85,6 +86,18 @@ struct ReportSample {
             1
         }
 
+        if let fast = stored[statistics.histogram.highestTrackableValue] {
+            guard measurementCount > 0 else {
+                mean = 0
+                percentiles = Statistics.defaultPercentilesToCalculate.map { _ in 0 }
+                return
+            }
+            mean = fast.mean * factor
+            percentiles = Statistics.defaultPercentilesToCalculate.map { percentile in
+                Double(fast.valueAtPercentile(statistics.prefersLarger ? 100.0 - percentile : percentile)) * factor
+            }
+            return
+        }
         // `histogram` is a value type: this copy is read-only and leaves the statistics caches untouched.
         let histogram = statistics.histogram
         // A metric that recorded nothing has no mean or percentiles; the report prints it as unavailable.

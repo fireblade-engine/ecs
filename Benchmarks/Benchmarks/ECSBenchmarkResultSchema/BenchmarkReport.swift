@@ -183,7 +183,7 @@ struct ReportModel {
                         metrics[result.metric.description] = result.metric
                         let key = ReportKey(identity: benchmark.identity, scale: benchmark.scale, metric: result.metric.description)
                         perBackend[benchmark.backend]?.replicates[key, default: []].append(
-                            ReportReplicateSample(replicate: group.replicateIndices[position], round: round, sample: ReportSample(result))
+                            ReportReplicateSample(replicate: group.replicateIndices[position], round: round, sample: ReportSample(result, stored: file.storedHistograms))
                         )
                     }
                 }

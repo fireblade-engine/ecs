@@ -325,12 +325,27 @@ PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/full
 [[ -f $test_root/reuse-result.json ]] || fail '--reuse must write the result file'
 grep -q 'package resolve' "$STUB_LOG" && fail '--reuse must not resolve again'
 grep -q 'product ECSCompatBenchmark' "$STUB_LOG" && fail '--reuse must not rebuild the suite'
+grep -q 'build -c release --product' "$STUB_LOG" && fail '--reuse must not compile anything'
+grep -q 'benchmark list' "$STUB_LOG" && fail '--reuse must not list benchmarks again'
 [[ $(grep -c 'benchmark baseline update' "$STUB_LOG") == 1 ]] || fail '--reuse must run the benchmarks once'
 grep -q 'tool host-check' "$STUB_LOG" || fail '--reuse must check the host before measuring'
 args="$test_root/stub.log.results"
 for pair in "--replicate 2" "--replicates 3" "--round 2" "--position 1" "--seed 77"; do
     assert_eq "$(grep -A1 -x -- "${pair% *}" "$args" | tail -1)" "${pair#* }" "${pair% *} must be passed to the result tool"
 done
+# --build-only builds everything a later --reuse needs (suite, result tool, plugin listing) and measures nothing; --reuse fails
+# instead of building when a required binary is missing.
+: > "$STUB_LOG"
+PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/built" --filter 'f.*' --build-only > /dev/null || fail '--build-only must succeed with stubs'
+grep -q 'build -c release --product ECSCompatBenchmark' "$STUB_LOG" || fail '--build-only must build the suite'
+grep -q 'build -c release --product ECSBenchmarkResults' "$STUB_LOG" || fail '--build-only must build the result tool'
+grep -q 'benchmark list' "$STUB_LOG" || fail '--build-only must warm the benchmark plugin and check the filter'
+grep -q 'baseline update' "$STUB_LOG" && fail '--build-only must not measure'
+mkdir -p "$test_root/emptybin"
+: > "$STUB_LOG"
+if STUB_BIN="$test_root/emptybin" PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/built" --filter 'f.*' --reuse --result "$test_root/reuse-nobin.json" > /dev/null 2> "$test_root/nobin.err"; then fail '--reuse must fail when the result tool is missing'; fi
+grep -q 'is missing' "$test_root/nobin.err" || fail 'a missing binary must be reported'
+grep -q 'build -c release --product' "$STUB_LOG" && fail '--reuse must not build a missing binary'
 # A different ref, a tampered provenance, tampered pins, an unprepared directory or a half-given replicate set is refused.
 : > "$STUB_LOG"
 if PATH="$stubs:$PATH" "$script" --repo "$fixture" t-other --out "$test_root/full" --reuse --result "$test_root/reuse-x.json" > /dev/null 2>&1; then fail '--reuse must refuse an unknown ref'; fi

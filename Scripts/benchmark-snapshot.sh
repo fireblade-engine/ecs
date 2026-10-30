@@ -26,7 +26,7 @@ Usage: Scripts/benchmark-snapshot.sh <ref> [options]
   --requested <name>  name recorded as the requested ref when <ref> is a full SHA (default: <ref>)
   --batch-id <id>     batch id recorded in the result (set by the multi-ref runner)
   --prepare-only      stop after writing the snapshot and provenance; do not resolve, build or run
-  --build-only        resolve and build, but do not run
+  --build-only        resolve and build everything a later --reuse run needs (suite, result tool, plugin), but do not run
   --reuse             run an already prepared and built snapshot in --out again (needs --out and --result); nothing is
                       extracted, resolved or rebuilt, but provenance and pins are re-checked against the committed ones
   --replicate <i>     replicate index (1-based) recorded in the result; needs --replicates, --round, --position and --seed
@@ -238,19 +238,37 @@ if ((!reuse)); then
     swift build -c release --product ECSCompatBenchmark --force-resolved-versions ${swift_flags[@]+"${swift_flags[@]}"}
 fi
 
-[[ $mode != build ]] || exit 0
+check_filter() {
+    # The filter must select something; an empty selection would otherwise "succeed" with no measurements. The plugin
+    # whole-matches benchmark names (BenchmarkRunner.swift: name.wholeMatch(of: Regex(filter))), so anchor the same way.
+    # Listing also compiles the benchmark plugin and its tool, which is why --build-only runs it: nothing is left to build later.
+    local matches
+    matches=$(swift package --disable-automatic-resolution ${swift_flags[@]+"${swift_flags[@]}"} benchmark list --target ECSCompatBenchmark | grep -Ec -- "^($filter)\$" || true)
+    ((matches > 0)) || die "filter matches no benchmarks: $filter"
+}
 
-# Result mode: build the result tool and prove the host facts are readable before spending a measurement on this ref.
-if [[ -n $result ]]; then
+if [[ $mode == build ]]; then
+    # Everything a later --reuse run needs is built here, so replicate runs compile nothing: the suite (above), the result tool,
+    # and the benchmark plugin and its tool.
     swift build -c release --product ECSBenchmarkResults --force-resolved-versions ${swift_flags[@]+"${swift_flags[@]}"}
-    bin_path=$(swift build -c release --show-bin-path ${swift_flags[@]+"${swift_flags[@]}"})
+    check_filter
+    exit 0
+fi
+
+# Result mode: prove the host facts are readable before spending a measurement on this ref.
+if [[ -n $result ]]; then
+    if ((reuse)); then
+        # Never build here: a missing binary means the snapshot was not fully built by --build-only.
+        bin_path=$(swift build -c release --show-bin-path ${swift_flags[@]+"${swift_flags[@]}"})
+        [[ -x $bin_path/ECSBenchmarkResults ]] || die "--reuse: $bin_path/ECSBenchmarkResults is missing; build the snapshot first (--build-only)"
+    else
+        swift build -c release --product ECSBenchmarkResults --force-resolved-versions ${swift_flags[@]+"${swift_flags[@]}"}
+        bin_path=$(swift build -c release --show-bin-path ${swift_flags[@]+"${swift_flags[@]}"})
+    fi
     "$bin_path/ECSBenchmarkResults" host-check || die "host facts are not available; nothing was measured"
 fi
 
-# The filter must select something; an empty selection would otherwise "succeed" with no measurements. The plugin
-# whole-matches benchmark names (BenchmarkRunner.swift: name.wholeMatch(of: Regex(filter))), so anchor the same way.
-matches=$(swift package --disable-automatic-resolution ${swift_flags[@]+"${swift_flags[@]}"} benchmark list --target ECSCompatBenchmark | grep -Ec -- "^($filter)\$" || true)
-((matches > 0)) || die "filter matches no benchmarks: $filter"
+((reuse)) || check_filter
 
 # Package options must precede the plugin command; the resolved file was already enforced above.
 if [[ -z $result ]]; then

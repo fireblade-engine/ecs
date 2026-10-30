@@ -312,7 +312,7 @@ Each phase is a separate check-in; pause for user review before beginning the ne
 - [x] **Shared suite and adapters** (Steps 3–7, gate passed under delegation 2026-10-29): consolidate/reuse applicable cases, preserve unrelated package benchmarks, and add correctness checks for population counts, operation counts, and state mutation.
 - [x] **Ref runner and results** (gate passed under delegation): support more than two committed refs, isolated SHA snapshots, consistent config, complete per-ref JSON, and clear failure for unsupported refs or missing capabilities.
 - [x] **Report-only path** (gate passed under delegation): validate N-way matching, all-statistic output, unit handling, missing values, zero baselines, Mermaid rendering, and that report generation does not invoke benchmarks.
-- [ ] **Compatibility and performance validation** (smoke done; full run awaits approval): after approval, build/smoke against `1.4.3` and current, then run the full agreed workload set only after smoke results and resource cost are reviewed.
+- [x] **Compatibility and performance validation** (2026-10-30): full replicated run `20261030T174340Z` (k = 10, 23 scales, seed 20261030), report in `REPORT.md` with `img/` and `workloads/`. The first attempt failed because Benchmark omits throughput for iterations of about 2 s or longer; fixed in `23d4915f` and `11e32675`.
 
 ### Acceptance checks
 

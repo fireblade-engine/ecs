@@ -94,3 +94,11 @@ struct HTMLTable {
         return out
     }
 }
+
+extension Sequence where Element: Hashable {
+    /// The elements without repeats, in order of first appearance.
+    func uniqued() -> [Element] {
+        var seen = Set<Element>()
+        return filter { seen.insert($0).inserted }
+    }
+}

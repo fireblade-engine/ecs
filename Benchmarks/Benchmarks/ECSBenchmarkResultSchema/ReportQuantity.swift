@@ -32,11 +32,13 @@ enum ReportDimension: String {
         }
     }
 
-    /// Largest unit not exceeding the smallest nonzero magnitude, so no shown value drops below 1 except zero itself.
+    /// Largest unit not exceeding the median nonzero magnitude, so typical values of the column show one to three integer
+    /// digits. Smaller values keep decimals, larger ones thousands separators.
     func unit(fitting values: [Double]) -> ReportUnit {
-        let smallest = values.map(abs).filter { $0 > 0 }.min()
-        guard let smallest else { return units[0] }
-        return units.last { $0.divisor <= smallest } ?? units[0]
+        let magnitudes = values.map(abs).filter { $0 > 0 && $0.isFinite }.sorted()
+        guard !magnitudes.isEmpty else { return units[0] }
+        let typical = magnitudes[magnitudes.count / 2]
+        return units.last { $0.divisor <= typical } ?? units[0]
     }
 }
 
@@ -53,19 +55,7 @@ struct ReportUnit {
 enum ReportStatistic: Hashable {
     case count
     case mean
-    case standardDeviation
     case percentile(Int)
-
-    static let tableRows: [ReportStatistic] = [.count, .mean, .standardDeviation] + Statistics.defaultPercentilesToCalculate.map { .percentile(Int($0)) }
-
-    var label: String {
-        switch self {
-        case .count: "measurements"
-        case .mean: "mean"
-        case .standardDeviation: "std dev"
-        case let .percentile(p): "p\(p)"
-        }
-    }
 }
 
 /// The statistics of one native result, converted to base units (ns, B, plain counts, ops/s) per iteration.
@@ -74,7 +64,6 @@ struct ReportSample {
     let prefersLarger: Bool
     let measurementCount: Int
     let mean: Double
-    let standardDeviation: Double
     /// Values at `Statistics.defaultPercentilesToCalculate`, in that order.
     let percentiles: [Double]
 
@@ -101,12 +90,10 @@ struct ReportSample {
         // A metric that recorded nothing has no mean or percentiles; the report prints it as unavailable.
         guard measurementCount > 0 else {
             mean = 0
-            standardDeviation = 0
             percentiles = Statistics.defaultPercentilesToCalculate.map { _ in 0 }
             return
         }
         mean = histogram.mean * factor
-        standardDeviation = histogram.stdDeviation * factor
         percentiles = Statistics.defaultPercentilesToCalculate.map { percentile in
             // Same polarity convention as Statistics.percentiles(for:).
             let p = statistics.prefersLarger ? 100.0 - percentile : percentile
@@ -124,11 +111,15 @@ struct ReportSample {
         dimension == other.dimension && prefersLarger == other.prefersLarger
     }
 
+    /// Median, first and third quartile of the measurements of this one replicate.
+    var median: Double { value(.percentile(50)) }
+    var firstQuartile: Double { value(.percentile(25)) }
+    var thirdQuartile: Double { value(.percentile(75)) }
+
     func value(_ statistic: ReportStatistic) -> Double {
         switch statistic {
         case .count: Double(measurementCount)
         case .mean: mean
-        case .standardDeviation: standardDeviation
         case let .percentile(p): percentiles[Statistics.defaultPercentilesToCalculate.firstIndex(of: Double(p)) ?? 0]
         }
     }
@@ -152,25 +143,34 @@ enum ReportFormat {
         return min(decimals, cap ?? decimals, 9)
     }
 
-    /// One value of a column: rounded to `significantDigits` and shown with at most `columnDecimals` decimals. No exponent, no
-    /// locale, trailing zeros are kept only where the column's decimals require them.
+    /// One value of a column: rounded to `significantDigits` (also left of the decimal point, so 1234567 shows as 1,230,000) and
+    /// shown with at most `columnDecimals` decimals, with thousands separators. No exponent, no locale; trailing zeros are kept
+    /// only where the column's decimals require them.
     static func text(_ value: Double, divisor: Double = 1, columnDecimals: Int, signed: Bool = false) -> String {
         guard value.isFinite else { return "unavailable" }
         let scaled = value / divisor
         guard scaled != 0 else { return "0" }
-        func decimals(for magnitude: Double) -> Int {
-            min(columnDecimals, max(0, significantDigits - 1 - Int(floor(log10(abs(magnitude)) + 1e-12))))
+        func places(for magnitude: Double) -> Int {
+            // May be negative: digits left of the decimal point beyond the budget are rounded away.
+            min(columnDecimals, significantDigits - 1 - Int(floor(log10(abs(magnitude)) + 1e-12)))
         }
-        var places = decimals(for: scaled)
-        var rounded = (scaled * pow(10, Double(places))).rounded() / pow(10, Double(places))
+        func round(_ x: Double, _ places: Int) -> Double {
+            let factor = pow(10, Double(places))
+            return (x * factor).rounded() / factor
+        }
+        var digits = places(for: scaled)
+        var rounded = round(scaled, digits)
         // Rounding can carry into the next magnitude (9.996 -> 10.00); drop the extra digit.
-        if rounded != 0, decimals(for: rounded) < places {
-            places = decimals(for: rounded)
-            rounded = (scaled * pow(10, Double(places))).rounded() / pow(10, Double(places))
+        if rounded != 0, places(for: rounded) < digits {
+            digits = places(for: rounded)
+            rounded = round(scaled, digits)
         }
         guard rounded != 0 else { return "0" }
-        let body = String(format: "%.\(places)f", rounded)
-        return signed && rounded > 0 ? "+\(body)" : body
+        var body = String(format: "%.\(max(0, digits))f", abs(rounded))
+        let integerPart = body.prefix { $0 != "." }
+        body = grouped(Int(integerPart) ?? 0) + body.dropFirst(integerPart.count)
+        let sign = rounded < 0 ? "-" : (signed ? "+" : "")
+        return sign + body
     }
 
     /// Thousands separators for entity counts: 65,536.
@@ -182,6 +182,11 @@ enum ReportFormat {
             out.append(digit)
         }
         return value < 0 ? "-" + out : out
+    }
+
+    /// Adjusted p-value (q): three decimals, `<0.001` below.
+    static func qValue(_ q: Double) -> String {
+        q < 0.001 ? "<0.001" : String(format: "%.3f", q)
     }
 
     /// p-value with its relation: `p=0.012`, or `p<0.001` below three decimals.

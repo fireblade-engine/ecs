@@ -36,7 +36,7 @@ enum ReportFixtures {
         return BenchmarkResult(metric: metric, timeUnits: timeUnits, scalingFactor: scaling, warmupIterations: 0, statistics: statistics)
     }
 
-    static func file(requested: String, shaByte: String, model: String, backends: [String], configurationHash: String = String(repeating: "1", count: 64), entries: [Entry]) -> BenchmarkResultFile {
+    static func file(requested: String, shaByte: String, model: String, backends: [String], configurationHash: String = String(repeating: "1", count: 64), replicate: ResultReplicate? = nil, entries: [Entry]) -> BenchmarkResultFile {
         let used = Set(entries.map(\.identity))
         var results: [NativeBenchmarkIdentifier: [BenchmarkResult]] = [:]
         var benchmarks: [ResultBenchmark] = []
@@ -48,7 +48,7 @@ enum ReportFixtures {
         return BenchmarkResultFile(
             schema: ResultSchema.name,
             schemaVersion: ResultSchema.version,
-            run: ResultRun(id: "run-\(requested)", startedAt: "2026-10-29T10:00:00Z", finishedAt: "2026-10-29T10:05:00Z"),
+            run: ResultRun(id: "run-\(requested)\(replicate.map { "-r\($0.index)" } ?? "")", startedAt: "2026-10-29T10:00:00Z", finishedAt: "2026-10-29T10:05:00Z", batchId: replicate == nil ? nil : "batch-1", replicate: replicate),
             ref: ResultRef(requested: requested, sha: String(repeating: shaByte, count: 40), componentModel: model, backends: backends),
             suite: ResultSuite(sha: Support.suiteSHA, target: CompatManifest.benchmarkTarget, filter: "^fixture$", configurationHash: configurationHash),
             packages: ResultSchema.requiredPins,
@@ -114,5 +114,29 @@ enum ReportFixtures {
             ]),
             Entry(identity: w3, backend: "archetype", scale: 16, results: [result(.wallClock, spread())])
         ])
+    }
+
+    /// Wall-clock distribution whose median is `median` (nanoseconds): 7 of 10 samples at the median, one each above.
+    static func distribution(median: Int) -> [Int] {
+        Array(repeating: median, count: 7) + [median + median / 10, median + median / 5, median * 2]
+    }
+
+    /// One replicated ref: `count` result files of one ref and backend with the given wall-clock medians per entity count
+    /// (`medians[replicate - 1]` is the median of that replicate for every scale in `scales`, scaled by the scale's factor).
+    /// Replicate `i` ran in round `i`.
+    static func replicates(
+        requested: String, shaByte: String, model: String = "value", backend: String = "default", workload: String? = nil,
+        scales: [Int] = [16], medians: [Int], count: Int? = nil, seed: UInt64 = 7, configurationHash: String = String(repeating: "1", count: 64)
+    ) -> [BenchmarkResultFile] {
+        let identity = workload ?? w1
+        return medians.enumerated().map { offset, median in
+            file(
+                requested: requested, shaByte: shaByte, model: model, backends: [backend], configurationHash: configurationHash,
+                replicate: ResultReplicate(index: offset + 1, count: count ?? medians.count, round: offset + 1, position: 1, seed: seed),
+                entries: scales.map { scale in
+                    Entry(identity: identity, backend: backend, scale: scale, results: [result(.wallClock, distribution(median: median))])
+                }
+            )
+        }
     }
 }

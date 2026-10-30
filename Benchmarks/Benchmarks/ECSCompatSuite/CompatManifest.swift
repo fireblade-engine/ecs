@@ -61,12 +61,12 @@ public enum CompatManifest {
         CompatUnsupported.all.map { Unsupported(identity: $0.identity, upstreamName: $0.upstreamName, reason: $0.reason) }
     }
 
-    /// Everything that changes what a run measures, other than the suite commit and the filter: enabled metrics and the pinned
-    /// pass counts. Hashed into the result's configuration hash.
+    /// Everything that changes what a run measures, other than the suite commit and the filter: enabled metrics and the
+    /// sampling parameters. Hashed into the result's configuration hash.
     public static var configurationDescription: String {
         let metricList = metrics.map(\.description).joined(separator: ",")
-        return "metrics=\(metricList);persistentWarmupIterations=\(CompatWorkload.persistentWarmupIterations);"
-            + "persistentIterations=\(CompatWorkload.persistentIterations);persistentMaxDuration=\(CompatWorkload.persistentMaxDuration)"
+        return "metrics=\(metricList);warmupIterations=\(CompatSuite.warmupIterations);maxIterations=\(CompatSuite.maxIterations);"
+            + "maxDuration=\(CompatSuite.maxDuration);maxScale=\(CompatWorkload.maximumScale)"
     }
 
     /// Parses `<identity> [<backend>] / <scale>` and accepts it only if that exact benchmark is registered.

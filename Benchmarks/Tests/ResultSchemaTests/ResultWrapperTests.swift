@@ -104,11 +104,11 @@ struct ResultWrapperTests {
     func configurationDescriptionAndHashAreGolden() {
         #expect(
             CompatManifest.configurationDescription
-                == "metrics=Time (wall clock),Time (total CPU),Throughput (# / s),Memory (resident peak),Malloc (total);persistentWarmupIterations=10;persistentIterations=100;persistentMaxDuration=600.0 seconds"
+                == "metrics=Time (wall clock),Time (total CPU),Throughput (# / s),Memory (resident peak),Malloc (total);warmupIterations=0;maxIterations=1000000000;maxDuration=0.5 seconds;maxScale=2097152"
         )
         #expect(
             configurationHash(suiteSHA: Support.suiteSHA, filter: "^entity.create.empty .* / 16$", configuration: CompatManifest.configurationDescription)
-                == "891cdf054514aea89eb4da158295bc05b574795a2d668506eeb1bd96d37bc08a"
+                == "0f5931e3b73836ef71b43bb63fccf52d13fde5da3bb24215c0f36b7a1f3cb93b"
         )
     }
 }

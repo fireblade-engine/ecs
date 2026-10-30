@@ -9,16 +9,15 @@ public func registerCompatBenchmarks() {
             for backend in CompatSuite.backends {
                 let name = workload.benchmarkName(backend: backend, scale: scale)
                 if workload.persistsState {
-                    // One world per benchmark, built in setup and shared by warmup and every sample: no reset between passes.
+                    // One state per benchmark, built in setup and shared by every iteration: no reset between passes.
+                    // Teardown releases it so state does not accumulate across scales and backends.
                     nonisolated(unsafe) var state: CompatState?
-                    // Pass counts are pinned, not time-bounded: the world carries state across passes (Render's draw count
-                    // drifts), so every revision must run the same passes. `maxDuration` is only a generous safety net.
                     Benchmark(
                         name,
-                        configuration: CompatSuite.persistentConfiguration(),
+                        configuration: CompatSuite.configuration(),
                         closure: { benchmark in
                             guard let state else {
-                                benchmark.error("setup did not create the world")
+                                benchmark.error("setup did not create the state")
                                 return
                             }
                             benchmark.startMeasurement()
@@ -31,9 +30,9 @@ public func registerCompatBenchmarks() {
                         teardown: { state = nil }
                     )
                 } else {
-                    // Every invocation prepares fresh state before timing and runs exactly one pass (`.one`), so warmup and
-                    // repeated invocations do the same work. Nexus teardown happens after stop.
-                    Benchmark(name, configuration: CompatSuite.freshStateConfiguration()) { benchmark in
+                    // Fresh untimed state before every iteration, one pass per iteration (`.one`). Nexus teardown happens
+                    // after stop.
+                    Benchmark(name, configuration: CompatSuite.configuration()) { benchmark in
                         let state = workload.prepare(backend: backend, count: scale)
                         benchmark.startMeasurement()
                         let outcome = workload.run(state, count: scale)

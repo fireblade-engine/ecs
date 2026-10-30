@@ -57,8 +57,10 @@ struct CompatWorkloadTests {
         for workload in [CompatWorkload.lookupNone, .lookupOne, .lookupTwo, .removeAdd] {
             #expect(workload.parity.note.hasPrefix("adapted("), "\(workload.identity)")
         }
-        for workload in CompatWorkload.allCases where workload.persistsState {
-            #expect(workload.parity.note.contains("pass count is pinned"), "\(workload.identity)")
+        for workload in CompatWorkload.allCases {
+            let note = workload.parity.note
+            #expect(note.contains("per-iteration untimed setup") != workload.persistsState, "\(workload.identity)")
+            #expect(note.contains("state is built once") == workload.persistsState, "\(workload.identity)")
         }
         #expect(CompatWorkload.eventPublishMixed.parity.note.contains("base-only mixed population"))
         #expect(CompatWorkload.eventPublishUpdateMixed.parity.note.contains("base-only mixed population"))
@@ -66,22 +68,32 @@ struct CompatWorkloadTests {
 
     @Test
     func persistsStateMatchesPreparedRunnerAndScalesAreIntended() {
-        let persistent: Set<CompatWorkload> = [
+        let perIteration: Set<CompatWorkload> = [.createNoEntities, .createEmpty, .createMinimal, .destroyMinimal, .add]
+        let runners: Set<CompatWorkload> = [
             .systemBasicUniform, .systemBasicMixed, .systemComplexUniform, .systemComplexMixed,
             .eventPublishMixed, .eventPublishUpdateMixed
         ]
-        #expect(CompatWorkload.scales == [0, 1, 16, 1024])
+        #expect(CompatWorkload.scales == [0] + (0 ... 21).map { 1 << $0 })
+        #expect(CompatWorkload.scales.count == 23)
+        #expect(CompatWorkload.scales.last == 2_097_152)
         #expect(CompatWorkload.smallScale == 16)
         for workload in CompatWorkload.allCases {
-            #expect(workload.persistsState == persistent.contains(workload), "\(workload.identity)")
+            #expect(workload.persistsState == !perIteration.contains(workload), "\(workload.identity)")
+            #expect(workload.usesRunner == runners.contains(workload), "\(workload.identity)")
             for backend in CompatSuite.backends {
                 let state = workload.prepare(backend: backend, count: 16)
-                #expect((state.runner != nil) == workload.persistsState, "\(workload.identity)")
+                #expect((state.runner != nil) == workload.usesRunner, "\(workload.identity)")
             }
-            #expect(workload.registeredScales == (workload == .createNoEntities ? [0] : [0, 1, 16, 1024]), "\(workload.identity)")
+            #expect(workload.registeredScales == (workload == .createNoEntities ? [0] : CompatWorkload.scales), "\(workload.identity)")
         }
-        #expect(CompatWorkload.persistentWarmupIterations > 0)
-        #expect(CompatWorkload.persistentIterations > 0)
+    }
+
+    @Test
+    func samplingMatchesUpstreamDefaults() {
+        let configuration = CompatSuite.configuration()
+        #expect(configuration.maxDuration == .milliseconds(500))
+        #expect(configuration.warmupIterations == 0)
+        #expect(configuration.maxIterations >= 1_000_000_000)
     }
 
     @Test
@@ -274,6 +286,21 @@ struct CompatWorkloadTests {
                 #expect(Set(outcomes.map(\.operations)).count == 1, "\(workload.identity)")
                 #expect(outcomes[0] == outcomes[1] && outcomes[1] == outcomes[2], "\(workload.identity)")
                 #expect(occupancy[0] == occupancy[1] && occupancy[1] == occupancy[2], "\(workload.identity)")
+            }
+        }
+    }
+
+    @Test
+    func readOnlyWorkloadsDoIdenticalWorkOnReusedState() {
+        let readOnly: [CompatWorkload] = [.lookupNone, .lookupOne, .lookupTwo, .lookupMixedThree, .iterationOne, .iterationTwo, .iterationMixedThree]
+        for backend in CompatSuite.backends {
+            for workload in readOnly {
+                let state = workload.prepare(backend: backend, count: 101)
+                let before = [state.nexus.numEntities, state.nexus.numComponents]
+                let first = workload.run(state, count: 101)
+                let second = workload.run(state, count: 101)
+                #expect(first == second, "\(workload.identity)")
+                #expect(before == [state.nexus.numEntities, state.nexus.numComponents], "\(workload.identity)")
             }
         }
     }

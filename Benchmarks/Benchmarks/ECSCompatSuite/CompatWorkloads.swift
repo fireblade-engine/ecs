@@ -34,7 +34,8 @@ struct CompatFamilyProbe {
     let visit: () -> Int
 }
 
-/// Untimed state of one invocation. Every invocation prepares a fresh state, so warmup and repeated runs do the same work.
+/// Untimed state. Workloads with `persistsState` prepare it once per benchmark and reuse it across iterations; the others
+/// prepare a fresh state before every iteration.
 struct CompatState {
     let nexus: Nexus
     /// Family prepared before timing, for iteration workloads.
@@ -66,8 +67,10 @@ enum CompatWorkload: String, CaseIterable, Sendable {
     case eventPublishMixed = "event.component.publish.mixed"
     case eventPublishUpdateMixed = "event.component.publish-update.mixed"
 
-    /// Scales shared by every scaled workload. `smallScale` is what smoke selections use.
-    static let scales = [0, 1, 16, 1024]
+    /// Upstream's `CreateRange(0, 2'097'152, 2)`: 0 and every power of two up to the maximum (Google Benchmark `AddRange`),
+    /// derived rather than listed. `smallScale` is what smoke selections use.
+    static let maximumScale = 2_097_152
+    static let scales: [Int] = [0] + Array(sequence(first: 1) { $0 < maximumScale ? $0 * 2 : nil })
     static let smallScale = 16
 
     /// Scales this workload is registered at. `entity.create.no-entities` creates zero entities whatever the scale, so it is
@@ -106,9 +109,20 @@ enum CompatWorkload: String, CaseIterable, Sendable {
         }
     }
 
-    /// Update and event workloads keep one world across passes and invocations (upstream does not reset between passes), so
-    /// their benchmarks build it in the benchmark setup phase instead of per invocation.
+    /// Upstream builds these workloads' state once before the timed loop and keeps it across iterations, so the benchmark
+    /// prepares it once in the benchmark setup and releases it in teardown. The others pause timing and rebuild state per
+    /// iteration upstream (`entity.create.*`, `entity.destroy.minimal`, `component.add`), so here too.
     var persistsState: Bool {
+        switch self {
+        case .createNoEntities, .createEmpty, .createMinimal, .destroyMinimal, .add:
+            false
+        default:
+            true
+        }
+    }
+
+    /// Update and event workloads additionally run their passes through a stateful runner.
+    var usesRunner: Bool {
         switch self {
         case .systemBasicUniform, .systemBasicMixed, .systemComplexUniform, .systemComplexMixed,
              .eventPublishMixed, .eventPublishUpdateMixed:
@@ -118,37 +132,36 @@ enum CompatWorkload: String, CaseIterable, Sendable {
         }
     }
 
-    /// Fixed pass counts of persistent workloads: warmup passes, then exactly this many measured samples.
-    static let persistentWarmupIterations = 10
-    static let persistentIterations = 100
-    static let persistentMaxDuration: Duration = .seconds(600)
+    /// Shared sampling note: the package budget includes untimed setup and has no minimum iteration count.
+    private static let perIterationSetupNote = "per-iteration untimed setup counts against the package's 0.5 s wall budget, so measured time and sample count are below upstream's 0.5 s of measured time, especially at large scales"
+    private static let persistentNote = "state is built once and kept across iterations as upstream; sampling is time-based (0.5 s, no warmup) so pass count and world state can differ by revision, as upstream"
 
     var parity: CompatParity {
         switch self {
         case .createNoEntities, .createEmpty, .createMinimal, .destroyMinimal:
-            .adapted("nexus teardown is outside the timed region; upstream times registry teardown")
+            .adapted("nexus teardown is outside the timed region; upstream times registry teardown; \(Self.perIterationSetupNote)")
         case .lookupNone:
-            .adapted("payload is a single Int per component vs upstream float structs; gets return class references on 1.x and value copies on value revisions; the miss is a get of an absent component; entities are created outside timing")
+            .adapted("payload is a single Int per component vs upstream float structs; gets return class references on 1.x and value copies on value revisions; the miss is a get of an absent component; entities are created outside timing; \(Self.persistentNote)")
         case .lookupOne, .lookupTwo:
-            .adapted("payload is a single Int per component vs upstream float structs; gets return class references on 1.x and value copies on value revisions; two separate gets per entity for lookupTwo; entities are created outside timing")
+            .adapted("payload is a single Int per component vs upstream float structs; gets return class references on 1.x and value copies on value revisions; two separate gets per entity for lookupTwo; entities are created outside timing; \(Self.persistentNote)")
         case .lookupMixedThree:
-            .adapted("population and lookup count match; payload is a single Int per component and gets return the component")
+            .adapted("population and lookup count match; payload is a single Int per component and gets return the component; \(Self.persistentNote)")
         case .iterationOne, .iterationTwo:
-            .adapted("each revision uses its native family iteration (forEach(reading:) value copies on value revisions, plain iteration over class references on 1.x); family built before timing; upstream boundary varies by wrapper")
+            .adapted("each revision uses its native family iteration (forEach(reading:) value copies on value revisions, plain iteration over class references on 1.x); family built before timing; upstream boundary varies by wrapper; \(Self.persistentNote)")
         case .iterationMixedThree:
-            .adapted("membership recipe matches upstream; each revision uses its native family iteration (value copies vs class references); family built before timing")
+            .adapted("membership recipe matches upstream; each revision uses its native family iteration (value copies vs class references); family built before timing; \(Self.persistentNote)")
         case .removeAdd:
-            .adapted("payload is a single Int vs upstream float structs; every set allocates a new class instance on 1.x vs a value copy on value revisions; nexus teardown is outside the timed region")
+            .adapted("payload is a single Int vs upstream float structs; every set allocates a new class instance on 1.x vs a value copy on value revisions; nexus teardown is outside the timed region; every pass returns the entities to their initial occupancy; \(Self.persistentNote)")
         case .add:
-            .adapted("component one is removed from the whole batch before timing; upstream pauses to remove per entity")
+            .adapted("component one is removed from the whole batch before timing; upstream pauses to remove per entity; \(Self.perIterationSetupNote)")
         case .systemBasicUniform, .systemBasicMixed:
-            .adapted("system list (Movement, Data), order and formulas follow upstream; pass count is pinned (10 warmup + 100 measured passes on one persistent world) so every revision runs the same passes; player RNG seeds are ordinal, not address-derived; each revision uses its native family iteration instead of upstream's virtual system dispatch")
+            .adapted("system list (Movement, Data), order and formulas follow upstream; player RNG seeds are ordinal, not address-derived; each revision uses its native family iteration instead of upstream's virtual system dispatch; \(Self.persistentNote)")
         case .systemComplexUniform, .systemComplexMixed:
-            .adapted("system list (Movement, Data, MoreComplex, Health, Damage, Sprite, Render), order and formulas follow upstream UseMoreComplexSystems; pass count is pinned (10 warmup + 100 measured passes on one persistent world) so every revision runs the same passes; player RNG seeds are ordinal, not address-derived; each revision uses its native family iteration instead of upstream's virtual system dispatch")
+            .adapted("system list (Movement, Data, MoreComplex, Health, Damage, Sprite, Render), order and formulas follow upstream UseMoreComplexSystems; player RNG seeds are ordinal, not address-derived; each revision uses its native family iteration instead of upstream's virtual system dispatch; \(Self.persistentNote)")
         case .eventPublishMixed:
-            .adapted("pass count is pinned (10 warmup + 100 measured passes); base-only mixed population (Position, Velocity, Data; no players) as upstream's EnTT factory; per-entity marker add then per-entity remove through a scratch array that is collected inside the timed region; no native type-wide component clear")
+            .adapted("base-only mixed population (Position, Velocity, Data; no players) as upstream's EnTT factory; per-entity marker add then per-entity remove through a scratch array that is collected inside the timed region; no native type-wide component clear; \(Self.persistentNote)")
         case .eventPublishUpdateMixed:
-            .adapted("pass count is pinned (10 warmup + 100 measured passes); base-only mixed population (no players) as upstream's EnTT factory; effective upstream workload: Position+Velocity update, empty marker view visits zero, per-entity clear of an empty marker pool via a scratch array collected inside the timed region; no native type-wide component clear")
+            .adapted("base-only mixed population (no players) as upstream's EnTT factory; effective upstream workload: Position+Velocity update, empty marker view visits zero, per-entity clear of an empty marker pool via a scratch array collected inside the timed region; no native type-wide component clear; \(Self.persistentNote)")
         }
     }
 

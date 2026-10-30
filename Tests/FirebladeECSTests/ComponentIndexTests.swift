@@ -5,8 +5,10 @@
 //  Created by Christian Treffs on 25.10.26.
 //
 
-import Foundation
 import Testing
+#if !os(WASI)
+import Foundation
+#endif
 @testable import FirebladeECS
 
 private struct IndexA: Component, Sendable {}
@@ -108,8 +110,9 @@ private func manyTypes() -> [any Component.Type] {
         let indices = results[0]
         #expect(Set(indices).count == types.count)
         let after = Nexus.ComponentIndexRegistry.shared.count
-        // other suites may register types concurrently, so only a lower bound holds for the delta
-        #expect(after - before >= types.count)
+        // other suites may register the same or other types concurrently, so only the total is bounded
+        #expect(after >= types.count)
+        #expect(after >= before)
         // dense: every index lies below the number of registered types
         #expect(indices.allSatisfy { $0 >= 0 && $0 < after })
         // stable afterwards, through the lock-free path
@@ -201,6 +204,8 @@ private typealias Registry = Nexus.ComponentIndexRegistry
     }
 }
 
+#if !os(WASI) // WASI has no threads, Thread and DispatchGroup are unavailable
+
 private final class StartGate: @unchecked Sendable {
     private var arrived = 0
     private let total: Int
@@ -287,3 +292,4 @@ private func freshType(_ n: Int) -> any Component.Type {
     default: Fresh<Tag7, Tag0>.self
     }
 }
+#endif

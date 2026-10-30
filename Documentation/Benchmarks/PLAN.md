@@ -224,6 +224,83 @@ Modeled on upstream's README generator (`scripts/gen-benchmark-report`, MIT, Pyt
   - The sample-count warning becomes one note, since time-based sampling makes counts differ by design.
 - **Approval:** the user approves a test render from the intermediate run `Benchmarks/.results/20261030T092516Z` before the full run.
 
+### Statistical design v3 (user decision 2026-10-30: "scientifically accurate display … valid significance calculation and error bars")
+
+Replaces the dispersion and `sig.` parts of Report v2. Upstream scales, sampling, the output directory, the HTML table layout and the unit rules stay.
+
+**Why:** iterations of one run are not independent. Workloads keep state, and caches, frequency and heat carry over. One process per ref never samples the variation between runs, and running refs in sequence turns drift into a version difference. A test on iterations, like Welch on mean/sd/n, therefore overstates confidence. Several hundred uncorrected tests at α = 0.05 also produce false positives by design.
+
+**Measurement protocol**
+
+- **Replicates:** each ref is built once and run k = 10 times as independent processes. The replicate is the unit of analysis.
+- **Interleaved rounds:** each round runs every ref once, in an order shuffled by a recorded seed.
+- **Per-replicate result:** each replicate writes its own self-contained JSON. It records the replicate index, round, position in the round, seed, start/end timestamps, and the shared batch id. Files without replicate fields count as replicate 1 of 1.
+- **Settings:** suite settings are unchanged (0.5 s budget, upstream scales); the host check runs before every replicate.
+- **Stated limits:**
+  - One build per ref, so between-build code-layout effects are not sampled.
+  - Conclusions hold for the recorded host and toolchain only.
+
+**Statistics.** All exact, non-parametric and deterministic: no resampling, and the report stays byte-reproducible.
+
+- **Per-replicate value:** the median of the replicate's iterations, taken from its histogram.
+- **Centre and error bar per series and scale:**
+  - the centre is the median of the k replicate medians
+  - the error bar is the 95% distribution-free order-statistic CI of the median: the largest l with P(Binom(k, ½) ≤ l − 1) ≤ 0.025 gives [x₍l₎, x₍k−l+1₎]; for k = 10 that is [x₍2₎, x₍9₎] with 97.9% coverage
+  - the exact coverage is reported; with too few replicates for a 95% interval the error bar is omitted and marked
+- **Effect:**
+  - `speed (×)` = baseline ÷ series, so > 1 means faster
+  - estimated by Hodges–Lehmann on the log replicate medians, i.e. exp(median of all pairwise log(baseline) − log(series))
+  - the 95% CI is the exact Mann–Whitney-based interval from the order statistics of those pairwise differences
+  - `change (%)` = (1 ÷ speed − 1) × 100
+- **Test:** an exact two-sided Mann–Whitney U on the replicate medians. Its permutation distribution is computed conditional on ties, by dynamic programming over doubled midranks.
+- **Multiplicity:** Benjamini–Hochberg at q = 0.05 over every wall-clock comparison in one report. The adjusted `q` is reported, and other metrics are descriptive only.
+- **Verdict:** δ = 5%, symmetric on the log scale, so the equivalence zone is [1/1.05, 1.05].
+
+  | Verdict | Condition |
+  | --- | --- |
+  | `faster` | q < 0.05 and CI low > 1.05 |
+  | `slower` | q < 0.05 and CI high < 1/1.05 |
+  | `equivalent` | the CI lies entirely inside the zone |
+  | `inconclusive` | anything else |
+  | `n/a (k replicates)` | either side has fewer than 2 replicates |
+
+- **Drift diagnostic:**
+  - per ref and benchmark, Kendall's τ between round index and replicate median, with the exact p, BH-adjusted across the report
+  - the methods section reports how many cells show a significant trend and lists them
+- **Minimum k:** with k = 5 per side the smallest attainable p (0.0079) can never pass BH over several hundred tests. With k = 10 the smallest attainable p is 1.1×10⁻⁵, so 10 is the minimum for meaningful verdicts.
+- **Removed:** Welch, ±sd bands and `n`-based significance. The mean (median over replicates of each replicate's mean) stays in the detail tables for upstream parity, with no inference.
+
+**Display**
+
+- **Plots (`REPORT.md`):** log-log per-entity cost and total time.
+  - a median line with CI error bars
+  - a light band for the typical within-run IQR (per scale, the median over replicates of each replicate's p25 and p75), labelled as within-run spread, not uncertainty
+- **New relative plot:** `speed (×)` vs scale on a log y-axis, with a CI ribbon, the ±δ zone shaded and a reference line at 1×.
+- **Detail pages:** add a linear total-time plot. There is no linear per-entity plot, because it carries no information below about 1% of the x range.
+- **Tables** (units in headers):
+  - per series: `median`, `CI low`, `CI high`, `replicates`, `iterations`
+  - per comparison: `speed (×)`, `CI low (×)`, `CI high (×)`, `change (%)`, `q`, `verdict`
+  - the summary table shows the verdict and `speed (×)` with CI
+- **Methods section:** protocol, estimators, tests, δ, q, seed, drift result and the stated limits.
+- **One replicate:** single-replicate data (e.g. `20261030T092516Z`) renders medians and the within-run IQR. CIs and verdicts are `n/a (1 replicate)`.
+
+**Tracks** (one worker at a time; gate after each)
+
+1. **Runner:**
+   - `benchmark-run-refs.sh --replicates K [--seed S]` (defaults: K = 1, a random seed that is recorded)
+   - prepare and build every ref once, then run interleaved rounds against the prepared snapshots
+   - replicate provenance in the schema and validator
+   - script tests for order, naming and seed reproducibility
+   - `make benchmark-compare REPLICATES=`
+2. **Statistics library:**
+   - order-statistic median CI, exact Mann–Whitney with ties, Hodges–Lehmann with exact CI, Benjamini–Hochberg, Kendall τ with exact p, verdict classification
+   - remove Welch
+   - tests use brute-force enumeration as an independent oracle, plus published textbook examples
+3. **Report:** replicate grouping, the new tables, plot layers, relative plot, linear detail plot, methods section, one-replicate degradation.
+4. **Validation render:**
+   - a replicated run of `1.4.3` and `main` with k = 10 at scales ≤ 1,024, for the user to approve the format and statistics
+   - then the full run (23 scales, k = 10, estimated 2–5 h) after approval
+
 ## Phases and review gates
 
 Each phase is a separate check-in; pause for user review before beginning the next.

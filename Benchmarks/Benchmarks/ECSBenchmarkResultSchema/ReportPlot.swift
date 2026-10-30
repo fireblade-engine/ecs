@@ -84,22 +84,19 @@ enum ReportPlot {
         return String(value)
     }
 
-    /// Bounds of the y axis in display units. The floor may sit one decade below the smallest mean to keep a positive lower
-    /// band edge visible; everything below it is clipped.
+    /// Bounds of the y axis in display units: from the decade of the smallest mean to the decade above the largest mean + sd.
+    /// Band edges below the floor are clipped to it, which keeps a few huge deviations from stretching the axis.
     static func yRange(values: [ReportPlotPoint], divisor: Double, perEntityDivisors: [Double]) -> (low: Int, high: Int)? {
         var means: [Double] = []
-        var lowers: [Double] = []
         var uppers: [Double] = []
         for (point, scale) in zip(values, perEntityDivisors) where point.mean > 0 {
             let mean = point.mean / scale / divisor
             let spread = point.samples >= 2 ? point.standardDeviation / scale / divisor : 0
             means.append(mean)
             uppers.append(mean + spread)
-            if mean - spread > 0 { lowers.append(mean - spread) }
         }
         guard let smallest = means.min(), let largest = uppers.max() else { return nil }
-        let candidate = min(smallest, max(lowers.min() ?? smallest, smallest / 10))
-        return decadeRange(lower: candidate, upper: largest)
+        return decadeRange(lower: smallest, upper: largest)
     }
 
     // MARK: Rendering

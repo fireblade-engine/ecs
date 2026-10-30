@@ -318,4 +318,32 @@ PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/plai
 grep -q 'baseline update' "$STUB_LOG" && fail 'a plain run must not store a baseline'
 grep -q 'ECSBenchmarkResults' "$STUB_LOG" && fail 'a plain run must not build the result tool'
 
+# --reuse runs an already built snapshot again: no extraction, resolve or compat build, but the replicate fields reach the tool.
+: > "$STUB_LOG"
+PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/full" --filter 'f.*' --reuse --result "$test_root/reuse-result.json" \
+    --replicate 2 --replicates 3 --round 2 --position 1 --seed 77 > /dev/null || fail '--reuse must succeed on a prepared snapshot'
+[[ -f $test_root/reuse-result.json ]] || fail '--reuse must write the result file'
+grep -q 'package resolve' "$STUB_LOG" && fail '--reuse must not resolve again'
+grep -q 'product ECSCompatBenchmark' "$STUB_LOG" && fail '--reuse must not rebuild the suite'
+[[ $(grep -c 'benchmark baseline update' "$STUB_LOG") == 1 ]] || fail '--reuse must run the benchmarks once'
+grep -q 'tool host-check' "$STUB_LOG" || fail '--reuse must check the host before measuring'
+args="$test_root/stub.log.results"
+for pair in "--replicate 2" "--replicates 3" "--round 2" "--position 1" "--seed 77"; do
+    assert_eq "$(grep -A1 -x -- "${pair% *}" "$args" | tail -1)" "${pair#* }" "${pair% *} must be passed to the result tool"
+done
+# A different ref, a tampered provenance, tampered pins, an unprepared directory or a half-given replicate set is refused.
+: > "$STUB_LOG"
+if PATH="$stubs:$PATH" "$script" --repo "$fixture" t-other --out "$test_root/full" --reuse --result "$test_root/reuse-x.json" > /dev/null 2>&1; then fail '--reuse must refuse an unknown ref'; fi
+git -C "$fixture" tag other-rev "$class_sha"
+if PATH="$stubs:$PATH" "$script" --repo "$fixture" other-rev --out "$test_root/full" --reuse --result "$test_root/reuse-x.json" > /dev/null 2> "$test_root/reuse-x.err"; then fail '--reuse must refuse a snapshot prepared for another requested name'; fi
+grep -q 'provenance' "$test_root/reuse-x.err" || fail 'a provenance mismatch must be reported'
+cp -R "$test_root/full" "$test_root/full-pins"
+echo ' ' >> "$test_root/full-pins/ecs/Benchmarks/Package.resolved"
+if PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/full-pins" --reuse --result "$test_root/reuse-y.json" > /dev/null 2> "$test_root/reuse-y.err"; then fail '--reuse must refuse changed pins'; fi
+grep -q 'differs from the committed pins' "$test_root/reuse-y.err" || fail 'changed pins must be reported'
+mkdir "$test_root/empty-snap"
+if PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/empty-snap" --reuse --result "$test_root/reuse-z.json" > /dev/null 2>&1; then fail '--reuse must refuse an unprepared directory'; fi
+if PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/full" --reuse --result "$test_root/reuse-w.json" --replicate 1 > /dev/null 2>&1; then fail 'half-given replicate options must be refused'; fi
+grep -q 'baseline update' "$STUB_LOG" && fail 'a refused --reuse must not measure'
+
 printf 'benchmark-snapshot tests passed\n'

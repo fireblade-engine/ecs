@@ -27,6 +27,13 @@ Usage: Scripts/benchmark-snapshot.sh <ref> [options]
   --batch-id <id>     batch id recorded in the result (set by the multi-ref runner)
   --prepare-only      stop after writing the snapshot and provenance; do not resolve, build or run
   --build-only        resolve and build, but do not run
+  --reuse             run an already prepared and built snapshot in --out again (needs --out and --result); nothing is
+                      extracted, resolved or rebuilt, but provenance and pins are re-checked against the committed ones
+  --replicate <i>     replicate index (1-based) recorded in the result; needs --replicates, --round, --position and --seed
+  --replicates <k>    replicate count recorded in the result
+  --round <r>         round (1-based) of the replicate
+  --position <p>      position (1-based) of the ref within its round
+  --seed <s>          shuffle seed recorded in the result
   --repo <dir>        repository to read refs from (default: the repository containing this script)
 USAGE
     exit 64
@@ -46,6 +53,12 @@ mode=run
 result=""
 requested=""
 batch_id=""
+reuse=0
+replicate=""
+replicates=""
+round=""
+position=""
+seed=""
 
 while (($#)); do
     case $1 in
@@ -56,6 +69,12 @@ while (($#)); do
         --result) (($# >= 2)) || usage; result=$2; shift 2 ;;
         --requested) (($# >= 2)) || usage; requested=$2; shift 2 ;;
         --batch-id) (($# >= 2)) || usage; batch_id=$2; shift 2 ;;
+        --reuse) reuse=1; shift ;;
+        --replicate) (($# >= 2)) || usage; replicate=$2; shift 2 ;;
+        --replicates) (($# >= 2)) || usage; replicates=$2; shift 2 ;;
+        --round) (($# >= 2)) || usage; round=$2; shift 2 ;;
+        --position) (($# >= 2)) || usage; position=$2; shift 2 ;;
+        --seed) (($# >= 2)) || usage; seed=$2; shift 2 ;;
         --prepare-only) mode=prepare; shift ;;
         --build-only) mode=build; shift ;;
         -h | --help) usage ;;
@@ -70,6 +89,19 @@ if [[ -n $result ]]; then
     [[ ! -e $result ]] || die "result file already exists: $result"
     [[ -d $(dirname -- "$result") ]] || die "result directory does not exist: $(dirname -- "$result")"
     result="$(cd "$(dirname -- "$result")" && pwd)/$(basename -- "$result")"
+fi
+
+replicate_args=()
+if [[ -n $replicate$replicates$round$position$seed ]]; then
+    [[ -n $result ]] || die "replicate options need --result"
+    for value in "$replicate" "$replicates" "$round" "$position" "$seed"; do
+        [[ $value =~ ^[0-9]+$ ]] || die "--replicate, --replicates, --round, --position and --seed must all be given as non-negative integers"
+    done
+    replicate_args=(--replicate "$replicate" --replicates "$replicates" --round "$round" --position "$position" --seed "$seed")
+fi
+if ((reuse)); then
+    [[ $mode == run && -n $result && -n $out ]] || die "--reuse needs --out and --result and cannot be combined with --prepare-only or --build-only"
+    [[ -f $out/provenance.txt && -d $out/ecs ]] || die "--reuse: $out is not a prepared snapshot"
 fi
 
 command -v jq > /dev/null || die "jq is required (provenance and pins are read from Package.resolved)"
@@ -115,13 +147,15 @@ trap on_exit EXIT
 if [[ -z $out ]]; then
     out=$(mktemp -d "${TMPDIR:-/tmp}/benchmark-snapshot.XXXXXXXX")
     cleanup_dir=$out
+elif ((reuse)); then
+    :
 elif [[ -e $out ]]; then
     [[ -d $out && -z $(ls -A "$out") ]] || die "output directory is not empty: $out"
 fi
 mkdir -p "$out"
 out=$(cd "$out" && pwd)
 lib="$out/ecs"
-mkdir "$lib"
+if ((!reuse)); then mkdir "$lib"; fi
 
 # Extract committed trees through a throwaway index: unlike `git archive`, this ignores export-ignore/export-subst.
 extract_tree() { # <sha> <dest> [pathspec]
@@ -130,10 +164,12 @@ extract_tree() { # <sha> <dest> [pathspec]
     GIT_INDEX_FILE=$index git_repo ls-files -z -- ${3:+"$3"} | GIT_INDEX_FILE=$index git_repo checkout-index -z --stdin --prefix="$2/"
     rm -f "$index"
 }
-extract_tree "$ref_sha" "$lib"
-rm -rf "$lib/Benchmarks"
-extract_tree "$suite_sha" "$lib" Benchmarks
-rm -rf "$lib/Benchmarks/ComparisonHarness" "$lib/Benchmarks/graft"
+if ((!reuse)); then
+    extract_tree "$ref_sha" "$lib"
+    rm -rf "$lib/Benchmarks"
+    extract_tree "$suite_sha" "$lib" Benchmarks
+    rm -rf "$lib/Benchmarks/ComparisonHarness" "$lib/Benchmarks/graft"
+fi
 
 component_file="$lib/Sources/FirebladeECS/Component.swift"
 [[ -f $component_file ]] || die "snapshot of $ref has no Sources/FirebladeECS/Component.swift"
@@ -179,18 +215,28 @@ NOTE
     mv "$out/provenance.txt.tmp" "$out/provenance.txt"
 }
 
-cp "$lib/Benchmarks/Package.resolved" "$scratch/Package.resolved.committed"
-write_provenance
+if ((reuse)); then
+    # The snapshot was prepared and built by an earlier call: it must still be exactly that ref and suite with the committed pins.
+    expected_provenance=$(printf 'ref: %s\nref_sha: %s\nsuite_sha: %s\ncomponent_model: %s' "$requested" "$ref_sha" "$suite_sha" "$component_model")
+    [[ $(head -n 4 "$out/provenance.txt") == "$expected_provenance" ]] || die "--reuse: the provenance of $out does not match $requested ($ref_sha) and suite $suite_sha"
+    git_repo show "$suite_sha:Benchmarks/Package.resolved" > "$scratch/Package.resolved.committed"
+    cmp -s "$scratch/Package.resolved.committed" "$lib/Benchmarks/Package.resolved" || die "--reuse: Package.resolved of $out differs from the committed pins"
+else
+    cp "$lib/Benchmarks/Package.resolved" "$scratch/Package.resolved.committed"
+    write_provenance
+fi
 printf 'snapshot: %s\n' "$out"
 
 [[ $mode != prepare ]] || exit 0
 
 cd "$lib/Benchmarks"
 export ECS_BENCHMARK_SUITE=shared
-swift package resolve --force-resolved-versions
-cmp -s "$scratch/Package.resolved.committed" Package.resolved || die "resolving changed Package.resolved; commit the intended pins first"
-write_provenance
-swift build -c release --product ECSCompatBenchmark --force-resolved-versions ${swift_flags[@]+"${swift_flags[@]}"}
+if ((!reuse)); then
+    swift package resolve --force-resolved-versions
+    cmp -s "$scratch/Package.resolved.committed" Package.resolved || die "resolving changed Package.resolved; commit the intended pins first"
+    write_provenance
+    swift build -c release --product ECSCompatBenchmark --force-resolved-versions ${swift_flags[@]+"${swift_flags[@]}"}
+fi
 
 [[ $mode != build ]] || exit 0
 
@@ -237,7 +283,7 @@ batch_args=()
 "$bin_path/ECSBenchmarkResults" write \
     --baseline "$baseline_file" --out "$result" --run-id "$run_id" --started "$started" --finished "$finished" \
     --ref "$requested" --ref-sha "$ref_sha" --suite-sha "$suite_sha" --filter "$filter" \
-    --package-resolved Package.resolved --swift-version "$(swift --version 2>&1)" ${batch_args[@]+"${batch_args[@]}"} \
+    --package-resolved Package.resolved --swift-version "$(swift --version 2>&1)" ${batch_args[@]+"${batch_args[@]}"} ${replicate_args[@]+"${replicate_args[@]}"} \
     || keep_failed "writing the result file failed"
 "$bin_path/ECSBenchmarkResults" validate "$result" > /dev/null || keep_failed "the written result file did not validate"
 printf 'result: %s\n' "$result"

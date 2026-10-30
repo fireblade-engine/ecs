@@ -82,16 +82,22 @@ cd Benchmarks && swift run -c release ECSBenchmarkResults validate <result.json>
 
 ## Reports
 
-`make benchmark-report` renders a Markdown report from saved result files only (two or more); it builds the `ECSBenchmarkResults` tool in release mode and never runs benchmarks.
+`make benchmark-report` renders a report directory from saved result files only (two or more); it builds the `ECSBenchmarkResults` tool in release mode and never runs benchmarks.
 
 ```sh
 make benchmark-report RESULTS="Benchmarks/.results/<run>/1.4.3-<sha>.json Benchmarks/.results/<run>/main-<sha>.json" \
-    REPORT_OUTPUT=report.md REPORT_BASELINE=1.4.3 REPORT_TITLE="ECS 1.4.3 vs main"
+    REPORT_DIR=report REPORT_BASELINE=1.4.3 REPORT_TITLE="ECS 1.4.3 vs main"
 ```
 
-`REPORT_OUTPUT` defaults to `Benchmarks/.results/report.md` and an existing output file is refused unless `REPORT_OVERWRITE=1` is set; `REPORT_BASELINE` (a requested ref name) defaults to the first file; `REPORT_TITLE` is optional. The report has a provenance table per ref, warnings about differing configuration, parity notes and the unsupported list, then per workload, scale and metric a table of all statistics with deltas and a Mermaid chart of p50. Values missing or incomparable print `unavailable`, never zero.
+`REPORT_DIR` defaults to `Benchmarks/.results/report`. A directory that already holds anything is refused unless `REPORT_OVERWRITE=1` is set; the overwrite replaces only generated files (`REPORT.md`, `workloads/*.md`, `img/*.svg`) and never touches other files or the inputs. `REPORT_BASELINE` (a requested ref name) defaults to the first file; `REPORT_TITLE` is optional.
 
-`Documentation/Benchmarks/REPORT.md` is generated from saved result files with this command; do not edit it by hand.
+The directory holds:
+
+- `REPORT.md`: header and notes, a summary table (speed against the baseline at 1,024, 65,536 and the largest entity count), then one section per workload with two SVG plots and the wall-clock tables, then provenance, series pairing, parity notes and the unsupported list.
+- `workloads/<identity>.md`: every metric of the workload as tables (mean, sd, n, and deltas for non-baseline series) plus percentile tables.
+- `img/<identity>-per-entity.svg` and `-total.svg`: log-log plots of the wall-clock mean per iteration (cost per entity, and total time) with a shaded ±1 sd band per series. The SVGs are written by hand, follow the light or dark colour scheme, and omit entity count 0, which a log axis cannot show.
+
+Tables are HTML (`colspan` header: ref, backend, columns) so GitHub and VS Code render the grouping. Every unit is in its column header; values keep at most the three significant digits the Benchmark package measures. `speed (×)` is above 1 when the series is better than the baseline, whichever the metric's polarity. `sig.` is a two-sided Welch t-test (α = 0.05) on mean, sd and n, an approximation for skewed timing distributions. Values missing or incomparable print `unavailable` (the reason is in the cell's tooltip), never zero.
 
 ## Make targets
 
@@ -99,6 +105,6 @@ make benchmark-report RESULTS="Benchmarks/.results/<run>/1.4.3-<sha>.json Benchm
 | :--- | :--- |
 | `make benchmark` | Run the broad package benchmarks of this package |
 | `make benchmark-compare REFS=a,b,c [BENCHMARK_FILTER=...]` | Measure refs and save one validated result file each |
-| `make benchmark-report RESULTS="a.json b.json" [REPORT_OUTPUT=...] [REPORT_BASELINE=...] [REPORT_TITLE=...] [REPORT_OVERWRITE=1]` | Render a report from saved results |
+| `make benchmark-report RESULTS="a.json b.json" [REPORT_DIR=...] [REPORT_BASELINE=...] [REPORT_TITLE=...] [REPORT_OVERWRITE=1]` | Render a report directory from saved results |
 | `make test-benchmarks` | Swift tests of this package |
 | `make test-benchmark-scripts` | Shell tests of the runner and snapshot scripts |

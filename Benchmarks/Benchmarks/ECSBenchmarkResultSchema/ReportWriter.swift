@@ -72,11 +72,12 @@ struct ReportWriter {
         lines = []
         lines.append("# \(Self.text(title))")
         lines.append("")
-        lines.append("Jump to: [Glossary](#\(ReportGlossary.anchor)) · [Methods](#methods)")
+        lines.append("Jump to: [How to read this report](#\(ReportGlossary.guideAnchor)) · [Glossary](#\(ReportGlossary.anchor)) · [Methods](#methods)")
         lines.append("")
         header()
         warnings()
         summary(identities, names)
+        lines += ReportGuide(model: model).lines()
         lines.append("## Workloads")
         lines.append("")
         for identity in identities {

@@ -43,6 +43,7 @@ Upgrading from 1.x? Start with <doc:MigratingToFirebladeECS2>. For a more detail
 - <doc:ComponentMacro>
 - <doc:ReactingToNexusEvents>
 - <doc:ChoosingAStorage>
+- <doc:Benchmarks>
 - <doc:SavingAndLoadingScenes>
 - <doc:MigratingToFirebladeECS2>
 - ``Nexus``

@@ -116,6 +116,25 @@ struct ComponentStorageTests {
         return (storage, ids)
     }
 
+    @Test func pagedSparseIndexGrowsBeyondTheFirstPage() {
+        let index = Nexus.PagedSparseIndex()
+        let page = UInt32(Nexus.PagedSparseIndex.pageSize)
+        #expect(index.slot(of: 0) == -1)
+        #expect(index.slot(of: 5 * page) == -1)
+        index.set(0, slot: 0)
+        index.set(page - 1, slot: 1)
+        index.set(page, slot: 2)
+        index.set(40 * page + 7, slot: 3)
+        #expect([0, page - 1, page, 40 * page + 7].map { index.slot(of: $0) } == [0, 1, 2, 3])
+        #expect(index.slot(of: 1) == -1)
+        #expect(index.slot(of: 40 * page + 8) == -1)
+        #expect(index.allocatedPageCount == 3)
+        index.clear(0)
+        #expect(index.slot(of: 0) == -1)
+        index.set(0, slot: 9)
+        #expect(index.slot(of: 0) == 9)
+    }
+
     /// The paged sparse index is internal to the sparse-set storage.
     @Test func pagingBoundaries() {
         let page = Int(Nexus.PagedSparseIndex.pageSize)

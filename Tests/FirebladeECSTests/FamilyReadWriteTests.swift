@@ -36,6 +36,24 @@ private func makeNexus(_ storage: Nexus.StorageKind, count: Int) -> Nexus {
 }
 
 @Suite struct FamilyReadWriteTests {
+    @Test(arguments: Nexus.StorageKind.allCases) func cachedExclusionQuerySeesLaterMatchingAndExcludedTables(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
+        let family = nexus.family(requiresAll: Comp1.self, excludesAll: Comp3.self)
+        func sum() -> Int {
+            var total = 0
+            family.forEach(reading: Comp1.self) { total += $0.value }
+            return total
+        }
+        nexus.createEntity(with: Comp1(1))
+        #expect(sum() == 1)
+        nexus.createEntity(with: Comp1(10), Comp2(0)) // matching table, new
+        nexus.createEntity(with: Comp1(100), Comp3(0)) // excluded table, new
+        nexus.createEntity(with: Comp1(1000), Comp2(0), Comp3(0)) // excluded table, new
+        #expect(sum() == 11)
+        nexus.createEntity(with: Comp1(10000), Comp4(0)) // matching, new
+        #expect(sum() == 10011)
+    }
+
     @Test(arguments: Nexus.StorageKind.allCases) func cachedFamilyQuerySeesTablesCreatedLater(_ storage: Nexus.StorageKind) {
         let nexus = Nexus(storage: storage)
         let family = nexus.family(requiresAll: Comp1.self)

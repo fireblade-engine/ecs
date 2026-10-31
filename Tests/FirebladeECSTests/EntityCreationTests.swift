@@ -144,6 +144,39 @@ private final class CreationRecorder: NexusEventDelegate, @unchecked Sendable {
         #expect(families[0].all.count == 0)
     }
 
+    @Test(arguments: Nexus.StorageKind.allCases) func directCreationWithUnobservedSetsAndReusedSlotsMatchesStepByStep(_ storage: Nexus.StorageKind) {
+        let direct = Nexus(storage: storage)
+        let stepped = Nexus(storage: storage)
+        let recorder = CreationRecorder()
+        stepped.delegate = recorder // forces the step by step path
+        withExtendedLifetime(recorder) {
+            let families = [Self.observe(direct), Self.observe(stepped)]
+            var created: [[Entity]] = []
+            for nexus in [direct, stepped] {
+                // a set no family observes
+                let lone = nexus.createEntity(with: Comp4(1), Comp3(2))
+                let kept = nexus.createEntity(with: Comp1(1), Comp2(2))
+                nexus.destroy(entity: lone)
+                // reuses the slot of `lone`
+                let reused = nexus.createEntity(with: Comp2(5), Comp1(6))
+                created.append([lone, kept, reused])
+            }
+            for i in 0 ..< 3 {
+                #expect(created[0][i].identifier == created[1][i].identifier)
+            }
+            #expect(created[0][2].identifier.index == created[0][0].identifier.index)
+            #expect(!direct.isAlive(created[0][0].identifier))
+            #expect(families[0].all.entities.map(\.identifier) == families[1].all.entities.map(\.identifier))
+            #expect(families[0].both.count == 2)
+            #expect(families[0].both.entities.map(\.identifier) == families[1].both.entities.map(\.identifier))
+            #expect(direct.numComponents == stepped.numComponents)
+            #expect(created[0][2].get(Comp1.self) == Comp1(6))
+            #expect(created[0][2].get(Comp2.self) == Comp2(5))
+            #expect(created[0][2].get(Comp3.self) == nil)
+            #expect(created[0][2].get(Comp4.self) == nil)
+        }
+    }
+
     @Test(arguments: Nexus.StorageKind.allCases) func delegateStillSeesComponentsGainedOneByOne(_ storage: Nexus.StorageKind) {
         let nexus = Nexus(storage: storage)
         let recorder = CreationRecorder()

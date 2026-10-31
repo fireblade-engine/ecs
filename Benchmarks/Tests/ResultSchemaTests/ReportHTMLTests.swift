@@ -112,6 +112,16 @@ struct ReportHTMLTests {
     }
 
     @Test
+    func refLabelsInProseDisplayVerbatim() throws {
+        var files = GuideFixtures.replicated()
+        for index in files.indices where files[index].ref.requested == "main" { files[index].ref.requested = "a&lt;*b*[c](#d)" }
+        let html = try render(files).html
+        // Entities, emphasis and link syntax of a label are shown as typed, in the reading notes and the protocol.
+        #expect(html.components(separatedBy: "<code>a&amp;lt;*b*[c](#d)</code>: 10 of 10").count >= 3, "reading notes, protocol and guide")
+        #expect(!html.contains("<em>b</em>") && !html.contains(##"<a href="#d">c</a>"##))
+    }
+
+    @Test
     func everyWorkloadHasASectionAndATableOfContentsEntry() throws {
         let html = try render().html
         for workload in [ReportFixtures.w1, ReportFixtures.w2, ReportFixtures.w3] {

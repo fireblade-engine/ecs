@@ -17,6 +17,7 @@ struct ReportMarkupTests {
         #expect(ReportMarkup.inline("**bold** and *italic* and `code`") == "<strong>bold</strong> and <em>italic</em> and <code>code</code>")
         #expect(ReportMarkup.inline("[glossary](#glossary)") == ##"<a href="#glossary">glossary</a>"##)
         #expect(ReportMarkup.inline("[x](https://example.com/a)") == "x", "external targets never become links")
+        #expect(ReportMarkup.inline("[x](//host/x)") == "x" && ReportMarkup.inline("[x](docs/a.md)") == "x" && ReportMarkup.inline("[x](javascript:1)") == "x", "only # targets are links")
         #expect(ReportMarkup.inline("(1 ÷ speed − 1) × 100") == "(1 ÷ speed − 1) × 100")
         #expect(ReportMarkup.inline("odd ` backtick") == "odd ` backtick")
     }
@@ -41,5 +42,16 @@ struct ReportMarkupTests {
         #expect(ReportMarkup.slug("Glossary") == "glossary")
         #expect(ReportMarkup.slug("6. Replicates (k) and interleaving") == "6-replicates-k-and-interleaving")
         #expect(ReportMarkup.slug("What `q` is") == "what-q-is")
+    }
+}
+
+@Suite
+struct ReportTextEscapingTests {
+    @Test
+    func textEscapesMarkupSoDataDisplaysVerbatim() {
+        let value = #"a*b*[c](#d) \ &lt; <x>"#
+        let html = ReportMarkup.inline(ReportWriter.text(value))
+        #expect(html == #"a*b*[c](#d) \ &amp;lt; &lt;x&gt;"#)
+        #expect(ReportMarkup.inline("`" + ReportWriter.codeText(value) + "`") == "<code>" + #"a*b*[c](#d) \ &amp;lt; &lt;x&gt;"# + "</code>")
     }
 }

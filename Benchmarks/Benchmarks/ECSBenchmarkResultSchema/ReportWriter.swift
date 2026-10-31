@@ -149,17 +149,23 @@ struct ReportWriter {
         return counts.joined(separator: "; ")
     }
 
+    /// The same for the Markdown-subset prose: labels sit in code spans, so entities, `*` and brackets display verbatim.
+    private var replicateSummaryText: String {
+        let counts = model.groups.map { "`\(Self.codeText($0.label))`: \($0.fileIndices.count) of \($0.expectedReplicates)" }
+        return counts.joined(separator: "; ")
+    }
+
     // MARK: Header
 
     private mutating func header() {
         lines.append("## Reading notes")
         lines.append("")
         let baseline = model.groups[model.baselineGroup]
-        lines.append("- Baseline: `\(Self.code(baseline.label))` (\(Self.text(baseline.sha)))")
+        lines.append("- Baseline: `\(Self.codeText(baseline.label))` (\(Self.text(baseline.sha)))")
         lines.append("- Inputs: \(model.files.count) result files, \(model.groups.count) refs, \(model.series.count) series (ref, component model, backend)")
-        lines.append("- Replicates per ref: \(replicateSummary)")
+        lines.append("- Replicates per ref: \(replicateSummaryText)")
         let filters = Set(model.files.map(\.suite.filter)).sorted()
-        lines.append("- Selection filter: " + filters.map { "`\(Self.code($0))`" }.joined(separator: ", "))
+        lines.append("- Selection filter: " + filters.map { "`\(Self.codeText($0))`" }.joined(separator: ", "))
         lines.append("- Every replicate is an independent process; the replicate is the unit of analysis. `median` is the median over replicates of each replicate's median per iteration. `CI low` and `CI high` bound the 95% distribution-free confidence interval of that median (exact coverage in the methods section). `replicates` is the number of replicates behind the value, `iterations` the median number of measurements per replicate (time-based sampling, so it differs between series by design).")
         lines.append("- Non-baseline series add, for wall clock only, `speed (×)` = baseline ÷ series (above 1 is faster) with its exact 95% CI, `change (%)` = (1 ÷ speed − 1) × 100, `q` (Benjamini–Hochberg adjusted p of an exact Mann–Whitney test across every wall-clock comparison of this report) and a `verdict`: `faster`/`slower` need q < \(Self.percent(ReportStatistics.significanceLevel)) and a CI entirely outside the ±\(Self.percent(ReportStatistics.defaultDelta)) zone, `equivalent` needs the CI entirely inside it. Other metrics are descriptive only.")
         lines.append("- Every unit is in its column header and applies to the whole column of that table. Values keep at most the \(ReportFormat.significantDigits) significant digits the package measured. Anything missing or not comparable is `unavailable`, and a metric the package did not record (throughput of an iteration of about 2 s or longer) is `n/a` (hover for the reason), never zero. `n/a (k replicates)` means the statistic needs more replicates.")
@@ -350,7 +356,7 @@ struct ReportWriter {
         for identity in identities {
             let id = ids[identity]!
             emit(["<section class=\"workload\" id=\"\(ReportMarkup.escape(id))\">"])
-            lines.append("### `\(Self.code(identity))`")
+            lines.append("### `\(Self.codeText(identity))`")
             lines.append("")
             var parity: [String: [String]] = [:]
             for group in model.groups {
@@ -579,7 +585,7 @@ struct ReportWriter {
             let seeds = Set(model.files.compactMap { $0.run.replicate?.seed }).sorted()
             let batches = Set(model.files.compactMap(\.run.batchId)).sorted()
             let counts = Set(model.groups.map(\.expectedReplicates)).sorted()
-            lines.append("- **Protocol:** each ref is built once and run k = \(counts.map(String.init).joined(separator: ", ")) times as independent processes (\(replicateSummary)). Replicates run in interleaved rounds: each round runs every ref once, in an order shuffled by the recorded seed (seed \(seeds.map(String.init).joined(separator: ", ")); batch \(batches.isEmpty ? "none recorded" : batches.map { "`\(Self.code($0))`" }.joined(separator: ", "))). The suite settings are identical for all refs.")
+            lines.append("- **Protocol:** each ref is built once and run k = \(counts.map(String.init).joined(separator: ", ")) times as independent processes (\(replicateSummaryText)). Replicates run in interleaved rounds: each round runs every ref once, in an order shuffled by the recorded seed (seed \(seeds.map(String.init).joined(separator: ", ")); batch \(batches.isEmpty ? "none recorded" : batches.map { "`\(Self.codeText($0))`" }.joined(separator: ", "))). The suite settings are identical for all refs.")
         } else {
             lines.append("- **Protocol:** the inputs carry no replicate provenance, so each counts as replicate 1 of 1 (one process per ref). Only medians and within-run spread are reported; intervals, tests and verdicts need replicates.")
         }
@@ -630,7 +636,7 @@ struct ReportWriter {
         } else {
             let shown = flagged.prefix(20).map { item -> String in
                 let tau = item.tau.map { String(format: "τ=%+.2f", $0) } ?? "τ undefined"
-                return "`\(Self.code(model.series[item.series].label))` / `\(Self.code(item.key.identity))` @ \(ReportFormat.grouped(item.key.scale)) (\(tau), q=\(ReportFormat.qValue(item.q ?? 1)))"
+                return "`\(Self.codeText(model.series[item.series].label))` / `\(Self.codeText(item.key.identity))` @ \(ReportFormat.grouped(item.key.scale)) (\(tau), q=\(ReportFormat.qValue(item.q ?? 1)))"
             }
             text += ": " + shown.joined(separator: "; ") + (flagged.count > 20 ? "; and \(flagged.count - 20) more." : ".")
         }
@@ -744,13 +750,21 @@ struct ReportWriter {
 
     // MARK: Text
 
-    /// Prose text for the Markdown subset: `&`, `<`, `>` as entities (`ReportMarkup` escapes exactly once), one line.
+    /// Prose text for the Markdown subset: `&`, `<`, `>` as entities (`ReportMarkup` escapes exactly once), `\`, `*`, `[` and `]`
+    /// backslash-escaped so data never turns into emphasis or links, one line.
     static func text(_ value: String) -> String {
-        entities(value).replacingOccurrences(of: "\n", with: " ")
+        var escaped = value.replacingOccurrences(of: "\\", with: "\\\\")
+        for mark in ["*", "[", "]"] { escaped = escaped.replacingOccurrences(of: mark, with: "\\" + mark) }
+        return entities(escaped).replacingOccurrences(of: "\n", with: " ")
     }
 
     private static func entities(_ value: String) -> String {
         value.replacingOccurrences(of: "&", with: "&amp;").replacingOccurrences(of: "<", with: "&lt;").replacingOccurrences(of: ">", with: "&gt;")
+    }
+
+    /// The text of a code span of the Markdown subset: no backticks, entities written so that it displays verbatim.
+    static func codeText(_ value: String) -> String {
+        text(code(value))
     }
 
     /// Inside a code span: no backticks.

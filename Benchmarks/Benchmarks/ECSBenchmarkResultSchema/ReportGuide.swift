@@ -68,7 +68,7 @@ struct ReportGuide {
     }
 
     private func place(_ example: Example) -> String {
-        "`\(ReportWriter.code(example.key.identity))` at \(ReportFormat.grouped(example.key.scale)) entities, `\(ReportWriter.code(model.series[example.series].label))`"
+        "`\(ReportWriter.codeText(example.key.identity))` at \(ReportFormat.grouped(example.key.scale)) entities, `\(ReportWriter.codeText(model.series[example.series].label))`"
     }
 
     /// Speed and CI ends; when the ends would print equal at 3 significant digits, both ends get extra decimals until they differ.
@@ -110,7 +110,7 @@ struct ReportGuide {
     }
 
     private func unavailableReason() -> String {
-        let counts = model.groups.map { "\(ReportWriter.text($0.label)): \($0.fileIndices.count)" }.joined(separator: ", ")
+        let counts = model.groups.map { "`\(ReportWriter.codeText($0.label))`: \($0.fileIndices.count)" }.joined(separator: ", ")
         return "Intervals, tests and verdicts need at least 2 replicates per ref and this report has (\(counts)), so there are no confidence intervals, `q` or verdicts."
     }
 
@@ -240,7 +240,7 @@ struct ReportGuide {
         lines.append("- A **replicate** is one complete, independent run of a ref in its own process. `k` is how many a ref has. Iterations within one run share their warm-up, memory layout and machine state, so they are not independent evidence; the replicates are.")
         lines.append("- More replicates give narrower CIs and make verdicts possible: an interval of the median needs k ≥ 6, a speed interval about 4 per side, and the test can only reach q < \(level) with enough of them (k = 10 is the practical minimum).")
         lines.append("- Runs are **interleaved**: each round runs every ref once, in a shuffled order, instead of all runs of one ref and then all of the other. A slow minute on the machine (thermal throttling, a background job) then hits all refs alike instead of one, and the drift check can notice it.")
-        let counts = model.groups.map { "\(ReportWriter.text($0.label)): \($0.fileIndices.count) of \($0.expectedReplicates)" }.joined(separator: "; ")
+        let counts = model.groups.map { "`\(ReportWriter.codeText($0.label))`: \($0.fileIndices.count) of \($0.expectedReplicates)" }.joined(separator: "; ")
         lines.append("- **In this report:** replicates per ref: \(counts).")
         lines.append("")
         return lines

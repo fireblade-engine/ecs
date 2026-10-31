@@ -51,7 +51,7 @@ struct ReportGuideTests {
         #expect(body.contains("→ the true speedup is very likely between"))
         #expect(body.contains("Narrowest CI in this report") && body.contains("light band (IQR of single iterations)"))
         #expect(body.contains("\(model.comparisons.values.filter { $0.p != nil }.count) wall-clock comparisons were tested"))
-        #expect(body.contains("1.4.3: 10 of 10; main: 10 of 10"))
+        #expect(body.contains("`1.4.3`: 10 of 10; `main`: 10 of 10"))
         #expect(body.contains("Example `faster`") && body.contains("Example `equivalent`"))
         #expect(!body.contains("Inference is unavailable in this report"))
     }
@@ -91,12 +91,12 @@ struct ReportGuideTests {
     func singleReplicateStatesThatInferenceIsUnavailable() throws {
         let body = try guide(report(GuideFixtures.single()))
         #expect(body.contains("**Inference is unavailable in this report.**"))
-        #expect(body.contains("1.4.3: 1, main: 1"))
+        #expect(body.contains("`1.4.3`: 1, `main`: 1"))
         #expect(body.contains("inference is unavailable and it cannot be called"))
         #expect(body.contains("0 faster, 0 slower, 0 equivalent, 0 inconclusive"))
         #expect(body.contains("no series has enough replicates for an error bar"))
         #expect(body.contains("no test was run"))
         #expect(!body.contains("the true speedup is very likely"))
-        #expect(body.contains("### 6. Replicates (k) and interleaving") && body.contains("1.4.3: 1 of 1"))
+        #expect(body.contains("### 6. Replicates (k) and interleaving") && body.contains("`1.4.3`: 1 of 1"))
     }
 }

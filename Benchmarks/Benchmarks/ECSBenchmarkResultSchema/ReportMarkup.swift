@@ -56,18 +56,27 @@ enum ReportMarkup {
         return out
     }
 
+
+    /// Backslash escapes: `\\`, `\*`, `\[` and `\]` stand for the literal character (written by `ReportWriter.text`).
+    private static let escapes: [(String, String)] = [("\\\\", "\u{E000}"), ("\\*", "\u{E001}"), ("\\[", "\u{E002}"), ("\\]", "\u{E003}")]
+    private static let literals = ["\u{E000}": "\\", "\u{E001}": "*", "\u{E002}": "[", "\u{E003}": "]"]
+
     nonisolated(unsafe) private static let codeSpan = try! Regex(#"`([^`]*)`"#)
 
     /// Inline markup of one line: code spans, bold, italic, links; everything else is escaped text.
     static func inline(_ line: String) -> String {
+        var protected = line
+        for (sequence, placeholder) in escapes { protected = protected.replacingOccurrences(of: sequence, with: placeholder) }
         var out = ""
-        var rest = line[...]
+        var rest = protected[...]
         while let match = rest.firstMatch(of: codeSpan) {
             out += styled(escape(decodeEntities(String(rest[..<match.range.lowerBound]))))
             out += "<code>" + escape(decodeEntities(match.output[1].substring.map(String.init) ?? "")) + "</code>"
             rest = rest[match.range.upperBound...]
         }
-        return out + styled(escape(decodeEntities(String(rest))))
+        out += styled(escape(decodeEntities(String(rest))))
+        for (placeholder, literal) in literals { out = out.replacingOccurrences(of: placeholder, with: literal) }
+        return out
     }
 
     nonisolated(unsafe) private static let bold = try! Regex(#"\*\*(.+?)\*\*"#)
@@ -80,8 +89,8 @@ enum ReportMarkup {
         text = text.replacing(link) { match in
             let label = match.output[1].substring.map(String.init) ?? ""
             let target = match.output[2].substring.map(String.init) ?? ""
-            // Only in-page anchors and relative paths become links.
-            guard target.hasPrefix("#") || !target.contains(":") else { return label }
+            // Only in-page anchors become links; any other target is shown as plain text.
+            guard target.hasPrefix("#") else { return label }
             return "<a href=\"\(target)\">\(label)</a>"
         }
         return text

@@ -134,6 +134,8 @@ enum CompatWorkload: String, CaseIterable, Sendable {
 
     /// Shared sampling note: the package budget includes untimed setup and has no minimum iteration count.
     private static let perIterationSetupNote = "per-iteration untimed setup counts against the package's 0.5 s wall budget, so measured time and sample count are below upstream's 0.5 s of measured time, especially at large scales"
+    private static let declarationNote = "component types are declared with @Component (stored static componentIndex) on value revisions and by plain class conformance on 1.x; the generic CompatBox stays plain on every revision"
+
     private static let persistentNote = "state is built once and kept across iterations as upstream; sampling is time-based (0.5 s, no warmup) so pass count and world state can differ by revision, as upstream"
 
     var parity: CompatParity {
@@ -141,17 +143,17 @@ enum CompatWorkload: String, CaseIterable, Sendable {
         case .createNoEntities, .createEmpty, .createMinimal, .destroyMinimal:
             .adapted("nexus teardown is outside the timed region; upstream times registry teardown; \(Self.perIterationSetupNote)")
         case .lookupNone:
-            .adapted("payload is a single Int per component vs upstream float structs; gets return class references on 1.x and value copies on value revisions; the miss is a get of an absent component; entities are created outside timing; \(Self.persistentNote)")
+            .adapted("payload is a single Int per component vs upstream float structs; gets return class references on 1.x and value copies on value revisions; the miss is a get of an absent component; entities are created outside timing; \(Self.declarationNote); \(Self.persistentNote)")
         case .lookupOne, .lookupTwo:
-            .adapted("payload is a single Int per component vs upstream float structs; gets return class references on 1.x and value copies on value revisions; two separate gets per entity for lookupTwo; entities are created outside timing; \(Self.persistentNote)")
+            .adapted("payload is a single Int per component vs upstream float structs; gets return class references on 1.x and value copies on value revisions; two separate gets per entity for lookupTwo; entities are created outside timing; \(Self.declarationNote); \(Self.persistentNote)")
         case .lookupMixedThree:
-            .adapted("population and lookup count match; payload is a single Int per component and gets return the component; \(Self.persistentNote)")
+            .adapted("population and lookup count match; payload is a single Int per component and gets return the component; \(Self.declarationNote); \(Self.persistentNote)")
         case .iterationOne, .iterationTwo:
             .adapted("each revision uses its native family iteration (forEach(reading:) value copies on value revisions, plain iteration over class references on 1.x); family built before timing; upstream boundary varies by wrapper; \(Self.persistentNote)")
         case .iterationMixedThree:
             .adapted("membership recipe matches upstream; each revision uses its native family iteration (value copies vs class references); family built before timing; \(Self.persistentNote)")
         case .removeAdd:
-            .adapted("payload is a single Int vs upstream float structs; every set allocates a new class instance on 1.x vs a value copy on value revisions; nexus teardown is outside the timed region; every pass returns the entities to their initial occupancy; \(Self.persistentNote)")
+            .adapted("payload is a single Int vs upstream float structs; every set allocates a new class instance on 1.x vs a value copy on value revisions; nexus teardown is outside the timed region; every pass returns the entities to their initial occupancy; \(Self.declarationNote); \(Self.persistentNote)")
         case .add:
             .adapted("component one is removed from the whole batch before timing; upstream pauses to remove per entity; \(Self.perIterationSetupNote)")
         case .systemBasicUniform, .systemBasicMixed:

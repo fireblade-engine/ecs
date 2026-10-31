@@ -13,6 +13,10 @@ import PackageDescription
 // reference benchmarks in ECSBenchmark do not support.
 let sharedSuiteOnly = ProcessInfo.processInfo.environment["ECS_BENCHMARK_SUITE"] == "shared"
 
+// ECS_BENCHMARK_CLASS_COMPONENTS=1 (set by the snapshot script together with -DECS_CLASS_COMPONENTS) drops the macro
+// product, which revisions with class components do not have. Value revisions declare their components with @Component.
+let classComponents = ProcessInfo.processInfo.environment["ECS_BENCHMARK_CLASS_COMPONENTS"] == "1"
+
 let package = Package(
     name: "ECSBenchmarks",
     platforms: [
@@ -31,7 +35,7 @@ let package = Package(
             dependencies: [
                 .product(name: "FirebladeECS", package: "ecs"),
                 .product(name: "Benchmark", package: "benchmark")
-            ],
+            ] + (classComponents ? [] : [.product(name: "FirebladeECSMacros", package: "ecs")]),
             path: "Benchmarks/ECSCompatSuite"
         ),
         .executableTarget(

@@ -195,6 +195,7 @@ strip_comments() {
 if strip_comments "$component_file" | grep -Eq '(^|[[:space:]])protocol[[:space:]]+Component[[:space:]]*:[[:space:]]*([A-Za-z_]+[[:space:]]*,[[:space:]]*)*AnyObject([^A-Za-z0-9_]|$)'; then
     component_model=class
     swift_flags=(-Xswiftc -DECS_CLASS_COMPONENTS)
+    export ECS_BENCHMARK_CLASS_COMPONENTS=1
 else
     component_model=value
     swift_flags=()

@@ -4,6 +4,9 @@
 // ECS_CLASS_COMPONENTS is set by Scripts/benchmark-snapshot.sh when the snapshot declares
 // `protocol Component: AnyObject` (FirebladeECS 1.x). The condition is never selected by ref name.
 import FirebladeECS
+#if !ECS_CLASS_COMPONENTS
+    import FirebladeECSMacros
+#endif
 
 // The minimal entity of the matrix carries two components (first, second); the mixed lookup workload adds a third.
 // Initializer shape `init(value:)` is the same in both models, so shared code never branches on the model.
@@ -30,15 +33,19 @@ import FirebladeECS
         }
     }
 #else
-    /// Value-component revision (`Component: Sendable`) with selectable storage backends.
+    /// Value-component revision (`Component: Sendable`) with selectable storage backends, declared with `@Component`
+    /// (stored `static let componentIndex`, the documented fast path). Class revisions use plain class conformance.
+    @Component
     struct CompatFirstComponent: Component, Sendable {
         var value: Int
     }
 
+    @Component
     struct CompatSecondComponent: Component, Sendable {
         var value: Int
     }
 
+    @Component
     struct CompatThirdComponent: Component, Sendable {
         var value: Int
     }

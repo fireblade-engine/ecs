@@ -283,4 +283,15 @@ for entry in entries:
                     f.write(content)
 PYTHON_EOF
 
+# Publish the self-contained benchmark report at <site>/benchmarks/. Done after the version-picker injection above, which
+# rewrites every top-level directory's index.html, so the report stays untouched. "benchmarks" matches no version regex.
+BENCHMARK_REPORT="${ROOT}/Documentation/Benchmarks/BenchmarkReport.html"
+if [ -f "${BENCHMARK_REPORT}" ]; then
+    echo "==> Publishing benchmark report to ${OUTPUT_DIR}/benchmarks/index.html..."
+    mkdir -p "${OUTPUT_DIR}/benchmarks"
+    cp "${BENCHMARK_REPORT}" "${OUTPUT_DIR}/benchmarks/index.html"
+else
+    echo "==> Skipping benchmark report: ${BENCHMARK_REPORT} not found."
+fi
+
 echo "Documentation sync, manifest, catalog landing page, and version picker generation complete."

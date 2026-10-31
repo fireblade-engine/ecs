@@ -225,6 +225,16 @@ Modeled on upstream's README generator (`scripts/gen-benchmark-report`, MIT, Pyt
   - The sample-count warning becomes one note, since time-based sampling makes counts differ by design.
 - **Approval:** the user approves a test render from the intermediate run `Benchmarks/.results/20261030T092516Z` before the full run.
 
+### Report v3 design (user decisions 2026-10-31; replaces the v2 output format)
+
+Presentation only: the statistics, verdicts and table columns of v2 and Statistical design v3 are unchanged.
+
+- **Output:** one self-contained file `DIR/BenchmarkReport.html` (inline CSS and script, data embedded as JSON, no external resources; works offline and from `file://`). `REPORT.md`, `workloads/` and `img/` are gone; the workload pages are sections of the HTML, with a table of contents.
+- **Plots:** drawn in the page from the embedded data. Each plot has a Log/Linear toggle that redraws it in place, plus one global toggle. Hovering or focusing a point shows a tooltip (ref, backend, entities, median, 95% CI, speed and verdict), crosshair lines with the values highlighted on both axes, and highlights the matching table row. One tab stop per plot; arrow keys move between points. A missing scale is a gap, never a zero.
+- **Tables:** cells of a series are tinted by verdict (faster green, slower red, otherwise neutral), always with a symbol (▲ ▼ = ?) so colour is never the only signal. Wall-clock tables are shown per section; other metrics and percentiles sit in a collapsed block.
+- **Publishing:** committed as `Documentation/Benchmarks/BenchmarkReport.html`; `Scripts/sync-documentation.sh` copies it to the Pages site at `ecs/benchmarks/` on every docs deploy from `main`. The DocC article `Benchmarks` links to it.
+- **Tests:** the plot script's pure functions run under `node` in the test suite when `node` is installed (skipped otherwise; node is not a package dependency).
+
 ### Statistical design v3 (user decision 2026-10-30: "scientifically accurate display … valid significance calculation and error bars")
 
 Replaces the dispersion and `sig.` parts of Report v2. Upstream scales, sampling, the output directory, the HTML table layout and the unit rules stay.

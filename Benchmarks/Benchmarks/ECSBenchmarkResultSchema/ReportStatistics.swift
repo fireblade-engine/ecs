@@ -1,4 +1,4 @@
-// Exact, non-parametric, deterministic statistics for the report (PLAN "Statistical design v3"). Pure functions on
+// Exact, non-parametric, deterministic statistics for the report (Methodology.md "Statistical design v3"). Pure functions on
 // Double inputs: no resampling, no randomness. The replicate (one independent process) is the unit of analysis, so the
 // inputs are replicate medians. Invalid input (NaN, infinite, non-positive where a log is taken, empty) throws.
 import Foundation

@@ -1,4 +1,4 @@
-// Markdown, HTML table and SVG rendering of a `ReportModel` into the files of a report directory (PLAN "Report v2 design" and
+// Markdown, HTML table and SVG rendering of a `ReportModel` into the files of a report directory (Methodology.md "Report v2 design" and
 // "Statistical design v3"). Statistics come from `ReportInference`; this file only formats them.
 import Benchmark
 import Foundation

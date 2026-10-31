@@ -1,4 +1,4 @@
-// Per-cell aggregation over replicates and the report-wide inference of PLAN "Statistical design v3": replicate medians,
+// Per-cell aggregation over replicates and the report-wide inference of Methodology.md "Statistical design v3": replicate medians,
 // median CI, Hodges-Lehmann speed with exact CI, exact Mann-Whitney p, Benjamini-Hochberg q over every wall-clock comparison,
 // verdicts, and the Kendall drift diagnostic. All numerics live in ReportStatistics; this file only arranges inputs and outputs.
 import Benchmark

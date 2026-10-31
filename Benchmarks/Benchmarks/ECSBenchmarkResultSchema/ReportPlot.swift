@@ -1,4 +1,4 @@
-// Hand-written SVG plots for the report (PLAN "Statistical design v3"). Adapted from the look of upstream's plotly figures: log10
+// Hand-written SVG plots for the report (Methodology.md "Statistical design v3"). Adapted from the look of upstream's plotly figures: log10
 // time axis with decade ticks, log2 entity-count axis, one line per series. Layers: the median line, distribution-free CI error
 // bars of the median over replicates, and a light band for the typical within-run IQR (spread of the measurements, not
 // uncertainty). A relative plot shows speed against the baseline with a CI ribbon and the ±delta zone. Light/dark theme inside the

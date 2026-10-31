@@ -165,7 +165,7 @@ struct ReportStatisticsTests {
         #expect(abs(cdf[2] - 4.0 / 252) < 1e-15)
         #expect(abs(cdf[3] - 7.0 / 252) < 1e-15)
         #expect(abs(cdf[25] - 1) < 1e-15)
-        // Smallest attainable two-sided p: 2 / C(m+n, m); k = 5 gives 0.0079, k = 10 gives 1.1e-5 (PLAN).
+        // Smallest attainable two-sided p: 2 / C(m+n, m); k = 5 gives 0.0079, k = 10 gives 1.1e-5 (Methodology.md).
         #expect(abs(2 * S.mannWhitneyNullCDF(m: 5, n: 5)[0] - 2.0 / 252) < 1e-15)
         #expect(abs(2 * S.mannWhitneyNullCDF(m: 10, n: 10)[0] - 2.0 / 184_756) < 1e-18)
     }

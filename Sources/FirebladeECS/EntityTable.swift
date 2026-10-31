@@ -80,6 +80,12 @@ extension Nexus {
             return true
         }
 
+        /// Sets the whole component set of a living entity at once.
+        @inlinable
+        mutating func setMask(_ mask: ComponentMask, of entityId: EntityIdentifier) {
+            masks[Int(entityId.index)] = mask
+        }
+
         @inlinable
         mutating func insert(_ componentIndex: Int, into entityId: EntityIdentifier) {
             masks[Int(entityId.index)].insert(componentIndex)

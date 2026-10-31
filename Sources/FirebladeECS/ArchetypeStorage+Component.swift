@@ -30,6 +30,46 @@ extension Nexus.ArchetypeStorage {
         entities.insert(componentIndex, into: entityId)
     }
 
+    // MARK: Direct creation
+
+    /// The table of entities that have exactly the component types of `mask`, created if missing.
+    ///
+    /// Every type of `mask` must be registered (``register(_:at:)``).
+    @usableFromInline
+    func table(forExactly mask: Nexus.ComponentMask) -> Int {
+        table(for: mask) {
+            var columns: [(index: Int, column: Nexus.AnyColumn)] = []
+            mask.forEachIndex { index in
+                columns.append((index, prototypes[index].unsafelyUnwrapped.makeEmpty()))
+            }
+            return columns
+        }
+    }
+
+    /// Occupies the slot of a new entity and puts it into `table` with the component set `mask`, instead of
+    /// moving it through the tables of its components one at a time.
+    ///
+    /// The caller appends exactly one value to every column of the table right after, in any order.
+    @usableFromInline
+    func insertEntity(_ entityId: EntityIdentifier, intoTable tableIndex: Int, mask: Nexus.ComponentMask) {
+        requireUnlocked()
+        entities.insert(entityId)
+        entities.setMask(mask, of: entityId)
+        let index = Int(entityId.index)
+        while locations.count <= index {
+            locations.append(Nexus.EntityLocation(table: 0, row: 0))
+        }
+        let table = tables[tableIndex]
+        locations[index] = Nexus.EntityLocation(table: UInt32(tableIndex), row: UInt32(table.entities.count))
+        table.entities.append(entityId.index)
+    }
+
+    /// Appends the value of a component to its column in `table`, the one of an entity inserted by ``insertEntity(_:intoTable:mask:)``.
+    @inlinable
+    func appendInitial<C: Component>(_ component: C, at componentIndex: Int, toTable tableIndex: Int) {
+        tables[tableIndex].column(C.self, at: componentIndex).unsafelyUnwrapped.append(component)
+    }
+
     @inlinable
     func get<C: Component>(_: C.Type, at componentIndex: Int, for entityId: EntityIdentifier) -> C? {
         requireReadable(componentIndex)

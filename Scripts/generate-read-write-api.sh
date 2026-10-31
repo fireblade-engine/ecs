@@ -162,8 +162,7 @@ DOC
             echo "                }"
             echo "            }"
             echo "        case let .archetype(archetype):"
-            echo "            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }"
-            echo "            let query = archetype.matchingTables(filter)"
+            echo "            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }"
             # the component indices are resolved once per call, not per table
             for ((i = 1; i <= r; i++)); do echo "            let rIndex$i = R$i.componentIndex"; done
             for ((i = 1; i <= w; i++)); do echo "            let wIndex$i = W$i.componentIndex"; done

@@ -23,6 +23,9 @@ extension Nexus {
     /// - Complexity: O(M) where M is the number of families.
     @discardableResult
     public func createEntity(with components: Component...) -> Entity {
+        if let created = createEntityDirectly(components) {
+            return created
+        }
         let newEntity = createEntity()
         assign(components: components, to: newEntity.identifier)
         return newEntity
@@ -34,6 +37,21 @@ extension Nexus {
     /// - Complexity: O(C + M) where C is the number of components and M is the number of families.
     @discardableResult
     public func createEntity<each C: Component>(with components: repeat each C) -> Entity {
+        if delegate == nil, case let .archetype(archetype) = backend {
+            var mask = ComponentMask()
+            var distinct = true
+            _ = (repeat Self.insertDistinct((each C).componentIndex, into: &mask, distinct: &distinct))
+            if distinct, !mask.isEmpty {
+                archetype.requireUnlocked()
+                _ = (repeat prepareStorage((each C).self, in: archetype))
+                let entityId = entityIdGenerator.nextId()
+                let table = archetype.table(forExactly: mask)
+                archetype.insertEntity(entityId, intoTable: table, mask: mask)
+                _ = (repeat archetype.appendInitial(each components, at: (each C).componentIndex, toTable: table))
+                update(familyMembership: entityId)
+                return Entity(nexus: self, id: entityId)
+            }
+        }
         let newEntity = createEntity()
         _ = assign(components: repeat each components, entityId: newEntity.identifier)
         return newEntity
@@ -45,9 +63,67 @@ extension Nexus {
     /// - Complexity: O(M) where M is the number of families.
     @discardableResult
     public func createEntity(with components: some Collection<Component>) -> Entity {
+        if let created = createEntityDirectly(components) {
+            return created
+        }
         let entity = createEntity()
         assign(components: components, to: entity.identifier)
         return entity
+    }
+
+    private static func insertDistinct(_ componentIndex: Int, into mask: inout ComponentMask, distinct: inout Bool) {
+        if mask.contains(componentIndex) {
+            distinct = false
+        }
+        mask.insert(componentIndex)
+    }
+
+    /// Registers a component type as its first assignment would.
+    private func prepareStorage<C: Component>(_: C.Type, in archetype: ArchetypeStorage) {
+        let componentIndex = C.componentIndex
+        if !archetype.hasStorage(for: componentIndex) {
+            registerOnFirstAssignment(C.self)
+        }
+        archetype.register(C.self, at: componentIndex)
+    }
+
+    private func prepareStorage(of component: some Component, in archetype: ArchetypeStorage) {
+        prepareStorage(type(of: component), in: archetype)
+    }
+
+    private func appendInitial(_ component: some Component, in archetype: ArchetypeStorage, toTable table: Int) {
+        archetype.appendInitial(component, at: type(of: component).componentIndex, toTable: table)
+    }
+
+    /// Creates an entity directly in the archetype table of its final component set, instead of moving it from the
+    /// table of one component to the next.
+    ///
+    /// Only without a delegate, because a delegate observes the entity gaining its components one by one, and only
+    /// for distinct component types. Returns `nil` when the general path has to be taken.
+    private func createEntityDirectly(_ components: some Collection<Component>) -> Entity? {
+        guard delegate == nil, case let .archetype(archetype) = backend, !components.isEmpty else {
+            return nil
+        }
+        var mask = ComponentMask()
+        var distinct = true
+        for component in components {
+            Self.insertDistinct(type(of: component).componentIndex, into: &mask, distinct: &distinct)
+        }
+        guard distinct else {
+            return nil
+        }
+        archetype.requireUnlocked()
+        for component in components {
+            prepareStorage(of: component, in: archetype)
+        }
+        let entityId = entityIdGenerator.nextId()
+        let table = archetype.table(forExactly: mask)
+        archetype.insertEntity(entityId, intoTable: table, mask: mask)
+        for component in components {
+            appendInitial(component, in: archetype, toTable: table)
+        }
+        update(familyMembership: entityId)
+        return Entity(nexus: self, id: entityId)
     }
 
     /// The total number of entities managed by the Nexus.

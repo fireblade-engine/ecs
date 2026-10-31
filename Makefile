@@ -14,7 +14,7 @@ DOCS_VERSION_PATH ?= main
 # The full base path for hosting
 HOSTING_BASE_PATH ?= $(REPO_NAME)/$(DOCS_VERSION_PATH)
 
-.PHONY: setup lint lint-fix test test-coverage testReadme build-debug build-release docs docs-preview docs-generate docs-generate-all docs-coverage docs-check-coverage docs-check-links preview-analysis-docs generate-docs-githubpages pre-commit clean benchmark
+.PHONY: setup lint lint-fix test test-coverage testReadme build-debug build-release docs docs-preview docs-generate docs-generate-all docs-coverage docs-check-coverage docs-check-links preview-analysis-docs generate-docs-githubpages pre-commit clean benchmark benchmark-compare benchmark-report test-benchmarks test-benchmark-scripts
 
 # --- Setup ---
 
@@ -125,9 +125,38 @@ generate-docs-githubpages:
 
 # --- Benchmarks ---
 
+BENCHMARK_FILTER ?=
+REPORT_DIR ?= Benchmarks/.results/report
+REPORT_BASELINE ?=
+REPORT_TITLE ?=
+REPORT_OVERWRITE ?=
+RESULTS_TOOL = Benchmarks/.build/release/ECSBenchmarkResults
+
 # Runtime benchmarks live in a separate package (Benchmarks/) so the benchmark dependency stays out of FirebladeECS.
 benchmark:
 	cd Benchmarks && swift package benchmark
+
+# Measures the shared compatibility suite at each committed ref (comma-separated tags, branches or SHAs) in isolated
+# snapshots and saves one validated result file per ref under Benchmarks/.results/<UTC timestamp>/.
+# REPLICATES=k (default 1) builds each ref once and runs k interleaved rounds in a seeded shuffled order (SEED=n, random and
+# recorded by default), one result file per replicate.
+# Without BENCHMARK_FILTER only the smallest scale of every workload runs; BENCHMARK_FILTER='.*' selects everything.
+benchmark-compare:
+	@if [ -z "$(REFS)" ]; then printf 'Set REFS to comma-separated Git refs, for example: make benchmark-compare REFS=1.4.3,main\n' >&2; exit 2; fi
+	./Scripts/benchmark-run-refs.sh --refs "$(REFS)" $(if $(BENCHMARK_FILTER),--filter "$(BENCHMARK_FILTER)") $(if $(REPLICATES),--replicates "$(REPLICATES)") $(if $(SEED),--seed "$(SEED)")
+
+# Renders a report directory (REPORT.md, workloads/, img/) from saved result files only (at least two); it never runs benchmarks.
+benchmark-report:
+	@if [ -z "$(RESULTS)" ]; then printf 'Set RESULTS to saved result files, for example: make benchmark-report RESULTS="a.json b.json"\n' >&2; exit 2; fi
+	swift build --package-path Benchmarks -c release --product ECSBenchmarkResults $(SWIFT_FLAGS)
+	$(RESULTS_TOOL) report $(RESULTS) --output-dir "$(REPORT_DIR)" $(if $(REPORT_BASELINE),--baseline "$(REPORT_BASELINE)") $(if $(REPORT_TITLE),--title "$(REPORT_TITLE)") $(if $(REPORT_OVERWRITE),--overwrite)
+
+test-benchmarks:
+	cd Benchmarks && swift test $(SWIFT_FLAGS)
+
+test-benchmark-scripts:
+	./Tests/benchmark-snapshot-tests.sh
+	./Tests/benchmark-run-refs-tests.sh
 
 # --- Workflows ---
 

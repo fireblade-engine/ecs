@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" role="img" aria-label="entity.lookup.none: speed against 1.4.3">
+<title>entity.lookup.none: speed against 1.4.3</title>
+<style>
+text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;fill:#1f2328}
+.title{font-size:17px;font-weight:600}.axis-title{font-size:13px}.tick{font-size:12px}.legend{font-size:12px}.legend-title{font-size:13px;font-weight:600}.note{font-size:11px;fill:#59636e}
+.grid{stroke:#c3cad2;stroke-width:1}.minor{stroke:#e6e9ed;stroke-width:1}.axis{stroke:#59636e;stroke-width:1}.frame{fill:none;stroke:#59636e;stroke-width:1}
+.line{fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round}.baseline{stroke-dasharray:7 4}
+.band{fill:currentColor;fill-opacity:.16;stroke:currentColor;stroke-opacity:.4;stroke-width:1;stroke-linejoin:round}.ribbon{fill:currentColor;fill-opacity:.2;stroke:none}.errbar{fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:butt}
+.zone{fill:#59636e;fill-opacity:.14;stroke:none}.ref{stroke:#1f2328;stroke-width:1;stroke-dasharray:2 3}
+.marker{fill:currentColor;stroke:currentColor;stroke-width:1.4}.marker.hollow{fill:none}
+.c0{color:#0072B2}
+.c1{color:#D55E00}
+.c2{color:#009E73}
+.c3{color:#CC79A7}
+.c4{color:#E69F00}
+.c5{color:#56B4E9}
+.c6{color:#6E6E6E}
+.errbar.e0{color:#003959}
+.errbar.e1{color:#6B2F00}
+.errbar.e2{color:#004F3A}
+.errbar.e3{color:#663D54}
+.errbar.e4{color:#735000}
+.errbar.e5{color:#2B5A75}
+.errbar.e6{color:#373737}
+@media (prefers-color-scheme: dark){
+text{fill:#e6edf3}.note{fill:#9198a1}
+.grid{stroke:#4a525c}.minor{stroke:#2d333b}.axis,.frame{stroke:#9198a1}.zone{fill:#9198a1}.ref{stroke:#e6edf3}
+.c0{color:#5AB4F0}
+.c1{color:#F28C42}
+.c2{color:#2FD0A0}
+.c3{color:#E69BC4}
+.c4{color:#F2B83A}
+.c5{color:#8FD0F5}
+.c6{color:#B4B4B4}
+.errbar.e0{color:#A4D6F7}
+.errbar.e1{color:#F8C097}
+.errbar.e2{color:#8DE5CB}
+.errbar.e3{color:#F1C8DF}
+.errbar.e4{color:#F8D893}
+.errbar.e5{color:#C1E5FA}
+.errbar.e6{color:#D6D6D6}
+}
+</style>
+<clipPath id="plot-area"><rect x="80" y="58" width="588" height="404"/></clipPath>
+<text class="title" x="80" y="30">entity.lookup.none: speed against 1.4.3</text>
+<line class="grid" x1="80" x2="668" y1="418.02" y2="418.02"/>
+<text class="tick" text-anchor="end" x="72" y="422.02">1</text>
+<line class="grid" x1="80" x2="668" y1="326.9" y2="326.9"/>
+<text class="tick" text-anchor="end" x="72" y="330.9">1.2</text>
+<line class="grid" x1="80" x2="668" y1="249.86" y2="249.86"/>
+<text class="tick" text-anchor="end" x="72" y="253.86">1.4</text>
+<line class="grid" x1="80" x2="668" y1="183.13" y2="183.13"/>
+<text class="tick" text-anchor="end" x="72" y="187.13">1.6</text>
+<line class="grid" x1="80" x2="668" y1="124.27" y2="124.27"/>
+<text class="tick" text-anchor="end" x="72" y="128.27">1.8</text>
+<line class="grid" x1="80" x2="668" y1="71.62" y2="71.62"/>
+<text class="tick" text-anchor="end" x="72" y="75.62">2</text>
+<line class="grid" x1="93.36" x2="93.36" y1="58" y2="462"/>
+<line class="axis" x1="93.36" x2="93.36" y1="462" y2="468"/>
+<text class="tick" text-anchor="middle" x="93.36" y="482">1</text>
+<line class="minor" x1="120.09" x2="120.09" y1="58" y2="462"/>
+<line class="axis" x1="120.09" x2="120.09" y1="462" y2="465"/>
+<line class="minor" x1="146.82" x2="146.82" y1="58" y2="462"/>
+<line class="axis" x1="146.82" x2="146.82" y1="462" y2="465"/>
+<line class="minor" x1="173.55" x2="173.55" y1="58" y2="462"/>
+<line class="axis" x1="173.55" x2="173.55" y1="462" y2="465"/>
+<line class="grid" x1="200.27" x2="200.27" y1="58" y2="462"/>
+<line class="axis" x1="200.27" x2="200.27" y1="462" y2="468"/>
+<text class="tick" text-anchor="middle" x="200.27" y="482">16</text>
+<line class="minor" x1="227" x2="227" y1="58" y2="462"/>
+<line class="axis" x1="227" x2="227" y1="462" y2="465"/>
+<line class="minor" x1="253.73" x2="253.73" y1="58" y2="462"/>
+<line class="axis" x1="253.73" x2="253.73" y1="462" y2="465"/>
+<line class="minor" x1="280.45" x2="280.45" y1="58" y2="462"/>
+<line class="axis" x1="280.45" x2="280.45" y1="462" y2="465"/>
+<line class="grid" x1="307.18" x2="307.18" y1="58" y2="462"/>
+<line class="axis" x1="307.18" x2="307.18" y1="462" y2="468"/>
+<text class="tick" text-anchor="middle" x="307.18" y="482">256</text>
+<line class="minor" x1="333.91" x2="333.91" y1="58" y2="462"/>
+<line class="axis" x1="333.91" x2="333.91" y1="462" y2="465"/>
+<line class="minor" x1="360.64" x2="360.64" y1="58" y2="462"/>
+<line class="axis" x1="360.64" x2="360.64" y1="462" y2="465"/>
+<line class="minor" x1="387.36" x2="387.36" y1="58" y2="462"/>
+<line class="axis" x1="387.36" x2="387.36" y1="462" y2="465"/>
+<line class="grid" x1="414.09" x2="414.09" y1="58" y2="462"/>
+<line class="axis" x1="414.09" x2="414.09" y1="462" y2="468"/>
+<text class="tick" text-anchor="middle" x="414.09" y="482">4K</text>
+<line class="minor" x1="440.82" x2="440.82" y1="58" y2="462"/>
+<line class="axis" x1="440.82" x2="440.82" y1="462" y2="465"/>
+<line class="minor" x1="467.55" x2="467.55" y1="58" y2="462"/>
+<line class="axis" x1="467.55" x2="467.55" y1="462" y2="465"/>
+<line class="minor" x1="494.27" x2="494.27" y1="58" y2="462"/>
+<line class="axis" x1="494.27" x2="494.27" y1="462" y2="465"/>
+<line class="grid" x1="521" x2="521" y1="58" y2="462"/>
+<line class="axis" x1="521" x2="521" y1="462" y2="468"/>
+<text class="tick" text-anchor="middle" x="521" y="482">64K</text>
+<line class="minor" x1="547.73" x2="547.73" y1="58" y2="462"/>
+<line class="axis" x1="547.73" x2="547.73" y1="462" y2="465"/>
+<line class="minor" x1="574.45" x2="574.45" y1="58" y2="462"/>
+<line class="axis" x1="574.45" x2="574.45" y1="462" y2="465"/>
+<line class="minor" x1="601.18" x2="601.18" y1="58" y2="462"/>
+<line class="axis" x1="601.18" x2="601.18" y1="462" y2="465"/>
+<line class="grid" x1="627.91" x2="627.91" y1="58" y2="462"/>
+<line class="axis" x1="627.91" x2="627.91" y1="462" y2="468"/>
+<text class="tick" text-anchor="middle" x="627.91" y="482">1M</text>
+<line class="grid" x1="654.64" x2="654.64" y1="58" y2="462"/>
+<line class="axis" x1="654.64" x2="654.64" y1="462" y2="468"/>
+<text class="tick" text-anchor="middle" x="654.64" y="482">2M</text>
+<rect class="zone" x="80" y="393.63" width="588" height="48.77"/>
+<line class="ref" x1="80" x2="668" y1="418.02" y2="418.02"/>
+<rect class="frame" x="80" y="58" width="588" height="404"/>
+<text class="axis-title" text-anchor="middle" x="374" y="508">Entities (log2 scale)</text>
+<text class="axis-title" text-anchor="middle" transform="translate(22 260) rotate(-90)">Speed vs 1.4.3 (×, log scale; above 1 is faster)</text>
+<g clip-path="url(#plot-area)">
+<polygon class="ribbon c1" points="93.36,77.6 120.09,412.03 146.82,219.37 173.55,305.3 200.27,273.25 227,262.65 253.73,239.77 280.45,249.61 307.18,254.08 333.91,260.14 360.64,254.74 387.36,258.09 414.09,261.64 440.82,258.73 467.55,259.04 494.27,258.73 521,256.72 547.73,258.62 574.45,260.42 601.18,258.23 627.91,258.45 654.64,261.78 654.64,267.61 627.91,265.72 601.18,268.49 574.45,267.23 547.73,268.35 521,264.96 494.27,264.35 467.55,268.16 440.82,264.63 414.09,275.15 387.36,270.76 360.64,266.18 333.91,269.57 307.18,267.66 280.45,262.18 253.73,256.85 227,263.74 200.27,274.75 173.55,308.3 146.82,418.02 120.09,418.02 93.36,418.02"/>
+<polygon class="ribbon c2" points="93.36,77.6 120.09,412.03 146.82,219.37 173.55,305.3 200.27,273.25 227,262.65 253.73,239.77 280.45,249.61 307.18,247.74 333.91,253.87 360.64,250.82 387.36,252.57 414.09,258.11 440.82,254.29 467.55,254.83 494.27,249.11 521,251.32 547.73,254.43 574.45,248.66 601.18,255.18 627.91,252.29 654.64,255.01 654.64,263.6 627.91,256.58 601.18,265.6 574.45,256.89 547.73,262.24 521,262.05 494.27,259.8 467.55,263.86 440.82,260.15 414.09,267.87 387.36,265.27 360.64,261.35 333.91,263.2 307.18,261.32 280.45,261.75 253.73,256.85 227,262.65 200.27,274.75 173.55,308.3 146.82,418.02 120.09,418.02 93.36,418.02"/>
+<polyline class="line c1" points="93.36,77.6 120.09,412.03 146.82,418.02 173.55,308.3 200.27,274.75 227,262.65 253.73,256.43 280.45,256.12 307.18,261.32 333.91,265.46 360.64,261.35 387.36,263.15 414.09,268.94 440.82,259.93 467.55,265.56 494.27,259.17 521,259.17 547.73,262.08 574.45,263.68 601.18,261.41 627.91,260.37 654.64,264.31"/>
+<polyline class="line c2" points="93.36,77.6 120.09,412.03 146.82,247.81 173.55,305.6 200.27,274.75 227,262.65 253.73,256.43 280.45,253.26 307.18,255.21 333.91,260.96 360.64,255.89 387.36,257.21 414.09,260.05 440.82,255.13 467.55,260.26 494.27,254.87 521,254.87 547.73,255.66 574.45,256.28 601.18,258.15 627.91,255.23 654.64,258.65"/>
+<rect class="marker c1 hollow" x="90.36" y="74.6" width="6" height="6"/>
+<rect class="marker c1 hollow" x="117.09" y="409.03" width="6" height="6"/>
+<rect class="marker c1 hollow" x="143.82" y="415.02" width="6" height="6"/>
+<rect class="marker c1" x="170.55" y="305.3" width="6" height="6"/>
+<rect class="marker c1" x="197.27" y="271.75" width="6" height="6"/>
+<rect class="marker c1" x="224" y="259.65" width="6" height="6"/>
+<rect class="marker c1" x="250.73" y="253.43" width="6" height="6"/>
+<rect class="marker c1" x="277.45" y="253.12" width="6" height="6"/>
+<rect class="marker c1" x="304.18" y="258.32" width="6" height="6"/>
+<rect class="marker c1" x="330.91" y="262.46" width="6" height="6"/>
+<rect class="marker c1" x="357.64" y="258.35" width="6" height="6"/>
+<rect class="marker c1" x="384.36" y="260.15" width="6" height="6"/>
+<rect class="marker c1" x="411.09" y="265.94" width="6" height="6"/>
+<rect class="marker c1" x="437.82" y="256.93" width="6" height="6"/>
+<rect class="marker c1" x="464.55" y="262.56" width="6" height="6"/>
+<rect class="marker c1" x="491.27" y="256.17" width="6" height="6"/>
+<rect class="marker c1" x="518" y="256.17" width="6" height="6"/>
+<rect class="marker c1" x="544.73" y="259.08" width="6" height="6"/>
+<rect class="marker c1" x="571.45" y="260.68" width="6" height="6"/>
+<rect class="marker c1" x="598.18" y="258.41" width="6" height="6"/>
+<rect class="marker c1" x="624.91" y="257.37" width="6" height="6"/>
+<rect class="marker c1" x="651.64" y="261.31" width="6" height="6"/>
+<polygon class="marker c2 hollow" points="93.36,73.6 97.36,80.6 89.36,80.6"/>
+<polygon class="marker c2 hollow" points="120.09,408.03 124.09,415.03 116.09,415.03"/>
+<polygon class="marker c2 hollow" points="146.82,243.81 150.82,250.81 142.82,250.81"/>
+<polygon class="marker c2" points="173.55,301.6 177.55,308.6 169.55,308.6"/>
+<polygon class="marker c2" points="200.27,270.75 204.27,277.75 196.27,277.75"/>
+<polygon class="marker c2" points="227,258.65 231,265.65 223,265.65"/>
+<polygon class="marker c2" points="253.73,252.43 257.73,259.43 249.73,259.43"/>
+<polygon class="marker c2" points="280.45,249.26 284.45,256.26 276.45,256.26"/>
+<polygon class="marker c2" points="307.18,251.21 311.18,258.21 303.18,258.21"/>
+<polygon class="marker c2" points="333.91,256.96 337.91,263.96 329.91,263.96"/>
+<polygon class="marker c2" points="360.64,251.89 364.64,258.89 356.64,258.89"/>
+<polygon class="marker c2" points="387.36,253.21 391.36,260.21 383.36,260.21"/>
+<polygon class="marker c2" points="414.09,256.05 418.09,263.05 410.09,263.05"/>
+<polygon class="marker c2" points="440.82,251.13 444.82,258.13 436.82,258.13"/>
+<polygon class="marker c2" points="467.55,256.26 471.55,263.26 463.55,263.26"/>
+<polygon class="marker c2" points="494.27,250.87 498.27,257.87 490.27,257.87"/>
+<polygon class="marker c2" points="521,250.87 525,257.87 517,257.87"/>
+<polygon class="marker c2" points="547.73,251.66 551.73,258.66 543.73,258.66"/>
+<polygon class="marker c2" points="574.45,252.28 578.45,259.28 570.45,259.28"/>
+<polygon class="marker c2" points="601.18,254.15 605.18,261.15 597.18,261.15"/>
+<polygon class="marker c2" points="627.91,251.23 631.91,258.23 623.91,258.23"/>
+<polygon class="marker c2" points="654.64,254.65 658.64,261.65 650.64,261.65"/>
+</g>
+<text class="legend-title" x="692" y="66">Series</text>
+<line class="line c1" x1="692" x2="718" y1="82" y2="82"/>
+<rect class="marker c1" x="702" y="79" width="6" height="6"/>
+<text class="legend" x="726" y="86">main (value, archetype)<title>main (value, archetype)</title></text>
+<line class="line c2" x1="692" x2="718" y1="104" y2="104"/>
+<polygon class="marker c2" points="705,100 709,107 701,107"/>
+<text class="legend" x="726" y="108">main (value, sparseSet)<title>main (value, sparseSet)</title></text>
+<text class="note" x="692" y="138" xml:space="preserve">Line: speed = baseline / series (Hodges–Lehmann)</text>
+<text class="note" x="692" y="155" xml:space="preserve">Ribbon: 95% CI of the speed</text>
+<text class="note" x="692" y="172" xml:space="preserve">  (largest CI: ±25%)</text>
+<text class="note" x="692" y="189" xml:space="preserve">Shaded zone: ±5% (equivalence zone)</text>
+<text class="note" x="692" y="206" xml:space="preserve">Reference line: 1×, equal to the baseline</text>
+<text class="note" x="692" y="223" xml:space="preserve">Filled marker: significant faster or slower</text>
+<text class="note" x="692" y="240" xml:space="preserve">Hollow marker: not significant or n/a</text>
+<text class="note" x="692" y="257" xml:space="preserve">Entity count 0 is omitted (log axis)</text>
+</svg>

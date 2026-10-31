@@ -94,26 +94,20 @@ cd Benchmarks && swift run -c release ECSBenchmarkResults validate <result.json>
 
 ## Reports
 
-`make benchmark-report` renders a report directory from saved result files only (two or more); it builds the `ECSBenchmarkResults` tool in release mode and never runs benchmarks.
+`make benchmark-report` renders one self-contained HTML file, `BenchmarkReport.html`, from saved result files only (two or more); it builds the `ECSBenchmarkResults` tool in release mode and never runs benchmarks. The committed report is published at <https://fireblade-engine.github.io/ecs/benchmarks/> (`Scripts/sync-documentation.sh` copies `Documentation/Benchmarks/BenchmarkReport.html` there).
 
 ```sh
 make benchmark-report RESULTS="Benchmarks/.results/<run>/1.4.3-<sha>.json Benchmarks/.results/<run>/main-<sha>.json" \
     REPORT_DIR=report REPORT_BASELINE=1.4.3 REPORT_TITLE="ECS 1.4.3 vs main"
 ```
 
-`REPORT_DIR` defaults to `Benchmarks/.results/report`. A directory that already holds anything is refused unless `REPORT_OVERWRITE=1` is set; the overwrite replaces only generated files (`REPORT.md`, `workloads/*.md`, `img/*.svg`) and never touches other files or the inputs. `REPORT_BASELINE` (a requested ref name) defaults to the first file; `REPORT_TITLE` is optional.
+`REPORT_DIR` defaults to `Benchmarks/.results/report`. A directory that already holds anything is refused unless `REPORT_OVERWRITE=1` is set; the overwrite replaces only the generated `BenchmarkReport.html` and never touches other files or the inputs. `REPORT_BASELINE` (a requested ref name) defaults to the first file; `REPORT_TITLE` is optional.
 
 **Inputs and grouping.** Pass every file of a replicated run (`make benchmark-compare REPLICATES=10`). Files are grouped into series by ref SHA, component model and backend, and into replicates by the `run.replicate` provenance; a file without it counts as replicate 1 of 1. The report refuses two files with the same replicate index in one series and replicates with different configuration hashes. Incomplete replicate sets, unequal replicate counts, differing toolchains or hosts, and differing configuration hashes between refs are warnings, printed in the report and on stderr.
 
 **Statistics** (Methodology.md "Statistical design v3"; all exact, non-parametric, deterministic, in `ReportStatistics.swift`). The replicate is the unit of analysis. Per replicate and cell the median, p25, p75 and mean come from the stored histogram. Per series and cell, the centre is the median of the replicate medians and the error bar is the distribution-free order-statistic 95% CI of that median (omitted below 6 replicates; the exact coverage is in the methods section). Non-baseline series are compared with their paired baseline series on wall clock only: `speed (×)` (baseline ÷ series, above 1 is faster) is the Hodges–Lehmann estimate on the log replicate medians with its exact CI; `q` is the Benjamini–Hochberg adjusted p of an exact Mann–Whitney test across all wall-clock comparisons of the report; the `verdict` is `faster`, `slower`, `equivalent` (CI inside the ±5% zone), `inconclusive`, or `n/a (k replicates)` when a side has fewer than 2 replicates. Other metrics are descriptive only. Kendall's τ between round and replicate median is checked per series and cell with at least 3 replicates (BH-adjusted); the methods section counts and lists the flagged cells. With one replicate the report shows medians and the within-run IQR; intervals, `q` and verdicts are `n/a (1 replicate)`.
 
-The directory holds:
-
-- `REPORT.md`: header and notes, warnings, a summary table (per workload and non-baseline series at 1,024, 65,536 and the largest entity count: speed, CI low, CI high, verdict), one section per workload with the per-entity, total, linear total and relative plots and the wall-clock tables, a "How to read this report" section for non-statisticians (confidence intervals, verdicts, error bars versus the light band, plots, q, replicates) with worked examples taken from the report's own numbers (`ReportGuide.swift`; it says so when inference is unavailable), a glossary (a plain-language line for every abbreviation and term, generated in `ReportGlossary.swift` and linked from every workload page), the methods section (protocol, estimators, tests, δ, q, seed, coverage, drift, limits), then provenance, series pairing, parity notes and the unsupported list.
-- `workloads/<identity>.md`: every metric of the workload as tables (`median`, `CI low`, `CI high`, `mean`, `replicates`, `iterations`; wall clock adds `speed (×)`, `CI low (×)`, `CI high (×)`, `change (%)`, `q`, `verdict`) plus percentile tables (median over replicates of each replicate's percentile).
-- `img/<identity>-per-entity.svg`, `-total.svg`: log-log median per iteration (cost per entity, and total time) with CI error bars and a light within-run IQR band (spread of one run, not uncertainty). `-relative.svg`: speed (×) against the baseline versus entity count on a log axis with a CI ribbon, the shaded ±5% zone, a reference line at 1× and filled markers for `faster`/`slower` verdicts (hollow otherwise). `-total-linear.svg`: linear total time, embedded after the log-log total plot in `REPORT.md` and on the detail page. The SVGs are written by hand, follow the light or dark colour scheme, are deterministic, and omit entity count 0 on log axes.
-
-Tables are HTML (`colspan` header: ref, backend, columns) so GitHub and VS Code render the grouping. Every unit is in its column header and is chosen per column so typical values show one to three integer digits; values keep at most the three significant digits the Benchmark package measures and use thousands separators. Values missing or incomparable print `unavailable` (the reason is in the cell's tooltip), never zero.
+The directory holds `BenchmarkReport.html`: a single file with inline style and script, no external requests, readable offline. It contains the header and notes, warnings, a summary, one section per workload with the plots (per entity, total, linear total, relative speed with CI ribbon and the ±5% zone) and the wall-clock tables, a "How to read this report" section for non-statisticians, a glossary, the methods section (protocol, estimators, tests, δ, q, seed, coverage, drift, limits), then provenance, series pairing, parity notes and the unsupported list.
 
 ## Make targets
 
@@ -121,6 +115,6 @@ Tables are HTML (`colspan` header: ref, backend, columns) so GitHub and VS Code 
 | :--- | :--- |
 | `make benchmark` | Run the broad package benchmarks of this package |
 | `make benchmark-compare REFS=a,b,c [BENCHMARK_FILTER=...] [REPLICATES=k] [SEED=n]` | Measure refs and save one validated result file per ref and replicate |
-| `make benchmark-report RESULTS="a.json b.json" [REPORT_DIR=...] [REPORT_BASELINE=...] [REPORT_TITLE=...] [REPORT_OVERWRITE=1]` | Render a report directory from saved results |
+| `make benchmark-report RESULTS="a.json b.json" [REPORT_DIR=...] [REPORT_BASELINE=...] [REPORT_TITLE=...] [REPORT_OVERWRITE=1]` | Render `BenchmarkReport.html` from saved results |
 | `make test-benchmarks` | Swift tests of this package |
 | `make test-benchmark-scripts` | Shell tests of the runner and snapshot scripts |

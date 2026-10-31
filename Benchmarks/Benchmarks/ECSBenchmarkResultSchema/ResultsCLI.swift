@@ -119,22 +119,13 @@ public enum ResultsCLI {
             }
         }
         try write(rendered.files, to: output)
-        print("wrote \(rendered.files.count) files to \(output)")
+        print("wrote \(output)/\(BenchmarkReport.fileName)")
     }
 
-    /// Replaces the generated files: stale `*.md` in `workloads/` and `*.svg` in `img/` from an earlier report are removed first, so
-    /// the directory never mixes two reports. Nothing else in the directory is touched.
+    /// Writes the generated files into `directory`, creating it when needed. Nothing else in the directory is touched.
     private static func write(_ files: [RenderedFile], to directory: String) throws {
         let fileManager = FileManager.default
         do {
-            for (subdirectory, suffix) in [("workloads", ".md"), ("img", ".svg")] {
-                let path = directory + "/" + subdirectory
-                if let existing = try? fileManager.contentsOfDirectory(atPath: path) {
-                    for name in existing where name.hasSuffix(suffix) {
-                        try fileManager.removeItem(atPath: path + "/" + name)
-                    }
-                }
-            }
             for file in files {
                 let url = URL(fileURLWithPath: directory + "/" + file.path)
                 try fileManager.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)

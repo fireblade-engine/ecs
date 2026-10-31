@@ -1,4 +1,4 @@
-// The "How to read this report" section of REPORT.md: plain-language explanations for readers who are not statisticians, with
+// The "How to read this report" section of the HTML report: plain-language explanations for readers who are not statisticians, with
 // worked examples whose numbers are taken from the comparisons and cells of the report being rendered (never hardcoded). Without
 // replicates the examples say that inference is unavailable instead of inventing numbers.
 import Foundation

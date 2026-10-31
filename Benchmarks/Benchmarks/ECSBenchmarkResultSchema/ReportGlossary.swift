@@ -1,4 +1,4 @@
-// The glossary section of REPORT.md: a plain-language line for every abbreviation, symbol and term the generated report uses.
+// The glossary section of the HTML report: a plain-language line for every abbreviation, symbol and term the generated report uses.
 // Numbers that the report fixes in code (δ, the significance level, the coverage target) come from `ReportStatistics`, so the
 // text cannot drift from the statistics. `covers` is what the tests use to prove that every table header and legend term is defined.
 import Foundation

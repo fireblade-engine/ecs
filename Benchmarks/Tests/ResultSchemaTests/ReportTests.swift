@@ -428,13 +428,13 @@ struct ReportTests {
         #expect(try Data(contentsOf: output.appendingPathComponent("notes.txt")) == Data("precious".utf8))
         #expect(!FileManager.default.fileExists(atPath: output.appendingPathComponent("BenchmarkReport.html").path))
 
-        // With --overwrite only generated files are replaced; stale generated files go, unrelated files stay.
+        // With --overwrite only the generated file is replaced; every other file, also of an older report layout, stays.
         try FileManager.default.createDirectory(at: output.appendingPathComponent("workloads"), withIntermediateDirectories: true)
-        try Data("old".utf8).write(to: output.appendingPathComponent("workloads/stale.md"))
+        try Data("old".utf8).write(to: output.appendingPathComponent("workloads/old.md"))
         try Data("old".utf8).write(to: output.appendingPathComponent("BenchmarkReport.html"))
         #expect(ResultsCLI.run(["report"] + paths + ["--output-dir", output.path, "--overwrite"]) == 0)
         #expect(try String(contentsOf: output.appendingPathComponent("BenchmarkReport.html"), encoding: .utf8).contains("<h1>FirebladeECS benchmark comparison</h1>"))
-        #expect(!FileManager.default.fileExists(atPath: output.appendingPathComponent("workloads/stale.md").path))
+        #expect(FileManager.default.fileExists(atPath: output.appendingPathComponent("workloads/old.md").path))
         #expect(try Data(contentsOf: output.appendingPathComponent("notes.txt")) == Data("precious".utf8))
         #expect(try inputsUntouched())
 

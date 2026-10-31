@@ -288,7 +288,7 @@ struct ReportTests {
         // Wall clock of the same cell is untouched.
         let time = try table(page, heading: "### Time (wall clock): Entity counts up to 1,024")
         #expect(try body(time, "64")[1] != "n/a")
-        #expect(try ReportGlossary.covers("n/a"))
+        #expect(ReportGlossary.covers("n/a"))
     }
 
     @Test

@@ -55,7 +55,8 @@ public struct Family<each C: Component> {
 
     /// The tables of `archetype` matching this family, including tables created since the last call.
     ///
-    /// Returns `nil` if the nexus was cleared and the family forgotten.
+    /// Returns `nil` for the sparse set storage only. After ``Nexus/clear()`` the query is rebuilt through its epoch,
+    /// and the empty member list ends the iteration before the query is used.
     @inlinable
     func archetypeQuery(in archetype: Nexus.ArchetypeStorage) -> Nexus.TableQuery? {
         guard let query else { return nil }

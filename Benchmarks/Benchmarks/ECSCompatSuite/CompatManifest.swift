@@ -5,7 +5,8 @@ import Benchmark
 public enum CompatManifest {
     public struct Workload: Codable, Equatable, Sendable {
         public let identity: String
-        public let upstreamName: String
+        /// Upstream benchmark this workload follows; nil when it has no upstream counterpart.
+        public let upstreamName: String?
         /// `equivalent` or `adapted`.
         public let parityKind: String
         /// Why the workload is only adapted; nil when equivalent.

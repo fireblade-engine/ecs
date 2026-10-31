@@ -50,6 +50,8 @@ enum CompatWorkload: String, CaseIterable, Sendable {
     case createNoEntities = "entity.create.no-entities"
     case createEmpty = "entity.create.empty"
     case createMinimal = "entity.create.minimal"
+    case createEmptyWarm = "entity.create.empty.warm"
+    case createMinimalWarm = "entity.create.minimal.warm"
     case destroyMinimal = "entity.destroy.minimal"
     case lookupNone = "entity.lookup.none"
     case lookupOne = "entity.lookup.one"
@@ -84,12 +86,13 @@ enum CompatWorkload: String, CaseIterable, Sendable {
         rawValue
     }
 
-    /// Name of the upstream benchmark this workload follows.
-    var upstreamName: String {
+    /// Name of the upstream benchmark this workload follows; nil for workloads without an upstream counterpart (`.warm`).
+    var upstreamName: String? {
         switch self {
         case .createNoEntities: "CreateNoEntities"
         case .createEmpty: "CreateEmptyEntities"
         case .createMinimal: "CreateEntities"
+        case .createEmptyWarm, .createMinimalWarm: nil
         case .destroyMinimal: "DestroyEntities"
         case .lookupNone: "UnpackNoComponent"
         case .lookupOne: "UnpackOneComponent"
@@ -114,7 +117,7 @@ enum CompatWorkload: String, CaseIterable, Sendable {
     /// iteration upstream (`entity.create.*`, `entity.destroy.minimal`, `component.add`), so here too.
     var persistsState: Bool {
         switch self {
-        case .createNoEntities, .createEmpty, .createMinimal, .destroyMinimal, .add:
+        case .createNoEntities, .createEmpty, .createMinimal, .createEmptyWarm, .createMinimalWarm, .destroyMinimal, .add:
             false
         default:
             true
@@ -138,8 +141,12 @@ enum CompatWorkload: String, CaseIterable, Sendable {
 
     private static let persistentNote = "state is built once and kept across iterations as upstream; sampling is time-based (0.5 s, no warmup) so pass count and world state can differ by revision, as upstream"
 
+    private static let warmNote = "not an upstream workload (no upstream counterpart); a cold-variant companion: untimed setup creates one entity with the timed run's component set and destroys it, so the fresh nexus has its types registered and storage/tables allocated and the identifier is free for reuse, so the first timed entity may reuse a recycled identifier; timed region and scales as the cold variant; nexus teardown is outside the timed region"
+
     var parity: CompatParity {
         switch self {
+        case .createEmptyWarm, .createMinimalWarm:
+            .adapted("\(Self.warmNote); \(Self.perIterationSetupNote)")
         case .createNoEntities, .createEmpty, .createMinimal, .destroyMinimal:
             .adapted("nexus teardown is outside the timed region; upstream times registry teardown; \(Self.perIterationSetupNote)")
         case .lookupNone:
@@ -179,6 +186,11 @@ enum CompatWorkload: String, CaseIterable, Sendable {
         switch self {
         case .createNoEntities, .createEmpty, .createMinimal:
             break
+        case .createEmptyWarm:
+            // Untimed warm-up: the destroyed entity leaves its identifier free for reuse.
+            _ = nexus.destroy(entity: nexus.createEntity())
+        case .createMinimalWarm:
+            _ = nexus.destroy(entity: nexus.createEntity(with: CompatFirstComponent(value: 0), CompatSecondComponent(value: 0)))
         case .destroyMinimal, .lookupOne, .lookupTwo, .removeAdd:
             entities = Self.makeMinimalEntities(in: nexus, count: count)
         case .lookupNone:
@@ -280,13 +292,13 @@ enum CompatWorkload: String, CaseIterable, Sendable {
                 nexus.createEntity()
                 outcome.operations += 1
             }
-        case .createEmpty:
+        case .createEmpty, .createEmptyWarm:
             for _ in 0 ..< count {
                 nexus.createEntity()
                 outcome.operations += 1
             }
             outcome.hits = outcome.operations
-        case .createMinimal:
+        case .createMinimal, .createMinimalWarm:
             for index in 0 ..< count {
                 nexus.createEntity(with: CompatFirstComponent(value: index), CompatSecondComponent(value: index * 2))
                 outcome.operations += 1

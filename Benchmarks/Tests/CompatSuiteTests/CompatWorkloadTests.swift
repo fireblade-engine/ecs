@@ -21,7 +21,10 @@ struct CompatWorkloadTests {
     func identitiesAreUniqueAndStable() {
         let identities = CompatWorkload.allCases.map(\.identity)
         #expect(Set(identities).count == identities.count)
-        #expect(Set(CompatWorkload.allCases.map(\.upstreamName)).count == identities.count)
+        let upstreamNames = CompatWorkload.allCases.compactMap(\.upstreamName)
+        #expect(Set(upstreamNames).count == upstreamNames.count)
+        #expect(upstreamNames.allSatisfy { !$0.isEmpty })
+        #expect(CompatWorkload.allCases.filter { $0.upstreamName == nil } == [.createEmptyWarm, .createMinimalWarm])
         #expect(identities.contains("entity.create.empty"))
         #expect(identities.contains("entity.create.no-entities"))
         for workload in CompatWorkload.allCases {
@@ -68,7 +71,7 @@ struct CompatWorkloadTests {
 
     @Test
     func persistsStateMatchesPreparedRunnerAndScalesAreIntended() {
-        let perIteration: Set<CompatWorkload> = [.createNoEntities, .createEmpty, .createMinimal, .destroyMinimal, .add]
+        let perIteration: Set<CompatWorkload> = [.createNoEntities, .createEmpty, .createMinimal, .createEmptyWarm, .createMinimalWarm, .destroyMinimal, .add]
         let runners: Set<CompatWorkload> = [
             .systemBasicUniform, .systemBasicMixed, .systemComplexUniform, .systemComplexMixed,
             .eventPublishMixed, .eventPublishUpdateMixed
@@ -125,6 +128,25 @@ struct CompatWorkloadTests {
             #expect(outcome.hits == count)
             #expect(state.nexus.numEntities == count)
             #expect(state.nexus.numComponents == 0)
+        }
+    }
+
+    @Test
+    func warmVariantsStartEmptyAndCreateExactlyCountEntities() {
+        forEachFixture { backend, count in
+            for workload in [CompatWorkload.createEmptyWarm, .createMinimalWarm] {
+                let isMinimal = workload == .createMinimalWarm
+                let state = workload.prepare(backend: backend, count: count)
+                // The warm-up entity is destroyed again before timing.
+                #expect(state.nexus.numEntities == 0, "\(workload.identity)")
+                #expect(state.nexus.numComponents == 0, "\(workload.identity)")
+                let outcome = workload.run(state, count: count)
+                #expect(outcome.operations == count)
+                #expect(outcome.hits == count)
+                #expect(state.nexus.numEntities == count)
+                #expect(state.nexus.numComponents == (isMinimal ? count * 2 : 0))
+                #expect(workload.parity.note.contains("destroys it"))
+            }
         }
     }
 

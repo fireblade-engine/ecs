@@ -80,8 +80,14 @@ extension Nexus {
             makeEmptyTable()
         }
 
+        /// The number of entities the first creations fit without reallocating the location and row arrays.
+        @usableFromInline static let initialEntityReserve = 16
+
         private func makeEmptyTable() {
-            tables.append(ArchetypeTable(mask: ComponentMask(), columns: []))
+            let empty = ArchetypeTable(mask: ComponentMask(), columns: [])
+            empty.entities.reserveCapacity(Self.initialEntityReserve)
+            locations.reserveCapacity(Self.initialEntityReserve)
+            tables.append(empty)
             tableIndexByMask[ComponentMask()] = 0
         }
 

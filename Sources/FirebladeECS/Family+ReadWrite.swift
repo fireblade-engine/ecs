@@ -14,7 +14,7 @@ extension Family {
     /// The member list is the iteration domain, so only required types are guaranteed to exist for every member.
     @inlinable
     func requireRequired<T: Component>(_: T.Type) {
-        precondition(traits.requiresAll.contains(T.identifier), "component type is not required by the family")
+        precondition(filter.requires.contains(T.componentIndex), "component type is not required by the family")
     }
 }
 
@@ -117,10 +117,9 @@ extension Family {
         writing wTypes: repeat (each W).Type,
         body: (inout (repeat each W), repeat each R) throws -> Void
     ) rethrows {
-        guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else {
+        guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else {
             return
         }
-        let query = archetype.matchingTables(filter)
         archetype.lockDepth += 1
         _ = (repeat archetype.beginWrite((each W).componentIndex))
         _ = (repeat archetype.requireReadable((each R).componentIndex))

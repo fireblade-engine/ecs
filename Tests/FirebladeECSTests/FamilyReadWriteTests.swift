@@ -36,6 +36,31 @@ private func makeNexus(_ storage: Nexus.StorageKind, count: Int) -> Nexus {
 }
 
 @Suite struct FamilyReadWriteTests {
+    @Test(arguments: Nexus.StorageKind.allCases) func cachedFamilyQuerySeesTablesCreatedLater(_ storage: Nexus.StorageKind) {
+        let nexus = Nexus(storage: storage)
+        let family = nexus.family(requiresAll: Comp1.self)
+        func sum() -> Int {
+            var total = 0
+            family.forEach(reading: Comp1.self) { total += $0.value }
+            return total
+        }
+        nexus.createEntity(with: Comp1(1))
+        #expect(sum() == 1)
+        // new tables after the query was cached
+        nexus.createEntity(with: Comp1(10), Comp2(0))
+        nexus.createEntity(with: Comp1(100), Comp3(0))
+        nexus.createEntity(with: Comp1(1000), Comp2(0), Comp3(0))
+        #expect(sum() == 1111)
+        // survives clear: the family repopulates through a new handle of the same traits
+        nexus.clear()
+        let again = nexus.family(requiresAll: Comp1.self)
+        nexus.createEntity(with: Comp1(5), Comp4(0))
+        var total = 0
+        again.forEach(reading: Comp1.self) { total += $0.value }
+        #expect(total == 5)
+        #expect(sum() == 5)
+    }
+
     @Test(arguments: Nexus.StorageKind.allCases) func readingAndWritingChangesTheStorageInPlace(_ storage: Nexus.StorageKind) {
         let nexus = makeNexus(storage, count: 10)
         let family = nexus.family(requiresAll: Comp1.self, Comp2.self)

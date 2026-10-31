@@ -63,6 +63,8 @@ extension Nexus {
         @usableFromInline var indexByIdentifier: [ComponentIdentifier: Int] = [:]
         /// The tables that match each family filter, extended lazily as new tables appear.
         @usableFromInline var queryCache: [FamilyFilter: TableQuery] = [:]
+        /// Incremented by ``removeAll()``, which drops the tables the cached queries point into.
+        @usableFromInline var epoch = 0
         /// Greater than zero while a scoped access runs; structural changes trap then.
         @exclusivity(unchecked)
         @usableFromInline var lockDepth = 0
@@ -234,17 +236,36 @@ extension Nexus {
             if let cached = queryCache[filter] {
                 query = cached
             } else {
-                query = TableQuery()
+                query = TableQuery(filter: filter, epoch: epoch)
                 queryCache[filter] = query
+            }
+            refresh(query)
+            return query
+        }
+
+        /// Extends `query` by the tables created since it was last refreshed; rebuilds it if the tables were dropped by ``removeAll()``.
+        @inlinable
+        func refresh(_ query: TableQuery) {
+            if query.scanned == tables.count, query.epoch == epoch {
+                return
+            }
+            refreshSlow(query)
+        }
+
+        @usableFromInline
+        func refreshSlow(_ query: TableQuery) {
+            if query.epoch != epoch {
+                query.tables.removeAll(keepingCapacity: true)
+                query.scanned = 0
+                query.epoch = epoch
             }
             while query.scanned < tables.count {
                 let table = tables[query.scanned]
-                if filter.accepts(table.mask) {
+                if query.filter.accepts(table.mask) {
                     query.tables.append(Unmanaged.passUnretained(table))
                 }
                 query.scanned += 1
             }
-            return query
         }
 
         // MARK: Entities
@@ -308,6 +329,7 @@ extension Nexus {
             prototypes = []
             indexByIdentifier.removeAll()
             queryCache.removeAll()
+            epoch += 1
             makeEmptyTable()
             withExtendedLifetime(released) {}
         }

@@ -26,8 +26,9 @@ extension Nexus {
             if let existing = recordsByIdentifier[type.identifier] {
                 return existing
             }
-            let record = ComponentTypeRecord(type)
-            let names = [record.typeName] + type.componentTypeNameAliases.filter { $0 != record.typeName }
+            let cached = ComponentTypeRecord.cached(type)
+            let record = cached.record
+            let names = cached.names
             for name in names where identifiersByTypeName[name] != nil {
                 throw ComponentRegistryError.duplicateTypeName(name)
             }

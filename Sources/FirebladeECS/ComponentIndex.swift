@@ -5,6 +5,7 @@
 //  Created by Christian Treffs on 25.10.26.
 //
 
+import CFirebladeAtomics
 #if canImport(WinSDK)
 import WinSDK
 #elseif canImport(Darwin)
@@ -99,6 +100,26 @@ extension Nexus {
     }
 
     /// Assigns dense component indices to component types, once per type and process.
+    ///
+    /// Reads of registered types are lock-free and wait-free; only the first use of a type takes the lock.
+    ///
+    /// The registry keeps an open-addressing hash table (power-of-two capacity, load factor at most 0.5,
+    /// linear probing, multiply-shift hash of the type's ``ObjectIdentifier``) behind an atomic pointer.
+    /// A table is laid out as words: `[capacity, shift, (key, index) × capacity]`; a key of `0` marks an empty slot
+    /// (no metatype has address 0). Entries are never removed or changed once published:
+    ///
+    /// - A reader acquire-loads the table pointer and probes with acquire-loads of the key words.
+    ///   A key match returns the index, an empty slot means a miss, and a miss falls back to the locked path.
+    /// - A writer holds the lock, re-checks, writes the index word and then release-stores the key word, so a reader
+    ///   that sees the key also sees its index. When the table would exceed half full, the writer builds a table of
+    ///   twice the capacity privately and release-stores its pointer.
+    ///
+    /// Superseded tables are never freed, so a reader that loaded an old pointer can never touch freed memory.
+    /// They are kept alive by the registry, which is a process-lifetime singleton. Capacity doubles, so all retired
+    /// tables together are smaller than the current one: total memory is about twice the final table.
+    /// A table with capacity `c` takes `16 * c + 16` bytes on 64-bit platforms and holds up to `c / 2` types, so 256 types
+    /// need a 512-slot table of about 8 KiB and about 16 KiB including retired tables.
+    /// A reader on an old table may miss a type added later; it then takes the lock and sees the current table.
     @usableFromInline
     final class ComponentIndexRegistry: @unchecked Sendable {
         @usableFromInline static let shared = ComponentIndexRegistry()
@@ -109,31 +130,122 @@ extension Nexus {
         /// so absurd indices are rejected instead of allocating gigabytes.
         @usableFromInline static let indexLimit = 1 << 20
 
-        private var indexByType: [ObjectIdentifier: Int] = [:]
-        private let lock = Lock()
+        @usableFromInline static let initialCapacity = 16
+        /// Words before the slots: capacity, then the hash shift. Each slot is two words: key, index.
+        @usableFromInline static let headerWords = 2
+        /// The 2^bitWidth / golden ratio Fibonacci multiplier for the pointer width (64-bit constant, truncated to the top bits on 32-bit).
+        @usableFromInline static let hashMultiplier = UInt(truncatingIfNeeded: 0x9E37_79B9_7F4A_7C15 as UInt64 >> UInt64(64 - UInt.bitWidth))
 
-        private init() {}
+        /// The key word of a slot; the index word follows it.
+        @inlinable
+        static func slotEntry(_ table: UnsafeMutablePointer<UInt>, _ slot: Int) -> UnsafeMutablePointer<UInt> {
+            table + (headerWords &+ 2 &* slot)
+        }
+
+        /// The first slot to probe for a key.
+        @inlinable
+        static func homeSlot(_ key: UInt, in table: UnsafeMutablePointer<UInt>) -> Int {
+            Int(bitPattern: (key &* hashMultiplier) >> table[1]) & (Int(bitPattern: table[0]) &- 1)
+        }
+
+        /// A single word holding the address of the current table. Accessed only through acquire/release atomics.
+        @usableFromInline let current: UnsafeMutablePointer<UInt>
+        /// Guards `retired`, `assigned` and all table mutation.
+        private let lock = Lock()
+        private var retired: [UnsafeMutablePointer<UInt>] = []
+        private var assigned = 0
+
+        private init() {
+            current = .allocate(capacity: 1)
+            current.initialize(to: UInt(bitPattern: Self.makeTable(capacity: Self.initialCapacity)))
+        }
 
         /// The number of component types that have an index.
         @usableFromInline var count: Int {
-            lock.withLock { indexByType.count }
+            lock.withLock { assigned }
         }
 
         /// The index of a component type; takes the next free index on first use.
         /// - Parameter type: The component type.
         /// - Returns: The same index for every call with the same type.
-        /// - Complexity: O(1)
-        @usableFromInline
+        /// - Complexity: O(1) for a registered type, lock-free and wait-free; the probe length is bounded by the longest cluster of occupied slots, at most half the capacity.
+        @inlinable
         func index(of type: any Component.Type) -> Int {
+            let key = UInt(bitPattern: ObjectIdentifier(type))
+            if let found = Self.lookup(key, in: UnsafeMutablePointer<UInt>(bitPattern: frb_load_acquire(current)).unsafelyUnwrapped) {
+                return found
+            }
+            return register(key)
+        }
+
+        @inlinable
+        static func lookup(_ key: UInt, in table: UnsafeMutablePointer<UInt>) -> Int? {
+            let mask = Int(bitPattern: table[0]) &- 1
+            var slot = homeSlot(key, in: table)
+            while true {
+                let entry = slotEntry(table, slot)
+                let stored = frb_load_acquire(entry)
+                if stored == key {
+                    return Int(bitPattern: entry[1])
+                }
+                if stored == 0 {
+                    return nil
+                }
+                slot = (slot &+ 1) & mask
+            }
+        }
+
+        @usableFromInline
+        func register(_ key: UInt) -> Int {
             lock.withLock {
-                let key = ObjectIdentifier(type)
-                if let existing = indexByType[key] {
+                var table = UnsafeMutablePointer<UInt>(bitPattern: current.pointee).unsafelyUnwrapped
+                if let existing = Self.lookup(key, in: table) {
                     return existing
                 }
-                let index = indexByType.count
+                let index = assigned
                 precondition(index < Self.indexLimit, "too many component types")
-                indexByType[key] = index
+                if (index + 1) * 2 > Int(bitPattern: table[0]) {
+                    let grown = Self.makeTable(capacity: Int(bitPattern: table[0]) * 2, copying: table)
+                    retired.append(table)
+                    table = grown
+                    // The grown table is complete, so publishing it first lets readers pick it up before the new key lands.
+                    frb_store_release(current, UInt(bitPattern: grown))
+                }
+                Self.insert(key, index, into: table, publish: true)
+                assigned += 1
                 return index
+            }
+        }
+
+        static func makeTable(capacity: Int, copying old: UnsafeMutablePointer<UInt>? = nil) -> UnsafeMutablePointer<UInt> {
+            let table = UnsafeMutablePointer<UInt>.allocate(capacity: headerWords + 2 * capacity)
+            table.initialize(repeating: 0, count: headerWords + 2 * capacity)
+            table[0] = UInt(capacity)
+            table[1] = UInt(UInt.bitWidth - capacity.trailingZeroBitCount)
+            if let old {
+                for slot in 0 ..< Int(bitPattern: old[0]) {
+                    let entry = slotEntry(old, slot)
+                    if entry[0] != 0 {
+                        insert(entry[0], Int(bitPattern: entry[1]), into: table, publish: false)
+                    }
+                }
+            }
+            return table
+        }
+
+        /// Inserts a key that is not in the table yet. The index word is written before the key word is release-stored.
+        static func insert(_ key: UInt, _ index: Int, into table: UnsafeMutablePointer<UInt>, publish: Bool) {
+            let mask = Int(bitPattern: table[0]) - 1
+            var slot = homeSlot(key, in: table)
+            while slotEntry(table, slot)[0] != 0 {
+                slot = (slot + 1) & mask
+            }
+            let entry = slotEntry(table, slot)
+            entry[1] = UInt(bitPattern: index)
+            if publish {
+                frb_store_release(entry, key)
+            } else {
+                entry[0] = key
             }
         }
     }

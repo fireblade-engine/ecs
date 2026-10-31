@@ -6,9 +6,11 @@ enum ReportScript {
     (function () {
       "use strict";
       var SVGNS = "http:" + "//www.w3.org/2000/svg";
-      var dataNode = document.getElementById("report-data");
-      if (!dataNode) { return; }
-      var data = JSON.parse(dataNode.textContent);
+      // Loaded by node for the tests (no DOM): only the pure functions are exported at the end.
+      var hasDOM = typeof document !== "undefined";
+      var dataNode = hasDOM ? document.getElementById("report-data") : null;
+      if (hasDOM && !dataNode) { return; }
+      var data = dataNode ? JSON.parse(dataNode.textContent) : { title: "", baseline: "", delta: 0.05, workloads: [] };
       var W = 760, H = 440, L = 74, R = 744, T = 14, B = 372;
       var UNITS = [["ns", 1], ["μs", 1e3], ["ms", 1e6], ["s", 1e9]];
       var KINDS = {
@@ -128,12 +130,13 @@ enum ReportScript {
       /** The drawable points of one plot as {series, n, v, lo, hi, qLo, qHi, hollow, p}; v is in base units (ns or ratio). */
       function collect(workload, kind, mode) {
         var out = [];
+        // Points that cannot be drawn on these axes because of their entity count 0 (a log axis, or a per-entity value).
+        out.omitted = 0;
         var source = kind === "relative" ? workload.rel : workload.series;
         source.forEach(function (series) {
           series.points.forEach(function (p) {
             var per = kind === "perEntity" ? p.n : 1;
-            if (kind === "perEntity" && p.n <= 0) { return; }
-            if (mode === "log" && p.n <= 0) { return; }
+            if ((kind === "perEntity" || mode === "log") && p.n <= 0) { out.omitted++; return; }
             if (kind === "relative") {
               if (!(p.speed > 0)) { return; }
               out.push({ series: series, n: p.n, v: p.speed, lo: p.ciLow, hi: p.ciHigh, hollow: !p.sig, p: p });
@@ -231,11 +234,14 @@ enum ReportScript {
         return lay;
       }
 
-      function runs(pts, byN) {
-        // Consecutive scales of the union axis for which the series has a point; a missing scale is a gap.
+      /** The entity counts of all series of a plot, ascending: the union axis on which a series' missing count is a gap. */
+      function unionScales(pts) {
         var scales = [];
         pts.forEach(function (d) { if (scales.indexOf(d.n) < 0) { scales.push(d.n); } });
-        scales.sort(function (a, b) { return a - b; });
+        return scales.sort(function (a, b) { return a - b; });
+      }
+      /** Consecutive scales of the union axis for which the series has a point; a missing scale is a gap, never a zero. */
+      function runs(scales, byN) {
         var result = [], current = [];
         scales.forEach(function (n) {
           if (byN[n]) { current.push(byN[n]); } else if (current.length) { result.push(current); current = []; }
@@ -291,6 +297,7 @@ enum ReportScript {
       Plot.prototype.setMode = function (mode) {
         this.mode = mode;
         this.render();
+        syncGlobal();
       };
       Plot.prototype.render = function () {
         var self = this;
@@ -299,6 +306,7 @@ enum ReportScript {
         if (this.svg) { this.frame.removeChild(this.svg); }
         this.hide();
         var pts = collect(this.workload, this.kind, mode);
+        this.omitted = pts.omitted;
         var lay = layoutFor(this.workload, this.kind, mode, pts);
         this.legend.textContent = "";
         this.notes.textContent = "";
@@ -344,12 +352,13 @@ enum ReportScript {
           bySeries[s.idx].byN[d.n] = d;
         });
         var groups = bySeries.filter(Boolean);
+        var scales = unionScales(pts);
         var layer = svg("g", { "clip-path": "url(#" + id + ")" }, root);
         var isRel = this.kind === "relative";
         // Bands (IQR) or ribbons (CI of the speed), then lines, markers, error bars.
         groups.forEach(function (g) {
           var cls = "c" + (g.series.color % 7);
-          runs(g.pts, g.byN).forEach(function (run) {
+          runs(scales, g.byN).forEach(function (run) {
             var upper, lower;
             if (isRel) {
               var ribbon = run.filter(function (d) { return d.lo !== undefined && d.hi !== undefined; });
@@ -366,7 +375,7 @@ enum ReportScript {
         });
         groups.forEach(function (g) {
           var cls = "c" + (g.series.color % 7);
-          runs(g.pts, g.byN).forEach(function (run) {
+          runs(scales, g.byN).forEach(function (run) {
             if (run.length < 2) { return; }
             svg("polyline", {
               "class": "line " + cls + (g.series.baseline ? " baseline" : ""),
@@ -375,17 +384,29 @@ enum ReportScript {
           });
         });
         var hits = svg("g", { "class": "hits" }, layer);
+        // One tab stop per plot (roving tabindex); arrow keys move between points.
+        var grid = [];
+        var first = true;
         groups.forEach(function (g) {
           var cls = "c" + (g.series.color % 7);
+          var row = [];
+          grid.push(row);
           g.pts.forEach(function (d) {
             var x = lay.x(d.n), y = yy(d.v);
-            var node = svg("g", { "class": "pt", tabindex: "0", role: "img", "aria-label": self.describe(d) }, hits);
+            var node = svg("g", { "class": "pt", tabindex: first ? "0" : "-1", role: "img", "aria-label": self.describe(d) }, hits);
+            first = false;
+            row.push({ node: node, d: d });
+            node.addEventListener("keydown", function (ev) { self.key(ev, grid, row); });
             svg("circle", { "class": "hit", cx: r2(x), cy: r2(y), r: 10 }, node);
             marker(g.series.color, x, y, node, "marker " + cls + (d.hollow ? " hollow" : ""));
             var show = function (ev) { self.show(d, x, y, ev); };
             node.addEventListener("pointerenter", show);
             node.addEventListener("pointermove", show);
-            node.addEventListener("focus", function () { self.show(d, x, y, null); });
+            node.addEventListener("focus", function () {
+              Array.prototype.forEach.call(hits.querySelectorAll(".pt"), function (other) { other.setAttribute("tabindex", "-1"); });
+              node.setAttribute("tabindex", "0");
+              self.show(d, x, y, null);
+            });
             node.addEventListener("click", show);
             node.addEventListener("pointerleave", function () { if (document.activeElement !== node) { self.hide(); } });
             node.addEventListener("blur", function () { self.hide(); });
@@ -455,7 +476,7 @@ enum ReportScript {
           if (this.workload.series.some(function (s) { return s.baseline; })) { notes.push("Dashed line: baseline"); }
           if (covs.length && pts.some(function (d) { return d.hollow; })) { notes.push("Hollow marker: no CI at this point"); }
         }
-        if (this.mode === "log") { notes.push("Entity count 0 is omitted (log axis)"); }
+        if (this.omitted > 0) { notes.push("Entity count 0 is omitted (" + (this.mode === "log" ? "log axis" : "per-entity value") + ")"); }
         this.notes.textContent = notes.join(". ") + ".";
       };
 
@@ -516,6 +537,24 @@ enum ReportScript {
         this.tip.style.left = px + "px";
         this.tip.style.top = py + "px";
       };
+      Plot.prototype.key = function (ev, grid, row) {
+        var node = ev.currentTarget;
+        var column = row.map(function (entry) { return entry.node; }).indexOf(node);
+        var line = grid.indexOf(row);
+        var target = null;
+        if (ev.key === "Escape") { this.hide(); return; }
+        if (ev.key === "ArrowRight") { target = row[column + 1]; }
+        else if (ev.key === "ArrowLeft") { target = row[column - 1]; }
+        else if (ev.key === "ArrowUp" || ev.key === "ArrowDown") {
+          var other = grid[line + (ev.key === "ArrowDown" ? 1 : -1)];
+          if (other && other.length) {
+            var n = row[column].d.n;
+            target = other.reduce(function (best, entry) { return Math.abs(entry.d.n - n) < Math.abs(best.d.n - n) ? entry : best; }, other[0]);
+          }
+        } else { return; }
+        ev.preventDefault();
+        if (target) { target.node.focus(); }
+      };
       Plot.prototype.hide = function () {
         if (this.xh) { this.xh.g.setAttribute("visibility", "hidden"); }
         this.tip.hidden = true;
@@ -542,19 +581,24 @@ enum ReportScript {
         var seg = html("span", "seg", null, host);
         seg.setAttribute("role", "group");
         seg.setAttribute("aria-label", "Axis scale of all plots");
-        var buttons = {};
+        globalButtons = {};
         ["log", "linear"].forEach(function (mode) {
           var b = html("button", "", mode === "log" ? "Log" : "Linear", seg);
           b.type = "button";
-          b.addEventListener("click", function () {
-            plots.forEach(function (plot) { plot.setMode(mode); });
-            Object.keys(buttons).forEach(function (m) { buttons[m].setAttribute("aria-pressed", String(m === mode)); });
-          });
-          buttons[mode] = b;
+          b.addEventListener("click", function () { plots.forEach(function (plot) { plot.setMode(mode); }); });
+          globalButtons[mode] = b;
         });
-        buttons.log.setAttribute("aria-pressed", "true");
-        buttons.linear.setAttribute("aria-pressed", "false");
+        syncGlobal();
         host.hidden = false;
+      }
+      var globalButtons = null;
+      /** A global button is pressed only when every plot has that scale; with mixed plots neither is. */
+      function syncGlobal() {
+        if (!globalButtons) { return; }
+        ["log", "linear"].forEach(function (mode) {
+          var all = plots.length > 0 && plots.every(function (plot) { return plot.mode === mode; });
+          globalButtons[mode].setAttribute("aria-pressed", String(all));
+        });
       }
 
       function start() {
@@ -562,6 +606,13 @@ enum ReportScript {
           try { plots.push(new Plot(root)); } catch (error) { root.textContent = "The plot could not be drawn: " + error.message; }
         });
         buildGlobalToggle();
+      }
+      if (!hasDOM) {
+        module.exports = {
+          collect: collect, layoutFor: layoutFor, runs: runs, unionScales: unionScales, niceTicks: niceTicks, ratioTicks: ratioTicks,
+          pickUnit: pickUnit, setData: function (value) { data = value; }
+        };
+        return;
       }
       if (document.readyState === "loading") { document.addEventListener("DOMContentLoaded", start); } else { start(); }
     })();

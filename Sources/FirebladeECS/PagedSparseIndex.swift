@@ -15,6 +15,8 @@
     import Musl
 #elseif canImport(Bionic)
     import Bionic
+#elseif canImport(WASILibc)
+    import WASILibc
 #endif
 
 extension Nexus {

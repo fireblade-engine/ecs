@@ -89,8 +89,9 @@ enum ReportMarkup {
 
     private enum Block { case none, paragraph, list, quote }
 
-    /// Block structure of `lines`. `headingOffset` is added to the number of `#` (so `##` can become `<h3>`).
-    static func html(_ lines: [String], headingOffset: Int = 0) -> String {
+    /// Block structure of `lines`. `headingOffset` is added to the number of `#` (so `##` can become `<h3>`); `anchors` adds an `id` to
+    /// each heading (off where the same heading repeats, as in the workload sections).
+    static func html(_ lines: [String], headingOffset: Int = 0, anchors: Bool = true) -> String {
         var out: [String] = []
         var block = Block.none
         var buffer: [String] = []
@@ -115,7 +116,8 @@ enum ReportMarkup {
             } else if let heading = headingLevel(line) {
                 flush()
                 let level = min(6, heading.level + headingOffset)
-                out.append("<h\(level) id=\"\(slug(heading.text))\">\(inline(heading.text))</h\(level)>")
+                let id = anchors ? " id=\"\(slug(heading.text))\"" : ""
+                out.append("<h\(level)\(id)>\(inline(heading.text))</h\(level)>")
             } else if line.hasPrefix("- ") {
                 add(.list, String(line.dropFirst(2)))
             } else if line.hasPrefix("> ") {

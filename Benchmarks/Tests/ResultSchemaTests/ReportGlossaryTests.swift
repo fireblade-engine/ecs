@@ -40,8 +40,8 @@ enum GuideFixtures {
         ref("1.4.3", "a", model: "class", k: 1) { _, _ in 1000 } + ref("main", "b", model: "value", k: 1) { _, _ in 700 }
     }
 
-    static func render(_ files: [BenchmarkResultFile]) throws -> [RenderedFile] {
-        try BenchmarkReport.render(files, options: ReportOptions(baseline: "1.4.3")).files
+    static func render(_ files: [BenchmarkResultFile]) throws -> String {
+        try BenchmarkReport.render(files, options: ReportOptions(baseline: "1.4.3")).html
     }
 
     /// Text of the third header row of every table, i.e. the column headers.
@@ -64,21 +64,16 @@ struct ReportGlossaryTests {
     func everyColumnHeaderAndLegendTermHasAnEntry(replicated: Bool) throws {
         let files = replicated ? GuideFixtures.replicated() : GuideFixtures.single()
         let rendered = try GuideFixtures.render(files)
-        var headers = Set<String>()
-        for file in rendered where file.path.hasSuffix(".md") {
-            headers.formUnion(GuideFixtures.columnHeaders(file.contents).map { $0.replacingOccurrences(of: "&amp;", with: "&") })
-        }
+        let headers = GuideFixtures.columnHeaders(rendered).map { ReportHTMLSupport.decode($0) }
         #expect(headers.contains("speed (×)") || files.count == 2, "tables were found")
         for header in headers {
             #expect(ReportGlossary.covers(header), Comment(rawValue: "no glossary entry for the column header '\(header)'"))
         }
-        // Legend and caption terms of every plot.
+        // Legend and caption terms of every plot: the notes the script writes under each plot.
         var terms = Set<String>()
-        for file in rendered where file.path.hasSuffix(".svg") {
-            for line in file.contents.components(separatedBy: "\n") where line.contains(#"class="note""#) {
-                let text = line.components(separatedBy: ">").dropFirst().joined(separator: ">").components(separatedBy: "</text")[0]
-                for match in text.matches(of: /\bp\d+\b|\b[A-Z]{2,}\b|Hodges–Lehmann/) { terms.insert(String(match.0)) }
-            }
+        for note in ReportScript.source.matches(of: #/notes\.push\("([^"]*)"/#) {
+            let text = String(note.output.1).replacingOccurrences(of: "\\u2013", with: "–")
+            for match in text.matches(of: /\bp\d+\b|\b[A-Z]{2,}\b|Hodges–Lehmann/) { terms.insert(String(match.0)) }
         }
         #expect(terms.isSuperset(of: ["CI", "IQR"]) || files.count == 2)
         for term in terms {
@@ -99,15 +94,17 @@ struct ReportGlossaryTests {
     }
 
     @Test
-    func glossaryIsLinkedFromTheTopAndFromEveryWorkloadPageAndPrecedesMethods() throws {
-        let rendered = try GuideFixtures.render(GuideFixtures.replicated())
-        let report = try #require(rendered.first { $0.path == "REPORT.md" }).contents
+    func glossaryIsLinkedFromTheTopAndFromEveryWorkloadSectionAndPrecedesMethods() throws {
+        let html = try GuideFixtures.render(GuideFixtures.replicated())
+        let report = ReportHTMLSupport.text(html)
         let glossary = try #require(report.range(of: "\n## Glossary\n"))
         let methods = try #require(report.range(of: "\n## Methods\n"))
         #expect(glossary.upperBound <= methods.lowerBound)
-        #expect(report.contains("[Glossary](#glossary)"))
-        for page in rendered where page.path.hasPrefix("workloads/") {
-            #expect(page.contents.contains("[Glossary](../REPORT.md#glossary)"), Comment(rawValue: page.path))
+        #expect(html.contains(##"<a href="#glossary">Glossary</a>"##))
+        let pages = ReportHTMLSupport.pages(html).filter { $0.key.hasPrefix("workloads/") }
+        #expect(pages.count == 3)
+        for (path, page) in pages {
+            #expect(page.contains("[glossary](#glossary)"), Comment(rawValue: path))
         }
         #expect(report.contains("- **CI, confidence interval**:") && report.contains("±5%"))
     }

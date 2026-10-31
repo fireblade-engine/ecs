@@ -1,5 +1,5 @@
 // Report-only N-way comparison of saved result files, specified in Methodology.md ("Report v2 design" and "Statistical design v3"). A pure
-// function from decoded result files to the contents of a report directory (REPORT.md, per-workload pages, SVG plots): no
+// function from decoded result files to the contents of a report directory (the single file BenchmarkReport.html): no
 // file access, no processes, no benchmark runs, and the inputs are never mutated.
 import Benchmark
 import ECSCompatSuite
@@ -24,9 +24,9 @@ public struct RenderedFile: Equatable {
 }
 
 public struct RenderedReport {
-    /// REPORT.md, the overview.
-    public let markdown: String
-    /// Every file of the report directory in a fixed order, REPORT.md first.
+    /// The self-contained report page (inline style, script and data).
+    public let html: String
+    /// Every file of the report directory: only `BenchmarkReport.html`.
     public let files: [RenderedFile]
     /// Also printed in the report's own warnings section.
     public let warnings: [String]
@@ -53,6 +53,9 @@ public enum ReportError: Error, CustomStringConvertible, Equatable {
 }
 
 public enum BenchmarkReport {
+    /// The one file of a report directory.
+    public static let fileName = "BenchmarkReport.html"
+
     /// Renders the comparison of already validated result files.
     public static func render(_ files: [BenchmarkResultFile], options: ReportOptions = ReportOptions()) throws -> RenderedReport {
         guard files.count >= 2 else { throw ResultError("a report needs at least two result files, got \(files.count)") }
@@ -64,8 +67,8 @@ public enum BenchmarkReport {
         }
         let model = try ReportModel(files: files, baseline: options.baseline)
         var writer = ReportWriter(model: model, title: options.title)
-        let rendered = writer.render()
-        return RenderedReport(markdown: rendered[0].contents, files: rendered, warnings: model.warnings)
+        let html = try writer.render()
+        return RenderedReport(html: html, files: [RenderedFile(path: BenchmarkReport.fileName, contents: html)], warnings: model.warnings)
     }
 }
 

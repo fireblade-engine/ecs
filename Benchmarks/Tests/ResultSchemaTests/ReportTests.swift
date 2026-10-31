@@ -9,8 +9,9 @@ struct ReportTests {
         try BenchmarkReport.render(files, options: ReportOptions(baseline: baseline)).markdown
     }
 
+    /// The report as legacy-style text: `REPORT.md` for the whole page and `workloads/<name>.md` for each workload section.
     private func renderFiles(_ files: [BenchmarkResultFile], baseline: String? = nil) throws -> [String: String] {
-        Dictionary(uniqueKeysWithValues: try BenchmarkReport.render(files, options: ReportOptions(baseline: baseline)).files.map { ($0.path, $0.contents) })
+        ReportHTMLSupport.pages(try BenchmarkReport.render(files, options: ReportOptions(baseline: baseline)).html)
     }
 
     private var all: [BenchmarkResultFile] { [ReportFixtures.classRef(), ReportFixtures.valueRef(), ReportFixtures.scaledRef()] }
@@ -33,14 +34,16 @@ struct ReportTests {
             lines = lines[start...]
         }
         let headingIndex = try #require(lines.firstIndex { $0.hasPrefix(heading) })
-        let opening = try #require(lines[headingIndex...].firstIndex(of: "<table>"))
+        let opening = try #require(lines[headingIndex...].firstIndex { $0.hasPrefix("<table") })
         let closing = try #require(lines[opening...].firstIndex(of: "</table>"))
         let cells = try Regex(#"<t[dh]([^>]*)>(.*?)</t[dh]>"#)
-        return lines[opening ..< closing].filter { $0.hasPrefix("<tr>") }.map { row in
+        return lines[opening ..< closing].filter { $0.hasPrefix("<tr") }.map { row in
             row.matches(of: cells).map { match in
                 var text = String(row[match.output[2].range!])
                 if let anchor = text.firstMatch(of: #/<a href="[^"]*">(.*)</a>/#) { text = String(anchor.output.1) }
-                return text.replacingOccurrences(of: "&lt;", with: "<").replacingOccurrences(of: "&gt;", with: ">").replacingOccurrences(of: "&amp;", with: "&")
+                // The verdict symbol is decoration; the text after it is the cell's value.
+                text = text.replacing(#/<span class="sym"[^>]*>[^<]*</span> /#) { _ in "" }
+                return ReportHTMLSupport.decode(text)
             }
         }
     }
@@ -54,73 +57,55 @@ struct ReportTests {
         page.components(separatedBy: "\n").filter { $0.contains(">\(text)</td>") }
     }
 
-    private let wallSection = "## Time (wall clock)"
-
     // Column layout of the fixture tables (index 0 is the entity count): baseline 1-3; archetype 4-10 (mean, sd, n, delta,
     // speed, change, sig); sparseSet 11-17; candidate 18-24.
 
     @Test
-    func reportDirectoryHoldsOverviewWorkloadPagesAndPlots() throws {
-        let files = try BenchmarkReport.render(all).files
-        let paths = files.map(\.path)
-        #expect(paths.first == "REPORT.md")
+    func reportDirectoryHoldsOneSelfContainedHTMLFile() throws {
+        let rendered = try BenchmarkReport.render(all)
+        #expect(rendered.files.map(\.path) == ["BenchmarkReport.html"])
+        #expect(rendered.files[0].contents == rendered.html)
+        // Every workload has a section, a table of contents entry and a plot per kind.
         for workload in [ReportFixtures.w1, ReportFixtures.w2, ReportFixtures.w3] {
-            #expect(paths.contains("workloads/\(workload).md"))
+            #expect(rendered.html.contains(#"<section class="workload" id="w-\#(workload)">"#))
+            #expect(rendered.html.contains(##"<li><a href="#w-\##(workload)">"##))
+            for kind in ["total", "perEntity", "relative"] {
+                #expect(rendered.html.contains(#"<div class="plot" data-w="w-\#(workload)" data-kind="\#(kind)"></div>"#), "\(workload) \(kind)")
+            }
         }
-        // Only w1 has wall-clock data at entity counts above zero for the baseline series; w2 and w3 sit at 16 entities.
-        for workload in [ReportFixtures.w1, ReportFixtures.w2, ReportFixtures.w3] {
-            #expect(paths.contains("img/\(workload)-per-entity.svg") && paths.contains("img/\(workload)-total.svg"))
-        }
-        #expect(paths.count == Set(paths).count)
-        #expect(paths.filter { $0.hasPrefix("workloads/") } == paths.filter { $0.hasPrefix("workloads/") }.sorted())
-        let report = files[0].contents
-        #expect(report.contains("![\(ReportFixtures.w1): wall-clock cost per entity](img/\(ReportFixtures.w1)-per-entity.svg)"))
-        #expect(report.contains("](workloads/\(ReportFixtures.w1).md)"))
-        #expect(!report.contains("mermaid"))
-        #expect(try #require(files.first { $0.path == "workloads/\(ReportFixtures.w1).md" }).contents.contains("](../img/\(ReportFixtures.w1)-total.svg)"))
-    }
-
-    @Test
-    func everyRenderedSVGIsWellFormedXML() throws {
-        let files = try BenchmarkReport.render(all).files.filter { $0.path.hasSuffix(".svg") }
-        #expect(files.count >= 6)
-        for file in files {
-            let parser = XMLParser(data: Data(file.contents.utf8))
-            #expect(parser.parse(), "\(file.path): \(parser.parserError.map { "\($0)" } ?? "")")
-            #expect(file.contents.contains(#"viewBox="0 0 960 540""#))
-        }
+        #expect(!rendered.html.contains("mermaid") && !rendered.html.contains("<img"))
     }
 
     @Test
     func tableHeaderHasThreeLevelsWithColspan() throws {
         let page = try #require(renderFiles(all)["workloads/\(ReportFixtures.w1).md"])
         let lines = page.components(separatedBy: "\n")
-        let start = try #require(lines.firstIndex { $0.hasPrefix("### Time (wall clock): Entity counts up to 1,024") })
+        let start = try #require(lines.firstIndex { $0.hasPrefix("#### Time (wall clock): Entity counts up to 1,024") })
         let header = Array(lines[start...].drop { $0 != "<thead>" }.dropFirst().prefix(3))
         #expect(header[0] == #"<tr><th rowspan="3">Entities</th><th colspan="6">1.4.3 (class) - baseline</th><th colspan="24">main (value)</th><th colspan="12">candidate (value)</th></tr>"#)
         #expect(header[1] == #"<tr><th colspan="6">default</th><th colspan="12">archetype</th><th colspan="12">sparseSet</th><th colspan="12">archetype</th></tr>"#)
-        let rows = try table(page, heading: "### Time (wall clock): Entity counts up to 1,024")
+        let rows = try table(page, heading: "#### Time (wall clock): Entity counts up to 1,024")
         #expect(rows[2].prefix(6) == ["median (μs)", "CI low (μs)", "CI high (μs)", "mean (μs)", "replicates", "iterations"])
         #expect(Array(rows[2][12 ... 17]) == ["speed (×)", "CI low (×)", "CI high (×)", "change (%)", "q", "verdict"])
         #expect(rows[2].count == 42)
         // Header and body have the same number of columns (the entity header spans the three rows).
         for row in rows.dropFirst(3) { #expect(row.count == 43) }
-        // Series tables of the overview have no mean column.
+        // Each workload section shows the wall-clock tables once, including the mean column.
         let overview = try table(render(all), heading: "#### Time (wall clock): Entity counts up to 1,024")
-        #expect(overview[2].prefix(5) == ["median (μs)", "CI low (μs)", "CI high (μs)", "replicates", "iterations"])
+        #expect(overview[2].prefix(6) == ["median (μs)", "CI low (μs)", "CI high (μs)", "mean (μs)", "replicates", "iterations"])
     }
 
     @Test
     func unitAndDecimalsAreChosenPerColumn() throws {
         let page = try #require(renderFiles(all)["workloads/\(ReportFixtures.w1).md"])
-        let rows = try table(page, heading: "### Time (wall clock): Entity counts up to 1,024")
+        let rows = try table(page, heading: "#### Time (wall clock): Entity counts up to 1,024")
         // Baseline medians 1000 ns and 4000 ns: the typical value is 4 μs, so the column unit is μs, three significant digits.
         #expect(try body(rows, "16")[1] == "1.00")
         #expect(try body(rows, "64")[1] == "4.00")
         // The mean column has its own unit choice: 1700 ns and 6800 ns.
         #expect(try body(rows, "16")[4] == "1.70" && body(rows, "64")[4] == "6.80")
         // The large table has its own unit choice for the same series: 4096 entities at 40 μs.
-        let large = try table(page, heading: "### Time (wall clock): Entity counts above 1,024")
+        let large = try table(page, heading: "#### Time (wall clock): Entity counts above 1,024")
         #expect(large[2][0] == "median (μs)")
         #expect(try body(large, "4,096")[1] == "40.0")
         // archetype: 500 μs at 16 entities, the unit follows its own column.
@@ -166,8 +151,8 @@ struct ReportTests {
     @Test
     func smallAndLargeEntityCountsGetSeparateTables() throws {
         let page = try #require(renderFiles(all)["workloads/\(ReportFixtures.w1).md"])
-        let small = try table(page, section: wallSection, heading: "### Time (wall clock): Entity counts up to 1,024")
-        let large = try table(page, section: wallSection, heading: "### Time (wall clock): Entity counts above 1,024")
+        let small = try table(page, heading: "#### Time (wall clock): Entity counts up to 1,024")
+        let large = try table(page, heading: "#### Time (wall clock): Entity counts above 1,024")
         #expect(small.dropFirst(3).map { $0[0] } == ["16", "64"])
         #expect(large.dropFirst(3).map { $0[0] } == ["4,096"])
         // The overview repeats both wall-clock tables for each workload; w3 only has small counts.
@@ -179,7 +164,7 @@ struct ReportTests {
     @Test
     func singleReplicateInputsGetMediansButNoInference() throws {
         let page = try #require(renderFiles(all)["workloads/\(ReportFixtures.w1).md"])
-        let rows = try table(page, heading: "### Time (wall clock): Entity counts up to 1,024")
+        let rows = try table(page, heading: "#### Time (wall clock): Entity counts up to 1,024")
         let sixteen = try body(rows, "16")
         // Baseline: median, no CI, one replicate.
         #expect(sixteen[1] == "1.00" && sixteen[2] == "n/a (1 replicate)" && sixteen[3] == "n/a (1 replicate)" && sixteen[5] == "1")
@@ -222,15 +207,15 @@ struct ReportTests {
         let files = try renderFiles(all)
         let page = try #require(files["workloads/\(ReportFixtures.w1).md"])
         // archetype has no throughput, and neither does the candidate.
-        let throughput = try table(page, section: "## Throughput", heading: "### Throughput (# / s): Entity counts up to 1,024")
+        let throughput = try table(page, section: "#### Throughput", heading: "##### Throughput (# / s): Entity counts up to 1,024")
         let sixteen = try body(throughput, "16")
         #expect(sixteen[7] == "unavailable")
         #expect(sixteen[19] == "unavailable")
         #expect(page.contains(#"title="not measured for this series">unavailable</td>"#))
         // w2 is missing for sparseSet and the candidate; w3 for everything but the candidate.
-        let w2 = try table(#require(files["workloads/\(ReportFixtures.w2).md"]), heading: "### Time (wall clock): Entity counts up to 1,024")
+        let w2 = try table(#require(files["workloads/\(ReportFixtures.w2).md"]), heading: "#### Time (wall clock): Entity counts up to 1,024")
         #expect(try body(w2, "16")[19] == "unavailable")
-        let w3 = try table(#require(files["workloads/\(ReportFixtures.w3).md"]), heading: "### Time (wall clock): Entity counts up to 1,024")
+        let w3 = try table(#require(files["workloads/\(ReportFixtures.w3).md"]), heading: "#### Time (wall clock): Entity counts up to 1,024")
         let w3Row = try body(w3, "16")
         #expect(w3Row[1] == "unavailable" && w3Row[7] == "unavailable")
         #expect(w3Row[31] != "unavailable", "the candidate's own value is shown")
@@ -241,7 +226,7 @@ struct ReportTests {
     @Test
     func incompatiblePolarityIsUnavailableNotConverted() throws {
         let page = try #require(renderFiles(all)["workloads/\(ReportFixtures.w1).md"])
-        let rows = try table(page, section: "## Time (total CPU)", heading: "### Time (total CPU): Entity counts up to 1,024")
+        let rows = try table(page, section: "#### Time (total CPU)", heading: "##### Time (total CPU): Entity counts up to 1,024")
         let sixteen = try body(rows, "16")
         #expect(sixteen[19] == "unavailable")
         #expect(page.contains(#"title="incompatible units or polarity">unavailable</td>"#))
@@ -251,7 +236,7 @@ struct ReportTests {
     @Test
     func otherMetricsAreDescriptiveOnly() throws {
         let page = try #require(renderFiles(all)["workloads/\(ReportFixtures.w2).md"])
-        let rows = try table(page, section: "## Malloc (total)", heading: "### Malloc (total): Entity counts up to 1,024")
+        let rows = try table(page, section: "#### Malloc (total)", heading: "##### Malloc (total): Entity counts up to 1,024")
         let sixteen = try body(rows, "16")
         #expect(sixteen[1] == "0", "\(sixteen)")
         #expect(sixteen[7] == "5", "\(sixteen)")
@@ -266,7 +251,7 @@ struct ReportTests {
             $0.metric == .wallClock ? ReportFixtures.result(.wallClock, [0, 0, 0]) : $0
         }
         let page = try #require(renderFiles(files)["workloads/\(ReportFixtures.w2).md"])
-        let rows = try table(page, heading: "### Time (wall clock): Entity counts up to 1,024")
+        let rows = try table(page, heading: "#### Time (wall clock): Entity counts up to 1,024")
         let sixteen = try body(rows, "16")
         #expect(sixteen[1] == "0")
         #expect(sixteen[13] == "unavailable" && sixteen[18] == "unavailable")
@@ -281,12 +266,12 @@ struct ReportTests {
         try ResultValidator.validate(baseline)
         let files = try renderFiles([baseline, ReportFixtures.valueRef()])
         let page = try #require(files["workloads/\(ReportFixtures.w1).md"])
-        let throughput = try table(page, section: "## Throughput", heading: "### Throughput (# / s): Entity counts up to 1,024")
+        let throughput = try table(page, section: "#### Throughput", heading: "##### Throughput (# / s): Entity counts up to 1,024")
         let row = try body(throughput, "64")
         #expect(row[1] == "n/a" && row[2] == "n/a" && row[3] == "n/a")
         #expect(page.contains(#"title="not recorded: \#(ResultSchema.optionalMetricReason)">n/a</td>"#))
         // Wall clock of the same cell is untouched.
-        let time = try table(page, heading: "### Time (wall clock): Entity counts up to 1,024")
+        let time = try table(page, heading: "#### Time (wall clock): Entity counts up to 1,024")
         #expect(try body(time, "64")[1] != "n/a")
         #expect(ReportGlossary.covers("n/a"))
     }
@@ -294,11 +279,11 @@ struct ReportTests {
     @Test
     func throughputIsLargerIsBetterAndOnlyDescribed() throws {
         let page = try #require(renderFiles(all)["workloads/\(ReportFixtures.w1).md"])
-        #expect(page.contains("## Throughput (# / s) (larger is better)"))
-        #expect(page.contains("## Time (wall clock) (smaller is better)"))
-        let time = try table(page, heading: "### Time (wall clock): Entity counts up to 1,024")
+        #expect(page.contains("#### Throughput (# / s) (larger is better)"))
+        #expect(page.contains("#### Time (wall clock) (smaller is better)"))
+        let time = try table(page, heading: "#### Time (wall clock): Entity counts up to 1,024")
         #expect(try Double(body(time, "16")[13])! < 1, "archetype is slower than the baseline: speed below 1")
-        let throughput = try table(page, section: "## Throughput", heading: "### Throughput (# / s): Entity counts up to 1,024")
+        let throughput = try table(page, section: "#### Throughput", heading: "##### Throughput (# / s): Entity counts up to 1,024")
         #expect(throughput[2].allSatisfy { $0 != "verdict" && $0 != "q" })
     }
 
@@ -321,7 +306,7 @@ struct ReportTests {
             (identifier, results.map { $0.metric == .throughput ? ReportFixtures.result(.throughput, ReportFixtures.spread()) : $0 })
         })
         let page = try #require(renderFiles(files)["workloads/\(ReportFixtures.w1).md"])
-        let rows = try table(page, section: "## Throughput", heading: "### Percentiles, entity counts up to 1,024")
+        let rows = try table(page, section: "#### Throughput", heading: "##### Percentiles, entity counts up to 1,024")
         #expect(rows[2].prefix(3) == ["p0 (Kops/s)", "p25 (Kops/s)", "p50 (Kops/s)"])
         let sixteen = try body(rows, "16")
         #expect(sixteen[1] == "4.00" && sixteen[2] == "2.00" && sixteen[6] == "1.00" && sixteen[7] == "1.00", "\(sixteen)")
@@ -340,16 +325,16 @@ struct ReportTests {
         let decoded = try ResultValidator.decode(BenchmarkResultFile.encoder().encode(files[0]))
         #expect(decoded.baseline.results[identifier]?.contains { $0.statistics.measurementCount == 0 } == true)
         let page = try #require(renderFiles(files)["workloads/\(ReportFixtures.w2).md"])
-        let rows = try table(page, section: "## Malloc (total)", heading: "### Malloc (total): Entity counts up to 1,024")
+        let rows = try table(page, section: "#### Malloc (total)", heading: "##### Malloc (total): Entity counts up to 1,024")
         let sixteen = try body(rows, "16")
         #expect(sixteen[1] == "unavailable" && sixteen[2] == "unavailable" && sixteen[5] == "unavailable", "\(sixteen)")
         #expect(sixteen[7] == "5", "the other series is unaffected")
         #expect(page.contains(#"title="no measurements">unavailable</td>"#))
-        let percentiles = try table(page, section: "## Malloc (total)", heading: "### Percentiles, entity counts up to 1,024")
+        let percentiles = try table(page, section: "#### Malloc (total)", heading: "##### Percentiles, entity counts up to 1,024")
         #expect(try body(percentiles, "16")[1] == "unavailable")
         #expect(!page.contains(">nan<") && !page.contains(">inf<") && !page.contains(">-inf<"))
         // The other metrics of the ref are untouched.
-        let time = try table(page, section: "## Time (wall clock)", heading: "### Time (wall clock): Entity counts up to 1,024")
+        let time = try table(page, heading: "#### Time (wall clock): Entity counts up to 1,024")
         #expect(try body(time, "16")[1] != "unavailable")
     }
 
@@ -367,16 +352,20 @@ struct ReportTests {
     }
 
     @Test
-    func reportTextIsEscapedInHTMLAndMarkdown() throws {
+    func reportTextIsEscapedInHTML() throws {
         var files = all
         files[1].ref.requested = "a<b>&\"c\""
         let rendered = try BenchmarkReport.render(files)
-        let page = rendered.files.first { $0.path.hasPrefix("workloads/") }!.contents
+        let page = try #require(ReportHTMLSupport.section(rendered.html, ReportFixtures.w1))
         #expect(page.contains("a&lt;b&gt;&amp;&quot;c&quot; (value)"))
-        #expect(!page.contains("<b>"))
-        for file in rendered.files where file.path.hasSuffix(".svg") {
-            #expect(XMLParser(data: Data(file.contents.utf8)).parse(), "\(file.path)")
-        }
+        #expect(!rendered.html.contains("<b>"))
+        // The embedded data parses and carries the text; `<` never appears raw in it.
+        let json = try #require(ReportHTMLSupport.embeddedJSON(rendered.html))
+        #expect(!String(decoding: json, as: UTF8.self).contains("<"))
+        let object = try #require(try JSONSerialization.jsonObject(with: json) as? [String: Any])
+        let workload = try #require((object["workloads"] as? [[String: Any]])?.first)
+        let refs = (workload["series"] as? [[String: Any]])?.compactMap { $0["ref"] as? String } ?? []
+        #expect(refs.contains("a<b>&\"c\""))
     }
 
     // MARK: CLI
@@ -398,11 +387,10 @@ struct ReportTests {
         let paths = try writeInputs(directory)
         let output = directory.appendingPathComponent("report").path
         #expect(ResultsCLI.run(["report"] + paths + ["--baseline", "main", "--title", "Fixture", "--output-dir", output]) == 0)
-        let text = try String(contentsOfFile: output + "/REPORT.md", encoding: .utf8)
-        #expect(text.hasPrefix("# Fixture\n"))
-        #expect(text.contains("- Baseline: `main`"))
-        #expect(FileManager.default.fileExists(atPath: output + "/workloads/\(ReportFixtures.w1).md"))
-        #expect(FileManager.default.fileExists(atPath: output + "/img/\(ReportFixtures.w1)-per-entity.svg"))
+        let html = try String(contentsOfFile: output + "/BenchmarkReport.html", encoding: .utf8)
+        #expect(html.contains("<title>Fixture</title>") && html.contains("<h1>Fixture</h1>"))
+        #expect(ReportHTMLSupport.text(html).contains("- Baseline: `main`"))
+        #expect(try FileManager.default.contentsOfDirectory(atPath: output) == ["BenchmarkReport.html"], "one file and nothing else")
 
         #expect(ResultsCLI.run(["report", paths[0], "--output-dir", output + "2", "--overwrite"]) != 0, "needs two inputs")
         #expect(ResultsCLI.run(["report"] + paths + ["--baseline", "nope", "--output-dir", output + "3"]) != 0)
@@ -438,14 +426,14 @@ struct ReportTests {
         try Data("precious".utf8).write(to: output.appendingPathComponent("notes.txt"))
         #expect(ResultsCLI.run(["report"] + paths + ["--output-dir", output.path]) != 0, "non-empty without --overwrite")
         #expect(try Data(contentsOf: output.appendingPathComponent("notes.txt")) == Data("precious".utf8))
-        #expect(!FileManager.default.fileExists(atPath: output.appendingPathComponent("REPORT.md").path))
+        #expect(!FileManager.default.fileExists(atPath: output.appendingPathComponent("BenchmarkReport.html").path))
 
         // With --overwrite only generated files are replaced; stale generated files go, unrelated files stay.
         try FileManager.default.createDirectory(at: output.appendingPathComponent("workloads"), withIntermediateDirectories: true)
         try Data("old".utf8).write(to: output.appendingPathComponent("workloads/stale.md"))
-        try Data("old".utf8).write(to: output.appendingPathComponent("REPORT.md"))
+        try Data("old".utf8).write(to: output.appendingPathComponent("BenchmarkReport.html"))
         #expect(ResultsCLI.run(["report"] + paths + ["--output-dir", output.path, "--overwrite"]) == 0)
-        #expect(try String(contentsOf: output.appendingPathComponent("REPORT.md"), encoding: .utf8).hasPrefix("# FirebladeECS benchmark comparison"))
+        #expect(try String(contentsOf: output.appendingPathComponent("BenchmarkReport.html"), encoding: .utf8).contains("<h1>FirebladeECS benchmark comparison</h1>"))
         #expect(!FileManager.default.fileExists(atPath: output.appendingPathComponent("workloads/stale.md").path))
         #expect(try Data(contentsOf: output.appendingPathComponent("notes.txt")) == Data("precious".utf8))
         #expect(try inputsUntouched())
@@ -538,14 +526,13 @@ struct ReportTests {
 
     @Test
     func renderingIsDeterministic() throws {
-        let first = try renderFiles(all)
-        let second = try renderFiles(all)
-        #expect(first == second, "every file, including the SVGs")
-        #expect(try renderFiles(all, baseline: "main") == renderFiles(all, baseline: "main"))
-        #expect(try BenchmarkReport.render(all).files.map(\.path) == BenchmarkReport.render(all).files.map(\.path))
-        for (path, contents) in first {
-            #expect(contents.hasSuffix("\n") && !contents.contains("\r"), "\(path)")
-        }
+        let first = try BenchmarkReport.render(all).html
+        let second = try BenchmarkReport.render(all).html
+        #expect(first == second, "the whole page, including the embedded data")
+        let main1 = try BenchmarkReport.render(all, options: ReportOptions(baseline: "main")).html
+        let main2 = try BenchmarkReport.render(all, options: ReportOptions(baseline: "main")).html
+        #expect(main1 == main2)
+        #expect(first.hasSuffix("\n") && !first.contains("\r"))
     }
 
     @Test

@@ -5,7 +5,7 @@ import Testing
 @Suite
 struct ReportGuideTests {
     private func report(_ files: [BenchmarkResultFile]) throws -> String {
-        try #require(GuideFixtures.render(files).first { $0.path == "REPORT.md" }).contents
+        ReportHTMLSupport.text(try GuideFixtures.render(files))
     }
 
     private func guide(_ report: String) throws -> String {
@@ -21,7 +21,7 @@ struct ReportGuideTests {
         let guide = try #require(text.range(of: "\n## How to read this report\n"))
         let workloads = try #require(text.range(of: "\n## Workloads\n"))
         #expect(summary.upperBound <= guide.lowerBound && guide.upperBound <= workloads.lowerBound)
-        #expect(text.contains("[How to read this report](#how-to-read-this-report)"))
+        #expect(try GuideFixtures.render(GuideFixtures.replicated()).contains(##"<a href="#how-to-read-this-report">How to read this report</a>"##))
         let body = try self.guide(text)
         for heading in ["### 1. What a confidence interval is", "### 2. How the verdict is decided", "### 3. Error bars are not the light band", "### 4. Reading the plots", "### 5. What `q` is", "### 6. Replicates (k) and interleaving"] {
             #expect(body.contains(heading), Comment(rawValue: heading))

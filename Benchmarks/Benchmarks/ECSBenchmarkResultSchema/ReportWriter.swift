@@ -1,62 +1,54 @@
-// Markdown, HTML table and SVG rendering of a `ReportModel` into the files of a report directory (Methodology.md "Report v2 design" and
-// "Statistical design v3"). Statistics come from `ReportInference`; this file only formats them.
+// HTML rendering of a `ReportModel` into the single self-contained file `BenchmarkReport.html` (Methodology.md "Report v2 design"
+// and "Statistical design v3"). Statistics come from `ReportInference`; this file only formats them. The page holds inline CSS and
+// script, the tables as static HTML, and the plot data as embedded JSON; the script draws the plots in the browser.
 import Benchmark
 import Foundation
 
 struct ReportWriter {
     let model: ReportModel
     let title: String
+    /// Pending prose in the Markdown subset of `ReportMarkup`; flushed into `body` whenever a table or raw HTML is emitted.
     private var lines: [String] = []
+    private var body: [String] = []
+    private var anchors = true
+    private var ids: [String: String] = [:]
 
     /// Entity counts up to this value go into the small table, the rest into the large one (as upstream splits its tables).
     static let smallLimit = 1024
     static let summaryScales = [1024, 65536]
-
-    struct Plots {
-        var perEntity: String?
-        var total: String?
-        var relative: String?
-        var linear: String?
-    }
 
     init(model: ReportModel, title: String) {
         self.model = model
         self.title = title
     }
 
-    /// REPORT.md first, then `workloads/<identity>.md`, then `img/<identity>-*.svg`, each group sorted.
-    mutating func render() -> [RenderedFile] {
+    /// The complete HTML document.
+    mutating func render() throws -> String {
         let identities = Array(Set(model.keys.map(\.identity))).sorted()
-        var names: [String: String] = [:]
+        var ids: [String: String] = [:]
         var used = Set<String>()
         for identity in identities {
-            var name = Self.fileName(identity)
+            var name = "w-" + Self.fileName(identity)
             while !used.insert(name).inserted { name += "_" }
-            names[identity] = name
+            ids[identity] = name
         }
-        var plots: [String: Plots] = [:]
-        for identity in identities {
-            plots[identity] = Plots(
-                perEntity: logPlot(identity, perEntity: true),
-                total: logPlot(identity, perEntity: false),
-                relative: relativePlot(identity),
-                linear: linearPlot(identity)
-            )
-        }
+        self.ids = ids
+        body = []
+        lines = []
+        header()
+        warnings()
+        summary(identities, ids)
+        lines += ReportGuide(model: model).lines()
+        workloads(identities, ids)
+        lines += ReportGlossary.lines()
+        methods()
+        provenance()
+        pairing()
+        parityNotes()
+        flush()
 
-        var files: [RenderedFile] = []
-        files.append(RenderedFile(path: "REPORT.md", contents: overview(identities, names, plots)))
-        for identity in identities {
-            files.append(RenderedFile(path: "workloads/\(names[identity]!).md", contents: workloadPage(identity, names[identity]!, plots[identity]!)))
-        }
-        for identity in identities {
-            let name = names[identity]!
-            let plot = plots[identity]!
-            for (suffix, svg) in [("per-entity", plot.perEntity), ("total", plot.total), ("relative", plot.relative), ("total-linear", plot.linear)] {
-                if let svg { files.append(RenderedFile(path: "img/\(name)-\(suffix).svg", contents: svg)) }
-            }
-        }
-        return files
+        let payload = ReportPlotPayload(title: title, baseline: model.groups[model.baselineGroup].label, delta: ReportStatistics.defaultDelta, workloads: identities.map { plotWorkload($0, ids[$0]!) })
+        return try document(identities, ids, payload)
     }
 
     /// File-system safe version of a workload identity.
@@ -66,48 +58,102 @@ struct ReportWriter {
         })
     }
 
-    // MARK: REPORT.md
+    // MARK: Document
 
-    private mutating func overview(_ identities: [String], _ names: [String: String], _ plots: [String: Plots]) -> String {
-        lines = []
-        lines.append("# \(Self.text(title))")
-        lines.append("")
-        lines.append("Jump to: [How to read this report](#\(ReportGlossary.guideAnchor)) · [Glossary](#\(ReportGlossary.anchor)) · [Methods](#methods)")
-        lines.append("")
-        header()
-        warnings()
-        summary(identities, names)
-        lines += ReportGuide(model: model).lines()
-        lines.append("## Workloads")
-        lines.append("")
+    private func document(_ identities: [String], _ ids: [String: String], _ payload: ReportPlotPayload) throws -> String {
+        let e = ReportMarkup.escape
+        var out: [String] = []
+        out.append("<!doctype html>")
+        out.append("<html lang=\"en\">")
+        out.append("<head>")
+        out.append("<meta charset=\"utf-8\">")
+        out.append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">")
+        out.append("<meta name=\"color-scheme\" content=\"light dark\">")
+        out.append("<title>\(e(title))</title>")
+        out.append("<style>")
+        out.append(ReportStyle.css)
+        out.append("</style>")
+        out.append("</head>")
+        out.append("<body>")
+        out.append("<div class=\"bar\"><div class=\"bar-inner\"><div id=\"global-toggle\" hidden></div><span class=\"muted\">Hover or focus a point for its values; the matching table row is highlighted.</span></div></div>")
+        out.append("<header class=\"top\">")
+        out.append("<h1>\(e(title))</h1>")
+        out.append(facts())
+        out.append("</header>")
+        out.append("<nav class=\"toc\" aria-label=\"Contents\">")
+        out.append("<p class=\"jump\">Jump to: " + [("summary", "Summary"), (ReportGlossary.guideAnchor, "How to read this report"), ("workloads", "Workloads"), (ReportGlossary.anchor, "Glossary"), ("methods", "Methods"), ("provenance", "Provenance")]
+            .map { "<a href=\"#\($0.0)\">\(e($0.1))</a>" }.joined(separator: " · ") + "</p>")
+        out.append("<ul>")
         for identity in identities {
-            lines.append("### `\(Self.code(identity))`")
-            lines.append("")
-            let name = names[identity]!
-            lines.append("[All metrics, means, percentiles and the linear plot](workloads/\(name).md)")
-            lines.append("")
-            figures(identity, name, plots[identity]!, prefix: "")
-            wallClockTables(identity, headingLevel: 4)
+            out.append("<li><a href=\"#\(e(ids[identity]!))\"><code>\(e(Self.code(identity)))</code></a></li>")
         }
-        lines += ReportGlossary.lines()
-        methods()
-        provenance()
-        pairing()
-        parityNotes()
-        return finish()
+        out.append("</ul>")
+        out.append("</nav>")
+        out.append("<main>")
+        out.append("<noscript><p class=\"muted\">The plots need JavaScript; every number is also in the tables.</p></noscript>")
+        out += body
+        out.append("</main>")
+        out.append("<script type=\"application/json\" id=\"report-data\">\(try payload.json())</script>")
+        out.append("<script>")
+        out.append(ReportScript.source)
+        out.append("</script>")
+        out.append("</body>")
+        out.append("</html>")
+        return out.joined(separator: "\n") + "\n"
     }
 
-    private mutating func finish() -> String {
-        defer { lines = [] }
-        return lines.joined(separator: "\n") + "\n"
+    /// Facts of the run as a grid of small cards.
+    private func facts() -> String {
+        let e = ReportMarkup.escape
+        func distinct(_ values: [String]) -> String { values.uniqued().joined(separator: "; ") }
+        let files = model.files
+        let baseline = model.groups[model.baselineGroup]
+        var items: [(String, String)] = []
+        items.append(("Baseline", "\(baseline.label) (\(baseline.sha))"))
+        items.append(("Refs", model.groups.map { "\($0.label) [\($0.componentModel)] \($0.sha.prefix(12))" }.joined(separator: "; ")))
+        items.append(("Replicates (k) per ref", replicateSummary))
+        let starts = files.map(\.run.startedAt).min() ?? "", finishes = files.map(\.run.finishedAt).max() ?? ""
+        items.append(("Runs", "\(files.count) result files, \(starts) to \(finishes)"))
+        let batches = Set(files.compactMap(\.run.batchId)).sorted()
+        items.append(("Batch (run id)", batches.isEmpty ? "none recorded" : batches.joined(separator: ", ")))
+        let seeds = Set(files.compactMap { $0.run.replicate?.seed }).sorted()
+        items.append(("Seed", seeds.isEmpty ? "none recorded" : seeds.map(String.init).joined(separator: ", ")))
+        items.append(("Host", distinct(files.map { "\($0.host.osName) \($0.host.osVersion), \($0.host.architecture), \($0.host.cpuModel), \($0.host.coreCount) cores" })))
+        items.append(("Toolchain", distinct(files.map { "\($0.toolchain.swiftVersion.replacingOccurrences(of: "\n", with: " / ")) (\($0.toolchain.buildMode))" })))
+        items.append(("Series", "\(model.series.count) (ref, component model, backend)"))
+        let filters = Set(files.map(\.suite.filter)).sorted()
+        items.append(("Selection filter", filters.joined(separator: ", ")))
+        return "<dl class=\"facts\">\n" + items.map { "<div class=\"fact\"><dt>\(e($0.0))</dt><dd>\(e($0.1))</dd></div>" }.joined(separator: "\n") + "\n</dl>"
+    }
+
+    // MARK: Emitting
+
+    /// Moves the pending prose into the body as HTML.
+    private mutating func flush() {
+        guard !lines.isEmpty else { return }
+        body.append(ReportMarkup.html(lines, anchors: anchors))
+        lines = []
+    }
+
+    private mutating func emit(_ html: [String]) {
+        flush()
+        body += html
+    }
+
+    private mutating func emit(_ table: HTMLTable) {
+        emit(table.render())
     }
 
     private var replicateSummary: String {
-        let counts = model.groups.map { "\(Self.text($0.label)): \($0.fileIndices.count) of \($0.expectedReplicates)" }
+        let counts = model.groups.map { "\($0.label): \($0.fileIndices.count) of \($0.expectedReplicates)" }
         return counts.joined(separator: "; ")
     }
 
+    // MARK: Header
+
     private mutating func header() {
+        lines.append("## Reading notes")
+        lines.append("")
         let baseline = model.groups[model.baselineGroup]
         lines.append("- Baseline: `\(Self.code(baseline.label))` (\(Self.text(baseline.sha)))")
         lines.append("- Inputs: \(model.files.count) result files, \(model.groups.count) refs, \(model.series.count) series (ref, component model, backend)")
@@ -117,7 +163,7 @@ struct ReportWriter {
         lines.append("- Every replicate is an independent process; the replicate is the unit of analysis. `median` is the median over replicates of each replicate's median per iteration. `CI low` and `CI high` bound the 95% distribution-free confidence interval of that median (exact coverage in the methods section). `replicates` is the number of replicates behind the value, `iterations` the median number of measurements per replicate (time-based sampling, so it differs between series by design).")
         lines.append("- Non-baseline series add, for wall clock only, `speed (×)` = baseline ÷ series (above 1 is faster) with its exact 95% CI, `change (%)` = (1 ÷ speed − 1) × 100, `q` (Benjamini–Hochberg adjusted p of an exact Mann–Whitney test across every wall-clock comparison of this report) and a `verdict`: `faster`/`slower` need q < \(Self.percent(ReportStatistics.significanceLevel)) and a CI entirely outside the ±\(Self.percent(ReportStatistics.defaultDelta)) zone, `equivalent` needs the CI entirely inside it. Other metrics are descriptive only.")
         lines.append("- Every unit is in its column header and applies to the whole column of that table. Values keep at most the \(ReportFormat.significantDigits) significant digits the package measured. Anything missing or not comparable is `unavailable`, and a metric the package did not record (throughput of an iteration of about 2 s or longer) is `n/a` (hover for the reason), never zero. `n/a (k replicates)` means the statistic needs more replicates.")
-        lines.append("- Plots show the wall-clock median per iteration on log-log axes with CI error bars and a light within-run IQR band (spread of the measurements inside a run, not uncertainty); entity count 0 cannot sit on a log axis and appears in the tables only.")
+        lines.append("- Plots are drawn in the page from the embedded data: the wall-clock median per iteration with CI error bars and a light within-run IQR band (spread of the measurements inside a run, not uncertainty). Each plot starts on log-log axes and has a Log/Linear toggle (and there is one for all plots); entity count 0 cannot sit on a log axis and appears in the plots only on linear axes and in the tables.")
         lines.append("")
     }
 
@@ -167,7 +213,7 @@ struct ReportWriter {
 
     // MARK: Summary
 
-    private mutating func summary(_ identities: [String], _ names: [String: String]) {
+    private mutating func summary(_ identities: [String], _ ids: [String: String]) {
         guard let wall = model.wallClockMetric else { return }
         lines.append("## Summary")
         lines.append("")
@@ -190,19 +236,20 @@ struct ReportWriter {
             blocks.append(summaryBlock(index, subgroup: "\(model.series[index].backend) @ largest", items: largest, entities: scales))
         }
         guard !blocks.isEmpty else { return }
-        lines += HTMLTable(rowHeader: "Workload", rowLabels: identities, rowHrefs: identities.map { "workloads/\(names[$0]!).md" }, blocks: blocks).render()
+        emit(HTMLTable(rowHeader: "Workload", rowLabels: identities, rowHrefs: identities.map { "#\(ids[$0]!)" }, blocks: blocks))
         lines.append("")
     }
 
     private func summaryBlock(_ series: Int, subgroup: String, items: [ReportComparison?], entities: [Int?]?) -> HTMLColumnBlock {
         let columns = comparisonColumns(items, includeChange: false, includeQ: false)
+        let tints = items.map(Self.verdictClass)
         var headers = columns.headers
         var cells = columns.cells
         if let entities {
             headers.insert("entities", at: 0)
             cells.insert(entities.map { $0.map { HTMLCell(ReportFormat.grouped($0)) } ?? .unavailable("no entity count with a comparison") }, at: 0)
         }
-        return HTMLColumnBlock(group: groupLabel(series), subgroup: subgroup, headers: headers, columns: cells)
+        return HTMLColumnBlock(group: groupLabel(series), subgroup: subgroup, headers: headers, columns: cells, series: series, tints: tints)
     }
 
     // MARK: Comparison columns
@@ -218,6 +265,29 @@ struct ReportWriter {
         case .equivalent: "equivalent"
         case .inconclusive: "inconclusive"
         case let .notAvailable(replicates): replicatesText(replicates)
+        }
+    }
+
+    /// Symbol of a verdict, so that the row tint is never the only signal. Nothing for a verdict that was not reached.
+    static func verdictSymbol(_ verdict: ReportStatistics.Verdict) -> String? {
+        switch verdict {
+        case .faster: "\u{25B2}"
+        case .slower: "\u{25BC}"
+        case .equivalent: "="
+        case .inconclusive: "?"
+        case .notAvailable: nil
+        }
+    }
+
+    /// Class suffix (`v-<class>`) tinting the cells of a compared series in a row: green for faster, red for slower, neutral otherwise.
+    static func verdictClass(_ item: ReportComparison?) -> String? {
+        guard let item, item.reason == nil, item.speed != nil, let verdict = item.verdict else { return "unavailable" }
+        switch verdict {
+        case .faster: return "faster"
+        case .slower: return "slower"
+        case .equivalent: return "equivalent"
+        case .inconclusive: return "inconclusive"
+        case .notAvailable: return "unavailable"
         }
     }
 
@@ -261,30 +331,76 @@ struct ReportWriter {
         headers.append("verdict")
         cells.append(items.map { item in
             guard let item, item.reason == nil, item.speed != nil else { return unavailable(item) }
-            return HTMLCell(item.verdict.map(Self.verdictText) ?? "unavailable")
+            var cell = HTMLCell(item.verdict.map(Self.verdictText) ?? "unavailable", symbol: item.verdict.flatMap(Self.verdictSymbol))
+            cell.isVerdict = true
+            return cell
         })
         return (headers, cells)
     }
 
     // MARK: Workload sections
 
-    private mutating func figures(_ identity: String, _ name: String, _ plots: Plots, prefix: String) {
-        let entries: [(String?, String, String)] = [
-            (plots.perEntity, "per-entity", "wall-clock cost per entity"),
-            (plots.total, "total", "wall-clock time per iteration"),
-            (plots.linear, "total-linear", "wall-clock time per iteration, linear axes"),
-            (plots.relative, "relative", "speed against the baseline")
-        ]
-        for (svg, suffix, caption) in entries where svg != nil {
-            lines.append("![\(Self.text(identity)): \(caption)](\(prefix)img/\(name)-\(suffix).svg)")
+    private mutating func workloads(_ identities: [String], _ ids: [String: String]) {
+        lines.append("## Workloads")
+        lines.append("")
+        flush()
+        anchors = false
+        defer { anchors = true }
+        let hasComparisons = model.series.indices.contains { !model.isBaseline($0) }
+        for identity in identities {
+            let id = ids[identity]!
+            emit(["<section class=\"workload\" id=\"\(ReportMarkup.escape(id))\">"])
+            lines.append("### `\(Self.code(identity))`")
             lines.append("")
+            var parity: [String: [String]] = [:]
+            for group in model.groups {
+                for workload in model.files[group.fileIndices[0]].workloads where workload.identity == identity {
+                    let text = workload.parityKind == "equivalent" ? "equivalent" : "adapted: \(workload.parityReason ?? "")"
+                    parity[text, default: []].append(group.label)
+                }
+            }
+            for text in parity.keys.sorted() {
+                lines.append("- Parity (\(Self.text(parity[text]!.joined(separator: ", ")))): \(Self.text(text))")
+            }
+            if !parity.isEmpty { lines.append("") }
+            if model.wallClockMetric != nil {
+                var kinds = ["total", "perEntity"]
+                if hasComparisons { kinds.append("relative") }
+                emit(["<div class=\"plots\">"] + kinds.map { "<div class=\"plot\" data-w=\"\(ReportMarkup.escape(id))\" data-kind=\"\($0)\"></div>" } + ["</div>"])
+            }
+            wallClockTables(identity)
+            details(identity)
+            emit(["</section>"])
         }
     }
 
-    private mutating func wallClockTables(_ identity: String, headingLevel: Int) {
+    private mutating func wallClockTables(_ identity: String) {
         guard let wall = model.wallClockMetric else { return }
         let scales = Set(model.keys.filter { $0.identity == identity && $0.metric == wall }.map(\.scale)).sorted()
-        statisticsTables(identity, wall, scales, headingLevel: headingLevel, detail: false)
+        statisticsTables(identity, wall, scales, headingLevel: 4, detail: true)
+    }
+
+    /// Every metric with mean and percentile columns, folded away by default; the wall-clock statistics are already shown above.
+    private mutating func details(_ identity: String) {
+        emit(["<details>", "<summary>All metrics, means and percentiles</summary>"])
+        lines.append("`median`, `CI low`, `CI high`, `replicates` and `iterations` are defined in the [glossary](#\(ReportGlossary.anchor)). `mean` is the median over replicates of each replicate's mean per iteration; it is descriptive (upstream parity), not an inference input. Percentile columns are the median over replicates of each replicate's percentile.")
+        lines.append("")
+        let metrics = model.keys.filter { $0.identity == identity }.map(\.metric).uniqued()
+        for metric in metrics {
+            let scales = Set(model.keys.filter { $0.identity == identity && $0.metric == metric }.map(\.scale)).sorted()
+            let polarity = referenceCell(ReportKey(identity: identity, scale: scales[0], metric: metric))?.prefersLarger == true ? "larger is better" : "smaller is better"
+            lines.append("#### \(Self.text(metric)) (\(polarity))")
+            lines.append("")
+            if metric != model.wallClockMetric { statisticsTables(identity, metric, scales, headingLevel: 5, detail: true) }
+            let small = scales.filter { $0 <= Self.smallLimit }
+            let large = scales.filter { $0 > Self.smallLimit }
+            for (label, part) in [("up to \(ReportFormat.grouped(Self.smallLimit))", small), ("above \(ReportFormat.grouped(Self.smallLimit))", large)] where !part.isEmpty {
+                lines.append("##### Percentiles, entity counts \(label)")
+                lines.append("")
+                emit(percentileTable(identity, metric, part))
+            }
+        }
+        emit(["</details>"])
     }
 
     private mutating func statisticsTables(_ identity: String, _ metric: String, _ scales: [Int], headingLevel: Int, detail: Bool) {
@@ -294,48 +410,8 @@ struct ReportWriter {
         for (label, part) in [("Entity counts up to \(ReportFormat.grouped(Self.smallLimit))", small), ("Entity counts above \(ReportFormat.grouped(Self.smallLimit))", large)] where !part.isEmpty {
             lines.append("\(hashes) \(Self.text(metric)): \(label)")
             lines.append("")
-            lines += statisticsTable(identity, metric, part, detail: detail).render()
-            lines.append("")
+            emit(statisticsTable(identity, metric, part, detail: detail))
         }
-    }
-
-    private mutating func workloadPage(_ identity: String, _ name: String, _ plots: Plots) -> String {
-        lines = []
-        lines.append("# `\(Self.code(identity))`")
-        lines.append("")
-        lines.append("[Back to the report](../REPORT.md) · [Glossary](../REPORT.md#\(ReportGlossary.anchor)). \(Self.text(title)).")
-        lines.append("")
-        var parity: [String: [String]] = [:]
-        for group in model.groups {
-            for workload in model.files[group.fileIndices[0]].workloads where workload.identity == identity {
-                let text = workload.parityKind == "equivalent" ? "equivalent" : "adapted: \(workload.parityReason ?? "")"
-                parity[text, default: []].append(group.label)
-            }
-        }
-        for text in parity.keys.sorted() {
-            lines.append("- Parity (\(Self.text(parity[text]!.joined(separator: ", ")))): \(Self.text(text))")
-        }
-        if !parity.isEmpty { lines.append("") }
-        lines.append("`median`, `CI low`, `CI high`, `replicates` and `iterations` are defined in the [report](../REPORT.md). `mean` is the median over replicates of each replicate's mean per iteration; it is descriptive (upstream parity), not an inference input. Percentile columns are the median over replicates of each replicate's percentile.")
-        lines.append("")
-        figures(identity, name, plots, prefix: "../")
-        let metrics = model.keys.filter { $0.identity == identity }.map(\.metric).uniqued()
-        for metric in metrics {
-            let scales = Set(model.keys.filter { $0.identity == identity && $0.metric == metric }.map(\.scale)).sorted()
-            let polarity = referenceCell(ReportKey(identity: identity, scale: scales[0], metric: metric))?.prefersLarger == true ? "larger is better" : "smaller is better"
-            lines.append("## \(Self.text(metric)) (\(polarity))")
-            lines.append("")
-            statisticsTables(identity, metric, scales, headingLevel: 3, detail: true)
-            let small = scales.filter { $0 <= Self.smallLimit }
-            let large = scales.filter { $0 > Self.smallLimit }
-            for (label, part) in [("up to \(ReportFormat.grouped(Self.smallLimit))", small), ("above \(ReportFormat.grouped(Self.smallLimit))", large)] where !part.isEmpty {
-                lines.append("### Percentiles, entity counts \(label)")
-                lines.append("")
-                lines += percentileTable(identity, metric, part).render()
-                lines.append("")
-            }
-        }
-        return finish()
     }
 
     // MARK: Table construction
@@ -389,15 +465,17 @@ struct ReportWriter {
             columns.append(cells.indices.map { row in cells[row].map { HTMLCell(String($0.replicates)) } ?? unavailable(row) })
             headers.append("iterations")
             columns.append(cells.indices.map { row in cells[row].map { HTMLCell(ReportFormat.grouped(Int($0.iterations.rounded()))) } ?? unavailable(row) })
+            var tints: [String?]?
             if isWall, !model.isBaseline(index) {
                 let items: [ReportComparison?] = scales.map { model.comparisons[ReportComparisonKey(series: index, key: ReportKey(identity: identity, scale: $0, metric: metric))] }
                 let comparison = comparisonColumns(items, includeChange: true, includeQ: true)
                 headers += comparison.headers
                 columns += comparison.cells
+                tints = items.map(Self.verdictClass)
             }
-            blocks.append(HTMLColumnBlock(group: groupLabel(index), subgroup: model.series[index].backend, headers: headers, columns: columns))
+            blocks.append(HTMLColumnBlock(group: groupLabel(index), subgroup: model.series[index].backend, headers: headers, columns: columns, series: index, tints: tints))
         }
-        return HTMLTable(rowHeader: "Entities", rowLabels: scales.map(ReportFormat.grouped), blocks: blocks)
+        return HTMLTable(rowHeader: "Entities", rowLabels: scales.map(ReportFormat.grouped), workload: ids[identity], rowScales: scales, blocks: blocks)
     }
 
     private func percentileTable(_ identity: String, _ metric: String, _ scales: [Int]) -> HTMLTable {
@@ -405,7 +483,7 @@ struct ReportWriter {
         let percentiles = Statistics.defaultPercentilesToCalculate.map { Int($0) }
         var blocks: [HTMLColumnBlock] = []
         for index in model.series.indices {
-            var block = HTMLColumnBlock(group: groupLabel(index), subgroup: model.series[index].backend, headers: [], columns: [])
+            var block = HTMLColumnBlock(group: groupLabel(index), subgroup: model.series[index].backend, headers: [], columns: [], series: index)
             let resolved = scales.map { resolve(index, ReportKey(identity: identity, scale: $0, metric: metric)) }
             for percentile in percentiles {
                 let column = quantityColumn("p\(percentile)", resolved.map { $0.cell?.percentile(percentile) }, dimension) { row in
@@ -416,60 +494,79 @@ struct ReportWriter {
             }
             blocks.append(block)
         }
-        return HTMLTable(rowHeader: "Entities", rowLabels: scales.map(ReportFormat.grouped), blocks: blocks)
+        return HTMLTable(rowHeader: "Entities", rowLabels: scales.map(ReportFormat.grouped), workload: ids[identity], rowScales: scales, blocks: blocks)
     }
 
-    // MARK: Plots
+    // MARK: Plot data
 
-    private func plotSeries(_ identity: String) -> [ReportPlotSeries] {
-        guard let wall = model.wallClockMetric else { return [] }
-        var result: [ReportPlotSeries] = []
+    private func plotWorkload(_ identity: String, _ id: String) -> ReportPlotPayload.Workload {
+        var workload = ReportPlotPayload.Workload(id: id, identity: identity, series: [], rel: [])
+        guard let wall = model.wallClockMetric else { return workload }
+        let keys = model.keys.filter { $0.identity == identity && $0.metric == wall }
         for (index, entry) in model.series.enumerated() {
-            var points: [Int: ReportPlotPoint] = [:]
-            for key in model.keys where key.identity == identity && key.metric == wall {
-                if let cell = resolve(index, key).cell {
-                    points[key.scale] = ReportPlotPoint(
-                        median: cell.median, ciLow: cell.interval?.low, ciHigh: cell.interval?.high, coverage: cell.interval?.coverage,
-                        iqrLow: cell.iqrLow, iqrHigh: cell.iqrHigh, replicates: cell.replicates
-                    )
+            let group = model.groups[entry.groupIndex]
+            var points: [ReportPlotPayload.Point] = []
+            var relative: [ReportPlotPayload.RelativePoint] = []
+            for key in keys {
+                let comparison = model.comparisons[ReportComparisonKey(series: index, key: key)]
+                if let cell = resolve(index, key).cell, let point = plotPoint(cell, scale: key.scale, comparison: comparison) { points.append(point) }
+                if !model.isBaseline(index), let item = comparison, let speed = item.speed, speed.isFinite {
+                    let significant = item.verdict == .faster || item.verdict == .slower
+                    relative.append(ReportPlotPayload.RelativePoint(
+                        n: key.scale, speed: speed, ciLow: item.ciLow.flatMap(Self.finite), ciHigh: item.ciHigh.flatMap(Self.finite), sig: significant,
+                        text: Self.speedText(item), verdict: item.verdict.map(Self.verdictText), sym: item.verdict.flatMap(Self.verdictSymbol)
+                    ))
                 }
             }
-            result.append(ReportPlotSeries(label: entry.label, colorIndex: index, isBaseline: model.isBaseline(index), points: points))
-        }
-        return result
-    }
-
-    private func logPlot(_ identity: String, perEntity: Bool) -> String? {
-        ReportPlot.render(
-            title: perEntity ? "\(identity): wall-clock cost per entity" : "\(identity): wall-clock time per iteration",
-            yTitle: perEntity ? "Median time per entity" : "Median time per iteration",
-            perEntity: perEntity,
-            series: plotSeries(identity)
-        )
-    }
-
-    private func linearPlot(_ identity: String) -> String? {
-        ReportPlot.renderLinear(
-            title: "\(identity): wall-clock time per iteration, linear axes",
-            yTitle: "Median time per iteration",
-            series: plotSeries(identity)
-        )
-    }
-
-    private func relativePlot(_ identity: String) -> String? {
-        guard let wall = model.wallClockMetric else { return nil }
-        var result: [ReportRelativeSeries] = []
-        for index in model.series.indices where !model.isBaseline(index) {
-            var points: [Int: ReportRelativePoint] = [:]
-            for key in model.keys where key.identity == identity && key.metric == wall {
-                guard let item = model.comparisons[ReportComparisonKey(series: index, key: key)], let speed = item.speed else { continue }
-                let significant = item.verdict == .faster || item.verdict == .slower
-                points[key.scale] = ReportRelativePoint(speed: speed, ciLow: item.ciLow, ciHigh: item.ciHigh, isSignificant: significant)
+            workload.series.append(ReportPlotPayload.Series(
+                idx: index, color: index, label: entry.label, ref: group.label, backend: entry.backend, baseline: model.isBaseline(index), points: points
+            ))
+            if !model.isBaseline(index) {
+                workload.rel.append(ReportPlotPayload.Relative(idx: index, color: index, label: entry.label, ref: group.label, backend: entry.backend, points: relative))
             }
-            result.append(ReportRelativeSeries(label: model.series[index].label, colorIndex: index, points: points))
         }
-        let baseline = model.groups[model.baselineGroup].label
-        return ReportPlot.renderRelative(title: "\(identity): speed against \(baseline)", baselineLabel: baseline, delta: ReportStatistics.defaultDelta, series: result)
+        return workload
+    }
+
+    private static func finite(_ value: Double) -> Double? {
+        value.isFinite ? value : nil
+    }
+
+    /// "2.05× (CI 1.9–2.2×)": speed and CI ends with the same decimals.
+    private static func speedText(_ item: ReportComparison) -> String {
+        guard let speed = item.speed else { return "unavailable" }
+        let values = [speed] + [item.ciLow, item.ciHigh].compactMap { $0 }
+        let decimals = ReportFormat.columnDecimals(values, divisor: 1)
+        let text = ReportFormat.text(speed, columnDecimals: decimals) + "\u{00D7}"
+        guard let low = item.ciLow, let high = item.ciHigh else { return text }
+        return text + " (CI \(ReportFormat.text(low, columnDecimals: decimals))\u{2013}\(ReportFormat.text(high, columnDecimals: decimals))\u{00D7})"
+    }
+
+    private func plotPoint(_ cell: ReportCell, scale: Int, comparison: ReportComparison?) -> ReportPlotPayload.Point? {
+        guard cell.median.isFinite, cell.iqrLow.isFinite, cell.iqrHigh.isFinite else { return nil }
+        func shown(_ values: [Double], _ unit: ReportUnit) -> (Double) -> String {
+            let decimals = ReportFormat.columnDecimals(values, divisor: unit.divisor)
+            return { ReportFormat.text($0, divisor: unit.divisor, columnDecimals: decimals) }
+        }
+        func suffix(_ unit: ReportUnit) -> String { unit.label.isEmpty ? "" : " " + unit.label }
+        let unit = cell.dimension.unit(fitting: [cell.median])
+        let interval = cell.interval.flatMap { $0.low.isFinite && $0.high.isFinite ? $0 : nil }
+        let format = shown([cell.median] + (interval.map { [$0.low, $0.high] } ?? []), unit)
+        var per: String?
+        if scale > 0 {
+            let value = cell.median / Double(scale)
+            let perUnit = cell.dimension.unit(fitting: [value])
+            per = shown([value], perUnit)(value) + suffix(perUnit)
+        }
+        let verdict = comparison?.verdict
+        let usable = comparison.map { $0.reason == nil && $0.speed != nil } ?? false
+        return ReportPlotPayload.Point(
+            n: scale, median: cell.median, ciLow: interval?.low, ciHigh: interval?.high, cov: interval?.coverage, iqrLow: cell.iqrLow, iqrHigh: cell.iqrHigh,
+            k: cell.replicates, tMedian: format(cell.median) + suffix(unit),
+            tCI: interval.map { "\(format($0.low)) \u{2013} \(format($0.high))" + suffix(unit) }, tPer: per,
+            tSpeed: usable ? comparison.map(Self.speedText) : nil, verdict: usable ? verdict.map(Self.verdictText) : nil,
+            sym: usable ? verdict.flatMap(Self.verdictSymbol) : nil
+        )
     }
 
     // MARK: Methods
@@ -542,16 +639,31 @@ struct ReportWriter {
 
     // MARK: Provenance, pairing, parity
 
+    /// A small key/value style table; the cells are already HTML.
+    private static func simpleTable(_ headers: [String], _ rows: [[String]]) -> [String] {
+        var out = ["<div class=\"table-wrap\">", "<table class=\"kv\">", "<thead>", "<tr>" + headers.map { "<th>\(ReportMarkup.escape($0))</th>" }.joined() + "</tr>", "</thead>", "<tbody>"]
+        for row in rows {
+            out.append("<tr>" + row.map { "<td>\($0)</td>" }.joined() + "</tr>")
+        }
+        out += ["</tbody>", "</table>", "</div>"]
+        return out
+    }
+
+    private static func codeHTML(_ value: String) -> String {
+        "<code>\(ReportMarkup.escape(code(value)))</code>"
+    }
+
     private mutating func provenance() {
         lines.append("## Provenance")
         lines.append("")
+        flush()
+        anchors = false
+        defer { anchors = true }
         for group in model.groups {
             let files = group.fileIndices.map { model.files[$0] }
             let first = files[0]
             lines.append("### \(Self.text(group.label))")
             lines.append("")
-            lines.append("| Field | Value |")
-            lines.append("| --- | --- |")
             func distinct(_ values: [String]) -> String { values.uniqued().joined(separator: "; ") }
             let rounds = files.compactMap { $0.run.replicate.map { "\($0.round)" } }
             let rows: [(String, String)] = [
@@ -572,31 +684,27 @@ struct ReportWriter {
                 ("Host", distinct(files.map { "\($0.host.osName) \($0.host.osVersion), \($0.host.architecture), \($0.host.cpuModel), \($0.host.coreCount) cores, \($0.host.physicalMemoryBytes) bytes memory" })),
                 ("Packages", distinct(files.map { $0.packages.map { "\($0.identity) \($0.version ?? "-") \($0.revision.prefix(12))" }.joined(separator: "; ") }))
             ]
-            for (name, value) in rows {
-                lines.append("| \(name) | \(Self.cell(value)) |")
-            }
-            lines.append("")
+            emit(Self.simpleTable(["Field", "Value"], rows.map { [ReportMarkup.escape($0.0), ReportMarkup.escape($0.1)] }))
         }
     }
 
     private mutating func pairing() {
         lines.append("## Series and pairing")
         lines.append("")
-        lines.append("| Series | Replicates | Compared with |")
-        lines.append("| --- | --- | --- |")
+        var rows: [[String]] = []
         for index in model.series.indices {
             let series = model.series[index]
             let group = model.groups[series.groupIndex]
             let target: String = if model.isBaseline(index) {
                 "baseline"
             } else if let paired = model.pairedSeries(for: index) {
-                Self.cell(model.series[paired].label)
+                ReportMarkup.escape(model.series[paired].label)
             } else {
-                "unavailable (the baseline has several backends and none is `\(Self.code(series.backend))`)"
+                "unavailable (the baseline has several backends and none is \(Self.codeHTML(series.backend)))"
             }
-            lines.append("| \(Self.cell(series.label)) | \(group.fileIndices.count) of \(group.expectedReplicates) | \(target) |")
+            rows.append([ReportMarkup.escape(series.label), "\(group.fileIndices.count) of \(group.expectedReplicates)", target])
         }
-        lines.append("")
+        emit(Self.simpleTable(["Series", "Replicates", "Compared with"], rows))
     }
 
     private mutating func parityNotes() {
@@ -614,35 +722,29 @@ struct ReportWriter {
                 unsupported[entry.identity, default: [:]][entry.reason, default: []].append(group.label)
             }
         }
-        lines.append("| Workload | Parity | Refs |")
-        lines.append("| --- | --- | --- |")
+        var parityRows: [[String]] = []
         for identity in parity.keys.sorted() {
             for text in parity[identity]!.keys.sorted() {
-                lines.append("| `\(Self.code(identity))` | \(Self.cell(text)) | \(Self.cell(parity[identity]![text]!.joined(separator: ", "))) |")
+                parityRows.append([Self.codeHTML(identity), ReportMarkup.escape(text), ReportMarkup.escape(parity[identity]![text]!.joined(separator: ", "))])
             }
         }
-        lines.append("")
+        emit(Self.simpleTable(["Workload", "Parity", "Refs"], parityRows))
         lines.append("## Unsupported workloads")
         lines.append("")
         lines.append("Unsupported workloads are not measured and not approximated.")
         lines.append("")
-        lines.append("| Workload | Reason | Refs |")
-        lines.append("| --- | --- | --- |")
+        var unsupportedRows: [[String]] = []
         for identity in unsupported.keys.sorted() {
             for reason in unsupported[identity]!.keys.sorted() {
-                lines.append("| `\(Self.code(identity))` | \(Self.cell(reason)) | \(Self.cell(unsupported[identity]![reason]!.joined(separator: ", "))) |")
+                unsupportedRows.append([Self.codeHTML(identity), ReportMarkup.escape(reason), ReportMarkup.escape(unsupported[identity]![reason]!.joined(separator: ", "))])
             }
         }
-        lines.append("")
+        emit(Self.simpleTable(["Workload", "Reason", "Refs"], unsupportedRows))
     }
 
-    // MARK: Escaping
+    // MARK: Text
 
-    /// Table cell: single line, pipes escaped, HTML-significant characters written as entities (Markdown passes raw HTML through).
-    static func cell(_ value: String) -> String {
-        entities(value).replacingOccurrences(of: "\n", with: "; ").replacingOccurrences(of: "|", with: "\\|")
-    }
-
+    /// Prose text for the Markdown subset: `&`, `<`, `>` as entities (`ReportMarkup` escapes exactly once), one line.
     static func text(_ value: String) -> String {
         entities(value).replacingOccurrences(of: "\n", with: " ")
     }

@@ -148,12 +148,13 @@ struct ReportReplicateTests {
         let rendered = try BenchmarkReport.render(verdictCases, options: ReportOptions(baseline: "1.4.3"))
         let text = rendered.markdown
         for verdict in ["faster", "slower", "equivalent", "inconclusive"] {
-            #expect(text.contains(">\(verdict)</td>"), "\(verdict)")
+            #expect(text.contains(" \(verdict)</td>"), "\(verdict)")
+            #expect(text.contains("v-\(verdict)"), "row tint class of \(verdict)")
         }
         #expect(!text.contains("n/a (1 replicate)"))
-        let page = try #require(rendered.files.first { $0.path == "workloads/\(F.w1).md" }).contents
+        let page = try #require(ReportHTMLSupport.pages(rendered.html)["workloads/\(F.w1).md"])
         // 10 replicates, a CI on the median, q below 0.001 and the speed with its CI.
-        let rows = try ReportTableParser.rows(page, heading: "### Time (wall clock): Entity counts up to 1,024")
+        let rows = try ReportTableParser.rows(page, heading: "#### Time (wall clock): Entity counts up to 1,024")
         let row = try #require(rows.dropFirst(3).first { $0.first == "16" })
         #expect(row[5] == "10" && row[2] != "n/a" && !row[2].hasPrefix("n/a") && !row[3].hasPrefix("n/a"))
         #expect(row[18] == "faster" && row[17] == "&lt;0.001")
@@ -210,7 +211,7 @@ struct ReportReplicateTests {
         let series = ref("main", "b", workloads: [F.w1]) { _, i, _ in base(i) }
         let rendered = try BenchmarkReport.render(baseline + series, options: ReportOptions(baseline: "1.4.3"))
         #expect(rendered.markdown.contains("n/a (1 replicate)"))
-        #expect(!rendered.markdown.contains(">faster<") && !rendered.markdown.contains(">slower<"))
+        #expect(!rendered.markdown.contains(" faster</td>") && !rendered.markdown.contains(" slower</td>"))
         #expect(rendered.warnings.contains { $0.contains("different numbers of replicates") })
     }
 
@@ -248,32 +249,39 @@ struct ReportReplicateTests {
     }
 
     @Test
-    func plotsCarryErrorBarsBandsAndTheRelativeLayers() throws {
+    func plotDataCarriesIntervalsBandsAndTheRelativeLayers() throws {
         let workloads = [F.w1]
         let baseline = ref("1.4.3", "a", model: "class", workloads: workloads, scales: [16, 64, 256]) { _, i, scale in base(i) * scale }
         let series = ref("main", "b", workloads: workloads, scales: [16, 64, 256]) { _, i, scale in base(i) * scale / 2 }
-        let files = try BenchmarkReport.render(baseline + series, options: ReportOptions(baseline: "1.4.3")).files
-        let paths = files.map(\.path)
-        for suffix in ["per-entity", "total", "relative", "total-linear"] {
-            #expect(paths.contains("img/\(F.w1)-\(suffix).svg"), "\(suffix)")
+        let html = try BenchmarkReport.render(baseline + series, options: ReportOptions(baseline: "1.4.3")).html
+        let json = try #require(ReportHTMLSupport.embeddedJSON(html))
+        let object = try #require(try JSONSerialization.jsonObject(with: json) as? [String: Any])
+        #expect(object["baseline"] as? String == "1.4.3")
+        #expect(object["delta"] as? Double == ReportStatistics.defaultDelta)
+        let workload = try #require((object["workloads"] as? [[String: Any]])?.first)
+        let all = try #require(workload["series"] as? [[String: Any]])
+        #expect(all.count == 2 && all[0]["baseline"] as? Bool == true && all[1]["baseline"] as? Bool == false)
+        let points = try #require(all[1]["points"] as? [[String: Any]])
+        #expect(points.map { $0["n"] as? Int } == [16, 64, 256])
+        for point in points {
+            #expect(point["ciLow"] != nil && point["ciHigh"] != nil && point["iqrLow"] != nil && point["iqrHigh"] != nil)
+            #expect(point["cov"] as? Double == 0.978515625, "exact coverage of the CI of the median over 10 replicates")
+            #expect((point["tMedian"] as? String)?.hasSuffix("μs") == true || (point["tMedian"] as? String)?.hasSuffix("ns") == true)
+            #expect(point["verdict"] as? String == "faster" && point["sym"] as? String == "\u{25B2}")
         }
-        func svg(_ suffix: String) throws -> String { try #require(files.first { $0.path == "img/\(F.w1)-\(suffix).svg" }).contents }
-        for file in files where file.path.hasSuffix(".svg") {
-            let parser = XMLParser(data: Data(file.contents.utf8))
-            #expect(parser.parse(), "\(file.path): \(parser.parserError.map { "\($0)" } ?? "")")
+        // The relative layer exists for the non-baseline series only; all points are significant (filled).
+        let relative = try #require(workload["rel"] as? [[String: Any]])
+        #expect(relative.count == 1 && relative[0]["idx"] as? Int == 1)
+        let ratios = try #require(relative[0]["points"] as? [[String: Any]])
+        #expect(ratios.count == 3 && ratios.allSatisfy { $0["sig"] as? Bool == true && $0["ciLow"] != nil && $0["ciHigh"] != nil })
+        // The three plot kinds are placed in the section, in this order, followed by the wall-clock tables.
+        let section = try #require(ReportHTMLSupport.section(html, F.w1))
+        let kinds = ["total", "perEntity", "relative"].compactMap { section.range(of: #"data-kind="\#($0)""#)?.lowerBound }
+        #expect(kinds.count == 3 && kinds == kinds.sorted())
+        // The script draws error bars, bands, the zone, the ribbon and the crosshair.
+        for part in ["errbar", "band", "zone", "ribbon", "crosshair", "pointerenter", "focus"] {
+            #expect(html.contains(part), Comment(rawValue: part))
         }
-        #expect(try svg("per-entity").contains(#"<path class="errbar"#) && svg("per-entity").contains("Error bars: CI of the median, 97.9%"))
-        #expect(try svg("per-entity").contains(#"<polygon class="band"#))
-        let relative = try svg("relative")
-        #expect(relative.contains(#"<rect class="zone""#) && relative.contains(#"<polygon class="ribbon"#) && relative.contains(#"<line class="ref""#))
-        #expect(!relative.components(separatedBy: "\n").contains { $0.contains("marker c1 hollow") }, "all points are significant: filled")
-        #expect(try svg("total-linear").contains("Entities (linear scale)"))
-        // REPORT.md and the detail page embed per-entity, total, the linear total and relative, in that order.
-        let report = try #require(files.first { $0.path == "REPORT.md" }).contents
-        #expect(report.contains("(img/\(F.w1)-per-entity.svg)") && report.contains("(img/\(F.w1)-total.svg)") && report.contains("(img/\(F.w1)-relative.svg)"))
-        let total = try #require(report.range(of: "(img/\(F.w1)-total.svg)")), linear = try #require(report.range(of: "(img/\(F.w1)-total-linear.svg)"))
-        #expect(total.upperBound <= linear.lowerBound && linear.upperBound <= report.range(of: "(img/\(F.w1)-relative.svg)")!.lowerBound)
-        #expect(try #require(files.first { $0.path == "workloads/\(F.w1).md" }).contents.contains("(../img/\(F.w1)-total-linear.svg)"))
     }
 
     @Test
@@ -290,11 +298,13 @@ enum ReportTableParser {
     static func rows(_ page: String, heading: String) throws -> [[String]] {
         let lines = page.components(separatedBy: "\n")[...]
         let headingIndex = try #require(lines.firstIndex { $0.hasPrefix(heading) })
-        let opening = try #require(lines[headingIndex...].firstIndex(of: "<table>"))
+        let opening = try #require(lines[headingIndex...].firstIndex { $0.hasPrefix("<table") })
         let closing = try #require(lines[opening...].firstIndex(of: "</table>"))
         let cells = try Regex(#"<t[dh]([^>]*)>(.*?)</t[dh]>"#)
-        return lines[opening ..< closing].filter { $0.hasPrefix("<tr>") }.map { row in
-            row.matches(of: cells).map { String(row[$0.output[2].range!]) }
+        return lines[opening ..< closing].filter { $0.hasPrefix("<tr") }.map { row in
+            row.matches(of: cells).map { match in
+                String(row[match.output[2].range!]).replacing(#/<span class="sym"[^>]*>[^<]*</span> /#) { _ in "" }
+            }
         }
     }
 }

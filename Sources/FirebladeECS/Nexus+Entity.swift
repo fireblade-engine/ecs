@@ -42,6 +42,7 @@ extension Nexus {
             var distinct = true
             _ = (repeat Self.insertDistinct((each C).componentIndex, into: &mask, distinct: &distinct))
             if distinct, !mask.isEmpty {
+                archetype.requireUnlocked()
                 _ = (repeat prepareStorage((each C).self, in: archetype))
                 let entityId = entityIdGenerator.nextId()
                 let table = archetype.table(forExactly: mask)
@@ -111,6 +112,7 @@ extension Nexus {
         guard distinct else {
             return nil
         }
+        archetype.requireUnlocked()
         for component in components {
             prepareStorage(of: component, in: archetype)
         }

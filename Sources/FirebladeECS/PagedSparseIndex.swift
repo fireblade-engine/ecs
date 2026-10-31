@@ -5,6 +5,20 @@
 //  Created by Christian Treffs on 25.10.26.
 //
 
+#if canImport(WinSDK)
+    import WinSDK
+#elseif canImport(Darwin)
+    import Darwin
+#elseif canImport(Glibc)
+    import Glibc
+#elseif canImport(Musl)
+    import Musl
+#elseif canImport(Bionic)
+    import Bionic
+#elseif canImport(WASILibc)
+    import WASILibc
+#endif
+
 extension Nexus {
     /// Maps an entity index to the dense slot of one component type, or `-1` when the entity has none.
     ///
@@ -12,6 +26,9 @@ extension Nexus {
     /// gets the component, so a type that only few entities use costs memory per touched page, not per entity.
     /// Pages are never released before the index itself. A page table pointer plus page pointers keep lookups
     /// free of array bounds checks, exclusivity checks and reference counting.
+    ///
+    /// A page stores `slot + 1`, so that an all-zero page means "no slot" and a new page is a plain `calloc`: the C
+    /// allocator hands out zeroed memory without writing a 16 KiB page of `-1` first.
     ///
     /// Soundness of `@exclusivity(unchecked)`: the table is only mutated by `set` and `clear`, which the owning
     /// storage calls only while no scoped access or iteration runs (`SparseSetStorage.requireUnlocked`),
@@ -37,7 +54,7 @@ extension Nexus {
 
         deinit {
             for page in 0 ..< tableCapacity {
-                table[page]?.deallocate()
+                free(table[page])
             }
             table.deallocate()
         }
@@ -54,7 +71,7 @@ extension Nexus {
             guard pageNumber < tableCapacity, let page = table[pageNumber] else {
                 return -1
             }
-            return Int(page[Int(index) & (Self.pageSize - 1)])
+            return Int(page[Int(index) & (Self.pageSize - 1)]) - 1
         }
 
         /// Records that `index` lives in dense `slot`.
@@ -68,11 +85,14 @@ extension Nexus {
             if let existing = table[pageNumber] {
                 page = existing
             } else {
-                page = .allocate(capacity: Self.pageSize)
-                page.initialize(repeating: -1, count: Self.pageSize)
+                // zeroed memory is a page without slots
+                guard let fresh = calloc(Self.pageSize, MemoryLayout<Int32>.stride) else {
+                    fatalError("out of memory")
+                }
+                page = fresh.assumingMemoryBound(to: Int32.self)
                 table[pageNumber] = page
             }
-            page[Int(index) & (Self.pageSize - 1)] = Int32(truncatingIfNeeded: slot)
+            page[Int(index) & (Self.pageSize - 1)] = Int32(truncatingIfNeeded: slot + 1)
         }
 
         /// Forgets `index`.
@@ -80,7 +100,7 @@ extension Nexus {
         func clear(_ index: UInt32) {
             let pageNumber = Int(index) >> Self.pageShift
             if pageNumber < tableCapacity, let page = table[pageNumber] {
-                page[Int(index) & (Self.pageSize - 1)] = -1
+                page[Int(index) & (Self.pageSize - 1)] = 0
             }
         }
 

@@ -41,8 +41,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let wIndex1 = W1.componentIndex
             archetype.lockDepth += 1
             archetype.beginWrite(wIndex1)
@@ -111,8 +110,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let wIndex1 = W1.componentIndex
             let wIndex2 = W2.componentIndex
             archetype.lockDepth += 1
@@ -194,8 +192,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let wIndex1 = W1.componentIndex
             let wIndex2 = W2.componentIndex
             let wIndex3 = W3.componentIndex
@@ -290,8 +287,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let wIndex1 = W1.componentIndex
             let wIndex2 = W2.componentIndex
             let wIndex3 = W3.componentIndex
@@ -363,8 +359,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let rIndex1 = R1.componentIndex
             archetype.lockDepth += 1
             archetype.requireReadable(rIndex1)
@@ -458,8 +453,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let rIndex1 = R1.componentIndex
             let wIndex1 = W1.componentIndex
             archetype.lockDepth += 1
@@ -537,8 +531,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let rIndex1 = R1.componentIndex
             let wIndex1 = W1.componentIndex
             let wIndex2 = W2.componentIndex
@@ -629,8 +622,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let rIndex1 = R1.componentIndex
             let wIndex1 = W1.componentIndex
             let wIndex2 = W2.componentIndex
@@ -734,8 +726,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let rIndex1 = R1.componentIndex
             let wIndex1 = W1.componentIndex
             let wIndex2 = W2.componentIndex
@@ -816,8 +807,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let rIndex1 = R1.componentIndex
             let rIndex2 = R2.componentIndex
             archetype.lockDepth += 1
@@ -887,8 +877,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let rIndex1 = R1.componentIndex
             let rIndex2 = R2.componentIndex
             let wIndex1 = W1.componentIndex
@@ -975,8 +964,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let rIndex1 = R1.componentIndex
             let rIndex2 = R2.componentIndex
             let wIndex1 = W1.componentIndex
@@ -1076,8 +1064,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let rIndex1 = R1.componentIndex
             let rIndex2 = R2.componentIndex
             let wIndex1 = W1.componentIndex
@@ -1190,8 +1177,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let rIndex1 = R1.componentIndex
             let rIndex2 = R2.componentIndex
             let wIndex1 = W1.componentIndex
@@ -1281,8 +1267,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let rIndex1 = R1.componentIndex
             let rIndex2 = R2.componentIndex
             let rIndex3 = R3.componentIndex
@@ -1361,8 +1346,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let rIndex1 = R1.componentIndex
             let rIndex2 = R2.componentIndex
             let rIndex3 = R3.componentIndex
@@ -1458,8 +1442,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let rIndex1 = R1.componentIndex
             let rIndex2 = R2.componentIndex
             let rIndex3 = R3.componentIndex
@@ -1568,8 +1551,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let rIndex1 = R1.componentIndex
             let rIndex2 = R2.componentIndex
             let rIndex3 = R3.componentIndex
@@ -1691,8 +1673,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let rIndex1 = R1.componentIndex
             let rIndex2 = R2.componentIndex
             let rIndex3 = R3.componentIndex
@@ -1791,8 +1772,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let rIndex1 = R1.componentIndex
             let rIndex2 = R2.componentIndex
             let rIndex3 = R3.componentIndex
@@ -1880,8 +1860,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let rIndex1 = R1.componentIndex
             let rIndex2 = R2.componentIndex
             let rIndex3 = R3.componentIndex
@@ -1986,8 +1965,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let rIndex1 = R1.componentIndex
             let rIndex2 = R2.componentIndex
             let rIndex3 = R3.componentIndex
@@ -2105,8 +2083,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let rIndex1 = R1.componentIndex
             let rIndex2 = R2.componentIndex
             let rIndex3 = R3.componentIndex
@@ -2237,8 +2214,7 @@ extension Family {
                 }
             }
         case let .archetype(archetype):
-            guard !memberIds.isEmpty, let filter = nexus.familyFiltersByTraits[traits] else { return }
-            let query = archetype.matchingTables(filter)
+            guard !memberIds.isEmpty, let query = archetypeQuery(in: archetype) else { return }
             let rIndex1 = R1.componentIndex
             let rIndex2 = R2.componentIndex
             let rIndex3 = R3.componentIndex

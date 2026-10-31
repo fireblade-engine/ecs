@@ -256,8 +256,17 @@ extension Nexus {
     final class TableQuery {
         @usableFromInline var tables = ContiguousArray<Unmanaged<ArchetypeTable>>()
         @usableFromInline var scanned = 0
+        @usableFromInline let filter: FamilyFilter
+        /// The ``ArchetypeStorage/epoch`` the list was built in; a mismatch means the tables were dropped.
+        @usableFromInline var epoch: Int
 
         @usableFromInline
-        init() {}
+        init(filter: FamilyFilter, epoch: Int) {
+            self.filter = filter
+            self.epoch = epoch
+        }
     }
 }
+
+/// A query is only touched through the nexus that owns the family, like the rest of the storage.
+extension Nexus.TableQuery: @unchecked Sendable {}

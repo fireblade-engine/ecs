@@ -264,16 +264,16 @@ private struct Tag300: Component, Sendable {
         #expect(archetype.tableCount == 1)
         let first = nexus.createEntity(with: Comp1(1), Comp2(2))
         let second = nexus.createEntity(with: Comp2(3), Comp1(4))
-        // components are added one by one: {Comp1} and {Comp1, Comp2} for the first, {Comp2} and (again) {Comp1, Comp2} for the second
-        #expect(archetype.tableCount == 4)
+        // both entities are created directly in the table {Comp1, Comp2}, whatever the order of their components
+        #expect(archetype.tableCount == 2)
         first.remove(Comp2.self)
         second.remove(Comp2.self)
-        // the removal reuses the table {Comp1} through the cached edge
-        #expect(archetype.tableCount == 4)
+        // the removal creates the table {Comp1} once and reuses it through the cached edge
+        #expect(archetype.tableCount == 3)
         second.set(Comp2(5))
         first.set(Comp2(6))
-        #expect(archetype.tableCount == 4)
-        // a table that became empty stays
+        #expect(archetype.tableCount == 3)
+        // a table that became empty stays; destroying removes the components one by one, which adds {Comp2}
         nexus.destroy(entity: first)
         nexus.destroy(entity: second)
         #expect(archetype.tableCount == 4)

@@ -16,6 +16,14 @@ public struct Family<each C: Component> {
     /// The traits that define this family (required and excluded components).
     public let traits: FamilyTraitSet
 
+    /// The membership predicate of this family, resolved once at initialization.
+    @usableFromInline let filter: Nexus.FamilyFilter
+
+    /// The archetype tables matching ``filter``, resolved once at initialization; `nil` for the sparse set storage.
+    ///
+    /// The list is extended lazily with tables created later, see ``Nexus/ArchetypeStorage/refresh(_:)``.
+    @usableFromInline let query: Nexus.TableQuery?
+
     /// Initializes a new family.
     /// - Parameters:
     ///   - nexus: The nexus instance.
@@ -36,7 +44,24 @@ public struct Family<each C: Component> {
         }
 
         traits = FamilyTraitSet(requiresAll: Set(requiredIdentifiers), excludesAll: Set(excludedIdentifiers))
+        self.filter = filter
         nexus.onFamilyInit(traits: traits, filter: filter)
+        if case let .archetype(archetype) = nexus.backend {
+            query = archetype.matchingTables(filter)
+        } else {
+            query = nil
+        }
+    }
+
+    /// The tables of `archetype` matching this family, including tables created since the last call.
+    ///
+    /// Returns `nil` for the sparse set storage only. After ``Nexus/clear()`` the query is rebuilt through its epoch,
+    /// and the empty member list ends the iteration before the query is used.
+    @inlinable
+    func archetypeQuery(in archetype: Nexus.ArchetypeStorage) -> Nexus.TableQuery? {
+        guard let query else { return nil }
+        archetype.refresh(query)
+        return query
     }
 
     /// The set of entity identifiers that are members of this family.

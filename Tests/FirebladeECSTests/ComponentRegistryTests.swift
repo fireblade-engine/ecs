@@ -70,6 +70,22 @@ struct ConflictingVelocity: RegistrableComponent, Sendable {
         #expect(nexus.registeredComponentTypes.count == 1)
     }
 
+    @Test(arguments: Nexus.StorageKind.allCases) func cachedRecordsDoNotChangeRegistrationOutcomePerNexus(_ storage: Nexus.StorageKind) throws {
+        // both types are cached by now, each nexus must still decide on its own
+        for _ in 0 ..< 2 {
+            let nexus = Nexus(storage: storage)
+            let first = try nexus.register(RenamedVelocity.self)
+            #expect(first.stableIdentifier == RenamedVelocity.stableIdentifier)
+            #expect(throws: ComponentRegistryError.duplicateTypeName("Velocity")) {
+                try nexus.register(ConflictingVelocity.self)
+            }
+            #expect(!nexus.isRegistered(ConflictingVelocity.self))
+            let other = Nexus(storage: storage)
+            try other.register(ConflictingVelocity.self)
+            #expect(other.componentType(named: "Velocity")?.identifier == ConflictingVelocity.identifier)
+        }
+    }
+
     @Test(arguments: Nexus.StorageKind.allCases) func duplicateTypeNameThrows(_ storage: Nexus.StorageKind) throws {
         let nexus = Nexus(storage: storage)
         try nexus.register(RenamedVelocity.self)

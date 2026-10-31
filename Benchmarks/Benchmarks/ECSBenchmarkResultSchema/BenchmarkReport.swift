@@ -1,4 +1,4 @@
-// Report-only N-way comparison of saved result files, specified in PLAN.md ("Report v2 design" and "Statistical design v3"). A pure
+// Report-only N-way comparison of saved result files, specified in Methodology.md ("Report v2 design" and "Statistical design v3"). A pure
 // function from decoded result files to the contents of a report directory (REPORT.md, per-workload pages, SVG plots): no
 // file access, no processes, no benchmark runs, and the inputs are never mutated.
 import Benchmark

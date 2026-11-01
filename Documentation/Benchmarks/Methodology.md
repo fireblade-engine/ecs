@@ -1,4 +1,4 @@
-# Git-ref Benchmark Suite — Living Plan
+# Git-ref Benchmark Suite — Methodology
 
 **Status:** Steps 1–11 done and the Step 12 smoke is complete (2026-10-29, gates passed under the user's overnight delegation; see "Overnight delegation"). Awaiting the user's morning review. The full-scale run needs separate approval.
 

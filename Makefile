@@ -143,7 +143,7 @@ benchmark:
 # Without BENCHMARK_FILTER only the smallest scale of every workload runs; BENCHMARK_FILTER='.*' selects everything.
 benchmark-compare:
 	@if [ -z "$(REFS)" ]; then printf 'Set REFS to comma-separated Git refs, for example: make benchmark-compare REFS=1.4.3,main\n' >&2; exit 2; fi
-	./Scripts/benchmark-run-refs.sh --refs "$(REFS)" $(if $(BENCHMARK_FILTER),--filter "$(BENCHMARK_FILTER)") $(if $(REPLICATES),--replicates "$(REPLICATES)") $(if $(SEED),--seed "$(SEED)")
+	./Scripts/benchmark-run-refs.sh --refs "$(REFS)" $(if $(BENCHMARK_FILTER),--filter "$(BENCHMARK_FILTER)") $(if $(REPLICATES),--replicates "$(REPLICATES)") $(if $(SEED),--seed "$(SEED)") $(if $(ALLOW_STALE_REFS),--allow-stale-refs)
 
 # Renders the report directory (the single file BenchmarkReport.html) from saved result files only (at least two); it never runs benchmarks.
 benchmark-report:

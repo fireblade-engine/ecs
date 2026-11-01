@@ -33,6 +33,8 @@ Usage: Scripts/benchmark-run-refs.sh --refs <a,b,c> [options]
   --repo <dir>        repository to read refs from (default: the repository containing this script)
   --replicates <k>    runs per ref (default: 1); with k > 1 refs are built once and run in k interleaved, shuffled rounds
   --seed <n>          shuffle seed, an integer 0..4294967295 (default: random; always printed and recorded for k > 1)
+  --allow-stale-refs  measure local branches even when their upstream (or origin/<branch>) has newer commits; without it
+                      such a run is refused before any build (the check uses the last fetch and never touches the network)
 
 Environment: BENCHMARK_SNAPSHOT_SCRIPT overrides the snapshot script (used by tests).
 USAGE
@@ -56,6 +58,7 @@ filter_given=0
 filter_text=""
 replicates=1
 seed=""
+allow_stale=0
 
 while (($#)); do
     case $1 in
@@ -66,6 +69,7 @@ while (($#)); do
         --repo) (($# >= 2)) || usage; repo=$2; shift 2 ;;
         --replicates) (($# >= 2)) || usage; replicates=$2; shift 2 ;;
         --seed) (($# >= 2)) || usage; seed=$2; shift 2 ;;
+        --allow-stale-refs) allow_stale=1; shift ;;
         *) usage ;;
     esac
 done
@@ -91,6 +95,7 @@ suite_sha=$(git -C "$repo" rev-parse --verify --quiet "$suite_ref^{commit}") || 
 
 shas=()
 errors=()
+stale=0
 for ref in "${refs[@]}"; do
     if [[ -z ${ref//[[:space:]]/} ]]; then
         errors+=("empty ref item")
@@ -113,7 +118,25 @@ for ref in "${refs[@]}"; do
         fi
     done
     shas+=("$sha")
+    # A local branch that is behind its remote-tracking branch is probably not what the caller means (uses the last fetch).
+    if git -C "$repo" show-ref --verify --quiet "refs/heads/$ref"; then
+        remote_ref=$(git -C "$repo" rev-parse --symbolic-full-name --abbrev-ref "$ref@{upstream}" 2> /dev/null || true)
+        if [[ -z $remote_ref ]] && git -C "$repo" show-ref --verify --quiet "refs/remotes/origin/$ref"; then
+            remote_ref=origin/$ref
+        fi
+        if [[ -n $remote_ref ]] && remote_sha=$(git -C "$repo" rev-parse --verify --quiet "$remote_ref^{commit}"); then
+            read -r behind ahead < <(git -C "$repo" rev-list --left-right --count "$remote_ref...$sha" 2> /dev/null | tr '\t' ' ') || true
+            if ((${behind:-0} > 0)); then
+                printf 'benchmark-run-refs: warning: local branch %s (%s) is %d commit(s) behind %s (%s) and %d ahead (based on the last fetch, no network access); use %s or git pull\n' \
+                    "$ref" "${sha:0:12}" "$behind" "$remote_ref" "${remote_sha:0:12}" "${ahead:-0}" "$remote_ref" >&2
+                stale=1
+            fi
+        fi
+    fi
 done
+if ((stale && !allow_stale)); then
+    errors+=("stale local branch(es) found; use the origin/<branch> ref, update the branch, or pass --allow-stale-refs to measure them anyway")
+fi
 if ((${#errors[@]})); then
     printf 'benchmark-run-refs: %s\n' "${errors[@]}" >&2
     exit 1

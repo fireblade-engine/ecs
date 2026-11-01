@@ -346,5 +346,42 @@ if run --refs "t-one,t-two" --replicates 2 --seed 9 --out "$test_root/badrp" > /
 grep -q 'replicate fields' "$test_root/badrp.err" || fail 'wrong replicate fields must be reported'
 assert_eq "$(ls "$test_root/badrp/.failed" | wc -l | tr -d ' ')" 1 'the rejected replicate is kept under .failed'
 
+# Stale local branches: behind origin/<branch> refuses unless --allow-stale-refs; up to date and tags are not checked.
+reset
+stale_up="$test_root/stale-upstream"
+git clone -q "$fixture" "$stale_up"
+git -C "$stale_up" config user.email test@example.com
+git -C "$stale_up" config user.name test
+git -C "$stale_up" config commit.gpgsign false
+git -C "$stale_up" checkout -q -b feature
+echo extra > "$stale_up/extra"
+git -C "$stale_up" add extra
+git -C "$stale_up" commit -qm extra
+git -C "$stale_up" tag t-feature
+stale_clone="$test_root/stale-clone"
+git clone -q "$stale_up" "$stale_clone"
+git -C "$stale_clone" reset -q --hard HEAD~1 # local feature is now 1 behind origin/feature
+git -C "$stale_clone" tag t-old HEAD
+crun() { "$script" --repo "$stale_clone" "$@"; }
+if crun --refs feature --out "$test_root/stale-a" > /dev/null 2> "$test_root/stale-a.err"; then fail 'a stale branch must be refused'; fi
+assert_eq "$(calls)" 0 'a refused stale branch starts no snapshot'
+[[ ! -e $test_root/stale-a ]] || fail 'a refused stale branch must not create the run directory'
+for needle in 'feature' 'origin/feature' '1 commit(s) behind' '0 ahead' 'last fetch' '--allow-stale-refs'; do
+    grep -qF -- "$needle" "$test_root/stale-a.err" || fail "stale message must contain '$needle'"
+done
+crun --refs feature --allow-stale-refs --out "$test_root/stale-b" > /dev/null 2> "$test_root/stale-b.err" || fail '--allow-stale-refs must proceed'
+assert_eq "$(calls)" 1 '--allow-stale-refs starts the snapshot'
+grep -q 'warning: local branch feature' "$test_root/stale-b.err" || fail 'the stale warning stays with the opt-out'
+reset
+git -C "$stale_clone" merge -q --ff-only origin/feature
+crun --refs feature --out "$test_root/stale-c" > /dev/null 2> "$test_root/stale-c.err" || fail 'an up-to-date branch must run'
+grep -q 'commit(s) behind' "$test_root/stale-c.err" && fail 'no warning for an up-to-date branch'
+git -C "$stale_clone" tag t-behind HEAD~1 # tags are never checked
+git -C "$stale_clone" branch -q --set-upstream-to=origin/feature feature
+reset
+crun --refs t-behind --out "$test_root/stale-d" > /dev/null 2> "$test_root/stale-d.err" || fail 'a tag must not be checked'
+grep -q 'commit(s) behind' "$test_root/stale-d.err" && fail 'no warning for a tag'
+:
+
 printf 'benchmark-run-refs tests passed\n'
 

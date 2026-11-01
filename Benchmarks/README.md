@@ -66,6 +66,8 @@ make benchmark-compare REFS=1.4.3,main
 
 The command prints one `result: <path>` line per ref. Files land in a new run directory `Benchmarks/.results/<UTC timestamp>/` (gitignored) as `<ref>-<sha12>.json`. If a ref fails, later refs are not started, finished results are kept and a rejected measurement is kept under `.failed/`. Warnings are printed when toolchain, host or benchmark set differ between refs.
 
+Stale branches: a ref that is a local branch behind its upstream (or `origin/<branch>`) is reported with both short SHAs and the behind/ahead counts, and the run refuses to start before any build. Use `origin/<branch>` as the ref, update the branch, or opt out with `make benchmark-compare REFS=... ALLOW_STALE_REFS=1` (script flag `--allow-stale-refs`), which turns the refusal into a warning. The check compares against the last fetch and never contacts the network, so run `git fetch` first. Tags and raw SHAs are not checked.
+
 Selection:
 
 - **Smoke (default):** without a filter only the smallest scale of every workload runs.
@@ -114,7 +116,7 @@ The directory holds `BenchmarkReport.html`: a single file with inline style and 
 | Target | Purpose |
 | :--- | :--- |
 | `make benchmark` | Run the broad package benchmarks of this package |
-| `make benchmark-compare REFS=a,b,c [BENCHMARK_FILTER=...] [REPLICATES=k] [SEED=n]` | Measure refs and save one validated result file per ref and replicate |
+| `make benchmark-compare REFS=a,b,c [BENCHMARK_FILTER=...] [REPLICATES=k] [SEED=n] [ALLOW_STALE_REFS=1]` | Measure refs and save one validated result file per ref and replicate |
 | `make benchmark-report RESULTS="a.json b.json" [REPORT_DIR=...] [REPORT_BASELINE=...] [REPORT_TITLE=...] [REPORT_OVERWRITE=1]` | Render `BenchmarkReport.html` from saved results |
 | `make test-benchmarks` | Swift tests of this package |
 | `make test-benchmark-scripts` | Shell tests of the runner and snapshot scripts |

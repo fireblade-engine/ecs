@@ -38,21 +38,42 @@ public enum ResultsCLI {
         }
     }
 
-    /// Fails unless the filter whole-matches at least one benchmark name read from stdin: the semantics of the benchmark plugin's `--filter`.
+    /// Fails unless the filter whole-matches at least one benchmark name of the plugin listing read from stdin.
     private static func filterCheck(_ arguments: [String]) throws {
         let options = try parseOptions(arguments, allowed: ["filter"], usage: usage)
         guard let filter = options["filter"] else { throw ResultError("missing required option --filter") }
+        var listing = ""
+        while let line = readLine() { listing += line + "\n" }
+        let result = try checkFilter(listing: listing, filter: filter)
+        print("filter matches \(result.matched.count) of \(result.names.count) benchmarks")
+    }
+
+    /// Benchmark names of `swift package benchmark list` output: the lines between a `Target '<name>' available benchmarks:` header and the next
+    /// empty line (the plugin's `listBenchmarks` format). Every other line is ignored.
+    static func benchmarkNames(inListing listing: String) -> [String] {
+        var names: [String] = []
+        var inTarget = false
+        for line in listing.split(separator: "\n", omittingEmptySubsequences: false).map(String.init) {
+            if line.hasPrefix("Target '"), line.hasSuffix("' available benchmarks:") {
+                inTarget = true
+            } else if line.trimmingCharacters(in: .whitespaces).isEmpty {
+                inTarget = false
+            } else if inTarget {
+                names.append(line)
+            }
+        }
+        return names
+    }
+
+    /// The semantics of the benchmark plugin's `--filter`: a name matches when the whole name matches the regular expression.
+    static func checkFilter(listing: String, filter: String) throws -> (names: [String], matched: [String]) {
         let regex: Regex<AnyRegexOutput>
         do { regex = try Regex(filter) } catch { throw ResultError("the benchmark filter '\(filter)' is not a valid regular expression: \(error)") }
-        var names = 0
-        var matches = 0
-        while let line = readLine() {
-            names += 1
-            if line.wholeMatch(of: regex) != nil { matches += 1 }
-        }
-        guard names > 0 else { throw ResultError("the benchmark list is empty; nothing to filter") }
-        guard matches > 0 else { throw ResultError("the benchmark filter '\(filter)' matches none of the \(names) listed benchmarks") }
-        print("filter matches \(matches) of \(names) benchmarks")
+        let names = benchmarkNames(inListing: listing)
+        guard !names.isEmpty else { throw ResultError("the benchmark list is empty; nothing to filter") }
+        let matched = names.filter { $0.wholeMatch(of: regex) != nil }
+        guard !matched.isEmpty else { throw ResultError("the benchmark filter '\(filter)' matches none of the \(names.count) listed benchmarks") }
+        return (names, matched)
     }
 
     private static func write(_ arguments: [String]) throws {

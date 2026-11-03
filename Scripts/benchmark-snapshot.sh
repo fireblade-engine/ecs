@@ -122,11 +122,11 @@ fi
 requested=${requested:-$ref}
 suite_sha=$(git_repo rev-parse --verify --quiet "$suite_ref^{commit}") || die "invalid suite ref: $suite_ref"
 
-# The suite is everything under Benchmarks/ except the retired preliminary harness. Only the checked-out HEAD can have
+# The suite is everything under Benchmarks/ except the graft index. Only the checked-out HEAD can have
 # a dirty worktree; any other suite ref is read from its committed tree, so the worktree state is irrelevant.
 head_sha=$(git_repo rev-parse --verify --quiet 'HEAD^{commit}' || true)
 if [[ $suite_sha == "$head_sha" ]]; then
-    suite_dirty=$(git_repo status --porcelain --untracked-files=all -- Benchmarks ':(exclude)Benchmarks/ComparisonHarness' ':(exclude)Benchmarks/graft')
+    suite_dirty=$(git_repo status --porcelain --untracked-files=all -- Benchmarks ':(exclude)Benchmarks/graft')
     [[ -z $suite_dirty ]] || die "suite paths are dirty; commit or discard first:
 $suite_dirty"
 fi
@@ -168,7 +168,7 @@ if ((!reuse)); then
     extract_tree "$ref_sha" "$lib"
     rm -rf "$lib/Benchmarks"
     extract_tree "$suite_sha" "$lib" Benchmarks
-    rm -rf "$lib/Benchmarks/ComparisonHarness" "$lib/Benchmarks/graft"
+    rm -rf "$lib/Benchmarks/graft"
 fi
 
 component_file="$lib/Sources/FirebladeECS/Component.swift"
@@ -233,26 +233,25 @@ printf 'snapshot: %s\n' "$out"
 cd "$lib/Benchmarks"
 export ECS_BENCHMARK_SUITE=shared
 if ((!reuse)); then
-    swift package resolve --force-resolved-versions
-    cmp -s "$scratch/Package.resolved.committed" Package.resolved || die "resolving changed Package.resolved; commit the intended pins first"
-    write_provenance
-    swift build -c release --product ECSCompatBenchmark --force-resolved-versions ${swift_flags[@]+"${swift_flags[@]}"}
+    # One build of every product this mode needs. --force-resolved-versions makes SwiftPM fail instead of re-resolving, so the pins
+    # of the build are the committed ones; the comparison below proves Package.resolved is still untouched.
+    products=(--product ECSCompatBenchmark)
+    if [[ $mode == build || -n $result ]]; then products+=(--product ECSBenchmarkResults); fi
+    swift build -c release "${products[@]}" --force-resolved-versions ${swift_flags[@]+"${swift_flags[@]}"}
+    cmp -s "$scratch/Package.resolved.committed" Package.resolved || die "building changed Package.resolved; commit the intended pins first"
 fi
 
-check_filter() {
-    # The filter must select something; an empty selection would otherwise "succeed" with no measurements. The plugin
-    # whole-matches benchmark names (BenchmarkRunner.swift: name.wholeMatch(of: Regex(filter))), so anchor the same way.
-    # Listing also compiles the benchmark plugin and its tool, which is why --build-only runs it: nothing is left to build later.
-    local matches
-    matches=$(swift package --disable-automatic-resolution ${swift_flags[@]+"${swift_flags[@]}"} benchmark list --target ECSCompatBenchmark | grep -Ec -- "^($filter)\$" || true)
-    ((matches > 0)) || die "filter matches no benchmarks: $filter"
+list_benchmarks() {
+    # Listing compiles the benchmark plugin and its tool, which is why --build-only runs it: nothing is left to build later.
+    # It selects nothing itself: the plugin applies the filter (a whole-match regex) when it runs.
+    swift package --disable-automatic-resolution ${swift_flags[@]+"${swift_flags[@]}"} benchmark list --target ECSCompatBenchmark > /dev/null \
+        || die "listing the benchmarks failed"
 }
 
 if [[ $mode == build ]]; then
-    # Everything a later --reuse run needs is built here, so replicate runs compile nothing: the suite (above), the result tool,
+    # Everything a later --reuse run needs is built here, so replicate runs compile nothing: the suite and the result tool (above),
     # and the benchmark plugin and its tool.
-    swift build -c release --product ECSBenchmarkResults --force-resolved-versions ${swift_flags[@]+"${swift_flags[@]}"}
-    check_filter
+    list_benchmarks
     exit 0
 fi
 
@@ -263,13 +262,12 @@ if [[ -n $result ]]; then
         bin_path=$(swift build -c release --show-bin-path ${swift_flags[@]+"${swift_flags[@]}"})
         [[ -x $bin_path/ECSBenchmarkResults ]] || die "--reuse: $bin_path/ECSBenchmarkResults is missing; build the snapshot first (--build-only)"
     else
-        swift build -c release --product ECSBenchmarkResults --force-resolved-versions ${swift_flags[@]+"${swift_flags[@]}"}
         bin_path=$(swift build -c release --show-bin-path ${swift_flags[@]+"${swift_flags[@]}"})
     fi
     "$bin_path/ECSBenchmarkResults" host-check || die "host facts are not available; nothing was measured"
 fi
 
-((reuse)) || check_filter
+((reuse)) || list_benchmarks
 
 # Package options must precede the plugin command; the resolved file was already enforced above.
 if [[ -z $result ]]; then

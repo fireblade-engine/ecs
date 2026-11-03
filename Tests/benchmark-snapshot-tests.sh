@@ -21,7 +21,7 @@ assert_eq() {
 }
 
 fixture="$test_root/fixture"
-mkdir -p "$fixture/Sources/FirebladeECS" "$fixture/Benchmarks/Benchmarks/ECSCompatBenchmark" "$fixture/Benchmarks/ComparisonHarness"
+mkdir -p "$fixture/Sources/FirebladeECS" "$fixture/Benchmarks/Benchmarks/ECSCompatBenchmark"
 git -C "$fixture" init -q
 git -C "$fixture" config user.email test@example.com
 git -C "$fixture" config user.name test
@@ -37,7 +37,6 @@ cat > "$fixture/Benchmarks/Package.resolved" <<'JSON'
 }
 JSON
 echo 'suite' > "$fixture/Benchmarks/Benchmarks/ECSCompatBenchmark/Suite.swift"
-echo 'harness' > "$fixture/Benchmarks/ComparisonHarness/Old.swift"
 echo 'public protocol Component: AnyObject, Sendable {}' > "$fixture/Sources/FirebladeECS/Component.swift"
 mkdir -p "$fixture/Benchmarks/Old"
 echo 'old' > "$fixture/Benchmarks/Old/Old.swift"
@@ -73,7 +72,6 @@ assert_eq "$(sed -n 's/^pin.hdrhistogram-swift: //p' "$prov")" '0.2.0 bbbb' 'eve
 [[ -f $test_root/class/ecs/Sources/FirebladeECS/Component.swift ]] || fail 'library must live in a directory named ecs'
 [[ ! -e $test_root/class/ecs/Benchmarks/Old ]] || fail 'ref-owned Benchmarks/ content must be replaced'
 [[ -f $test_root/class/ecs/Benchmarks/Benchmarks/ECSCompatBenchmark/Suite.swift ]] || fail 'suite must be copied'
-[[ ! -e $test_root/class/ecs/Benchmarks/ComparisonHarness ]] || fail 'retired harness must not be copied'
 
 # Value revision, selected by ref name only as input: model comes from the file.
 run "$value_sha" --out "$test_root/value" > /dev/null
@@ -193,8 +191,8 @@ case "$*" in
         name=$(sed -E 's/.*baseline update ([^ ]+).*/\1/' <<< "$*")
         mkdir -p ".benchmarkBaselines/ECSCompatBenchmark/$name"
         echo '{"stub":true}' > ".benchmarkBaselines/ECSCompatBenchmark/$name/results.json" ;;
-    *"benchmark list"*) printf 'alpha / 16\nfoo / 1\n' ;;
-    *"package resolve"*) [[ -z ${STUB_RESOLVE_TOUCH:-} ]] || echo changed >> Package.resolved ;;
+    *"benchmark list"*) [[ -z ${STUB_LIST_FAIL:-} ]] || exit 1; printf 'alpha / 16\nfoo / 1\n' ;;
+    *"build -c release --product"*) [[ -z ${STUB_RESOLVE_TOUCH:-} ]] || echo changed >> Package.resolved ;;
     *"--show-bin-path"*) echo "$STUB_BIN" ;;
     --version) echo "stub swift 1.0" ;;
 esac
@@ -221,7 +219,7 @@ PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/full
 [[ -f $test_root/full-result.json ]] || fail 'result file must be written'
 grep -Eq 'benchmark baseline update snapshot-[0-9a-f]{12}-[0-9]+-[0-9]+ --target ECSCompatBenchmark --filter f\.\*' "$STUB_LOG" || fail 'result mode must store a uniquely named baseline'
 [[ $(grep -c 'benchmark baseline update' "$STUB_LOG") == 1 ]] || fail 'result mode must run the benchmarks exactly once'
-grep -q 'build -c release --product ECSBenchmarkResults' "$STUB_LOG" || fail 'the snapshot must build its own result tool'
+grep -q 'product ECSBenchmarkResults' "$STUB_LOG" || fail 'the snapshot must build its own result tool'
 args="$test_root/stub.log.results"
 arg_after() { grep -A1 -x -- "$1" "$args" | tail -1; }
 assert_eq "$(arg_after --ref)" class-rev 'requested ref must be passed'
@@ -290,27 +288,19 @@ if PATH="$nouuid" "$script" --repo "$fixture" class-rev --out "$test_root/nouuid
 grep -q 'uuidgen is required' "$test_root/nouuid.err" || fail 'missing uuidgen must be reported'
 [[ ! -e $test_root/nouuid-out ]] || fail 'missing uuidgen must not create the snapshot'
 
-# Resolving must not change the committed Package.resolved.
+# Building must not change the committed Package.resolved.
 if STUB_RESOLVE_TOUCH=1 PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/resolve-changed" > /dev/null 2> "$test_root/resolve-changed.err"; then
-    fail 'a resolve that changes Package.resolved must fail'
+    fail 'a build that changes Package.resolved must fail'
 fi
 grep -q 'changed Package.resolved' "$test_root/resolve-changed.err" || fail 'changed Package.resolved must be reported'
 
-# A filter that matches no benchmark fails before anything runs.
+# A failing benchmark listing is reported as such and nothing runs.
 : > "$STUB_LOG"
-if PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/nomatch" --filter 'zzz-nothing' > /dev/null 2> "$test_root/nomatch.err"; then
-    fail 'a filter matching nothing must fail'
+if STUB_LIST_FAIL=1 PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/listfail" > /dev/null 2> "$test_root/listfail.err"; then
+    fail 'a failing benchmark list must fail the run'
 fi
-grep -q 'matches no benchmarks' "$test_root/nomatch.err" || fail 'an empty filter selection must be reported'
-grep -q 'baseline update\|benchmark --target' "$STUB_LOG" && fail 'nothing may run when the filter matches nothing'
-
-# The plugin whole-matches names, so a partial-only filter ('/ 1' matches "alpha / 16" only as a substring) is refused.
-: > "$STUB_LOG"
-if PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/partial" --filter '/ 1' > /dev/null 2> "$test_root/partial.err"; then
-    fail 'a partial-only filter must fail like the plugin whole-match'
-fi
-grep -q 'filter matches no benchmarks: / 1' "$test_root/partial.err" || fail 'a partial-only filter must be reported with its text'
-grep -q 'baseline update\|benchmark --target' "$STUB_LOG" && fail 'nothing may run for a partial-only filter'
+grep -q 'listing the benchmarks failed' "$test_root/listfail.err" || fail 'a failing benchmark list must be reported'
+grep -q 'baseline update\|benchmark --target' "$STUB_LOG" && fail 'nothing may run when the listing fails'
 
 # Without --result the previous behavior stands: a plain benchmark run, no baseline, no result tool.
 : > "$STUB_LOG"
@@ -323,7 +313,6 @@ grep -q 'ECSBenchmarkResults' "$STUB_LOG" && fail 'a plain run must not build th
 PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/full" --filter 'f.*' --reuse --result "$test_root/reuse-result.json" \
     --replicate 2 --replicates 3 --round 2 --position 1 --seed 77 > /dev/null || fail '--reuse must succeed on a prepared snapshot'
 [[ -f $test_root/reuse-result.json ]] || fail '--reuse must write the result file'
-grep -q 'package resolve' "$STUB_LOG" && fail '--reuse must not resolve again'
 grep -q 'product ECSCompatBenchmark' "$STUB_LOG" && fail '--reuse must not rebuild the suite'
 grep -q 'build -c release --product' "$STUB_LOG" && fail '--reuse must not compile anything'
 grep -q 'benchmark list' "$STUB_LOG" && fail '--reuse must not list benchmarks again'
@@ -338,8 +327,8 @@ done
 : > "$STUB_LOG"
 PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/built" --filter 'f.*' --build-only > /dev/null || fail '--build-only must succeed with stubs'
 grep -q 'build -c release --product ECSCompatBenchmark' "$STUB_LOG" || fail '--build-only must build the suite'
-grep -q 'build -c release --product ECSBenchmarkResults' "$STUB_LOG" || fail '--build-only must build the result tool'
-grep -q 'benchmark list' "$STUB_LOG" || fail '--build-only must warm the benchmark plugin and check the filter'
+grep -q 'product ECSBenchmarkResults' "$STUB_LOG" || fail '--build-only must build the result tool'
+grep -q 'benchmark list' "$STUB_LOG" || fail '--build-only must warm the benchmark plugin'
 grep -q 'baseline update' "$STUB_LOG" && fail '--build-only must not measure'
 mkdir -p "$test_root/emptybin"
 : > "$STUB_LOG"

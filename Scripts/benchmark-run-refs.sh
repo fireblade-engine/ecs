@@ -212,6 +212,7 @@ fi
 
 # --- Run the rounds: every ref once per round --------------------------------------------------------------------------
 results=()
+warned_parts=" " # fields already warned about: one warning per field, not per result
 config_hash=""
 failed=0
 for ((round = 1; round <= replicates && !failed; round++)); do
@@ -274,8 +275,10 @@ for ((round = 1; round <= replicates && !failed; round++)); do
         mv "$staged" "$final"
         if ((${#results[@]})); then
             for part in toolchain host set; do
+                [[ $warned_parts != *" $part "* ]] || continue
                 if [[ $(fingerprint "$final" "$part") != "$(fingerprint "${results[0]}" "$part")" ]]; then
                     printf 'benchmark-run-refs: warning: %s differs between %s and %s; their results may not be comparable\n' "$part" "$ref" "$(jq -r '.ref.requested' "${results[0]}")" >&2
+                    warned_parts+="$part "
                 fi
             done
         fi

@@ -4,7 +4,7 @@ See how FirebladeECS revisions compare on a shared workload suite, and run the c
 
 ## Overview
 
-The benchmark suite measures the same workloads at several committed FirebladeECS revisions, such as a release tag against `main`. The workloads cover entity creation, destruction and lookup, adding and removing components, iterating families, system updates and component events. Revisions with value-type components run each workload on both the `archetype` and the `sparseSet` storage (see <doc:ChoosingAStorage>), so the report also shows what the storage choice costs.
+The benchmark suite measures the same workloads at several committed FirebladeECS revisions, such as a release tag against `main`. The workloads cover entity creation, destruction and lookup, adding and removing components, iterating families, system updates and component events. Revisions with value-type components run each workload on both the `archetype` and the `sparseSet` storage (see <doc:ChoosingAStorage>), so a report also shows what the storage choice costs.
 
 ### How results are made trustworthy
 
@@ -12,7 +12,7 @@ Each revision is built once and measured in `k` independent process replicates, 
 
 ### Read and reproduce
 
-- The interactive report: [fireblade-engine.github.io/ecs/benchmarks](https://fireblade-engine.github.io/ecs/benchmarks/).
+- The first published report comes with the 2.0.0 release.
 - The statistical design and workload parity notes: [Methodology.md](https://github.com/fireblade-engine/ecs/blob/main/Documentation/Benchmarks/Methodology.md).
 
 To measure revisions locally, pass comma-separated tags, branches or commit IDs. Results are saved under `Benchmarks/Results/<UTC timestamp>/`:

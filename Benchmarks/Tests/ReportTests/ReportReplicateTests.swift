@@ -120,7 +120,7 @@ struct ReportReplicateTests {
         let rendered = try BenchmarkReport.render(files, options: ReportOptions(baseline: "1.4.3"))
         let warning = try #require(rendered.warnings.first { $0.contains("Incomplete replicate set") })
         #expect(warning.contains("'main'") && warning.contains("8 of 10") && warning.contains("missing 3, 4"))
-        #expect(rendered.markdown.contains("## Warnings") && rendered.markdown.contains("missing 3, 4"))
+        #expect(rendered.html.contains("<h2 id=\"warnings\">Warnings</h2>") && rendered.html.contains("missing 3, 4"))
         #expect(rendered.warnings.contains { $0.contains("different numbers of replicates") })
     }
 
@@ -147,15 +147,15 @@ struct ReportReplicateTests {
     @Test
     func tablesAndSummaryShowIntervalsQAndVerdicts() throws {
         let rendered = try BenchmarkReport.render(verdictCases, options: ReportOptions(baseline: "1.4.3"))
-        let text = rendered.markdown
+        let text = rendered.html
         for verdict in ["faster", "slower", "equivalent", "inconclusive"] {
             #expect(text.contains(" \(verdict)</td>"), "\(verdict)")
             #expect(text.contains("v-\(verdict)"), "row tint class of \(verdict)")
         }
         #expect(!text.contains("n/a (1 replicate)"))
-        let page = try #require(ReportHTMLSupport.pages(rendered.html)["workloads/\(F.w1).md"])
+        let page = try #require(ReportHTMLFragments.section(rendered.html, F.w1))
         // 10 replicates, a CI on the median, q below 0.001 and the speed with its CI.
-        let rows = try ReportTableParser.rows(page, heading: "#### Time (wall clock): Entity counts up to 1,024")
+        let rows = try ReportTableParser.rows(page, heading: "<h4>Time (wall clock): Entity counts up to 1,024")
         let row = try #require(rows.dropFirst(3).first { $0.first == "16" })
         #expect(row[5] == "10" && row[2] != "n/a" && !row[2].hasPrefix("n/a") && !row[3].hasPrefix("n/a"))
         #expect(row[18] == "faster" && row[17] == "&lt;0.001")
@@ -189,7 +189,7 @@ struct ReportReplicateTests {
                 + ref("main", "b", k: 6, workloads: [F.w1], scales: scales) { _, i, _ in base(i) },
             options: ReportOptions(baseline: "1.4.3")
         )
-        #expect(report.markdown.contains("across all 62 wall-clock comparisons"))
+        #expect(report.html.contains("across all 62 wall-clock comparisons"))
     }
 
     @Test
@@ -211,8 +211,8 @@ struct ReportReplicateTests {
         let baseline = [F.classRef()]
         let series = ref("main", "b", workloads: [F.w1]) { _, i, _ in base(i) }
         let rendered = try BenchmarkReport.render(baseline + series, options: ReportOptions(baseline: "1.4.3"))
-        #expect(rendered.markdown.contains("n/a (1 replicate)"))
-        #expect(!rendered.markdown.contains(" faster</td>") && !rendered.markdown.contains(" slower</td>"))
+        #expect(rendered.html.contains("n/a (1 replicate)"))
+        #expect(!rendered.html.contains(" faster</td>") && !rendered.html.contains(" slower</td>"))
         #expect(rendered.warnings.contains { $0.contains("different numbers of replicates") })
     }
 
@@ -227,10 +227,10 @@ struct ReportReplicateTests {
         #expect(m.drift.count == 2)
         let trending = try #require(m.drift.first { $0.series == 0 })
         #expect(abs(trending.p - 2.0 / 120) < 1e-9 && trending.isFlagged && trending.tau == 1)
-        let report = try BenchmarkReport.render(baseline + series, options: ReportOptions(baseline: "1.4.3")).markdown
-        #expect(report.contains("**Drift:**") && report.contains("1 cell shows a significant trend"))
-        #expect(report.contains("1.4.3 (class, default)") && report.contains("/ `\(F.w1)` @ 16"))
-        let methods = try #require(report.components(separatedBy: "## Methods").last)
+        let report = try BenchmarkReport.render(baseline + series, options: ReportOptions(baseline: "1.4.3")).html
+        #expect(report.contains("<strong>Drift:</strong>") && report.contains("1 cell shows a significant trend"))
+        #expect(report.contains("1.4.3 (class, default)") && report.contains("/ <code>\(F.w1)</code> @ 16"))
+        let methods = try #require(ReportHTMLFragments.chapter(report, "methods"))
         #expect(methods.contains("Benjamini–Hochberg adjusted across 2 tests"))
     }
 
@@ -239,14 +239,14 @@ struct ReportReplicateTests {
     @Test
     func methodsStateProtocolEstimatorsAndLimits() throws {
         let rendered = try BenchmarkReport.render(verdictCases, options: ReportOptions(baseline: "1.4.3"))
-        let methods = try #require(rendered.markdown.components(separatedBy: "## Methods").last?.components(separatedBy: "## Provenance").first)
+        let methods = try #require(ReportHTMLFragments.chapter(rendered.html, "methods"))
         for expected in [
-            "k = 10", "interleaved rounds", "seed 7", "batch `batch-1`", "97.9%", "Hodges–Lehmann", "Mann–Whitney", "Benjamini–Hochberg",
+            "k = 10", "interleaved rounds", "seed 7", "batch <code>batch-1</code>", "97.9%", "Hodges–Lehmann", "Mann–Whitney", "Benjamini–Hochberg",
             "δ = 5%", "[1/1.05, 1.05]", "Kendall", "built once", "recorded host and toolchain", "relinks the build before each replicate"
         ] {
             #expect(methods.contains(expected), "\(expected)")
         }
-        #expect(!rendered.markdown.contains("Welch"))
+        #expect(!rendered.html.contains("Welch"))
     }
 
     @Test
@@ -255,7 +255,7 @@ struct ReportReplicateTests {
         let baseline = ref("1.4.3", "a", model: "class", workloads: workloads, scales: [16, 64, 256]) { _, i, scale in base(i) * scale }
         let series = ref("main", "b", workloads: workloads, scales: [16, 64, 256]) { _, i, scale in base(i) * scale / 2 }
         let html = try BenchmarkReport.render(baseline + series, options: ReportOptions(baseline: "1.4.3")).html
-        let json = try #require(ReportHTMLSupport.embeddedJSON(html))
+        let json = try #require(ReportHTMLFragments.embeddedJSON(html))
         let object = try #require(try JSONSerialization.jsonObject(with: json) as? [String: Any])
         #expect(object["baseline"] as? String == "1.4.3")
         #expect(object["delta"] as? Double == ReportStatistics.defaultDelta)
@@ -276,7 +276,7 @@ struct ReportReplicateTests {
         let ratios = try #require(relative[0]["points"] as? [[String: Any]])
         #expect(ratios.count == 3 && ratios.allSatisfy { $0["sig"] as? Bool == true && $0["ciLow"] != nil && $0["ciHigh"] != nil })
         // The three plot kinds are placed in the section, in this order, followed by the wall-clock tables.
-        let section = try #require(ReportHTMLSupport.section(html, F.w1))
+        let section = try #require(ReportHTMLFragments.section(html, F.w1))
         let kinds = ["total", "perEntity", "relative"].compactMap { section.range(of: #"data-kind="\#($0)""#)?.lowerBound }
         #expect(kinds.count == 3 && kinds == kinds.sorted())
         // The script draws error bars, bands, the zone, the ribbon and the crosshair.

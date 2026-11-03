@@ -177,16 +177,10 @@ struct ReportWriter {
 
     private mutating func header() {
         heading(2, "Reading notes", id: "reading-notes")
-        let baseline = model.groups[model.baselineGroup]
-        item("Baseline: <code>\(baseline.label)</code> (\(baseline.sha))")
-        item("Inputs: \(model.files.count) result files, \(model.groups.count) refs, \(model.series.count) series (ref, component model, backend)")
-        item("Replicates per ref: \(replicateSummaryText)")
-        let filters = Set(model.files.map(\.suite.filter)).sorted()
-        item("Selection filter: \(HTMLText.joined(filters.map { ReportHTML.code($0) }, separator: ", "))")
         item("Every replicate is an independent process; the replicate is the unit of analysis. <code>median</code> is the median over replicates of each replicate's median per iteration. <code>CI low</code> and <code>CI high</code> bound the 95% distribution-free confidence interval of that median (exact coverage in the methods section). <code>replicates</code> is the number of replicates behind the value, <code>iterations</code> the median number of measurements per replicate (time-based sampling, so it differs between series by design).")
-        item("Non-baseline series add, for wall clock only, <code>speed (×)</code> = baseline ÷ series (above 1 is faster) with its distribution-free 95% CI (exact when no replicate medians tie, approximate with ties), <code>change (%)</code> = (1 ÷ speed − 1) × 100, <code>q</code> (Benjamini–Hochberg adjusted p of an exact Mann–Whitney test across every wall-clock comparison of this report) and a <code>verdict</code>: <code>faster</code>/<code>slower</code> need q &lt; \(Self.percent(ReportStatistics.significanceLevel)) and a CI entirely outside the ±\(Self.percent(ReportStatistics.defaultDelta)) zone, <code>equivalent</code> needs the CI entirely inside it. Other metrics are descriptive only.")
+        item("Non-baseline series add, for wall clock only, <code>speed (×)</code> = baseline ÷ series (above 1 is faster) with its distribution-free 95% CI (exact when no replicate medians tie, approximate with ties), <code>change (%)</code> = (1 ÷ speed − 1) × 100, <code>q</code> (Benjamini–Hochberg adjusted p of an exact Mann–Whitney test across every wall-clock comparison of this report) and a <code>verdict</code>; the rule is in the \(anchor: ReportGlossary.anchor, "glossary"). Other metrics are descriptive only.")
         item("Every unit is in its column header and applies to the whole column of that table. Values keep at most the \(ReportFormat.significantDigits) significant digits the package measured. Anything missing or not comparable is <code>unavailable</code>, and a metric the package did not record (throughput of an iteration of about 2 s or longer) is <code>n/a</code> (hover for the reason), never zero. <code>n/a (k replicates)</code> means the statistic needs more replicates.")
-        item("Plots are drawn in the page from the embedded data: the wall-clock median per iteration with CI error bars and a light within-run IQR band (spread of the measurements inside a run, not uncertainty). Each plot starts on log-log axes and has a Log/Linear toggle (and there is one for all plots); entity count 0 cannot sit on a log axis and appears in the plots only on linear axes and in the tables.")
+        item("Plots are drawn in the page from the embedded data: the wall-clock median per iteration with CI error bars and a light within-run IQR band (spread of the measurements inside a run, not uncertainty). Each plot starts on log-log axes and has a Log/Linear toggle (and there is one for all plots); entity count 0 cannot sit on a log axis, so it appears in the plots only on linear axes (never in the per-entity plot, which divides by the entity count) and always in the tables.")
     }
 
     private mutating func warnings() {
@@ -199,6 +193,11 @@ struct ReportWriter {
 
     static func percent(_ value: Double) -> String {
         String(format: "%g%%", value * 100)
+    }
+
+    /// Upper edge of the equivalence zone as a speed (1 + δ, for example "1.05"); the lower edge is its reciprocal.
+    static var zoneEdge: String {
+        String(format: "%g", 1 + ReportStatistics.defaultDelta)
     }
 
     // MARK: Cell resolution
@@ -375,7 +374,8 @@ struct ReportWriter {
             for text in parity.keys.sorted() {
                 item("Parity (\(parity[text]!.joined(separator: ", "))): \(text)")
             }
-            if model.wallClockMetric != nil {
+            // A workload measured only at entity count 0 (for example entity.create.no-entities) has nothing to draw: its tables stay.
+            if let wall = model.wallClockMetric, model.keys.contains(where: { $0.identity == identity && $0.metric == wall && $0.scale > 0 }) {
                 var kinds = ["total", "perEntity"]
                 if hasComparisons { kinds.append("relative") }
                 emit(["<div class=\"plots\">"] + kinds.map { "<div class=\"plot\" data-w=\"\(ReportHTML.escape(id))\" data-kind=\"\($0)\"></div>" } + ["</div>"])
@@ -389,7 +389,7 @@ struct ReportWriter {
     private mutating func wallClockTables(_ identity: String) {
         guard let wall = model.wallClockMetric else { return }
         let scales = Set(model.keys.filter { $0.identity == identity && $0.metric == wall }.map(\.scale)).sorted()
-        statisticsTables(identity, wall, scales, headingLevel: 4, detail: true)
+        statisticsTables(identity, wall, scales, headingLevel: 4)
     }
 
     /// Every metric with mean and percentile columns, folded away by default; the wall-clock statistics are already shown above.
@@ -401,7 +401,7 @@ struct ReportWriter {
             let scales = Set(model.keys.filter { $0.identity == identity && $0.metric == metric }.map(\.scale)).sorted()
             let polarity = referenceCell(ReportKey(identity: identity, scale: scales[0], metric: metric))?.prefersLarger == true ? "larger is better" : "smaller is better"
             heading(4, "\(metric) (\(polarity))")
-            if metric != model.wallClockMetric { statisticsTables(identity, metric, scales, headingLevel: 5, detail: true) }
+            if metric != model.wallClockMetric { statisticsTables(identity, metric, scales, headingLevel: 5) }
             let small = scales.filter { $0 <= Self.smallLimit }
             let large = scales.filter { $0 > Self.smallLimit }
             for (label, part) in [("up to \(ReportFormat.grouped(Self.smallLimit))", small), ("above \(ReportFormat.grouped(Self.smallLimit))", large)] where !part.isEmpty {
@@ -412,12 +412,12 @@ struct ReportWriter {
         emit(["</details>"])
     }
 
-    private mutating func statisticsTables(_ identity: String, _ metric: String, _ scales: [Int], headingLevel: Int, detail: Bool) {
+    private mutating func statisticsTables(_ identity: String, _ metric: String, _ scales: [Int], headingLevel: Int) {
         let small = scales.filter { $0 <= Self.smallLimit }
         let large = scales.filter { $0 > Self.smallLimit }
         for (label, part) in [("Entity counts up to \(ReportFormat.grouped(Self.smallLimit))", small), ("Entity counts above \(ReportFormat.grouped(Self.smallLimit))", large)] where !part.isEmpty {
             heading(headingLevel, "\(metric): \(label)")
-            emit(statisticsTable(identity, metric, part, detail: detail))
+            emit(statisticsTable(identity, metric, part))
         }
     }
 
@@ -442,7 +442,7 @@ struct ReportWriter {
 
     /// Per series: median, CI low, CI high, [mean], replicates, iterations; for non-baseline series and wall clock also the
     /// comparison columns.
-    private func statisticsTable(_ identity: String, _ metric: String, _ scales: [Int], detail: Bool) -> HTMLTable {
+    private func statisticsTable(_ identity: String, _ metric: String, _ scales: [Int]) -> HTMLTable {
         let dimension = dimension(identity, metric, scales)
         let isWall = metric == model.wallClockMetric
         var blocks: [HTMLColumnBlock] = []
@@ -465,9 +465,7 @@ struct ReportWriter {
             add(median)
             add(quantityColumn("CI low", cells.map { $0?.interval?.low }, dimension, unit: median.unit, intervalFallback))
             add(quantityColumn("CI high", cells.map { $0?.interval?.high }, dimension, unit: median.unit, intervalFallback))
-            if detail {
-                add(quantityColumn("mean", cells.map { $0?.mean }, dimension, unavailable))
-            }
+            add(quantityColumn("mean", cells.map { $0?.mean }, dimension, unavailable))
             headers.append("replicates")
             columns.append(cells.indices.map { row in cells[row].map { HTMLCell(String($0.replicates)) } ?? unavailable(row) })
             headers.append("iterations")
@@ -586,7 +584,7 @@ struct ReportWriter {
             let batches = Set(model.files.compactMap(\.run.batchId)).sorted()
             let counts = Set(model.groups.map(\.expectedReplicates)).sorted()
             let batchText: HTMLText = batches.isEmpty ? "none recorded" : .joined(batches.map { ReportHTML.code($0) }, separator: ", ")
-            item("<strong>Protocol:</strong> each ref is built once and run k = \(counts.map(String.init).joined(separator: ", ")) times as independent processes (\(replicateSummaryText)). Replicates run in interleaved rounds: each round runs every ref once, in an order shuffled by the recorded seed (seed \(seeds.map(String.init).joined(separator: ", ")); batch \(batchText)). The suite settings are identical for all refs.")
+            item("<strong>Protocol:</strong> each ref is built once and run k = \(counts.map(String.init).joined(separator: ", ")) times as independent processes (\(replicateSummaryText)). Replicates run in interleaved rounds: each round runs every ref once, in an order shuffled by the recorded seed (seed \(seeds.map(String.init).joined(separator: ", ")); batch \(batchText)). \(suiteSettings)")
         } else {
             item("<strong>Protocol:</strong> the inputs carry no replicate provenance, so each counts as replicate 1 of 1 (one process per ref). Only medians and within-run spread are reported; intervals, tests and verdicts need replicates.")
         }
@@ -595,9 +593,16 @@ struct ReportWriter {
         item("<strong>Coverage:</strong> \(coverage.median) \(coverage.speed)")
         item("<strong>Effect:</strong> <code>speed (×)</code> = baseline ÷ series, estimated by Hodges–Lehmann on the log replicate medians (exp of the median of all pairwise log differences) with the Mann–Whitney-based distribution-free confidence interval of those differences (exact when no replicate medians tie, approximate with ties). <code>change (%)</code> = (1 ÷ speed − 1) × 100.")
         item("<strong>Test:</strong> exact two-sided Mann–Whitney U on the replicate medians (permutation distribution conditional on ties). <strong>Multiplicity:</strong> Benjamini–Hochberg across all \(testCount) wall-clock comparisons with a p-value in this report; <code>q</code> is the adjusted value and the threshold is q &lt; \(Self.percent(ReportStatistics.significanceLevel)).")
-        item("<strong>Verdict:</strong> δ = \(Self.percent(ReportStatistics.defaultDelta)), symmetric on the log scale, so the equivalence zone is [1/\(String(format: "%g", 1 + ReportStatistics.defaultDelta)), \(String(format: "%g", 1 + ReportStatistics.defaultDelta))]. <code>faster</code>: q &lt; \(Self.percent(ReportStatistics.significanceLevel)) and CI low &gt; \(String(format: "%g", 1 + ReportStatistics.defaultDelta)); <code>slower</code>: q &lt; \(Self.percent(ReportStatistics.significanceLevel)) and CI high &lt; 1/\(String(format: "%g", 1 + ReportStatistics.defaultDelta)); <code>equivalent</code>: the CI lies inside the zone; otherwise <code>inconclusive</code>; <code>n/a (k replicates)</code> when either side has fewer than 2. Only wall clock is tested; all other metrics are descriptive.")
+        item("<strong>Verdict:</strong> δ = \(Self.percent(ReportStatistics.defaultDelta)), symmetric on the log scale, so the equivalence zone is [1/\(Self.zoneEdge), \(Self.zoneEdge)]. <code>faster</code>: q &lt; \(Self.percent(ReportStatistics.significanceLevel)) and CI low &gt; \(Self.zoneEdge); <code>slower</code>: q &lt; \(Self.percent(ReportStatistics.significanceLevel)) and CI high &lt; 1/\(Self.zoneEdge); <code>equivalent</code>: the CI lies inside the zone; otherwise <code>inconclusive</code>; <code>n/a (k replicates)</code> when either side has fewer than 2. Only wall clock is tested; all other metrics are descriptive.")
         item("<strong>Drift:</strong> \(driftSummary())")
         item("<strong>Limits:</strong> each ref is built once, so effects of code layout between builds are not sampled. Conclusions hold for the recorded host and toolchain only. The Benchmark plugin checks and relinks the build before each replicate, identically for all refs. With k = 5 per side the smallest attainable p (0.0079) cannot pass Benjamini–Hochberg over several hundred tests; k = 10 is the practical minimum for meaningful verdicts.")
+    }
+
+    /// Whether every ref ran the same suite settings (equal configuration hashes), else a pointer to the warning.
+    private var suiteSettings: HTMLText {
+        model.configurationHashesDiffer
+            ? "The suite settings differ between refs (configuration hashes); see \(anchor: "warnings", "Warnings")."
+            : "The suite settings are identical for all refs."
     }
 
     private var testCount: Int {
@@ -656,10 +661,6 @@ struct ReportWriter {
         return out
     }
 
-    private static func codeHTML(_ value: String) -> String {
-        ReportHTML.code(value).html
-    }
-
     private mutating func provenance() {
         heading(2, "Provenance", id: "provenance")
         flush()
@@ -702,7 +703,7 @@ struct ReportWriter {
             } else if let paired = model.pairedSeries(for: index) {
                 ReportHTML.escape(model.series[paired].label)
             } else {
-                "unavailable (the baseline has several backends and none is \(Self.codeHTML(series.backend)))"
+                "unavailable (the baseline has several backends and none is \(ReportHTML.code(series.backend).html))"
             }
             rows.append([ReportHTML.escape(series.label), "\(group.fileIndices.count) of \(group.expectedReplicates)", target])
         }
@@ -726,7 +727,7 @@ struct ReportWriter {
         var parityRows: [[String]] = []
         for identity in parity.keys.sorted() {
             for text in parity[identity]!.keys.sorted() {
-                parityRows.append([Self.codeHTML(identity), ReportHTML.escape(text), ReportHTML.escape(parity[identity]![text]!.joined(separator: ", "))])
+                parityRows.append([ReportHTML.code(identity).html, ReportHTML.escape(text), ReportHTML.escape(parity[identity]![text]!.joined(separator: ", "))])
             }
         }
         emit(Self.simpleTable(["Workload", "Parity", "Refs"], parityRows))
@@ -735,7 +736,7 @@ struct ReportWriter {
         var unsupportedRows: [[String]] = []
         for identity in unsupported.keys.sorted() {
             for reason in unsupported[identity]!.keys.sorted() {
-                unsupportedRows.append([Self.codeHTML(identity), ReportHTML.escape(reason), ReportHTML.escape(unsupported[identity]![reason]!.joined(separator: ", "))])
+                unsupportedRows.append([ReportHTML.code(identity).html, ReportHTML.escape(reason), ReportHTML.escape(unsupported[identity]![reason]!.joined(separator: ", "))])
             }
         }
         emit(Self.simpleTable(["Workload", "Reason", "Refs"], unsupportedRows))

@@ -80,7 +80,7 @@ struct ReportHTMLTests {
     @Test
     func embeddedJSONParsesAndHoldsTheTableValues() throws {
         let html = try render().html
-        let json = try #require(ReportHTMLSupport.embeddedJSON(html))
+        let json = try #require(ReportHTMLFragments.embeddedJSON(html))
         let object = try #require(try JSONSerialization.jsonObject(with: json) as? [String: Any])
         let workloads = try #require(object["workloads"] as? [[String: Any]])
         #expect(workloads.map { $0["identity"] as? String } == [ReportFixtures.w1, ReportFixtures.w2, ReportFixtures.w3].sorted())
@@ -102,7 +102,7 @@ struct ReportHTMLTests {
         var files = GuideFixtures.replicated()
         for index in files.indices where files[index].ref.requested == "main" { files[index].ref.requested = "</script><!--&" }
         let html = try render(files).html
-        let json = try #require(ReportHTMLSupport.embeddedJSON(html))
+        let json = try #require(ReportHTMLFragments.embeddedJSON(html))
         let text = String(decoding: json, as: UTF8.self)
         #expect(!text.contains("<") && !text.contains(">") && !text.contains("&"))
         let object = try #require(try JSONSerialization.jsonObject(with: json) as? [String: Any])
@@ -118,7 +118,7 @@ struct ReportHTMLTests {
         for index in files.indices where files[index].ref.requested == "main" { files[index].ref.requested = "a&lt;*b*[c](#d)" }
         let html = try render(files).html
         // Entities, emphasis and link syntax of a label are shown as typed, in the reading notes and the protocol.
-        #expect(html.components(separatedBy: "<code>a&amp;lt;*b*[c](#d)</code>: 10 of 10").count >= 3, "reading notes, protocol and guide")
+        #expect(html.components(separatedBy: "<code>a&amp;lt;*b*[c](#d)</code>: 10 of 10").count >= 2, "the protocol")
         #expect(!html.contains("<em>b</em>") && !html.contains(##"<a href="#d">c</a>"##))
     }
 
@@ -126,13 +126,12 @@ struct ReportHTMLTests {
     func everyWorkloadHasASectionAndATableOfContentsEntry() throws {
         let html = try render().html
         for workload in [ReportFixtures.w1, ReportFixtures.w2, ReportFixtures.w3] {
-            #expect(ReportHTMLSupport.section(html, workload) != nil, Comment(rawValue: workload))
+            #expect(ReportHTMLFragments.section(html, workload) != nil, Comment(rawValue: workload))
             #expect(html.contains("<a href=\"#w-\(workload)\">"))
         }
         // Header facts and the fixed sections.
-        let text = ReportHTMLSupport.text(html)
-        for heading in ["## Reading notes", "## Summary", "## How to read this report", "## Workloads", "## Glossary", "## Methods", "## Provenance", "## Series and pairing", "## Parity notes", "## Unsupported workloads"] {
-            #expect(text.contains("\n\(heading)\n"), Comment(rawValue: heading))
+        for anchor in ["reading-notes", "summary", "how-to-read-this-report", "workloads", "glossary", "methods", "provenance", "series-and-pairing", "parity-notes", "unsupported-workloads"] {
+            #expect(html.contains("<h2 id=\"\(anchor)\">"), Comment(rawValue: anchor))
         }
         for fact in ["Baseline", "Refs", "Replicates (k) per ref", "Runs", "Batch (run id)", "Seed", "Host", "Toolchain"] {
             #expect(html.contains("<dt>\(fact)</dt>"), Comment(rawValue: fact))

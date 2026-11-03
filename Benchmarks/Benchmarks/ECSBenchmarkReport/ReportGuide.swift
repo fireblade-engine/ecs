@@ -8,7 +8,6 @@ enum ReportGuide {
     private static var delta: Double { ReportStatistics.defaultDelta }
     private static var level: String { ReportWriter.percent(ReportStatistics.significanceLevel) }
     private static var zone: String { ReportWriter.percent(delta) }
-    private static var upperEdge: String { String(format: "%g", 1 + delta) }
 
     static func blocks() -> [ReportBlock] {
         [
@@ -33,12 +32,8 @@ enum ReportGuide {
     private static func verdicts() -> [ReportBlock] {
         [
             .heading(3, "2. How the verdict is decided"),
-            .paragraph("A verdict is given only for wall clock and only when both refs have at least 2 replicates. We call differences smaller than ±\(zone) \"the same\" (the <strong>equivalence zone</strong>, speeds from 1/\(upperEdge) to \(upperEdge))."),
+            .paragraph("A verdict is given only for wall clock and only when both refs have at least 2 replicates. The exact rule for <code>faster</code>, <code>slower</code>, <code>equivalent</code>, <code>inconclusive</code> and <code>n/a (k replicates)</code> is in the \(anchor: ReportGlossary.anchor, "glossary"). In short: a significant test is not enough, the whole CI must also be clear of the equivalence zone, otherwise the honest answer is \"cannot tell yet\"."),
             .list([
-                "<code>faster</code> / <code>slower</code>: the test is significant (<code>q</code> &lt; \(level)) <strong>and</strong> the whole CI is outside the zone (above \(upperEdge), or below 1/\(upperEdge)).",
-                "<code>equivalent</code>: the whole CI is inside the zone, so any real difference is smaller than ±\(zone).",
-                "<code>inconclusive</code>: everything else. A significant test is not enough: if the CI still overlaps the zone, the effect could be smaller than \(zone) and not worth acting on, so the honest answer is \"cannot tell yet\".",
-                "<code>n/a (k replicates)</code>: a side has fewer than 2 replicates, so there is no CI, <code>q</code> or verdict.",
                 "<strong>Illustrative examples (not from this report):</strong> speed 2.00×, CI 1.90–2.10×, q 0.001 is <code>faster</code>. Speed 1.00×, CI 0.98–1.02× is <code>equivalent</code>. Speed 1.30×, CI 1.02–1.58×, q 0.01 is <code>inconclusive</code>: the difference is real (q &lt; \(level)) but the CI reaches into the ±\(zone) zone, so it may be negligible."
             ])
         ]
@@ -62,7 +57,7 @@ enum ReportGuide {
             .list([
                 "<strong>Log axes</strong> (the time plots): equal distances mean equal <em>ratios</em>, not equal differences. Going from 1 to 10 looks the same as 10 to 100. A straight line is a power law and its slope is the growth rate: slope 1 means time grows in proportion to the entity count; a flatter line grows slower.",
                 "<strong>Per-entity plot</strong>: time divided by the entity count. A flat line means the cost of one entity does not change with scale.",
-                "<strong>Log / Linear toggle</strong>: every plot has its own toggle, and one toggle at the top switches all plots. Linear shows absolute time on plain axes, including entity count 0; it shows what the log plot hides: how big the differences are in absolute terms at large scale.",
+                "<strong>Log / Linear toggle</strong>: every plot has its own toggle, and one toggle at the top switches all plots. Linear shows absolute time on plain axes, including entity count 0 (except in the per-entity plot, which never shows it); it shows what the log plot hides: how big the differences are in absolute terms at large scale.",
                 "<strong>Hover or focus</strong>: pointing at a data point (or tabbing to it) shows its ref, backend, entity count, median, CI and speed with verdict, draws lines to both axes with the values, and highlights the matching table row.",
                 "<strong>Relative plot</strong>: speed against the baseline. The dotted line at 1× is \"same as the baseline\"; the shaded band is the ±\(zone) equivalence zone; the ribbon is the CI of the speed. A series whose ribbon lies entirely above the zone is faster, entirely below slower.",
                 "<strong>Markers</strong>: in the time plots a <em>hollow</em> marker has no CI at that point. In the relative plot a <em>filled</em> marker is a <code>faster</code> or <code>slower</code> verdict, a hollow one anything else.",

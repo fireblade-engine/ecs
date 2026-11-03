@@ -8,15 +8,21 @@ struct ReportGuideTests {
     @Test
     func guideRendersWithSixPartsAndIsLinkedFromTheTop() throws {
         let html = try GuideFixtures.render(GuideFixtures.replicated())
-        let text = ReportHTMLSupport.text(html)
-        let summary = try #require(text.range(of: "\n## Summary\n"))
-        let guide = try #require(text.range(of: "\n## How to read this report\n"))
-        let workloads = try #require(text.range(of: "\n## Workloads\n"))
+        let summary = try #require(html.range(of: "<h2 id=\"summary\">"))
+        let guide = try #require(html.range(of: "<h2 id=\"how-to-read-this-report\">"))
+        let workloads = try #require(html.range(of: "<h2 id=\"workloads\">"))
         #expect(summary.upperBound <= guide.lowerBound && guide.upperBound <= workloads.lowerBound)
         #expect(html.contains(##"<a href="#how-to-read-this-report">How to read this report</a>"##))
-        for heading in ["### 1. What a confidence interval is", "### 2. How the verdict is decided", "### 3. Error bars are not the light band", "### 4. Reading the plots", "### 5. What `q` is", "### 6. Replicates (k) and interleaving"] {
-            #expect(text.contains(heading), Comment(rawValue: heading))
+        for heading in ["1. What a confidence interval is", "2. How the verdict is decided", "3. Error bars are not the light band", "4. Reading the plots", "5. What <code>q</code> is", "6. Replicates (k) and interleaving"] {
+            #expect(html.contains("<h3>\(heading)</h3>"), Comment(rawValue: heading))
         }
+    }
+
+    @Test
+    func guideLinksTheVerdictRuleInsteadOfRestatingIt() throws {
+        let guide = try #require(ReportHTMLFragments.chapter(try GuideFixtures.render(GuideFixtures.replicated()), ReportGlossary.guideAnchor))
+        #expect(guide.contains(##"<a href="#glossary">glossary</a>"##))
+        #expect(!guide.contains("<code>faster</code> / <code>slower</code>: the test is significant"))
     }
 
     @Test
@@ -29,9 +35,6 @@ struct ReportGuideTests {
     }
 
     private func guideText(_ files: [BenchmarkResultFile]) throws -> String {
-        let text = ReportHTMLSupport.text(try GuideFixtures.render(files))
-        let start = try #require(text.range(of: "## How to read this report"))
-        let end = try #require(text.range(of: "\n## Workloads\n"))
-        return String(text[start.lowerBound ..< end.lowerBound])
+        try #require(ReportHTMLFragments.chapter(try GuideFixtures.render(files), ReportGlossary.guideAnchor))
     }
 }

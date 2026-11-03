@@ -1,4 +1,4 @@
-// Report-only N-way comparison of saved result files, specified in Methodology.md ("Report v2 design" and "Statistical design v3"). A pure
+// Report-only N-way comparison of saved result files, specified in Methodology.md ("Report output" and "Statistical design v3"). A pure
 // function from decoded result files to the contents of a report directory (the single file BenchmarkReport.html): no
 // file access, no processes, no benchmark runs, and the inputs are never mutated.
 import Benchmark
@@ -245,10 +245,14 @@ struct ReportModel {
         drift = analysis.drift
     }
 
+    /// True when the refs did not run the same suite configuration (the first file of each ref decides).
+    var configurationHashesDiffer: Bool {
+        Set(groups.map { files[$0.fileIndices[0]].suite.configurationHash }).count > 1
+    }
+
     private func groupWarnings() -> [String] {
         var warnings: [String] = []
-        let hashes = Set(groups.map { files[$0.fileIndices[0]].suite.configurationHash })
-        if hashes.count > 1 {
+        if configurationHashesDiffer {
             let detail = groups.map { "\($0.label): \(String(files[$0.fileIndices[0]].suite.configurationHash.prefix(12)))" }.joined(separator: "; ")
             warnings.append("Configuration hashes differ across refs (\(detail)); the runs did not use the same suite configuration, so differences may not reflect the refs alone.")
         }
@@ -293,7 +297,7 @@ struct ReportModel {
         if Set(sets).count > 1 {
             let union = sets.reduce(into: Set<String>()) { $0.formUnion($1) }
             let notEverywhere = union.filter { entry in sets.contains { !$0.contains(entry) } }.sorted()
-            let shown = notEverywhere.prefix(5).map { "`\($0)`" }.joined(separator: ", ")
+            let shown = notEverywhere.prefix(5).map { "'\($0)'" }.joined(separator: ", ")
             warnings.append("The registered benchmark sets differ across refs: \(notEverywhere.count) workload and scale combinations are not in every ref (\(shown)\(notEverywhere.count > 5 ? ", ..." : "")).")
         }
         return warnings

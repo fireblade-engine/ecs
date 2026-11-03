@@ -65,7 +65,7 @@ struct ReportGlossaryTests {
     func everyColumnHeaderAndLegendTermHasAnEntry(replicated: Bool) throws {
         let files = replicated ? GuideFixtures.replicated() : GuideFixtures.single()
         let rendered = try GuideFixtures.render(files)
-        let headers = GuideFixtures.columnHeaders(rendered).map { ReportHTMLSupport.decode($0) }
+        let headers = GuideFixtures.columnHeaders(rendered).map { ReportHTMLFragments.decode($0) }
         #expect(headers.contains("speed (×)") || files.count == 2, "tables were found")
         for header in headers {
             #expect(ReportGlossary.covers(header), Comment(rawValue: "no glossary entry for the column header '\(header)'"))
@@ -83,6 +83,11 @@ struct ReportGlossaryTests {
     }
 
     @Test
+    func theTestOnlyNamesDescribeExactlyTheGlossaryEntries() {
+        #expect(Set(ReportGlossary.names.keys) == Set(ReportGlossary.entries.map(\.term)))
+    }
+
+    @Test
     func everyVerdictAndUnavailableWordHasAnEntry() {
         let verdicts: [ReportStatistics.Verdict] = [.faster, .slower, .equivalent, .inconclusive, .notAvailable(replicates: 1), .notAvailable(replicates: 0)]
         for verdict in verdicts {
@@ -97,17 +102,16 @@ struct ReportGlossaryTests {
     @Test
     func glossaryIsLinkedFromTheTopAndFromEveryWorkloadSectionAndPrecedesMethods() throws {
         let html = try GuideFixtures.render(GuideFixtures.replicated())
-        let report = ReportHTMLSupport.text(html)
-        let glossary = try #require(report.range(of: "\n## Glossary\n"))
-        let methods = try #require(report.range(of: "\n## Methods\n"))
+        let glossary = try #require(html.range(of: "<h2 id=\"glossary\">"))
+        let methods = try #require(html.range(of: "<h2 id=\"methods\">"))
         #expect(glossary.upperBound <= methods.lowerBound)
         #expect(html.contains(##"<a href="#glossary">Glossary</a>"##))
-        let pages = ReportHTMLSupport.pages(html).filter { $0.key.hasPrefix("workloads/") }
-        #expect(pages.count == 3)
-        for (path, page) in pages {
-            #expect(page.contains("[glossary](#glossary)"), Comment(rawValue: path))
+        for workload in [GuideFixtures.F.w1, GuideFixtures.F.w2, GuideFixtures.F.w3] {
+            let section = try #require(ReportHTMLFragments.section(html, workload))
+            #expect(section.contains(##"<a href="#glossary">glossary</a>"##), Comment(rawValue: workload))
         }
-        #expect(report.contains("- **CI, confidence interval**:") && report.contains("±5%"))
+        let chapter = try #require(ReportHTMLFragments.chapter(html, "glossary"))
+        #expect(chapter.contains("<strong>CI, confidence interval</strong>:") && chapter.contains("±5%"))
     }
 }
 
@@ -116,7 +120,7 @@ extension ReportGlossary {
     /// True when `label` (a table column header, legend term or verdict cell) is defined by an entry. Unit suffixes in parentheses
     /// ("median (ms)") are ignored; the whole label and the label without the suffix are both tried.
     static func covers(_ label: String) -> Bool {
-        let all = Set(entries.flatMap(\.names).map { $0.lowercased() })
+        let all = Set(names.values.flatMap { $0 }.map { $0.lowercased() })
         let lowered = label.lowercased()
         if all.contains(lowered) { return true }
         if let open = lowered.range(of: " (", options: .backwards), lowered.hasSuffix(")"), all.contains(String(lowered[..<open.lowerBound])) { return true }

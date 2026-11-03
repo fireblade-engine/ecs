@@ -110,7 +110,7 @@ struct HTMLTable {
     }
 
     static func html(_ text: String) -> String {
-        ReportMarkup.escape(text)
+        ReportHTML.escape(text)
     }
 }
 

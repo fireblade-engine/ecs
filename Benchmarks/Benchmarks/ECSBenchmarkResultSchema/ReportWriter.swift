@@ -7,10 +7,9 @@ import Foundation
 struct ReportWriter {
     let model: ReportModel
     let title: String
-    /// Pending prose in the Markdown subset of `ReportMarkup`; flushed into `body` whenever a table or raw HTML is emitted.
-    private var lines: [String] = []
+    /// Bullets of the list being built; closed into `body` by the next block that is not a bullet.
+    private var items: [HTMLText] = []
     private var body: [String] = []
-    private var anchors = true
     private var ids: [String: String] = [:]
 
     /// Entity counts up to this value go into the small table, the rest into the large one (as upstream splits its tables).
@@ -34,13 +33,13 @@ struct ReportWriter {
         }
         self.ids = ids
         body = []
-        lines = []
+        items = []
         header()
         warnings()
         summary(identities, ids)
-        lines += ReportGuide.lines()
+        add(ReportGuide.blocks())
         workloads(identities, ids)
-        lines += ReportGlossary.lines()
+        add(ReportGlossary.blocks())
         methods()
         provenance()
         pairing()
@@ -61,7 +60,7 @@ struct ReportWriter {
     // MARK: Document
 
     private func document(_ identities: [String], _ ids: [String: String], _ payload: ReportPlotPayload) throws -> String {
-        let e = ReportMarkup.escape
+        let e = ReportHTML.escape
         var out: [String] = []
         out.append("<!doctype html>")
         out.append("<html lang=\"en\">")
@@ -85,7 +84,7 @@ struct ReportWriter {
             .map { "<a href=\"#\($0.0)\">\(e($0.1))</a>" }.joined(separator: " · ") + "</p>")
         out.append("<ul>")
         for identity in identities {
-            out.append("<li><a href=\"#\(e(ids[identity]!))\"><code>\(e(Self.code(identity)))</code></a></li>")
+            out.append("<li><a href=\"#\(e(ids[identity]!))\"><code>\(e(identity))</code></a></li>")
         }
         out.append("</ul>")
         out.append("</nav>")
@@ -104,7 +103,7 @@ struct ReportWriter {
 
     /// Facts of the run as a grid of small cards.
     private func facts() -> String {
-        let e = ReportMarkup.escape
+        let e = ReportHTML.escape
         func distinct(_ values: [String]) -> String { values.uniqued().joined(separator: "; ") }
         let files = model.files
         let baseline = model.groups[model.baselineGroup]
@@ -128,11 +127,29 @@ struct ReportWriter {
 
     // MARK: Emitting
 
-    /// Moves the pending prose into the body as HTML.
+    /// Closes the pending list.
     private mutating func flush() {
-        guard !lines.isEmpty else { return }
-        body.append(ReportMarkup.html(lines, anchors: anchors))
-        lines = []
+        guard !items.isEmpty else { return }
+        body.append(ReportBlock.list(items).html)
+        items = []
+    }
+
+    private mutating func add(_ blocks: [ReportBlock]) {
+        flush()
+        body += blocks.map(\.html)
+    }
+
+    private mutating func heading(_ level: Int, _ text: HTMLText, id: String? = nil) {
+        add([.heading(level, text, id: id)])
+    }
+
+    private mutating func paragraph(_ text: HTMLText) {
+        add([.paragraph(text)])
+    }
+
+    /// A bullet of the list in progress.
+    private mutating func item(_ text: HTMLText) {
+        items.append(text)
     }
 
     private mutating func emit(_ html: [String]) {
@@ -149,38 +166,34 @@ struct ReportWriter {
         return counts.joined(separator: "; ")
     }
 
-    /// The same for the Markdown-subset prose: labels sit in code spans, so entities, `*` and brackets display verbatim.
-    private var replicateSummaryText: String {
-        let counts = model.groups.map { "`\(Self.codeText($0.label))`: \($0.fileIndices.count) of \($0.expectedReplicates)" }
-        return counts.joined(separator: "; ")
+    /// The same for the prose: labels sit in code spans.
+    private var replicateSummaryText: HTMLText {
+        let counts = model.groups.map { group -> HTMLText in "<code>\(group.label)</code>: \(group.fileIndices.count) of \(group.expectedReplicates)" }
+        return .joined(counts, separator: "; ")
     }
 
     // MARK: Header
 
     private mutating func header() {
-        lines.append("## Reading notes")
-        lines.append("")
+        heading(2, "Reading notes", id: "reading-notes")
         let baseline = model.groups[model.baselineGroup]
-        lines.append("- Baseline: `\(Self.codeText(baseline.label))` (\(Self.text(baseline.sha)))")
-        lines.append("- Inputs: \(model.files.count) result files, \(model.groups.count) refs, \(model.series.count) series (ref, component model, backend)")
-        lines.append("- Replicates per ref: \(replicateSummaryText)")
+        item("Baseline: <code>\(baseline.label)</code> (\(baseline.sha))")
+        item("Inputs: \(model.files.count) result files, \(model.groups.count) refs, \(model.series.count) series (ref, component model, backend)")
+        item("Replicates per ref: \(replicateSummaryText)")
         let filters = Set(model.files.map(\.suite.filter)).sorted()
-        lines.append("- Selection filter: " + filters.map { "`\(Self.codeText($0))`" }.joined(separator: ", "))
-        lines.append("- Every replicate is an independent process; the replicate is the unit of analysis. `median` is the median over replicates of each replicate's median per iteration. `CI low` and `CI high` bound the 95% distribution-free confidence interval of that median (exact coverage in the methods section). `replicates` is the number of replicates behind the value, `iterations` the median number of measurements per replicate (time-based sampling, so it differs between series by design).")
-        lines.append("- Non-baseline series add, for wall clock only, `speed (×)` = baseline ÷ series (above 1 is faster) with its distribution-free 95% CI (exact when no replicate medians tie, approximate with ties), `change (%)` = (1 ÷ speed − 1) × 100, `q` (Benjamini–Hochberg adjusted p of an exact Mann–Whitney test across every wall-clock comparison of this report) and a `verdict`: `faster`/`slower` need q < \(Self.percent(ReportStatistics.significanceLevel)) and a CI entirely outside the ±\(Self.percent(ReportStatistics.defaultDelta)) zone, `equivalent` needs the CI entirely inside it. Other metrics are descriptive only.")
-        lines.append("- Every unit is in its column header and applies to the whole column of that table. Values keep at most the \(ReportFormat.significantDigits) significant digits the package measured. Anything missing or not comparable is `unavailable`, and a metric the package did not record (throughput of an iteration of about 2 s or longer) is `n/a` (hover for the reason), never zero. `n/a (k replicates)` means the statistic needs more replicates.")
-        lines.append("- Plots are drawn in the page from the embedded data: the wall-clock median per iteration with CI error bars and a light within-run IQR band (spread of the measurements inside a run, not uncertainty). Each plot starts on log-log axes and has a Log/Linear toggle (and there is one for all plots); entity count 0 cannot sit on a log axis and appears in the plots only on linear axes and in the tables.")
-        lines.append("")
+        item("Selection filter: \(HTMLText.joined(filters.map { ReportHTML.code($0) }, separator: ", "))")
+        item("Every replicate is an independent process; the replicate is the unit of analysis. <code>median</code> is the median over replicates of each replicate's median per iteration. <code>CI low</code> and <code>CI high</code> bound the 95% distribution-free confidence interval of that median (exact coverage in the methods section). <code>replicates</code> is the number of replicates behind the value, <code>iterations</code> the median number of measurements per replicate (time-based sampling, so it differs between series by design).")
+        item("Non-baseline series add, for wall clock only, <code>speed (×)</code> = baseline ÷ series (above 1 is faster) with its distribution-free 95% CI (exact when no replicate medians tie, approximate with ties), <code>change (%)</code> = (1 ÷ speed − 1) × 100, <code>q</code> (Benjamini–Hochberg adjusted p of an exact Mann–Whitney test across every wall-clock comparison of this report) and a <code>verdict</code>: <code>faster</code>/<code>slower</code> need q &lt; \(Self.percent(ReportStatistics.significanceLevel)) and a CI entirely outside the ±\(Self.percent(ReportStatistics.defaultDelta)) zone, <code>equivalent</code> needs the CI entirely inside it. Other metrics are descriptive only.")
+        item("Every unit is in its column header and applies to the whole column of that table. Values keep at most the \(ReportFormat.significantDigits) significant digits the package measured. Anything missing or not comparable is <code>unavailable</code>, and a metric the package did not record (throughput of an iteration of about 2 s or longer) is <code>n/a</code> (hover for the reason), never zero. <code>n/a (k replicates)</code> means the statistic needs more replicates.")
+        item("Plots are drawn in the page from the embedded data: the wall-clock median per iteration with CI error bars and a light within-run IQR band (spread of the measurements inside a run, not uncertainty). Each plot starts on log-log axes and has a Log/Linear toggle (and there is one for all plots); entity count 0 cannot sit on a log axis and appears in the plots only on linear axes and in the tables.")
     }
 
     private mutating func warnings() {
         guard !model.warnings.isEmpty else { return }
-        lines.append("## Warnings")
-        lines.append("")
+        heading(2, "Warnings", id: "warnings")
         for warning in model.warnings {
-            lines.append("- \(Self.text(warning))")
+            item("\(warning)")
         }
-        lines.append("")
     }
 
     static func percent(_ value: Double) -> String {
@@ -221,10 +234,8 @@ struct ReportWriter {
 
     private mutating func summary(_ identities: [String], _ ids: [String: String]) {
         guard let wall = model.wallClockMetric else { return }
-        lines.append("## Summary")
-        lines.append("")
-        lines.append("Wall clock, `speed (×)` against the paired baseline series (above 1 is faster) with its distribution-free 95% CI and the verdict (δ = \(Self.percent(ReportStatistics.defaultDelta)), q across all comparisons). The last block of each series is the largest entity count for which the comparison exists (its count in the `entities` column).")
-        lines.append("")
+        heading(2, "Summary", id: "summary")
+        paragraph("Wall clock, <code>speed (×)</code> against the paired baseline series (above 1 is faster) with its distribution-free 95% CI and the verdict (δ = \(Self.percent(ReportStatistics.defaultDelta)), q across all comparisons). The last block of each series is the largest entity count for which the comparison exists (its count in the <code>entities</code> column).")
         var blocks: [HTMLColumnBlock] = []
         for index in model.series.indices where !model.isBaseline(index) {
             for scale in Self.summaryScales {
@@ -243,7 +254,6 @@ struct ReportWriter {
         }
         guard !blocks.isEmpty else { return }
         emit(HTMLTable(rowHeader: "Workload", rowLabels: identities, rowHrefs: identities.map { "#\(ids[$0]!)" }, blocks: blocks))
-        lines.append("")
     }
 
     private func summaryBlock(_ series: Int, subgroup: String, items: [ReportComparison?], entities: [Int?]?) -> HTMLColumnBlock {
@@ -347,17 +357,13 @@ struct ReportWriter {
     // MARK: Workload sections
 
     private mutating func workloads(_ identities: [String], _ ids: [String: String]) {
-        lines.append("## Workloads")
-        lines.append("")
+        heading(2, "Workloads", id: "workloads")
         flush()
-        anchors = false
-        defer { anchors = true }
         let hasComparisons = model.series.indices.contains { !model.isBaseline($0) }
         for identity in identities {
             let id = ids[identity]!
-            emit(["<section class=\"workload\" id=\"\(ReportMarkup.escape(id))\">"])
-            lines.append("### `\(Self.codeText(identity))`")
-            lines.append("")
+            emit(["<section class=\"workload\" id=\"\(ReportHTML.escape(id))\">"])
+            heading(3, "<code>\(identity)</code>")
             var parity: [String: [String]] = [:]
             for group in model.groups {
                 for workload in model.files[group.fileIndices[0]].workloads where workload.identity == identity {
@@ -366,13 +372,12 @@ struct ReportWriter {
                 }
             }
             for text in parity.keys.sorted() {
-                lines.append("- Parity (\(Self.text(parity[text]!.joined(separator: ", ")))): \(Self.text(text))")
+                item("Parity (\(parity[text]!.joined(separator: ", "))): \(text)")
             }
-            if !parity.isEmpty { lines.append("") }
             if model.wallClockMetric != nil {
                 var kinds = ["total", "perEntity"]
                 if hasComparisons { kinds.append("relative") }
-                emit(["<div class=\"plots\">"] + kinds.map { "<div class=\"plot\" data-w=\"\(ReportMarkup.escape(id))\" data-kind=\"\($0)\"></div>" } + ["</div>"])
+                emit(["<div class=\"plots\">"] + kinds.map { "<div class=\"plot\" data-w=\"\(ReportHTML.escape(id))\" data-kind=\"\($0)\"></div>" } + ["</div>"])
             }
             wallClockTables(identity)
             details(identity)
@@ -389,20 +394,17 @@ struct ReportWriter {
     /// Every metric with mean and percentile columns, folded away by default; the wall-clock statistics are already shown above.
     private mutating func details(_ identity: String) {
         emit(["<details>", "<summary>All metrics, means and percentiles</summary>"])
-        lines.append("`median`, `CI low`, `CI high`, `replicates` and `iterations` are defined in the [glossary](#\(ReportGlossary.anchor)). `mean` is the median over replicates of each replicate's mean per iteration; it is descriptive (upstream parity), not an inference input. Percentile columns are the median over replicates of each replicate's percentile.")
-        lines.append("")
+        paragraph("<code>median</code>, <code>CI low</code>, <code>CI high</code>, <code>replicates</code> and <code>iterations</code> are defined in the <a href=\"#\(ReportGlossary.anchor)\">glossary</a>. <code>mean</code> is the median over replicates of each replicate's mean per iteration; it is descriptive (upstream parity), not an inference input. Percentile columns are the median over replicates of each replicate's percentile.")
         let metrics = model.keys.filter { $0.identity == identity }.map(\.metric).uniqued()
         for metric in metrics {
             let scales = Set(model.keys.filter { $0.identity == identity && $0.metric == metric }.map(\.scale)).sorted()
             let polarity = referenceCell(ReportKey(identity: identity, scale: scales[0], metric: metric))?.prefersLarger == true ? "larger is better" : "smaller is better"
-            lines.append("#### \(Self.text(metric)) (\(polarity))")
-            lines.append("")
+            heading(4, "\(metric) (\(polarity))")
             if metric != model.wallClockMetric { statisticsTables(identity, metric, scales, headingLevel: 5, detail: true) }
             let small = scales.filter { $0 <= Self.smallLimit }
             let large = scales.filter { $0 > Self.smallLimit }
             for (label, part) in [("up to \(ReportFormat.grouped(Self.smallLimit))", small), ("above \(ReportFormat.grouped(Self.smallLimit))", large)] where !part.isEmpty {
-                lines.append("##### Percentiles, entity counts \(label)")
-                lines.append("")
+                heading(5, "Percentiles, entity counts \(label)")
                 emit(percentileTable(identity, metric, part))
             }
         }
@@ -410,12 +412,10 @@ struct ReportWriter {
     }
 
     private mutating func statisticsTables(_ identity: String, _ metric: String, _ scales: [Int], headingLevel: Int, detail: Bool) {
-        let hashes = String(repeating: "#", count: headingLevel)
         let small = scales.filter { $0 <= Self.smallLimit }
         let large = scales.filter { $0 > Self.smallLimit }
         for (label, part) in [("Entity counts up to \(ReportFormat.grouped(Self.smallLimit))", small), ("Entity counts above \(ReportFormat.grouped(Self.smallLimit))", large)] where !part.isEmpty {
-            lines.append("\(hashes) \(Self.text(metric)): \(label)")
-            lines.append("")
+            heading(headingLevel, "\(metric): \(label)")
             emit(statisticsTable(identity, metric, part, detail: detail))
         }
     }
@@ -578,26 +578,25 @@ struct ReportWriter {
     // MARK: Methods
 
     private mutating func methods() {
-        lines.append("## Methods")
-        lines.append("")
+        heading(2, "Methods", id: "methods")
         let replicated = model.files.contains { $0.run.replicate != nil }
         if replicated {
             let seeds = Set(model.files.compactMap { $0.run.replicate?.seed }).sorted()
             let batches = Set(model.files.compactMap(\.run.batchId)).sorted()
             let counts = Set(model.groups.map(\.expectedReplicates)).sorted()
-            lines.append("- **Protocol:** each ref is built once and run k = \(counts.map(String.init).joined(separator: ", ")) times as independent processes (\(replicateSummaryText)). Replicates run in interleaved rounds: each round runs every ref once, in an order shuffled by the recorded seed (seed \(seeds.map(String.init).joined(separator: ", ")); batch \(batches.isEmpty ? "none recorded" : batches.map { "`\(Self.codeText($0))`" }.joined(separator: ", "))). The suite settings are identical for all refs.")
+            let batchText: HTMLText = batches.isEmpty ? "none recorded" : .joined(batches.map { ReportHTML.code($0) }, separator: ", ")
+            item("<strong>Protocol:</strong> each ref is built once and run k = \(counts.map(String.init).joined(separator: ", ")) times as independent processes (\(replicateSummaryText)). Replicates run in interleaved rounds: each round runs every ref once, in an order shuffled by the recorded seed (seed \(seeds.map(String.init).joined(separator: ", ")); batch \(batchText)). The suite settings are identical for all refs.")
         } else {
-            lines.append("- **Protocol:** the inputs carry no replicate provenance, so each counts as replicate 1 of 1 (one process per ref). Only medians and within-run spread are reported; intervals, tests and verdicts need replicates.")
+            item("<strong>Protocol:</strong> the inputs carry no replicate provenance, so each counts as replicate 1 of 1 (one process per ref). Only medians and within-run spread are reported; intervals, tests and verdicts need replicates.")
         }
-        lines.append("- **Per replicate:** median, p25, p75 and mean of the iterations, read from the stored histogram. **Per series and cell:** the centre is the median of the replicate medians; the error bar is the distribution-free order-statistic confidence interval of that median, [x(l), x(k−l+1)] with the largest l such that P(Binomial(k, ½) ≤ l−1) ≤ 0.025 (omitted and marked when k < 6); the light band is the median over replicates of each replicate's p25 and p75.")
+        item("<strong>Per replicate:</strong> median, p25, p75 and mean of the iterations, read from the stored histogram. <strong>Per series and cell:</strong> the centre is the median of the replicate medians; the error bar is the distribution-free order-statistic confidence interval of that median, [x(l), x(k−l+1)] with the largest l such that P(Binomial(k, ½) ≤ l−1) ≤ 0.025 (omitted and marked when k &lt; 6); the light band is the median over replicates of each replicate's p25 and p75.")
         let coverage = coverageSummary()
-        lines.append("- **Coverage:** \(coverage.median) \(coverage.speed)")
-        lines.append("- **Effect:** `speed (×)` = baseline ÷ series, estimated by Hodges–Lehmann on the log replicate medians (exp of the median of all pairwise log differences) with the Mann–Whitney-based distribution-free confidence interval of those differences (exact when no replicate medians tie, approximate with ties). `change (%)` = (1 ÷ speed − 1) × 100.")
-        lines.append("- **Test:** exact two-sided Mann–Whitney U on the replicate medians (permutation distribution conditional on ties). **Multiplicity:** Benjamini–Hochberg across all \(testCount) wall-clock comparisons with a p-value in this report; `q` is the adjusted value and the threshold is q < \(Self.percent(ReportStatistics.significanceLevel)).")
-        lines.append("- **Verdict:** δ = \(Self.percent(ReportStatistics.defaultDelta)), symmetric on the log scale, so the equivalence zone is [1/\(String(format: "%g", 1 + ReportStatistics.defaultDelta)), \(String(format: "%g", 1 + ReportStatistics.defaultDelta))]. `faster`: q < \(Self.percent(ReportStatistics.significanceLevel)) and CI low > \(String(format: "%g", 1 + ReportStatistics.defaultDelta)); `slower`: q < \(Self.percent(ReportStatistics.significanceLevel)) and CI high < 1/\(String(format: "%g", 1 + ReportStatistics.defaultDelta)); `equivalent`: the CI lies inside the zone; otherwise `inconclusive`; `n/a (k replicates)` when either side has fewer than 2. Only wall clock is tested; all other metrics are descriptive.")
-        lines.append("- **Drift:** \(driftSummary())")
-        lines.append("- **Limits:** each ref is built once, so effects of code layout between builds are not sampled. Conclusions hold for the recorded host and toolchain only. The Benchmark plugin checks and relinks the build before each replicate, identically for all refs. With k = 5 per side the smallest attainable p (0.0079) cannot pass Benjamini–Hochberg over several hundred tests; k = 10 is the practical minimum for meaningful verdicts.")
-        lines.append("")
+        item("<strong>Coverage:</strong> \(coverage.median) \(coverage.speed)")
+        item("<strong>Effect:</strong> <code>speed (×)</code> = baseline ÷ series, estimated by Hodges–Lehmann on the log replicate medians (exp of the median of all pairwise log differences) with the Mann–Whitney-based distribution-free confidence interval of those differences (exact when no replicate medians tie, approximate with ties). <code>change (%)</code> = (1 ÷ speed − 1) × 100.")
+        item("<strong>Test:</strong> exact two-sided Mann–Whitney U on the replicate medians (permutation distribution conditional on ties). <strong>Multiplicity:</strong> Benjamini–Hochberg across all \(testCount) wall-clock comparisons with a p-value in this report; <code>q</code> is the adjusted value and the threshold is q &lt; \(Self.percent(ReportStatistics.significanceLevel)).")
+        item("<strong>Verdict:</strong> δ = \(Self.percent(ReportStatistics.defaultDelta)), symmetric on the log scale, so the equivalence zone is [1/\(String(format: "%g", 1 + ReportStatistics.defaultDelta)), \(String(format: "%g", 1 + ReportStatistics.defaultDelta))]. <code>faster</code>: q &lt; \(Self.percent(ReportStatistics.significanceLevel)) and CI low &gt; \(String(format: "%g", 1 + ReportStatistics.defaultDelta)); <code>slower</code>: q &lt; \(Self.percent(ReportStatistics.significanceLevel)) and CI high &lt; 1/\(String(format: "%g", 1 + ReportStatistics.defaultDelta)); <code>equivalent</code>: the CI lies inside the zone; otherwise <code>inconclusive</code>; <code>n/a (k replicates)</code> when either side has fewer than 2. Only wall clock is tested; all other metrics are descriptive.")
+        item("<strong>Drift:</strong> \(driftSummary())")
+        item("<strong>Limits:</strong> each ref is built once, so effects of code layout between builds are not sampled. Conclusions hold for the recorded host and toolchain only. The Benchmark plugin checks and relinks the build before each replicate, identically for all refs. With k = 5 per side the smallest attainable p (0.0079) cannot pass Benjamini–Hochberg over several hundred tests; k = 10 is the practical minimum for meaningful verdicts.")
     }
 
     private var testCount: Int {
@@ -625,20 +624,21 @@ struct ReportWriter {
         return (median, speed)
     }
 
-    private func driftSummary() -> String {
+    private func driftSummary() -> HTMLText {
         guard !model.drift.isEmpty else {
             return "not evaluated; it needs at least 3 replicates per series."
         }
         let flagged = model.drift.filter(\.isFlagged)
-        var text = "Kendall's τ between round and replicate median per series and wall-clock cell, exact p (\(model.drift.filter(\.isApproximate).count) of \(model.drift.count) use a normal approximation because of ties), Benjamini–Hochberg adjusted across \(model.drift.count) tests. \(flagged.count) cell\(flagged.count == 1 ? "" : "s") show\(flagged.count == 1 ? "s" : "") a significant trend (q < \(Self.percent(ReportStatistics.significanceLevel)))"
+        var text: HTMLText = "Kendall's τ between round and replicate median per series and wall-clock cell, exact p (\(model.drift.filter(\.isApproximate).count) of \(model.drift.count) use a normal approximation because of ties), Benjamini–Hochberg adjusted across \(model.drift.count) tests. \(flagged.count) cell\(flagged.count == 1 ? "" : "s") show\(flagged.count == 1 ? "s" : "") a significant trend (q &lt; \(Self.percent(ReportStatistics.significanceLevel)))"
         if flagged.isEmpty {
-            text += "."
+            text = "\(text)."
         } else {
-            let shown = flagged.prefix(20).map { item -> String in
+            let shown = flagged.prefix(20).map { item -> HTMLText in
                 let tau = item.tau.map { String(format: "τ=%+.2f", $0) } ?? "τ undefined"
-                return "`\(Self.codeText(model.series[item.series].label))` / `\(Self.codeText(item.key.identity))` @ \(ReportFormat.grouped(item.key.scale)) (\(tau), q=\(ReportFormat.qValue(item.q ?? 1)))"
+                return "<code>\(model.series[item.series].label)</code> / <code>\(item.key.identity)</code> @ \(ReportFormat.grouped(item.key.scale)) (\(tau), q=\(ReportFormat.qValue(item.q ?? 1)))"
             }
-            text += ": " + shown.joined(separator: "; ") + (flagged.count > 20 ? "; and \(flagged.count - 20) more." : ".")
+            let more = flagged.count > 20 ? "; and \(flagged.count - 20) more." : "."
+            text = "\(text): \(HTMLText.joined(shown, separator: "; "))\(more)"
         }
         return text
     }
@@ -647,7 +647,7 @@ struct ReportWriter {
 
     /// A small key/value style table; the cells are already HTML.
     private static func simpleTable(_ headers: [String], _ rows: [[String]]) -> [String] {
-        var out = ["<div class=\"table-wrap\">", "<table class=\"kv\">", "<thead>", "<tr>" + headers.map { "<th>\(ReportMarkup.escape($0))</th>" }.joined() + "</tr>", "</thead>", "<tbody>"]
+        var out = ["<div class=\"table-wrap\">", "<table class=\"kv\">", "<thead>", "<tr>" + headers.map { "<th>\(ReportHTML.escape($0))</th>" }.joined() + "</tr>", "</thead>", "<tbody>"]
         for row in rows {
             out.append("<tr>" + row.map { "<td>\($0)</td>" }.joined() + "</tr>")
         }
@@ -656,20 +656,16 @@ struct ReportWriter {
     }
 
     private static func codeHTML(_ value: String) -> String {
-        "<code>\(ReportMarkup.escape(code(value)))</code>"
+        ReportHTML.code(value).html
     }
 
     private mutating func provenance() {
-        lines.append("## Provenance")
-        lines.append("")
+        heading(2, "Provenance", id: "provenance")
         flush()
-        anchors = false
-        defer { anchors = true }
         for group in model.groups {
             let files = group.fileIndices.map { model.files[$0] }
             let first = files[0]
-            lines.append("### \(Self.text(group.label))")
-            lines.append("")
+            heading(3, "\(group.label)")
             func distinct(_ values: [String]) -> String { values.uniqued().joined(separator: "; ") }
             let rounds = files.compactMap { $0.run.replicate.map { "\($0.round)" } }
             let rows: [(String, String)] = [
@@ -690,13 +686,12 @@ struct ReportWriter {
                 ("Host", distinct(files.map { "\($0.host.osName) \($0.host.osVersion), \($0.host.architecture), \($0.host.cpuModel), \($0.host.coreCount) cores, \($0.host.physicalMemoryBytes) bytes memory" })),
                 ("Packages", distinct(files.map { $0.packages.map { "\($0.identity) \($0.version ?? "-") \($0.revision.prefix(12))" }.joined(separator: "; ") }))
             ]
-            emit(Self.simpleTable(["Field", "Value"], rows.map { [ReportMarkup.escape($0.0), ReportMarkup.escape($0.1)] }))
+            emit(Self.simpleTable(["Field", "Value"], rows.map { [ReportHTML.escape($0.0), ReportHTML.escape($0.1)] }))
         }
     }
 
     private mutating func pairing() {
-        lines.append("## Series and pairing")
-        lines.append("")
+        heading(2, "Series and pairing", id: "series-and-pairing")
         var rows: [[String]] = []
         for index in model.series.indices {
             let series = model.series[index]
@@ -704,18 +699,17 @@ struct ReportWriter {
             let target: String = if model.isBaseline(index) {
                 "baseline"
             } else if let paired = model.pairedSeries(for: index) {
-                ReportMarkup.escape(model.series[paired].label)
+                ReportHTML.escape(model.series[paired].label)
             } else {
                 "unavailable (the baseline has several backends and none is \(Self.codeHTML(series.backend)))"
             }
-            rows.append([ReportMarkup.escape(series.label), "\(group.fileIndices.count) of \(group.expectedReplicates)", target])
+            rows.append([ReportHTML.escape(series.label), "\(group.fileIndices.count) of \(group.expectedReplicates)", target])
         }
         emit(Self.simpleTable(["Series", "Replicates", "Compared with"], rows))
     }
 
     private mutating func parityNotes() {
-        lines.append("## Parity notes")
-        lines.append("")
+        heading(2, "Parity notes", id: "parity-notes")
         var parity: [String: [String: [String]]] = [:]
         var unsupported: [String: [String: [String]]] = [:]
         for group in model.groups {
@@ -731,44 +725,18 @@ struct ReportWriter {
         var parityRows: [[String]] = []
         for identity in parity.keys.sorted() {
             for text in parity[identity]!.keys.sorted() {
-                parityRows.append([Self.codeHTML(identity), ReportMarkup.escape(text), ReportMarkup.escape(parity[identity]![text]!.joined(separator: ", "))])
+                parityRows.append([Self.codeHTML(identity), ReportHTML.escape(text), ReportHTML.escape(parity[identity]![text]!.joined(separator: ", "))])
             }
         }
         emit(Self.simpleTable(["Workload", "Parity", "Refs"], parityRows))
-        lines.append("## Unsupported workloads")
-        lines.append("")
-        lines.append("Unsupported workloads are not measured and not approximated.")
-        lines.append("")
+        heading(2, "Unsupported workloads", id: "unsupported-workloads")
+        paragraph("Unsupported workloads are not measured and not approximated.")
         var unsupportedRows: [[String]] = []
         for identity in unsupported.keys.sorted() {
             for reason in unsupported[identity]!.keys.sorted() {
-                unsupportedRows.append([Self.codeHTML(identity), ReportMarkup.escape(reason), ReportMarkup.escape(unsupported[identity]![reason]!.joined(separator: ", "))])
+                unsupportedRows.append([Self.codeHTML(identity), ReportHTML.escape(reason), ReportHTML.escape(unsupported[identity]![reason]!.joined(separator: ", "))])
             }
         }
         emit(Self.simpleTable(["Workload", "Reason", "Refs"], unsupportedRows))
-    }
-
-    // MARK: Text
-
-    /// Prose text for the Markdown subset: `&`, `<`, `>` as entities (`ReportMarkup` escapes exactly once), `\`, `*`, `[` and `]`
-    /// backslash-escaped so data never turns into emphasis or links, one line.
-    static func text(_ value: String) -> String {
-        var escaped = value.replacingOccurrences(of: "\\", with: "\\\\")
-        for mark in ["*", "[", "]"] { escaped = escaped.replacingOccurrences(of: mark, with: "\\" + mark) }
-        return entities(escaped).replacingOccurrences(of: "\n", with: " ")
-    }
-
-    private static func entities(_ value: String) -> String {
-        value.replacingOccurrences(of: "&", with: "&amp;").replacingOccurrences(of: "<", with: "&lt;").replacingOccurrences(of: ">", with: "&gt;")
-    }
-
-    /// The text of a code span of the Markdown subset: no backticks, entities written so that it displays verbatim.
-    static func codeText(_ value: String) -> String {
-        text(code(value))
-    }
-
-    /// Inside a code span: no backticks.
-    static func code(_ value: String) -> String {
-        value.replacingOccurrences(of: "`", with: "'").replacingOccurrences(of: "\n", with: " ")
     }
 }

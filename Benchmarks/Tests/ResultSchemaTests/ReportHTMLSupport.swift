@@ -1,7 +1,7 @@
 import Foundation
 @testable import ECSBenchmarkResultSchema
 
-/// Test-only view of the report HTML: the prose becomes the Markdown-like text the report's sources are written in (headings as
+/// Test-only view of the report HTML: the prose becomes Markdown-like text (headings as
 /// `#`, bullets as `- `, `code`, **bold**), key/value tables become pipe rows, and workload sections become pages keyed like the old
 /// files. Tables stay HTML. This keeps content assertions independent of the markup.
 enum ReportHTMLSupport {

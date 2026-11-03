@@ -63,8 +63,6 @@ struct ReportTests {
     @Test
     func reportDirectoryHoldsOneSelfContainedHTMLFile() throws {
         let rendered = try BenchmarkReport.render(all)
-        #expect(rendered.files.map(\.path) == ["BenchmarkReport.html"])
-        #expect(rendered.files[0].contents == rendered.html)
         // Every workload has a section, a table of contents entry and a plot per kind.
         for workload in [ReportFixtures.w1, ReportFixtures.w2, ReportFixtures.w3] {
             #expect(rendered.html.contains(#"<section class="workload" id="w-\#(workload)">"#))

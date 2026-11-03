@@ -12,7 +12,7 @@ struct ReportHTMLTests {
     @Test
     func outputIsOneFileNamedBenchmarkReportHTML() throws {
         let rendered = try render()
-        #expect(rendered.files.count == 1 && rendered.files[0].path == "BenchmarkReport.html" && BenchmarkReport.fileName == "BenchmarkReport.html")
+        #expect(BenchmarkReport.fileName == "BenchmarkReport.html")
         #expect(rendered.html.hasPrefix("<!doctype html>\n<html lang=\"en\">"))
         #expect(rendered.html.contains("<meta charset=\"utf-8\">") && rendered.html.contains("name=\"viewport\""))
     }

@@ -16,18 +16,9 @@ public struct ReportOptions: Sendable {
     }
 }
 
-/// One file of the report directory.
-public struct RenderedFile: Equatable {
-    /// Relative to the report directory, with forward slashes.
-    public let path: String
-    public let contents: String
-}
-
 public struct RenderedReport {
     /// The self-contained report page (inline style, script and data).
     public let html: String
-    /// Every file of the report directory: only `BenchmarkReport.html`.
-    public let files: [RenderedFile]
     /// Also printed in the report's own warnings section.
     public let warnings: [String]
 }
@@ -68,7 +59,7 @@ public enum BenchmarkReport {
         let model = try ReportModel(files: files, baseline: options.baseline)
         var writer = ReportWriter(model: model, title: options.title)
         let html = try writer.render()
-        return RenderedReport(html: html, files: [RenderedFile(path: BenchmarkReport.fileName, contents: html)], warnings: model.warnings)
+        return RenderedReport(html: html, warnings: model.warnings)
     }
 }
 

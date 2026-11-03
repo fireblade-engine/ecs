@@ -5,7 +5,6 @@
 import Foundation
 
 struct ReportPlotPayload: Encodable {
-    var title: String
     /// Label of the baseline ref.
     var baseline: String
     /// Half-width of the equivalence zone (fraction).

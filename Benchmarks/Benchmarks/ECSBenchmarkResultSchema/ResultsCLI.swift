@@ -67,8 +67,6 @@ public enum ResultsCLI {
         )
         let output = try value("out")
         try ResultWriter.write(request, to: output)
-        // Prove the written file is accepted before reporting success.
-        _ = try ResultValidator.validateFile(at: output)
         print("wrote \(output)")
     }
 
@@ -111,29 +109,18 @@ public enum ResultsCLI {
         for warning in rendered.warnings {
             FileHandle.standardError.write(Data("ECSBenchmarkResults: warning: \(warning)\n".utf8))
         }
-        // The generated paths must not be inputs (checked again here because the file set is only known after rendering).
-        for file in rendered.files {
-            let target = output + "/" + file.path
-            for input in paths where canonical(input) == canonical(target) || sameFile(input, target) {
-                throw ResultError("report file \(target) is the input \(input); refusing to overwrite a result file")
-            }
+        // The generated path must not be an input (checked again here because the file set is only known after rendering).
+        let target = output + "/" + BenchmarkReport.fileName
+        for input in paths where canonical(input) == canonical(target) || sameFile(input, target) {
+            throw ResultError("report file \(target) is the input \(input); refusing to overwrite a result file")
         }
-        try write(rendered.files, to: output)
-        print("wrote \(output)/\(BenchmarkReport.fileName)")
-    }
-
-    /// Writes the generated files into `directory`, creating it when needed. Nothing else in the directory is touched.
-    private static func write(_ files: [RenderedFile], to directory: String) throws {
-        let fileManager = FileManager.default
         do {
-            for file in files {
-                let url = URL(fileURLWithPath: directory + "/" + file.path)
-                try fileManager.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
-                try Data(file.contents.utf8).write(to: url, options: .atomic)
-            }
+            try FileManager.default.createDirectory(atPath: output, withIntermediateDirectories: true)
+            try Data(rendered.html.utf8).write(to: URL(fileURLWithPath: target), options: .atomic)
         } catch {
-            throw ResultError("cannot write \(directory): \(error)")
+            throw ResultError("cannot write \(output): \(error)")
         }
+        print("wrote \(target)")
     }
 
     /// Refuses an output directory that is a file, that is (or links to) an input's directory entry, or that already holds

@@ -61,18 +61,6 @@ enum ReportGlossary {
         ]
     }
 
-    /// True when `label` (a table column header, legend term or verdict cell) is defined by an entry. Unit suffixes in parentheses
-    /// ("median (ms)") are ignored; the whole label and the label without the suffix are both tried.
-    static func covers(_ label: String) -> Bool {
-        let all = Set(entries.flatMap(\.names).map { $0.lowercased() })
-        let lowered = label.lowercased()
-        if all.contains(lowered) { return true }
-        if let open = lowered.range(of: " (", options: .backwards), lowered.hasSuffix(")"), all.contains(String(lowered[..<open.lowerBound])) { return true }
-        if lowered.range(of: #"^p\d+$"#, options: .regularExpression) != nil { return all.contains("p0") }
-        if lowered.hasPrefix("n/a (") { return all.contains("n/a") }
-        return false
-    }
-
     static func lines() -> [String] {
         var lines = ["## Glossary", ""]
         lines.append("Every abbreviation and term of this report, in plain language. Column units are stated in each table header.")

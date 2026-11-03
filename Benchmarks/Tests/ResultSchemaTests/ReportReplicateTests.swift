@@ -84,8 +84,8 @@ struct ReportReplicateTests {
     func replicateOrderOfInputsDoesNotChangeTheReport() throws {
         let files = verdictCases
         let reversed = Array(files[0 ..< 10].reversed()) + Array(files[10...].reversed())
-        let a = try BenchmarkReport.render(files, options: ReportOptions(baseline: "1.4.3")).files
-        let b = try BenchmarkReport.render(reversed, options: ReportOptions(baseline: "1.4.3")).files
+        let a = try BenchmarkReport.render(files, options: ReportOptions(baseline: "1.4.3")).html
+        let b = try BenchmarkReport.render(reversed, options: ReportOptions(baseline: "1.4.3")).html
         #expect(a == b)
     }
 
@@ -286,10 +286,10 @@ struct ReportReplicateTests {
 
     @Test
     func replicatedOutputIsByteIdentical() throws {
-        let first = try BenchmarkReport.render(verdictCases, options: ReportOptions(baseline: "1.4.3")).files
-        let second = try BenchmarkReport.render(verdictCases, options: ReportOptions(baseline: "1.4.3")).files
+        let first = try BenchmarkReport.render(verdictCases, options: ReportOptions(baseline: "1.4.3")).html
+        let second = try BenchmarkReport.render(verdictCases, options: ReportOptions(baseline: "1.4.3")).html
         #expect(first == second)
-        #expect(first.map(\.contents).allSatisfy { !$0.contains("\r") && $0.hasSuffix("\n") })
+        #expect(!first.contains("\r") && first.hasSuffix("\n"))
     }
 }
 

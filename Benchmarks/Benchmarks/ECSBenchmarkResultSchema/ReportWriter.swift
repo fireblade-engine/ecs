@@ -47,7 +47,7 @@ struct ReportWriter {
         parityNotes()
         flush()
 
-        let payload = ReportPlotPayload(title: title, baseline: model.groups[model.baselineGroup].label, delta: ReportStatistics.defaultDelta, workloads: identities.map { plotWorkload($0, ids[$0]!) })
+        let payload = ReportPlotPayload(baseline: model.groups[model.baselineGroup].label, delta: ReportStatistics.defaultDelta, workloads: identities.map { plotWorkload($0, ids[$0]!) })
         return try document(identities, ids, payload)
     }
 

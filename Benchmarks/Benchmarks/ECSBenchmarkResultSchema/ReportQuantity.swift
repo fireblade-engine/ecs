@@ -146,14 +146,6 @@ enum ReportFormat {
     /// value; a result file recorded with more digits would need this constant raised (the schema does not store it).
     static let significantDigits = 3
 
-    /// A relative half-width (fraction) as percent text with 2 significant digits and no thousands separators: 0.00034 -> "0.034", 0.25 -> "25".
-    static func relativePercent(_ fraction: Double) -> String {
-        let percent = abs(fraction) * 100
-        guard percent.isFinite, percent > 0 else { return "0" }
-        let decimals = min(9, max(0, 1 - Int(floor(log10(percent) + 1e-12))))
-        return String(format: "%.\(decimals)f", percent)
-    }
-
     /// Decimals that show the smallest nonzero magnitude of a column (in the column's unit) with `significantDigits`.
     /// Larger values of the column get fewer decimals in `text`, so none exceeds the digit budget. `cap` limits the decimals
     /// where the inputs of a derived value were measured more coarsely.

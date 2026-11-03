@@ -38,7 +38,7 @@ struct ReportWriter {
         header()
         warnings()
         summary(identities, ids)
-        lines += ReportGuide(model: model).lines()
+        lines += ReportGuide.lines()
         workloads(identities, ids)
         lines += ReportGlossary.lines()
         methods()

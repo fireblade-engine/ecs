@@ -23,7 +23,7 @@ enum ReportStyle {
       }
     }
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
     body {
       margin: 0; background: var(--bg); color: var(--fg);
       font: 15px/1.55 "Segoe UI", Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -74,7 +74,7 @@ enum ReportStyle {
     .sym { display: inline-block; width: 1.1em; text-align: center; }
     tr.hl td { box-shadow: inset 0 2px 0 var(--accent), inset 0 -2px 0 var(--accent); }
     tr.hl td.hl-s { box-shadow: inset 0 0 0 2px var(--accent); font-weight: 700; }
-    section.workload { scroll-margin-top: 60px; }
+    section.workload, h2[id], h3[id] { scroll-margin-top: 60px; }
     details { margin: .8rem 0; }
     summary { cursor: pointer; font-weight: 600; }
     .plots { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap: 16px; margin: 12px 0; }

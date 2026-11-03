@@ -39,14 +39,13 @@ cat > "$stub" <<'STUB'
 set -euo pipefail
 ref=$1; shift
 echo "$ref $*" >> "$STUB_LOG"
-repo="" suite="" out="" result="" requested="" batch="" build=0 reuse=0 rep="" reps="" round="" position="" seed=""
+repo="" suite="" out="" result="" requested="" batch="" build=0 reuse=0 rep="" reps="" position="" seed=""
 while (($#)); do
     case $1 in
         --build-only) build=1 ;;
         --reuse) reuse=1 ;;
         --replicate) rep=$2 ;;
         --replicates) reps=$2 ;;
-        --round) round=$2 ;;
         --position) position=$2 ;;
         --seed) seed=$2 ;;
         --repo) repo=$2 ;;
@@ -66,7 +65,7 @@ if ((build)); then
 fi
 if ((reuse)); then
     [[ -d $out ]] || { echo "stub: --reuse of an unprepared snapshot" >&2; exit 8; }
-    [[ -z ${STUB_FAIL_AT:-} || ${STUB_FAIL_AT} != "$requested:$round" ]] || exit 7
+    [[ -z ${STUB_FAIL_AT:-} || ${STUB_FAIL_AT} != "$requested:$rep" ]] || exit 7
 else
     mkdir "$out"
 fi
@@ -78,9 +77,9 @@ swift_version="swift 6"
 sha=$(git -C "$repo" rev-parse "$ref^{commit}")
 [[ ${STUB_WRONG_SHA_REF:-} != "$requested" ]] || sha=$(printf 'e%.0s' {1..40})
 replicate=null
-[[ -z $rep ]] || replicate=$(jq -n --argjson i "$rep" --argjson c "$reps" --argjson r "$round" --argjson p "$position" --argjson s "$seed" \
-    '{index: $i, count: $c, round: $r, position: $p, seed: $s}')
-[[ ${STUB_BAD_REPLICATE_REF:-} != "$requested" ]] || replicate=$(jq -n '{index: 1, count: 1, round: 1, position: 1, seed: 0}')
+[[ -z $rep ]] || replicate=$(jq -n --argjson i "$rep" --argjson c "$reps" --argjson p "$position" --argjson s "$seed" \
+    '{index: $i, count: $c, position: $p, seed: $s}')
+[[ ${STUB_BAD_REPLICATE_REF:-} != "$requested" ]] || replicate=$(jq -n '{index: 1, count: 1, position: 1, seed: 0}')
 jq -n --argjson rp "$replicate" --arg r "$sha" --arg s "$suite" --arg h "$hash" --arg b "$batch" --arg v "$swift_version" --arg q "$requested" \
     '{run: ({batchId: $b} + (if $rp == null then {} else {replicate: $rp} end)), ref: {requested: $q, sha: $r}, suite: {sha: $s, configurationHash: $h}, toolchain: {swiftVersion: $v},
       host: {cpuModel: "cpu", physicalMemoryBytes: 1}, benchmarks: [{identity: "w", scale: 16}]}' > "$result"
@@ -233,7 +232,7 @@ GOLDEN_ORDERS=' t-two t-three t-one| t-three t-two t-one| t-three t-two t-one|'
 run_lines() { grep -- '--reuse' "$STUB_LOG" || true; }
 build_lines() { grep -- '--build-only' "$STUB_LOG" || true; }
 orders() { # prints one line per round: refs in execution order (by requested name)
-    run_lines | sed -E 's/.*--requested ([^ ]+) .*--round ([0-9]+) .*/\2 \1/' | sort -n -s -k1,1 | awk '{a[$1]=a[$1] " " $2} END {for (r = 1; r in a; r++) print a[r]}'
+    run_lines | sed -E 's/.*--requested ([^ ]+) .*--replicate ([0-9]+) .*/\2 \1/' | sort -n -s -k1,1 | awk '{a[$1]=a[$1] " " $2} END {for (r = 1; r in a; r++) print a[r]}'
 }
 
 for bad in '--replicates 0' '--replicates x' '--replicates 10000' '--seed -1' '--seed x' '--seed 4294967296'; do
@@ -263,10 +262,10 @@ assert_eq "$(grep -c '^result: ' <<< "$stdout")" 12 'stdout lists every replicat
 assert_eq "$(grep '^result: ' <<< "$stdout")" "$(grep '^result: ' <<< "$stdout" | LC_ALL=C sort)" 'result lines are sorted by ref, then replicate'
 for n in one two three; do
     f="$out_rep/t-$n-$(sha_of "t-$n" | cut -c1-12).r03.json"
-    assert_eq "$(jq -c '.run.replicate | [.index, .count, .round, .seed]' "$f")" '[3,4,3,42]' "replicate fields of t-$n r03"
+    assert_eq "$(jq -c '.run.replicate | [.index, .count, .seed]' "$f")" '[3,4,42]' "replicate fields of t-$n r03"
 done
 assert_eq "$(jq -r '.run.batchId' "$out_rep"/*.json | sort -u | wc -l | tr -d ' ')" 1 'all replicates share one batch id'
-assert_eq "$(jq -r '"\(.run.replicate.round) \(.run.replicate.position)"' "$out_rep"/*.json | sort | uniq | wc -l | tr -d ' ')" 12 'every (round, position) slot is used once for 3 refs and 4 rounds'
+assert_eq "$(jq -r '"\(.run.replicate.index) \(.run.replicate.position)"' "$out_rep"/*.json | sort | uniq | wc -l | tr -d ' ')" 12 'every (round, position) slot is used once for 3 refs and 4 rounds'
 grep -q 'seed 42' "$test_root/rep.err" || fail 'the seed must be reported'
 # Interleaved: no ref runs a second time before every ref ran in the round, and builds precede all runs.
 first_run=$(grep -n -- '--reuse' "$STUB_LOG" | head -1 | cut -d: -f1)
@@ -277,7 +276,7 @@ while read -r line; do
     assert_eq "$(tr ' ' '\n' <<< "$line" | sort | tr '\n' ' ')" 't-one t-three t-two ' "round '$line' must run every ref exactly once"
 done <<< "$per_round"
 # Round order in the log is contiguous: rounds are not mixed.
-assert_eq "$(run_lines | sed -E 's/.*--round ([0-9]+) .*/\1/' | tr '\n' ' ')" '1 1 1 2 2 2 3 3 3 4 4 4 ' 'rounds run one after another'
+assert_eq "$(run_lines | sed -E 's/.*--replicate ([0-9]+) .*/\1/' | tr '\n' ' ')" '1 1 1 2 2 2 3 3 3 4 4 4 ' 'rounds run one after another'
 # The recorded position matches the execution order within the round.
 assert_eq "$(run_lines | sed -E 's/.*--position ([0-9]+) .*/\1/' | tr '\n' ' ')" '1 2 3 1 2 3 1 2 3 1 2 3 ' 'positions count within each round'
 
@@ -328,7 +327,7 @@ grep -q 't-two failed in round 3' "$test_root/mid.err" || fail 'the failing ref 
 done_round3=$(ls "$out_mid" | grep -c '\.r03\.json' || true)
 assert_eq "$(ls "$out_mid" | grep -c -e '\.r01\.json' -e '\.r02\.json')" 6 'completed rounds are kept'
 assert_eq "$(ls "$out_mid" | grep -c '\.r04\.json' || true)" 0 'later rounds never start'
-assert_eq "$(run_lines | grep -c -- '--round 3 ')" $((done_round3 + 1)) 'the run stops at the failing replicate'
+assert_eq "$(run_lines | grep -c -- '--replicate 3 ')" $((done_round3 + 1)) 'the run stops at the failing replicate'
 assert_eq "$(ls -A "$out_mid" | grep -c partial || true)" 0 'no staged file may remain'
 [[ ! -e $out_mid/t-two-$(sha_of t-two | cut -c1-12).r03.json ]] || fail 'the failed replicate has no result'
 

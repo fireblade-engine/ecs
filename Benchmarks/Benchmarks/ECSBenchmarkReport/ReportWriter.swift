@@ -669,7 +669,6 @@ struct ReportWriter {
             let first = files[0]
             heading(3, "\(group.label)")
             func distinct(_ values: [String]) -> String { values.uniqued().joined(separator: "; ") }
-            let rounds = files.compactMap { $0.run.replicate.map { "\($0.round)" } }
             let rows: [(String, String)] = [
                 ("Requested ref", first.ref.requested),
                 ("Ref SHA", first.ref.sha),
@@ -679,7 +678,6 @@ struct ReportWriter {
                 ("Suite target", first.suite.target),
                 ("Configuration hash", first.suite.configurationHash),
                 ("Replicates", "\(files.count) of \(group.expectedReplicates) (indices \(group.replicateIndices.map(String.init).joined(separator: ", ")))"),
-                ("Rounds", rounds.isEmpty ? "none recorded" : rounds.joined(separator: ", ")),
                 ("Seed", distinct(files.compactMap { $0.run.replicate.map { "\($0.seed)" } }).isEmpty ? "none recorded" : distinct(files.compactMap { $0.run.replicate.map { "\($0.seed)" } })),
                 ("Batch", distinct(files.map { $0.run.batchId ?? "none recorded" })),
                 ("Runs", "\(files.count) (\(files.map(\.run.startedAt).min()!) to \(files.map(\.run.finishedAt).max()!))"),

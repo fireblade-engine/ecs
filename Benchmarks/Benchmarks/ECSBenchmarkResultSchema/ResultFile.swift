@@ -7,7 +7,7 @@ import Foundation
 
 public enum ResultSchema {
     public static let name = "fireblade-ecs-benchmark-result"
-    public static let version = 1
+    public static let version = 2
     public static let buildMode = "release"
 
     /// The only configured metric the package may legitimately leave out of a benchmark: Benchmark 1.38.1 computes throughput as
@@ -44,7 +44,7 @@ public struct ResultRun: Codable, Equatable, Sendable {
     public var startedAt: String
     public var finishedAt: String
     /// One id per runner invocation (`Scripts/benchmark-run-refs.sh`), shared by all results of that invocation. Optional and
-    /// additive: files without it still decode and validate, so the schema version stays 1.
+    /// additive: files without it still decode and validate, so the schema version stays 2.
     public var batchId: String?
     /// Position of this result in a replicated run (`Scripts/benchmark-run-refs.sh --replicates`). Optional and additive: a file
     /// without it counts as replicate 1 of 1. `startedAt`/`finishedAt` above are the replicate's own start and end.
@@ -56,17 +56,14 @@ public struct ResultReplicate: Codable, Equatable, Sendable {
     public var index: Int
     /// Number of replicates requested per ref.
     public var count: Int
-    /// 1-based round in which the replicate ran (each round runs every ref once).
-    public var round: Int
-    /// 1-based position of the ref within its round's shuffled order.
+    /// 1-based position of the ref within the shuffled order of its round (replicate `index` is also the round: each round runs every ref once).
     public var position: Int
     /// Seed of the deterministic per-round shuffle.
     public var seed: UInt64
 
-    public init(index: Int, count: Int, round: Int, position: Int, seed: UInt64) {
+    public init(index: Int, count: Int, position: Int, seed: UInt64) {
         self.index = index
         self.count = count
-        self.round = round
         self.position = position
         self.seed = seed
     }
@@ -109,7 +106,7 @@ public struct ResultBenchmark: Codable, Equatable, Sendable {
     public var backend: String
     public var scale: Int
     /// Configured metrics the package did not record for this benchmark, each with the reason. Optional and additive: absent
-    /// means every configured metric was recorded, so the schema version stays 1. Only `ResultSchema.optionalMetric` is allowed.
+    /// means every configured metric was recorded, so the schema version stays 2. Only `ResultSchema.optionalMetric` is allowed.
     public var unrecordedMetrics: [UnrecordedMetric]?
 
     public init(name: String, identity: String, backend: String, scale: Int, unrecordedMetrics: [UnrecordedMetric]? = nil) {

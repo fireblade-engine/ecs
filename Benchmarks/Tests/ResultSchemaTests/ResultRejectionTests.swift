@@ -46,7 +46,7 @@ struct ResultRejectionTests {
         expectRejected("unsupported schema 'something-else'") { _ = try ResultValidator.decode(data) }
     }
 
-    @Test(arguments: [0, 2, 99])
+    @Test(arguments: [0, 1, 3, 99])
     func rejectsWrongSchemaVersion(version: Int) throws {
         let data = try mutated { $0["schemaVersion"] = version }
         expectRejected("unsupported schema version \(version)") { _ = try ResultValidator.decode(data) }
@@ -79,15 +79,15 @@ struct ResultRejectionTests {
         }
     }
 
-    private func replicate(index: Int = 2, count: Int = 5, round: Int = 2, position: Int = 1, seed: Int = 7) -> [String: Any] {
-        ["index": index, "count": count, "round": round, "position": position, "seed": seed]
+    private func replicate(index: Int = 2, count: Int = 5, position: Int = 1, seed: Int = 7) -> [String: Any] {
+        ["index": index, "count": count, "position": position, "seed": seed]
     }
 
     @Test
     func acceptsConsistentReplicateFields() throws {
         let file = try ResultValidator.decode(replicateData(replicate()))
-        #expect(file.run.replicate == ResultReplicate(index: 2, count: 5, round: 2, position: 1, seed: 7))
-        _ = try ResultValidator.decode(replicateData(replicate(index: 1, count: 1, round: 1)))
+        #expect(file.run.replicate == ResultReplicate(index: 2, count: 5, position: 1, seed: 7))
+        _ = try ResultValidator.decode(replicateData(replicate(index: 1, count: 1)))
     }
 
     @Test
@@ -95,7 +95,6 @@ struct ResultRejectionTests {
         expectRejected("replicate index 6 is outside 1...5") { _ = try ResultValidator.decode(replicateData(replicate(index: 6))) }
         expectRejected("replicate index 0 is outside 1...5") { _ = try ResultValidator.decode(replicateData(replicate(index: 0))) }
         expectRejected("replicate count must be at least 1") { _ = try ResultValidator.decode(replicateData(replicate(count: 0))) }
-        expectRejected("replicate round 6 is outside 1...5") { _ = try ResultValidator.decode(replicateData(replicate(round: 6))) }
         expectRejected("replicate position must be at least 1") { _ = try ResultValidator.decode(replicateData(replicate(position: 0))) }
         expectRejected("does not match the schema") { _ = try ResultValidator.decode(replicateData(replicate(seed: -1))) }
         expectRejected("does not match the schema") { _ = try ResultValidator.decode(replicateData(["index": 1, "count": 1])) }

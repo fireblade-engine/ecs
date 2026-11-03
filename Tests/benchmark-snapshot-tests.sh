@@ -203,7 +203,6 @@ echo "tool $1" >> "$STUB_LOG"
 case $1 in
     host-check) [[ -z ${STUB_HOST_FAIL:-} ]] || { echo 'cannot determine host facts' >&2; exit 1; }; exit 0 ;;
     filter-check) grep -Eq "^($3)\$" || { echo "the benchmark filter '$3' matches none of the listed benchmarks" >&2; exit 1; }; exit 0 ;;
-    validate) [[ -z ${STUB_VALIDATE_FAIL:-} ]] || exit 1; exit 0 ;;
     write) ;;
     *) exit 2 ;;
 esac
@@ -261,8 +260,8 @@ grep -q 'nothing was measured' "$test_root/hostfail.err" || fail 'a host failure
 grep -q 'baseline update' "$STUB_LOG" && fail 'no benchmark may run when the host facts are unavailable'
 [[ ! -e $test_root/hostfail.json ]] || fail 'no result for a failed preflight'
 
-# A finished measurement survives a failing writer or validator: the native baseline is kept under <result dir>/.failed.
-for failure in STUB_WRITE_FAIL STUB_VALIDATE_FAIL; do
+# A finished measurement survives a failing writer (which validates the file before it writes it): the native baseline is kept under <result dir>/.failed.
+for failure in STUB_WRITE_FAIL; do
     keep="$test_root/keep-$failure"
     mkdir "$keep"
     if env "$failure=1" PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/keep-out-$failure" --result "$keep/r.json" > /dev/null 2> "$keep.err"; then
@@ -312,7 +311,7 @@ grep -q 'ECSBenchmarkResults' "$STUB_LOG" && fail 'a plain run must not build th
 # --reuse runs an already built snapshot again: no extraction, resolve or compat build, but the replicate fields reach the tool.
 : > "$STUB_LOG"
 PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/full" --filter 'f.*' --reuse --result "$test_root/reuse-result.json" \
-    --replicate 2 --replicates 3 --round 2 --position 1 --seed 77 > /dev/null || fail '--reuse must succeed on a prepared snapshot'
+    --replicate 2 --replicates 3 --position 1 --seed 77 > /dev/null || fail '--reuse must succeed on a prepared snapshot'
 [[ -f $test_root/reuse-result.json ]] || fail '--reuse must write the result file'
 grep -q 'product ECSCompatBenchmark' "$STUB_LOG" && fail '--reuse must not rebuild the suite'
 grep -q 'build -c release --product' "$STUB_LOG" && fail '--reuse must not compile anything'
@@ -320,7 +319,7 @@ grep -q 'benchmark list' "$STUB_LOG" && fail '--reuse must not list benchmarks a
 [[ $(grep -c 'benchmark baseline update' "$STUB_LOG") == 1 ]] || fail '--reuse must run the benchmarks once'
 grep -q 'tool host-check' "$STUB_LOG" || fail '--reuse must check the host before measuring'
 args="$test_root/stub.log.results"
-for pair in "--replicate 2" "--replicates 3" "--round 2" "--position 1" "--seed 77"; do
+for pair in "--replicate 2" "--replicates 3" "--position 1" "--seed 77"; do
     assert_eq "$(grep -A1 -x -- "${pair% *}" "$args" | tail -1)" "${pair#* }" "${pair% *} must be passed to the result tool"
 done
 # --build-only builds everything a later --reuse needs (suite, result tool, plugin listing) and measures nothing; --reuse fails

@@ -15,7 +15,7 @@
 # Replicates: with --replicates K > 1 every ref is prepared and built ONCE (snapshot --build-only), then K interleaved
 # rounds run; each round runs every ref once, in an order shuffled deterministically from (seed, round). Each run is a fresh
 # process of the prepared snapshot (snapshot --reuse), which re-checks provenance and pins and the host before measuring,
-# and writes its own self-contained result <ref>-<sha12>.r<NN>.json carrying the replicate, round, position and seed. The seed
+# and writes its own self-contained result <ref>-<sha12>.r<NN>.json carrying the replicate (index = round), position and seed. The seed
 # is random unless --seed is given and is always printed. With K = 1 (the default) nothing changes: the refs run once each in
 # the given order (no shuffle), the snapshot is built and run in one call, files are <ref>-<sha12>.json without replicate
 # fields (a file without them counts as replicate 1 of 1). The first failure ends the run; finished results are kept.
@@ -228,7 +228,7 @@ for ((round = 1; round <= replicates && !failed; round++)); do
         sha=${shas[i]}
         if ((replicates > 1)); then
             name="${names[i]}.r$(printf '%0*d' "$width" "$round").json"
-            extra=(--reuse --replicate "$round" --replicates "$replicates" --round "$round" --position "$position" --seed "$seed")
+            extra=(--reuse --replicate "$round" --replicates "$replicates" --position "$position" --seed "$seed")
             printf 'benchmark-run-refs: round %d/%d position %d/%d: %s (%s)\n' "$round" "$replicates" "$position" "${#refs[@]}" "$ref" "${sha:0:12}" >&2
         else
             name="${names[i]}.json"
@@ -255,8 +255,8 @@ for ((round = 1; round <= replicates && !failed; round++)); do
             problem="result records ref sha $(jq -r '.ref.sha' "$staged"), expected $sha"
         elif [[ $(jq -r '.suite.sha' "$staged") != "$suite_sha" ]]; then
             problem="result records suite sha $(jq -r '.suite.sha' "$staged"), expected $suite_sha"
-        elif ((replicates > 1)) && [[ $(jq -c '.run.replicate // null | [.index, .count, .round, .position, .seed]' "$staged") != "[$round,$replicates,$round,$position,$seed]" ]]; then
-            problem="result records replicate fields $(jq -c '.run.replicate' "$staged"), expected index $round of $replicates, round $round, position $position, seed $seed"
+        elif ((replicates > 1)) && [[ $(jq -c '.run.replicate // null | [.index, .count, .position, .seed]' "$staged") != "[$round,$replicates,$position,$seed]" ]]; then
+            problem="result records replicate fields $(jq -c '.run.replicate' "$staged"), expected index $round of $replicates, position $position, seed $seed"
         else
             hash=$(jq -r '.suite.configurationHash' "$staged")
             if [[ -z $config_hash ]]; then

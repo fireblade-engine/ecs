@@ -57,9 +57,6 @@ public enum ResultValidator {
             guard (1 ... replicate.count).contains(replicate.index) else {
                 throw ResultError("replicate index \(replicate.index) is outside 1...\(replicate.count)")
             }
-            guard (1 ... replicate.count).contains(replicate.round) else {
-                throw ResultError("replicate round \(replicate.round) is outside 1...\(replicate.count)")
-            }
             guard replicate.position >= 1 else { throw ResultError("replicate position must be at least 1, got \(replicate.position)") }
         }
         let started = try requireDate("run start", file.run.startedAt)

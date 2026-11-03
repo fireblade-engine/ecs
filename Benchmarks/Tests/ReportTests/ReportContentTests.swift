@@ -45,7 +45,7 @@ struct ReportContentTests {
             (1 ... 3).map { index in
                 F.file(
                     requested: requested, shaByte: shaByte, model: model, backends: ["default"],
-                    replicate: ResultReplicate(index: index, count: 3, round: index, position: 1, seed: 7),
+                    replicate: ResultReplicate(index: index, count: 3, position: 1, seed: 7),
                     entries: [
                         F.Entry(identity: F.w1, backend: "default", scale: 16, results: [F.result(.wallClock, F.distribution(median: factor * (1000 + index)))]),
                         F.Entry(identity: F.w2, backend: "default", scale: 0, results: [F.result(.wallClock, F.distribution(median: factor * (100 + index)))])

@@ -11,9 +11,8 @@ struct ReportCell {
     let prefersLarger: Bool
     /// Replicates with at least one measurement.
     let replicates: Int
-    /// Replicate medians ordered by replicate index, and the round each ran in.
+    /// Replicate medians ordered by replicate index (which is also the round each ran in).
     let replicateMedians: [Double]
-    let replicateRounds: [Int]
     /// Median of the replicate medians; the centre of the series.
     let median: Double
     /// Distribution-free CI of the median over replicates; nil with too few replicates for 95%.
@@ -37,7 +36,6 @@ struct ReportCell {
         prefersLarger = first.sample.prefersLarger
         replicates = usable.count
         replicateMedians = usable.map(\.sample.median)
-        replicateRounds = usable.map(\.round)
         median = centre(replicateMedians)
         interval = (try? ReportStatistics.medianConfidenceInterval(replicateMedians)) ?? nil
         iqrLow = centre(usable.map(\.sample.firstQuartile))
@@ -126,9 +124,7 @@ enum ReportInference {
         for index in model.series.indices {
             for key in wallKeys {
                 guard let cell = model.series[index].cells[key], cell.replicates >= 3 else { continue }
-                let ordered = zip(cell.replicateRounds, cell.replicateMedians).enumerated()
-                    .sorted { ($0.element.0, $0.offset) < ($1.element.0, $1.offset) }.map(\.element.1)
-                guard let result = try? ReportStatistics.kendallTrend(ordered) else { continue }
+                guard let result = try? ReportStatistics.kendallTrend(cell.replicateMedians) else { continue }
                 drift.append(ReportDriftCell(series: index, key: key, tau: result.tau, p: result.p, q: nil, replicates: cell.replicates, isApproximate: result.isApproximate))
             }
         }

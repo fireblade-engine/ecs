@@ -121,7 +121,6 @@ struct ReportGroup {
 /// The native statistics of one replicate of one cell.
 struct ReportReplicateSample {
     let replicate: Int
-    let round: Int
     let sample: ReportSample
 }
 
@@ -208,7 +207,6 @@ struct ReportModel {
             for (position, fileIndex) in group.fileIndices.enumerated() {
                 let file = files[fileIndex]
                 let byName = Dictionary(uniqueKeysWithValues: file.benchmarks.map { ($0.name, $0) })
-                let round = file.run.replicate?.round ?? 1
                 for (identifier, results) in file.baseline.results.sorted(by: { $0.key.name < $1.key.name }) {
                     guard let benchmark = byName[identifier.name] else { continue }
                     for entry in benchmark.unrecordedMetrics ?? [] {
@@ -222,7 +220,7 @@ struct ReportModel {
                         metrics[result.metric.description] = result.metric
                         let key = ReportKey(identity: benchmark.identity, scale: benchmark.scale, metric: result.metric.description)
                         perBackend[benchmark.backend]?.replicates[key, default: []].append(
-                            ReportReplicateSample(replicate: group.replicateIndices[position], round: round, sample: ReportSample(result, stored: histograms.indices.contains(fileIndex) ? histograms[fileIndex] : [:]))
+                            ReportReplicateSample(replicate: group.replicateIndices[position], sample: ReportSample(result, stored: histograms.indices.contains(fileIndex) ? histograms[fileIndex] : [:]))
                         )
                     }
                 }

@@ -7,7 +7,7 @@ public enum ResultsCLI {
       ECSBenchmarkResults write --baseline <path> --out <path> --run-id <id> --started <iso8601> --finished <iso8601>
                                 --ref <requested> --ref-sha <sha> --suite-sha <sha> --filter <regex>
                                 --package-resolved <path> --swift-version <text> [--batch-id <id>]
-                                [--replicate <i> --replicates <k> --round <r> --position <p> --seed <s>]
+                                [--replicate <i> --replicates <k> --position <p> --seed <s>]
       ECSBenchmarkResults validate <result.json>
       ECSBenchmarkResults host-check
       ECSBenchmarkResults filter-check --filter <regex>   (benchmark names on stdin, one per line)
@@ -58,13 +58,13 @@ public enum ResultsCLI {
     private static func write(_ arguments: [String]) throws {
         let options = try parseOptions(arguments, allowed: [
             "baseline", "out", "run-id", "started", "finished", "ref", "ref-sha", "suite-sha", "filter", "package-resolved", "swift-version", "batch-id",
-            "replicate", "replicates", "round", "position", "seed"
+            "replicate", "replicates", "position", "seed"
         ], usage: usage)
         func value(_ key: String) throws -> String {
             guard let value = options[key] else { throw ResultError("missing required option --\(key)") }
             return value
         }
-        let replicateKeys = ["replicate", "replicates", "round", "position", "seed"]
+        let replicateKeys = ["replicate", "replicates", "position", "seed"]
         var replicate: ResultReplicate?
         if replicateKeys.contains(where: { options[$0] != nil }) {
             func number<T: FixedWidthInteger>(_ key: String, as _: T.Type) throws -> T {
@@ -73,7 +73,7 @@ public enum ResultsCLI {
                 return parsed
             }
             replicate = try ResultReplicate(
-                index: number("replicate", as: Int.self), count: number("replicates", as: Int.self), round: number("round", as: Int.self),
+                index: number("replicate", as: Int.self), count: number("replicates", as: Int.self),
                 position: number("position", as: Int.self), seed: number("seed", as: UInt64.self)
             )
         }

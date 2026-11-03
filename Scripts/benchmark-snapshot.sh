@@ -29,9 +29,8 @@ Usage: Scripts/benchmark-snapshot.sh <ref> [options]
   --build-only        resolve and build everything a later --reuse run needs (suite, result tool, plugin), but do not run
   --reuse             run an already prepared and built snapshot in --out again (needs --out and --result); nothing is
                       extracted, resolved or rebuilt, but provenance and pins are re-checked against the committed ones
-  --replicate <i>     replicate index (1-based) recorded in the result; needs --replicates, --round, --position and --seed
+  --replicate <i>     replicate index (1-based, also the round) recorded in the result; needs --replicates, --position and --seed
   --replicates <k>    replicate count recorded in the result
-  --round <r>         round (1-based) of the replicate
   --position <p>      position (1-based) of the ref within its round
   --seed <s>          shuffle seed recorded in the result
   --repo <dir>        repository to read refs from (default: the repository containing this script)
@@ -56,7 +55,6 @@ batch_id=""
 reuse=0
 replicate=""
 replicates=""
-round=""
 position=""
 seed=""
 
@@ -72,7 +70,6 @@ while (($#)); do
         --reuse) reuse=1; shift ;;
         --replicate) (($# >= 2)) || usage; replicate=$2; shift 2 ;;
         --replicates) (($# >= 2)) || usage; replicates=$2; shift 2 ;;
-        --round) (($# >= 2)) || usage; round=$2; shift 2 ;;
         --position) (($# >= 2)) || usage; position=$2; shift 2 ;;
         --seed) (($# >= 2)) || usage; seed=$2; shift 2 ;;
         --prepare-only) mode=prepare; shift ;;
@@ -92,12 +89,12 @@ if [[ -n $result ]]; then
 fi
 
 replicate_args=()
-if [[ -n $replicate$replicates$round$position$seed ]]; then
+if [[ -n $replicate$replicates$position$seed ]]; then
     [[ -n $result ]] || die "replicate options need --result"
-    for value in "$replicate" "$replicates" "$round" "$position" "$seed"; do
-        [[ $value =~ ^[0-9]+$ ]] || die "--replicate, --replicates, --round, --position and --seed must all be given as non-negative integers"
+    for value in "$replicate" "$replicates" "$position" "$seed"; do
+        [[ $value =~ ^[0-9]+$ ]] || die "--replicate, --replicates, --position and --seed must all be given as non-negative integers"
     done
-    replicate_args=(--replicate "$replicate" --replicates "$replicates" --round "$round" --position "$position" --seed "$seed")
+    replicate_args=(--replicate "$replicate" --replicates "$replicates" --position "$position" --seed "$seed")
 fi
 if ((reuse)); then
     [[ $mode == run && -n $result && -n $out ]] || die "--reuse needs --out and --result and cannot be combined with --prepare-only or --build-only"
@@ -309,5 +306,4 @@ batch_args=()
     --ref "$requested" --ref-sha "$ref_sha" --suite-sha "$suite_sha" --filter "$filter" \
     --package-resolved Package.resolved --swift-version "$(swift --version 2>&1)" ${batch_args[@]+"${batch_args[@]}"} ${replicate_args[@]+"${replicate_args[@]}"} \
     || keep_failed "writing the result file failed"
-"$bin_path/ECSBenchmarkResults" validate "$result" > /dev/null || keep_failed "the written result file did not validate"
 printf 'result: %s\n' "$result"

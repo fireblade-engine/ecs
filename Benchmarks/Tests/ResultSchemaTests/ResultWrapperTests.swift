@@ -19,7 +19,7 @@ struct ResultWrapperTests {
     func wrapperAndProvenanceRoundTripFieldByField() throws {
         let (file, request) = try makeFile()
         #expect(file.schema == "fireblade-ecs-benchmark-result")
-        #expect(file.schemaVersion == 1)
+        #expect(file.schemaVersion == 2)
         #expect(file.run == ResultRun(id: "run-1", startedAt: request.startedAt, finishedAt: request.finishedAt))
         #expect(file.ref == ResultRef(requested: "1.4.3", sha: Support.sha, componentModel: CompatManifest.componentModel, backends: CompatManifest.backends))
         #expect(file.suite.sha == Support.suiteSHA)
@@ -42,7 +42,7 @@ struct ResultWrapperTests {
         #expect(!String(decoding: try BenchmarkResultFile.encoder().encode(plain), as: UTF8.self).contains("replicate"))
 
         var replicated = request
-        replicated.replicate = ResultReplicate(index: 3, count: 10, round: 3, position: 2, seed: 18_446_744_073_709_551_615)
+        replicated.replicate = ResultReplicate(index: 3, count: 10, position: 2, seed: 18_446_744_073_709_551_615)
         let directory = try Support.scratchDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }
         replicated.baselinePath = try Support.writeEnvelope(Support.syntheticEnvelope(variant: 0), in: directory)

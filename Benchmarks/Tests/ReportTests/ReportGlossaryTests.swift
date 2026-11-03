@@ -12,7 +12,7 @@ enum GuideFixtures {
         return (1 ... k).map { index in
             F.file(
                 requested: requested, shaByte: shaByte, model: model, backends: ["default"],
-                replicate: k == 1 ? nil : ResultReplicate(index: index, count: k, round: index, position: 1, seed: 7),
+                replicate: k == 1 ? nil : ResultReplicate(index: index, count: k, position: 1, seed: 7),
                 entries: workloads.map { workload in
                     F.Entry(identity: workload, backend: "default", scale: 16, results: [
                         F.result(.wallClock, F.distribution(median: median(workload, index))),

@@ -25,7 +25,7 @@ struct ReportReplicateTests {
         (indices ?? Array(1 ... k)).map { index in
             F.file(
                 requested: requested, shaByte: shaByte, model: model, backends: [backend], configurationHash: configurationHash,
-                replicate: ResultReplicate(index: index, count: k, round: index, position: 1, seed: 7),
+                replicate: ResultReplicate(index: index, count: k, position: 1, seed: 7),
                 entries: workloads.flatMap { workload in
                     scales.map { scale in
                         F.Entry(identity: workload, backend: backend, scale: scale, results: [F.result(.wallClock, F.distribution(median: median(workload, index, scale)))])

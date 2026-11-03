@@ -133,7 +133,7 @@ enum ReportFixtures {
         return medians.enumerated().map { offset, median in
             file(
                 requested: requested, shaByte: shaByte, model: model, backends: [backend], configurationHash: configurationHash,
-                replicate: ResultReplicate(index: offset + 1, count: count ?? medians.count, round: offset + 1, position: 1, seed: seed),
+                replicate: ResultReplicate(index: offset + 1, count: count ?? medians.count, position: 1, seed: seed),
                 entries: scales.map { scale in
                     Entry(identity: identity, backend: backend, scale: scale, results: [result(.wallClock, distribution(median: median))])
                 }

@@ -52,7 +52,7 @@ Top-level keys: `schema` = `"fireblade-ecs-benchmark-result"` with `schemaVersio
 - **Stale refs:** a local branch behind its upstream is refused before any build, with both short SHAs and counts. `ALLOW_STALE_REFS=1` turns the refusal into a warning. Tags and raw SHAs are not checked.
 - **Output:** `Benchmarks/Results/<run-id>/` (gitignored). A finished measurement that fails wrapping or validation is kept in `.failed/`. A failed run cannot be resumed: `--out` must be empty or absent, so start a new run.
 - **Selection:** the default filter `^(entity\.create\.no-entities .* / 0|.* / 16)$` runs every workload at 16 entities plus `entity.create.no-entities` (its only scale is 0). `--build-only` checks a given filter against the benchmark listing with the result tool (Swift whole-match regex, as the plugin applies it) and fails when it selects nothing.
-- **Unattended runs:** keep the machine awake, idle and plugged in (macOS: `caffeinate -i make benchmark-compare ...`). A sleep or load spike mid-run invalidates timings.
+- **Unattended runs:** keep the machine awake, idle, plugged in and the lid open (macOS: `caffeinate -s make benchmark-compare ...`; `-s` prevents system sleep on AC power). A sleep or load spike mid-run invalidates timings.
 
 ## Statistical design v3
 

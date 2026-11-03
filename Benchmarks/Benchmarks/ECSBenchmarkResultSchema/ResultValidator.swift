@@ -6,30 +6,36 @@ public enum ResultValidator {
     /// Decodes `data`, checks schema, version and internal consistency, and returns the decoded file (whose baseline holds the
     /// native `BenchmarkResult`/`Statistics` values).
     public static func decode(_ data: Data) throws -> BenchmarkResultFile {
-        struct Header: Decodable {
-            var schema: String?
-            var schemaVersion: Int?
-        }
-        let header: Header
-        do {
-            header = try JSONDecoder().decode(Header.self, from: data)
-        } catch {
-            throw ResultError("not a JSON object: \(error)")
-        }
-        guard header.schema == ResultSchema.name else {
-            throw ResultError("unsupported schema '\(header.schema ?? "none")', expected '\(ResultSchema.name)'")
-        }
-        guard header.schemaVersion == ResultSchema.version else {
-            throw ResultError("unsupported schema version \(header.schemaVersion.map(String.init) ?? "none"), expected \(ResultSchema.version)")
-        }
         let file: BenchmarkResultFile
         do {
             file = try JSONDecoder().decode(BenchmarkResultFile.self, from: data)
         } catch {
+            // Only a failed decode pays for a second pass, to say whether the schema or its version is the reason.
+            struct Header: Decodable {
+                var schema: String?
+                var schemaVersion: Int?
+            }
+            let header: Header
+            do {
+                header = try JSONDecoder().decode(Header.self, from: data)
+            } catch {
+                throw ResultError("not a JSON object: \(error)")
+            }
+            try checkHeader(schema: header.schema, version: header.schemaVersion)
             throw ResultError("result file does not match the schema: \(error)")
         }
+        try checkHeader(schema: file.schema, version: file.schemaVersion)
         try validate(file)
         return file
+    }
+
+    private static func checkHeader(schema: String?, version: Int?) throws {
+        guard schema == ResultSchema.name else {
+            throw ResultError("unsupported schema '\(schema ?? "none")', expected '\(ResultSchema.name)'")
+        }
+        guard version == ResultSchema.version else {
+            throw ResultError("unsupported schema version \(version.map(String.init) ?? "none"), expected \(ResultSchema.version)")
+        }
     }
 
     public static func validateFile(at path: String) throws -> BenchmarkResultFile {

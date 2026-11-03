@@ -114,6 +114,8 @@ public enum ResultWriter {
     public static func write(_ request: WriteRequest, to outputPath: String, host: ResultHost? = nil) throws {
         let file = try makeFile(request, host: host ?? HostFacts.current())
         let data = try BenchmarkResultFile.encoder().encode(file)
+        // Prove the encoded file is accepted before it reaches the disk.
+        _ = try ResultValidator.decode(data)
         try data.write(to: URL(fileURLWithPath: outputPath), options: .atomic)
     }
 

@@ -163,6 +163,29 @@ enum ReportStatistics {
 
     /// Exact null distribution of U (no ties) for sample sizes m, n: `cdf[u] = P(U <= u)` for u in 0...m*n.
     static func mannWhitneyNullCDF(m: Int, n: Int) -> [Double] {
+        nullCDFs.value(for: [m, n]) { computeMannWhitneyNullCDF(m: m, n: n) }
+    }
+
+    private static let nullCDFs = Memo<[Int], [Double]>()
+    private static let kendallDistributions = Memo<Int, [Int: Double]>()
+    private static let kendallTiedDistributions = Memo<[Int], [Int: Double]>()
+
+    /// Thread-safe cache of a pure function of its key.
+    private final class Memo<Key: Hashable & Sendable, Value: Sendable>: @unchecked Sendable {
+        private let lock = NSLock()
+        private var storage: [Key: Value] = [:]
+
+        func value(for key: Key, compute: () -> Value) -> Value {
+            lock.lock()
+            defer { lock.unlock() }
+            if let cached = storage[key] { return cached }
+            let computed = compute()
+            storage[key] = computed
+            return computed
+        }
+    }
+
+    private static func computeMannWhitneyNullCDF(m: Int, n: Int) -> [Double] {
         let counts = rankSumCounts(doubledRanks: (1...(m + n)).map { 2 * $0 }, m: m)
         let total = counts.reduce(0, +)
         let offset = m * (m + 1) // doubled minimum rank sum
@@ -182,15 +205,15 @@ enum ReportStatistics {
         let speed: Double
         let ciLow: Double?
         let ciHigh: Double?
-        /// Exact coverage of [ciLow, ciHigh], nil when no 95% interval is attainable.
+        /// Nominal coverage of [ciLow, ciHigh] (exact without ties), nil when no 95% interval is attainable.
         let coverage: Double?
         /// (1 / speed - 1) * 100.
         let changePercent: Double
     }
 
-    /// Hodges-Lehmann estimate of the multiplicative shift `a` ÷ `b` (a = baseline, b = series) with the exact
-    /// distribution-free CI: with the m*n sorted pairwise log differences d, take the largest c with
-    /// P(U <= c - 1) <= alpha/2 under the exact no-ties Mann-Whitney null and report [d(c), d(m*n - c + 1)], coverage
+    /// Hodges-Lehmann estimate of the multiplicative shift `a` ÷ `b` (a = baseline, b = series) with the
+    /// distribution-free CI (exact when there are no ties between the two samples, approximate with ties): with the m*n sorted pairwise log differences d, take the largest c with
+    /// P(U <= c - 1) <= alpha/2 under the no-ties Mann-Whitney null and report [d(c), d(m*n - c + 1)], coverage
     /// 1 - 2 P(U <= c - 1). The CI is nil when even c = 1 exceeds alpha/2 (C(m+n, m) < 40).
     static func hodgesLehmannSpeed(baseline a: [Double], series b: [Double]) throws -> SpeedEstimate {
         guard !a.isEmpty, !b.isEmpty else { throw StatisticsError.invalidInput("Hodges-Lehmann needs two non-empty samples") }
@@ -307,6 +330,10 @@ enum ReportStatistics {
     /// Exact null distribution of S for n distinct values: S = n(n-1)/2 - 2 * inversions; the inversion count is the
     /// sum of independent uniform {0..i-1} contributions.
     static func kendallNoTiesDistribution(n: Int) -> [Int: Double] {
+        kendallDistributions.value(for: n) { computeKendallNoTiesDistribution(n: n) }
+    }
+
+    private static func computeKendallNoTiesDistribution(n: Int) -> [Int: Double] {
         var inversions: [Double] = [1]
         for i in 2...max(n, 2) where i <= n {
             var next = [Double](repeating: 0, count: inversions.count + i - 1)
@@ -329,6 +356,10 @@ enum ReportStatistics {
     /// Dynamic programming over how many items of each group are placed so far (at most prod(size + 1) states, instead of
     /// enumerating all distinct orderings, which is factorial); the counts are exact integers, as before.
     static func kendallTiedDistribution(groupSizes: [Int]) -> [Int: Double] {
+        kendallTiedDistributions.value(for: groupSizes) { computeKendallTiedDistribution(groupSizes: groupSizes) }
+    }
+
+    private static func computeKendallTiedDistribution(groupSizes: [Int]) -> [Int: Double] {
         // Placed per group (group index = value order); S grows by (#earlier smaller) - (#earlier larger) for each placement.
         var layer: [[Int]: [Int: Double]] = [Array(repeating: 0, count: groupSizes.count): [0: 1]]
         for _ in 0 ..< groupSizes.reduce(0, +) {

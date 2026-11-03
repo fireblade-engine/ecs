@@ -15,11 +15,11 @@ Each revision is built once and measured in `k` independent process replicates, 
 - The interactive report: [fireblade-engine.github.io/ecs/benchmarks](https://fireblade-engine.github.io/ecs/benchmarks/).
 - The statistical design and workload parity notes: [Methodology.md](https://github.com/fireblade-engine/ecs/blob/main/Documentation/Benchmarks/Methodology.md).
 
-To measure revisions locally, pass comma-separated tags, branches or commit IDs. Results are saved under `Benchmarks/.results/<UTC timestamp>/`:
+To measure revisions locally, pass comma-separated tags, branches or commit IDs. Results are saved under `Benchmarks/Results/<UTC timestamp>/`:
 
 ```sh
 make benchmark-compare REFS=1.4.3,main REPLICATES=10 BENCHMARK_FILTER='.*'
-make benchmark-report RESULTS="Benchmarks/.results/<run>/1.4.3-<sha>.json Benchmarks/.results/<run>/main-<sha>.json" REPORT_BASELINE=1.4.3
+make benchmark-report RESULTS="Benchmarks/Results/<run>/1.4.3-<sha>.json Benchmarks/Results/<run>/main-<sha>.json" REPORT_BASELINE=1.4.3
 ```
 
 Without `BENCHMARK_FILTER` only the smallest scale of every workload runs. `make benchmark-report` renders the single file `BenchmarkReport.html` from saved results and never runs benchmarks. See `Benchmarks/README.md` for all options.

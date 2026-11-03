@@ -64,7 +64,7 @@ Measure the suite at one or more committed refs (tags, branches or SHAs). Each r
 make benchmark-compare REFS=1.4.3,main
 ```
 
-The command prints one `result: <path>` line per ref. Files land in a new run directory `Benchmarks/.results/<UTC timestamp>/` (gitignored) as `<ref>-<sha12>.json`. If a ref fails, later refs are not started, finished results are kept and a rejected measurement is kept under `.failed/`. Warnings are printed when toolchain, host or benchmark set differ between refs.
+The command prints one `result: <path>` line per ref. Files land in a new run directory `Benchmarks/Results/<UTC timestamp>/` (gitignored) as `<ref>-<sha12>.json`. If a ref fails, later refs are not started, finished results are kept and a rejected measurement is kept under `.failed/`. Warnings are printed when toolchain, host or benchmark set differ between refs.
 
 Stale branches: a ref that is a local branch behind its upstream (or `origin/<branch>`) is reported with both short SHAs and the behind/ahead counts, and the run refuses to start before any build. Use `origin/<branch>` as the ref, update the branch, or opt out with `make benchmark-compare REFS=... ALLOW_STALE_REFS=1` (script flag `--allow-stale-refs`), which turns the refusal into a warning. The check compares against the last fetch and never contacts the network, so run `git fetch` first. Tags and raw SHAs are not checked.
 
@@ -99,11 +99,11 @@ cd Benchmarks && swift run -c release ECSBenchmarkResults validate <result.json>
 `make benchmark-report` renders one self-contained HTML file, `BenchmarkReport.html`, from saved result files only (two or more); it builds the `ECSBenchmarkResults` tool in release mode and never runs benchmarks. The committed report is published at <https://fireblade-engine.github.io/ecs/benchmarks/> (`Scripts/sync-documentation.sh` copies `Documentation/Benchmarks/BenchmarkReport.html` there).
 
 ```sh
-make benchmark-report RESULTS="Benchmarks/.results/<run>/1.4.3-<sha>.json Benchmarks/.results/<run>/main-<sha>.json" \
+make benchmark-report RESULTS="Benchmarks/Results/<run>/1.4.3-<sha>.json Benchmarks/Results/<run>/main-<sha>.json" \
     REPORT_DIR=report REPORT_BASELINE=1.4.3 REPORT_TITLE="ECS 1.4.3 vs main"
 ```
 
-`REPORT_DIR` defaults to `Benchmarks/.results/report`. A directory that already holds anything is refused unless `REPORT_OVERWRITE=1` is set; the overwrite replaces only the generated `BenchmarkReport.html` and never touches other files or the inputs. `REPORT_BASELINE` (a requested ref name) defaults to the first file; `REPORT_TITLE` is optional.
+`REPORT_DIR` defaults to `Benchmarks/Results/report`. A directory that already holds anything is refused unless `REPORT_OVERWRITE=1` is set; the overwrite replaces only the generated `BenchmarkReport.html` and never touches other files or the inputs. `REPORT_BASELINE` (a requested ref name) defaults to the first file; `REPORT_TITLE` is optional.
 
 **Inputs and grouping.** Pass every file of a replicated run (`make benchmark-compare REPLICATES=10`). Files are grouped into series by ref SHA, component model and backend, and into replicates by the `run.replicate` provenance; a file without it counts as replicate 1 of 1. The report refuses two files with the same replicate index in one series and replicates with different configuration hashes. Incomplete replicate sets, unequal replicate counts, differing toolchains or hosts, and differing configuration hashes between refs are warnings, printed in the report and on stderr.
 

@@ -29,7 +29,7 @@ Usage: Scripts/benchmark-run-refs.sh --refs <a,b,c> [options]
   --refs <list>       comma-separated committed refs (tags, branches or SHAs); at least one, no duplicates by SHA
   --filter <regex>    benchmark filter (default: the snapshot script's smallest-scale smoke selection)
   --suite-ref <rev>   commit providing the suite for every ref (default: HEAD)
-  --out <dir>         run directory (must not exist or be empty; default: Benchmarks/.results/<UTC timestamp>)
+  --out <dir>         run directory (must not exist or be empty; default: Benchmarks/Results/<UTC timestamp>)
   --repo <dir>        repository to read refs from (default: the repository containing this script)
   --replicates <k>    runs per ref (default: 1); with k > 1 refs are built once and run in k interleaved, shuffled rounds
   --seed <n>          shuffle seed, an integer 0..4294967295 (default: random; always printed and recorded for k > 1)
@@ -143,7 +143,7 @@ if ((${#errors[@]})); then
 fi
 
 if [[ -z $out ]]; then
-    out="$repo/Benchmarks/.results/$(date -u +%Y%m%dT%H%M%SZ)"
+    out="$repo/Benchmarks/Results/$(date -u +%Y%m%dT%H%M%SZ)"
 elif [[ -e $out ]]; then
     [[ -d $out && -z $(ls -A "$out") ]] || die "run directory is not empty: $out"
 fi

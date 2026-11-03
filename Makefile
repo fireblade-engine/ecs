@@ -126,7 +126,7 @@ generate-docs-githubpages:
 # --- Benchmarks ---
 
 BENCHMARK_FILTER ?=
-REPORT_DIR ?= Benchmarks/.results/report
+REPORT_DIR ?= Benchmarks/Results/report
 REPORT_BASELINE ?=
 REPORT_TITLE ?=
 REPORT_OVERWRITE ?=
@@ -137,7 +137,7 @@ benchmark:
 	cd Benchmarks && swift package benchmark
 
 # Measures the shared compatibility suite at each committed ref (comma-separated tags, branches or SHAs) in isolated
-# snapshots and saves one validated result file per ref under Benchmarks/.results/<UTC timestamp>/.
+# snapshots and saves one validated result file per ref under Benchmarks/Results/<UTC timestamp>/.
 # REPLICATES=k (default 1) builds each ref once and runs k interleaved rounds in a seeded shuffled order (SEED=n, random and
 # recorded by default), one result file per replicate.
 # Without BENCHMARK_FILTER only the smallest scale of every workload runs; BENCHMARK_FILTER='.*' selects everything.

@@ -59,4 +59,4 @@ conductor
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 /graft/
 # Benchmark run results (Scripts/benchmark-run-refs.sh)
-Benchmarks/.results/
+Benchmarks/Results/

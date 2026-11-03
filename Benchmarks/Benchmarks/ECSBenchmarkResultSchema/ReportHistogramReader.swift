@@ -119,6 +119,12 @@ struct StrippedResultFile {
                     }
                     return value
                 }
+                func small(_ key: String) throws -> Int {
+                    guard let value = Int(exactly: try integer(key)) else {
+                        throw ResultError("result file does not match the schema: histogram \(key) is out of range")
+                    }
+                    return value
+                }
                 var indices: [Int] = []
                 var counts: [UInt64] = []
                 var index = 0
@@ -139,8 +145,8 @@ struct StrippedResultFile {
                 let ordinal = UInt64(histograms.count)
                 histograms[ordinal] = try StoredHistogram(
                     totalCount: integer("_totalCount"), maxValue: integer("maxValue"), minNonZeroValue: integer("minNonZeroValue"),
-                    subBucketHalfCountMagnitude: Int(integer("subBucketHalfCountMagnitude")), unitMagnitude: Int(integer("unitMagnitude")),
-                    leadingZeroCountBase: Int(integer("leadingZeroCountBase")), subBucketMask: integer("subBucketMask"),
+                    subBucketHalfCountMagnitude: try small("subBucketHalfCountMagnitude"), unitMagnitude: try small("unitMagnitude"),
+                    leadingZeroCountBase: try small("leadingZeroCountBase"), subBucketMask: integer("subBucketMask"),
                     indices: indices, counts: counts
                 )
                 // Two edits in file order: the counts array and the highest trackable value number.

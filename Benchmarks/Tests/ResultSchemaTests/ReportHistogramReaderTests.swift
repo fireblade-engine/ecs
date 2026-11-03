@@ -67,4 +67,12 @@ struct ReportHistogramReaderTests {
     func truncatedCountsAreRejected() {
         #expect(throws: ResultError.self) { _ = try StrippedResultFile(Data(#"{"histogram":{"counts":[1,2"#.utf8)) }
     }
+
+    @Test
+    func integersBeyondIntAreRejectedInsteadOfTrapping() throws {
+        let original = String(decoding: try BenchmarkResultFile.encoder().encode(ReportFixtures.classRef()), as: UTF8.self)
+        let tampered = original.replacingOccurrences(of: #""unitMagnitude":\d+"#, with: #""unitMagnitude":18446744073709551615"#, options: .regularExpression)
+        #expect(tampered != original)
+        #expect(throws: ResultError.self) { _ = try StrippedResultFile(Data(tampered.utf8)) }
+    }
 }

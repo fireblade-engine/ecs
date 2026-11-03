@@ -1,12 +1,12 @@
 import ECSBenchmarkResultSchema
 import Foundation
 
-/// Command line of `ECSBenchmarkReport`: renders the HTML report from saved result files. Arguments are parsed by hand: the
+/// Command line of `ECSBenchmarkReportCLI`: renders the HTML report from saved result files. Arguments are parsed by hand: the
 /// package takes no ArgumentParser dependency.
 public enum ReportCLI {
     static let usage = """
     Usage:
-      ECSBenchmarkReport <result.json>... --output-dir <dir> [--baseline <requested-ref>] [--title <text>] [--overwrite]
+      ECSBenchmarkReportCLI <result.json>... --output-dir <dir> [--baseline <requested-ref>] [--title <text>] [--overwrite]
     """
 
     public static func run(_ arguments: [String]) -> Int32 {
@@ -14,7 +14,7 @@ public enum ReportCLI {
             try render(arguments)
             return 0
         } catch {
-            FileHandle.standardError.write(Data("ECSBenchmarkReport: \(error)\n".utf8))
+            FileHandle.standardError.write(Data("ECSBenchmarkReportCLI: \(error)\n".utf8))
             return 1
         }
     }
@@ -56,7 +56,7 @@ public enum ReportCLI {
         }
         let rendered = try BenchmarkReport.render(inputs, options: reportOptions)
         for warning in rendered.warnings {
-            FileHandle.standardError.write(Data("ECSBenchmarkReport: warning: \(warning)\n".utf8))
+            FileHandle.standardError.write(Data("ECSBenchmarkReportCLI: warning: \(warning)\n".utf8))
         }
         // The generated path must not be an input (checked again here because the file set is only known after rendering).
         let target = output + "/" + BenchmarkReport.fileName

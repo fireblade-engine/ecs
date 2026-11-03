@@ -96,7 +96,7 @@ cd Benchmarks && swift run -c release ECSBenchmarkResults validate <result.json>
 
 ## Reports
 
-`make benchmark-report` renders one self-contained HTML file, `BenchmarkReport.html`, from saved result files only (two or more); it builds the `ECSBenchmarkResults` tool in release mode and never runs benchmarks. The committed report is published at <https://fireblade-engine.github.io/ecs/benchmarks/> (`Scripts/sync-documentation.sh` copies `Documentation/Benchmarks/BenchmarkReport.html` there).
+`make benchmark-report` renders one self-contained HTML file, `BenchmarkReport.html`, from saved result files only (two or more); it builds the `ECSBenchmarkResults` tool in release mode and never runs benchmarks. No report is committed yet; the first one, from `REFS=1.4.3,2.0.0` at the 2.0.0 tag, will be committed as `Documentation/Benchmarks/BenchmarkReport.html`, and `Scripts/sync-documentation.sh` then publishes it to the documentation site under `benchmarks/`.
 
 ```sh
 make benchmark-report RESULTS="Benchmarks/Results/<run>/1.4.3-<sha>.json Benchmarks/Results/<run>/main-<sha>.json" \

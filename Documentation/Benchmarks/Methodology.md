@@ -2,6 +2,8 @@
 
 **Status:** Steps 1–11 done and the Step 12 smoke is complete (2026-10-29, gates passed under the user's overnight delegation; see "Overnight delegation"). Awaiting the user's morning review. The full-scale run needs separate approval.
 
+**Recorded results:** none on `main` yet. The first run is `REFS=1.4.3,2.0.0` at the 2.0.0 tag; its report is committed as `Documentation/Benchmarks/BenchmarkReport.html` (see "No recorded result on main (2026-11-03)").
+
 **Goal:** one repeatable ordo-one benchmark suite for committed FirebladeECS refs, one self-contained JSON result per ref, and a separate N-way Markdown/Mermaid report generator that consumes saved results without rerunning benchmarks.
 
 ## Scope and rules
@@ -232,7 +234,7 @@ Presentation only: the statistics, verdicts and table columns of v2 and Statisti
 - **Output:** one self-contained file `DIR/BenchmarkReport.html` (inline CSS and script, data embedded as JSON, no external resources; works offline and from `file://`). `REPORT.md`, `workloads/` and `img/` are gone; the workload pages are sections of the HTML, with a table of contents.
 - **Plots:** drawn in the page from the embedded data. Each plot has a Log/Linear toggle that redraws it in place, plus one global toggle. Hovering or focusing a point shows a tooltip (ref, backend, entities, median, 95% CI, speed and verdict), crosshair lines with the values highlighted on both axes, and highlights the matching table row. One tab stop per plot; arrow keys move between points. A missing scale is a gap, never a zero.
 - **Tables:** cells of a series are tinted by verdict (faster green, slower red, otherwise neutral), always with a symbol (▲ ▼ = ?) so colour is never the only signal. Wall-clock tables are shown per section; other metrics and percentiles sit in a collapsed block.
-- **Publishing:** committed as `Documentation/Benchmarks/BenchmarkReport.html`; `Scripts/sync-documentation.sh` copies it to the Pages site at `ecs/benchmarks/` on every docs deploy from `main`. The DocC article `Benchmarks` links to it.
+- **Publishing:** committed as `Documentation/Benchmarks/BenchmarkReport.html`; `Scripts/sync-documentation.sh` copies it to the Pages site at `ecs/benchmarks/` on every docs deploy from `main` when the file exists. (Superseded 2026-11-03: no report is committed until 2.0.0; the DocC article no longer links to the page.)
 - **Tests:** the plot script's pure functions run under `node` in the test suite when `node` is installed (skipped otherwise; node is not a package dependency).
 
 ### Statistical design v3 (user decision 2026-10-30: "scientifically accurate display … valid significance calculation and error bars")
@@ -313,6 +315,10 @@ Replaces the dispersion and `sig.` parts of Report v2. Upstream scales, sampling
 4. **Validation render:**
    - a replicated run of `1.4.3` and `main` with k = 10 at scales ≤ 1,024, for the user to approve the format and statistics
    - then the full run (23 scales, k = 10, estimated 2–5 h) after approval
+
+### No recorded result on main (2026-11-03)
+
+The suite merges without any recorded result; the previously committed `BenchmarkReport.html` was removed and the run output directory renamed from `Benchmarks/.results/` to the visible, still gitignored `Benchmarks/Results/`. The first real run is `make benchmark-compare REFS=1.4.3,2.0.0` at the 2.0.0 tag, with the report committed as `Documentation/Benchmarks/BenchmarkReport.html`. `Scripts/sync-documentation.sh` publishes it only if the file exists.
 
 ## Phases and review gates
 

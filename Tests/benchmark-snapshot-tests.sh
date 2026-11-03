@@ -191,7 +191,7 @@ case "$*" in
         name=$(sed -E 's/.*baseline update ([^ ]+).*/\1/' <<< "$*")
         mkdir -p ".benchmarkBaselines/ECSCompatBenchmark/$name"
         echo '{"stub":true}' > ".benchmarkBaselines/ECSCompatBenchmark/$name/results.json" ;;
-    *"benchmark list"*) [[ -z ${STUB_LIST_FAIL:-} ]] || exit 1; printf 'alpha / 16\nfoo / 1\n' ;;
+    *"benchmark list"*) [[ -z ${STUB_LIST_FAIL:-} ]] || exit 1; printf "\nTarget 'ECSCompatBenchmark' available benchmarks:\nalpha / 16\nfoo / 1\n\n" ;;
     *"build -c release --product"*) [[ -z ${STUB_RESOLVE_TOUCH:-} ]] || echo changed >> Package.resolved ;;
     *"--show-bin-path"*) echo "$STUB_BIN" ;;
     --version) echo "stub swift 1.0" ;;
@@ -202,7 +202,7 @@ cat > "$stubs/bin/ECSBenchmarkResults" <<'STUB'
 echo "tool $1" >> "$STUB_LOG"
 case $1 in
     host-check) [[ -z ${STUB_HOST_FAIL:-} ]] || { echo 'cannot determine host facts' >&2; exit 1; }; exit 0 ;;
-    filter-check) grep -Eq "^($3)\$" || { echo "the benchmark filter '$3' matches none of the listed benchmarks" >&2; exit 1; }; exit 0 ;;
+    filter-check) grep -Ev "^(Target '|$)" | grep -Eq "^($3)\$" || { echo "the benchmark filter '$3' matches none of the listed benchmarks" >&2; exit 1; }; exit 0 ;;
     write) ;;
     *) exit 2 ;;
 esac
@@ -333,6 +333,15 @@ assert_eq "$(grep -c 'build -c release --product' "$STUB_LOG")" 2 '--build-only 
 grep -q 'build -c release --product ECSCompatBenchmark --force' "$STUB_LOG" || fail 'each product must be built by its own swift build'
 grep -q 'tool filter-check' "$STUB_LOG" || fail '--build-only must check the filter against the listing'
 grep -q 'baseline update' "$STUB_LOG" && fail '--build-only must not measure'
+# The single-call build and measure path (one replicate) checks the filter before it measures anything.
+: > "$STUB_LOG"
+if PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/single-nomatch" --filter 'zzz.*' --result "$test_root/single-nomatch.json" > /dev/null 2> "$test_root/single-nomatch.err"; then
+    fail 'the single-call path must refuse a filter that matches no benchmark'
+fi
+grep -q 'nothing was measured' "$test_root/single-nomatch.err" || fail 'the single-call path must say nothing was measured'
+grep -q 'baseline update\|benchmark --target' "$STUB_LOG" && fail 'nothing may be measured when the filter matches no benchmark'
+grep -q 'tool filter-check' "$STUB_LOG" || fail 'the single-call path must check the filter'
+
 # A filter that matches nothing in the listing fails --build-only clearly; a failing listing is a listing failure, not "no match".
 if PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/built-nomatch" --filter 'zzz.*' --build-only > /dev/null 2> "$test_root/nomatch.err"; then
     fail '--build-only must refuse a filter that matches no benchmark'

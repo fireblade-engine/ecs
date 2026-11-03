@@ -248,14 +248,19 @@ list_benchmarks() {
         || die "listing the benchmarks failed"
 }
 
+check_filter() {
+    # The result tool parses the plugin listing itself and whole-matches the filter against the names (the plugin's semantics).
+    printf '%s\n' "$listing" | "$1/ECSBenchmarkResults" filter-check --filter "$filter" \
+        || die "the benchmark filter check failed for '$filter' (see above); nothing was measured"
+}
+
 if [[ $mode == build ]]; then
     # Everything a later --reuse run needs is built here, so replicate runs compile nothing: the suite and the result tool (above),
     # and the benchmark plugin and its tool. The filter is checked against the listing now, with the result tool's own Swift
     # whole-match regex (the plugin's semantics), so a filter that selects nothing fails before any ref is measured.
     list_benchmarks
     bin_path=$(swift build -c release --show-bin-path ${swift_flags[@]+"${swift_flags[@]}"})
-    { printf '%s\n' "$listing" | grep -Ev "^(Target '|$)" || true; } | "$bin_path/ECSBenchmarkResults" filter-check --filter "$filter" \
-        || die "the benchmark filter check failed for '$filter' (see above); nothing was measured"
+    check_filter "$bin_path"
     exit 0
 fi
 
@@ -271,7 +276,11 @@ if [[ -n $result ]]; then
     "$bin_path/ECSBenchmarkResults" host-check || die "host facts are not available; nothing was measured"
 fi
 
-((reuse)) || list_benchmarks
+if ((!reuse)); then
+    list_benchmarks
+    # Single-call build and measure (one replicate): the filter must select something before any measurement.
+    [[ -z $result ]] || check_filter "$bin_path"
+fi
 
 # Package options must precede the plugin command; the resolved file was already enforced above.
 if [[ -z $result ]]; then

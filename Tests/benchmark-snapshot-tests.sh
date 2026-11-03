@@ -202,6 +202,7 @@ cat > "$stubs/bin/ECSBenchmarkResults" <<'STUB'
 echo "tool $1" >> "$STUB_LOG"
 case $1 in
     host-check) [[ -z ${STUB_HOST_FAIL:-} ]] || { echo 'cannot determine host facts' >&2; exit 1; }; exit 0 ;;
+    filter-check) grep -Eq "^($3)\$" || { echo "the benchmark filter '$3' matches none of the listed benchmarks" >&2; exit 1; }; exit 0 ;;
     validate) [[ -z ${STUB_VALIDATE_FAIL:-} ]] || exit 1; exit 0 ;;
     write) ;;
     *) exit 2 ;;
@@ -329,7 +330,20 @@ PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/buil
 grep -q 'build -c release --product ECSCompatBenchmark' "$STUB_LOG" || fail '--build-only must build the suite'
 grep -q 'product ECSBenchmarkResults' "$STUB_LOG" || fail '--build-only must build the result tool'
 grep -q 'benchmark list' "$STUB_LOG" || fail '--build-only must warm the benchmark plugin'
+assert_eq "$(grep -c 'build -c release --product' "$STUB_LOG")" 2 '--build-only must run one swift build per product'
+grep -q 'build -c release --product ECSCompatBenchmark --force' "$STUB_LOG" || fail 'each product must be built by its own swift build'
+grep -q 'tool filter-check' "$STUB_LOG" || fail '--build-only must check the filter against the listing'
 grep -q 'baseline update' "$STUB_LOG" && fail '--build-only must not measure'
+# A filter that matches nothing in the listing fails --build-only clearly; a failing listing is a listing failure, not "no match".
+if PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/built-nomatch" --filter 'zzz.*' --build-only > /dev/null 2> "$test_root/nomatch.err"; then
+    fail '--build-only must refuse a filter that matches no benchmark'
+fi
+grep -q "matches none" "$test_root/nomatch.err" || fail 'a non-matching filter must be reported'
+grep -q 'nothing was measured' "$test_root/nomatch.err" || fail 'a non-matching filter must say nothing was measured'
+if STUB_LIST_FAIL=1 PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/built-listfail" --filter 'zzz.*' --build-only > /dev/null 2> "$test_root/listfail.err"; then
+    fail '--build-only must fail when the listing fails'
+fi
+grep -q 'listing the benchmarks failed' "$test_root/listfail.err" || fail 'a failing listing must be reported as a listing failure'
 mkdir -p "$test_root/emptybin"
 : > "$STUB_LOG"
 if STUB_BIN="$test_root/emptybin" PATH="$stubs:$PATH" "$script" --repo "$fixture" class-rev --out "$test_root/built" --filter 'f.*' --reuse --result "$test_root/reuse-nobin.json" > /dev/null 2> "$test_root/nobin.err"; then fail '--reuse must fail when the result tool is missing'; fi

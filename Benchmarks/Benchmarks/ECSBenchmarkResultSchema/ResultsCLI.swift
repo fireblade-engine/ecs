@@ -10,6 +10,7 @@ public enum ResultsCLI {
                                 [--replicate <i> --replicates <k> --round <r> --position <p> --seed <s>]
       ECSBenchmarkResults validate <result.json>
       ECSBenchmarkResults host-check
+      ECSBenchmarkResults filter-check --filter <regex>   (benchmark names on stdin, one per line)
     """
 
     public static func run(_ arguments: [String]) -> Int32 {
@@ -26,6 +27,8 @@ public enum ResultsCLI {
                 guard arguments.count == 1 else { return fail("host-check takes no arguments\n\(usage)") }
                 let host = try HostFacts.current()
                 print("host ok: \(host.osName) \(host.osVersion), \(host.architecture), \(host.cpuModel), \(host.coreCount) cores")
+            case "filter-check":
+                try filterCheck(Array(arguments.dropFirst()))
             default:
                 return fail("unknown command '\(command)'\n\(usage)")
             }
@@ -33,6 +36,23 @@ public enum ResultsCLI {
         } catch {
             return fail("\(error)")
         }
+    }
+
+    /// Fails unless the filter whole-matches at least one benchmark name read from stdin: the semantics of the benchmark plugin's `--filter`.
+    private static func filterCheck(_ arguments: [String]) throws {
+        let options = try parseOptions(arguments, allowed: ["filter"], usage: usage)
+        guard let filter = options["filter"] else { throw ResultError("missing required option --filter") }
+        let regex: Regex<AnyRegexOutput>
+        do { regex = try Regex(filter) } catch { throw ResultError("the benchmark filter '\(filter)' is not a valid regular expression: \(error)") }
+        var names = 0
+        var matches = 0
+        while let line = readLine() {
+            names += 1
+            if line.wholeMatch(of: regex) != nil { matches += 1 }
+        }
+        guard names > 0 else { throw ResultError("the benchmark list is empty; nothing to filter") }
+        guard matches > 0 else { throw ResultError("the benchmark filter '\(filter)' matches none of the \(names) listed benchmarks") }
+        print("filter matches \(matches) of \(names) benchmarks")
     }
 
     private static func write(_ arguments: [String]) throws {

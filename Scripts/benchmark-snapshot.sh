@@ -233,25 +233,32 @@ printf 'snapshot: %s\n' "$out"
 cd "$lib/Benchmarks"
 export ECS_BENCHMARK_SUITE=shared
 if ((!reuse)); then
-    # One build of every product this mode needs. --force-resolved-versions makes SwiftPM fail instead of re-resolving, so the pins
-    # of the build are the committed ones; the comparison below proves Package.resolved is still untouched.
-    products=(--product ECSCompatBenchmark)
-    if [[ $mode == build || -n $result ]]; then products+=(--product ECSBenchmarkResults); fi
-    swift build -c release "${products[@]}" --force-resolved-versions ${swift_flags[@]+"${swift_flags[@]}"}
+    # One `swift build` per product: with several --product options SwiftPM builds only the last one. --force-resolved-versions makes
+    # SwiftPM fail instead of re-resolving, so the pins of the build are the committed ones; the comparison below proves
+    # Package.resolved is still untouched.
+    products=(ECSCompatBenchmark)
+    if [[ $mode == build || -n $result ]]; then products+=(ECSBenchmarkResults); fi
+    for product in "${products[@]}"; do
+        swift build -c release --product "$product" --force-resolved-versions ${swift_flags[@]+"${swift_flags[@]}"}
+    done
     cmp -s "$scratch/Package.resolved.committed" Package.resolved || die "building changed Package.resolved; commit the intended pins first"
 fi
 
 list_benchmarks() {
     # Listing compiles the benchmark plugin and its tool, which is why --build-only runs it: nothing is left to build later.
-    # It selects nothing itself: the plugin applies the filter (a whole-match regex) when it runs.
-    swift package --disable-automatic-resolution ${swift_flags[@]+"${swift_flags[@]}"} benchmark list --target ECSCompatBenchmark > /dev/null \
+    # The plugin's `list` ignores --filter; the filter (a whole-match Swift regex) is applied when it runs.
+    listing=$(swift package --disable-automatic-resolution ${swift_flags[@]+"${swift_flags[@]}"} benchmark list --target ECSCompatBenchmark) \
         || die "listing the benchmarks failed"
 }
 
 if [[ $mode == build ]]; then
     # Everything a later --reuse run needs is built here, so replicate runs compile nothing: the suite and the result tool (above),
-    # and the benchmark plugin and its tool.
+    # and the benchmark plugin and its tool. The filter is checked against the listing now, with the result tool's own Swift
+    # whole-match regex (the plugin's semantics), so a filter that selects nothing fails before any ref is measured.
     list_benchmarks
+    bin_path=$(swift build -c release --show-bin-path ${swift_flags[@]+"${swift_flags[@]}"})
+    { printf '%s\n' "$listing" | grep -Ev "^(Target '|$)" || true; } | "$bin_path/ECSBenchmarkResults" filter-check --filter "$filter" \
+        || die "the benchmark filter check failed for '$filter' (see above); nothing was measured"
     exit 0
 fi
 

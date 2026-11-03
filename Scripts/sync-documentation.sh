@@ -268,6 +268,8 @@ with open(os.path.join(versions_html_dir, 'index.html'), 'w') as f:
 script_tag = f'<script src="/{repo_name}/version-picker.js" defer></script>'
 entries = os.listdir(output_dir)
 for entry in entries:
+    if entry == 'benchmarks':
+        continue  # the restored gh-pages copy of the self-contained benchmark report: no version picker
     version_path = os.path.join(output_dir, entry)
     if os.path.isdir(version_path):
         index_file = os.path.join(version_path, 'index.html')

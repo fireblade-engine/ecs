@@ -9,8 +9,8 @@ import Foundation
 import PackageDescription
 
 // ECS_BENCHMARK_SUITE=shared builds only the compatibility suite, which compiles against every FirebladeECS
-// revision. Scripts/benchmark-snapshot.sh sets it for snapshots of older revisions, whose component model the
-// reference benchmarks in ECSBenchmark do not support.
+// revision. Scripts/benchmark-snapshot.sh sets it for snapshots of older revisions, which the value-component
+// OneDimension benchmarks in ECSBenchmark do not support.
 let sharedSuiteOnly = ProcessInfo.processInfo.environment["ECS_BENCHMARK_SUITE"] == "shared"
 
 // ECS_BENCHMARK_CLASS_COMPONENTS=1 (set by the snapshot script together with -DECS_CLASS_COMPONENTS) drops the macro
@@ -89,11 +89,6 @@ let package = Package(
             plugins: [
                 .plugin(name: "BenchmarkPlugin", package: "benchmark")
             ]
-        ),
-        .testTarget(
-            name: "ReferenceUpdateTests",
-            dependencies: ["ECSBenchmark"],
-            path: "Tests/ReferenceUpdateTests"
         )
     ])
 )

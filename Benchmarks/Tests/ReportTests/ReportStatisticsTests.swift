@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+@testable import ECSBenchmarkReport
 @testable import ECSBenchmarkResultSchema
 
 /// Brute-force oracles enumerate every label permutation directly; reference numbers were computed with an independent

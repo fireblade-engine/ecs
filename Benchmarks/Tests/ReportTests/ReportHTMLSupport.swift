@@ -1,4 +1,5 @@
 import Foundation
+@testable import ECSBenchmarkReport
 @testable import ECSBenchmarkResultSchema
 
 /// Test-only view of the report HTML: the prose becomes Markdown-like text (headings as

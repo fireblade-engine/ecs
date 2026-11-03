@@ -130,7 +130,7 @@ REPORT_DIR ?= Benchmarks/Results/report
 REPORT_BASELINE ?=
 REPORT_TITLE ?=
 REPORT_OVERWRITE ?=
-RESULTS_TOOL = Benchmarks/.build/release/ECSBenchmarkResults
+REPORT_TOOL = Benchmarks/.build/release/ECSBenchmarkReportCLI
 # User-supplied values reach the recipes through the environment, never pasted into the shell text, so quotes, backticks
 # and `$(...)` in a filter or title are data. (Make still expands a `$` on the make command line: write `$$`.)
 export REFS BENCHMARK_FILTER REPLICATES SEED REPORT_DIR RESULTS REPORT_BASELINE REPORT_TITLE
@@ -151,8 +151,8 @@ benchmark-compare:
 # Renders the report directory (the single file BenchmarkReport.html) from saved result files only (at least two); it never runs benchmarks.
 benchmark-report:
 	@if [ -z "$$RESULTS" ]; then printf 'Set RESULTS to saved result files, for example: make benchmark-report RESULTS="a.json b.json"\n' >&2; exit 2; fi
-	swift build --package-path Benchmarks -c release --product ECSBenchmarkResults $(SWIFT_FLAGS)
-	$(RESULTS_TOOL) report $$RESULTS --output-dir "$$REPORT_DIR" $(if $(REPORT_BASELINE),--baseline "$$REPORT_BASELINE") $(if $(REPORT_TITLE),--title "$$REPORT_TITLE") $(if $(REPORT_OVERWRITE),--overwrite)
+	swift build --package-path Benchmarks -c release --product ECSBenchmarkReportCLI $(SWIFT_FLAGS)
+	$(REPORT_TOOL) $$RESULTS --output-dir "$$REPORT_DIR" $(if $(REPORT_BASELINE),--baseline "$$REPORT_BASELINE") $(if $(REPORT_TITLE),--title "$$REPORT_TITLE") $(if $(REPORT_OVERWRITE),--overwrite)
 
 test-benchmarks:
 	cd Benchmarks && swift test $(SWIFT_FLAGS)

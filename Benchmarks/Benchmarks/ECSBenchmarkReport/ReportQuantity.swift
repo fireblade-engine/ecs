@@ -3,6 +3,7 @@
 // write the shared caches described in Methodology.md "Result schema".
 import Benchmark
 import Foundation
+import ECSBenchmarkResultSchema
 
 /// What a metric measures. Values of different dimensions are never converted into each other.
 enum ReportDimension: String {
@@ -67,7 +68,7 @@ struct ReportSample {
     /// Values at `Statistics.defaultPercentilesToCalculate`, in that order.
     let percentiles: [Double]
 
-    /// `stored` holds the histograms of a file read by `ResultValidator.loadForReport`, whose native histograms have no counts.
+    /// `stored` holds the histograms of a file read by `ReportInput.load(at:)`, whose native histograms have no counts.
     init(_ result: BenchmarkResult, stored: [UInt64: StoredHistogram] = [:]) {
         let metric = result.metric
         dimension = ReportDimension(metric)

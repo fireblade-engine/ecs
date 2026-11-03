@@ -2,6 +2,7 @@
 // with the reason in a `title`. Verdict cells carry a symbol and every cell of a compared series block carries the verdict as a
 // class, so a row's tint is never the only signal. Tables are inside their own scroll container.
 import Foundation
+import ECSBenchmarkResultSchema
 
 struct HTMLCell {
     var text: String

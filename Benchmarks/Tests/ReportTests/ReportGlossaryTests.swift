@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+@testable import ECSBenchmarkReport
 @testable import ECSBenchmarkResultSchema
 
 /// Replicated and single-replicate report fixtures shared by the glossary and guide tests.

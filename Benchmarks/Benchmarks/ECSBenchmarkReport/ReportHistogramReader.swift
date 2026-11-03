@@ -6,6 +6,7 @@
 // entries with the arithmetic of hdrhistogram-swift 0.2.0 (`Histogram.mean`, `Histogram.valueAtPercentile`), and the tests compare
 // them with the real `Histogram` on the same data.
 import Foundation
+import ECSBenchmarkResultSchema
 
 /// The parts of one stored HdrHistogram that the report reads, with the arithmetic of `Histogram` (hdrhistogram-swift 0.2.0).
 struct StoredHistogram: Equatable {

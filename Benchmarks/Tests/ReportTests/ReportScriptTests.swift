@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+@testable import ECSBenchmarkReport
 @testable import ECSBenchmarkResultSchema
 
 /// Runs the inline script of the HTML report under `node`. Node is not a dependency of the package: these tests are skipped when it
@@ -33,7 +34,7 @@ enum NodeTool {
 struct ReportScriptTests {
     @Test(.enabled(if: NodeTool.available))
     func scriptAndTheInlineCopyInAReportPassNodeCheck() throws {
-        let directory = try Support.scratchDirectory()
+        let directory = try ReportSupport.scratchDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }
         try Data(ReportScript.source.utf8).write(to: directory.appendingPathComponent("script.js"))
         let result = try NodeTool.run(["--check", "script.js"], in: directory)
@@ -48,7 +49,7 @@ struct ReportScriptTests {
 
     @Test(.enabled(if: NodeTool.available))
     func plotModelBehavesUnderNode() throws {
-        let directory = try Support.scratchDirectory()
+        let directory = try ReportSupport.scratchDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }
         try Data(ReportScript.source.utf8).write(to: directory.appendingPathComponent("script.js"))
         try Data(Self.harness.utf8).write(to: directory.appendingPathComponent("harness.js"))

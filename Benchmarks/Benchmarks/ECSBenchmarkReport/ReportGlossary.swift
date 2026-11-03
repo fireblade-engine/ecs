@@ -2,6 +2,7 @@
 // Numbers that the report fixes in code (δ, the significance level, the coverage target) come from `ReportStatistics`, so the
 // text cannot drift from the statistics. `covers` is what the tests use to prove that every table header and legend term is defined.
 import Foundation
+import ECSBenchmarkResultSchema
 
 struct ReportGlossaryEntry {
     /// Heading of the bullet.

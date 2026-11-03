@@ -3,6 +3,7 @@
 // script, the tables as static HTML, and the plot data as embedded JSON; the script draws the plots in the browser.
 import Benchmark
 import Foundation
+import ECSBenchmarkResultSchema
 
 struct ReportWriter {
     let model: ReportModel

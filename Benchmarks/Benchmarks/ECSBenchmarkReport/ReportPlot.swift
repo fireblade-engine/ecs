@@ -3,6 +3,7 @@
 // (spread of the measurements, not uncertainty) and, for non-baseline series, speed against the baseline with its CI. Numbers used for
 // geometry stay numeric (base units, ns); everything shown to a reader (tooltip text) is formatted here with the table rules.
 import Foundation
+import ECSBenchmarkResultSchema
 
 struct ReportPlotPayload: Encodable {
     /// Label of the baseline ref.

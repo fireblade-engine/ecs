@@ -1,6 +1,7 @@
 import Benchmark
 import ECSCompatSuite
 import Foundation
+@testable import ECSBenchmarkReport
 @testable import ECSBenchmarkResultSchema
 
 /// Small synthetic result files built from native types, for the report tests. Identities come from the real manifest so the
@@ -50,10 +51,10 @@ enum ReportFixtures {
             schemaVersion: ResultSchema.version,
             run: ResultRun(id: "run-\(requested)\(replicate.map { "-r\($0.index)" } ?? "")", startedAt: "2026-10-29T10:00:00Z", finishedAt: "2026-10-29T10:05:00Z", batchId: replicate == nil ? nil : "batch-1", replicate: replicate),
             ref: ResultRef(requested: requested, sha: String(repeating: shaByte, count: 40), componentModel: model, backends: backends),
-            suite: ResultSuite(sha: Support.suiteSHA, target: CompatManifest.benchmarkTarget, filter: "^fixture$", configurationHash: configurationHash),
+            suite: ResultSuite(sha: ReportSupport.suiteSHA, target: CompatManifest.benchmarkTarget, filter: "^fixture$", configurationHash: configurationHash),
             packages: ResultSchema.requiredPins,
             toolchain: ResultToolchain(swiftVersion: "Apple Swift version 6.4\nTarget: arm64-apple-macosx26.0", buildMode: ResultSchema.buildMode),
-            host: Support.host,
+            host: ReportSupport.host,
             workloads: CompatManifest.workloads.filter { used.contains($0.identity) },
             unsupported: Array(CompatManifest.unsupported.prefix(1)),
             benchmarks: benchmarks,

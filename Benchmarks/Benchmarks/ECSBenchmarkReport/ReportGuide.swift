@@ -2,6 +2,7 @@
 // statisticians. The worked examples use generic illustrative numbers that are clearly marked as such; none of them comes from the
 // report being rendered.
 import Foundation
+import ECSBenchmarkResultSchema
 
 enum ReportGuide {
     private static var delta: Double { ReportStatistics.defaultDelta }

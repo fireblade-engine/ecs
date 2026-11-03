@@ -49,7 +49,7 @@ let package = Package(
                 .plugin(name: "BenchmarkPlugin", package: "benchmark")
             ]
         ),
-        // Wrapper schema, native-baseline mirror, writer and validator of the per-ref result file.
+        // Wrapper schema, native-baseline mirror, writer and validator of the per-ref result file (no report code).
         .target(
             name: "ECSBenchmarkResultSchema",
             dependencies: [
@@ -63,6 +63,22 @@ let package = Package(
             dependencies: ["ECSBenchmarkResultSchema"],
             path: "Benchmarks/ECSBenchmarkResults"
         ),
+        // The HTML report: statistics, rendering and the `report` command line. It reads result files through the schema target and
+        // is a separate target so that the snapshot builds of every ref (which build only ECSBenchmarkResults) do not compile it.
+        .target(
+            name: "ECSBenchmarkReport",
+            dependencies: [
+                "ECSBenchmarkResultSchema",
+                "ECSCompatSuite",
+                .product(name: "Benchmark", package: "benchmark")
+            ],
+            path: "Benchmarks/ECSBenchmarkReport"
+        ),
+        .executableTarget(
+            name: "ECSBenchmarkReportCLI",
+            dependencies: ["ECSBenchmarkReport"],
+            path: "Benchmarks/ECSBenchmarkReportCLI"
+        ),
         .testTarget(
             name: "ResultSchemaTests",
             dependencies: [
@@ -72,6 +88,16 @@ let package = Package(
             ],
             path: "Tests/ResultSchemaTests",
             resources: [.copy("Fixtures")]
+        ),
+        .testTarget(
+            name: "ReportTests",
+            dependencies: [
+                "ECSBenchmarkReport",
+                "ECSBenchmarkResultSchema",
+                "ECSCompatSuite",
+                .product(name: "Benchmark", package: "benchmark")
+            ],
+            path: "Tests/ReportTests"
         ),
         .testTarget(
             name: "CompatSuiteTests",

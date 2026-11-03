@@ -1,6 +1,7 @@
 import Benchmark
 import Foundation
 import Testing
+@testable import ECSBenchmarkReport
 @testable import ECSBenchmarkResultSchema
 
 @Suite
@@ -380,20 +381,20 @@ struct ReportTests {
 
     @Test
     func cliWritesReportDirectoryAfterValidatingEveryInput() throws {
-        let directory = try Support.scratchDirectory()
+        let directory = try ReportSupport.scratchDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }
         let paths = try writeInputs(directory)
         let output = directory.appendingPathComponent("report").path
-        #expect(ResultsCLI.run(["report"] + paths + ["--baseline", "main", "--title", "Fixture", "--output-dir", output]) == 0)
+        #expect(ReportCLI.run(paths + ["--baseline", "main", "--title", "Fixture", "--output-dir", output]) == 0)
         let html = try String(contentsOfFile: output + "/BenchmarkReport.html", encoding: .utf8)
         #expect(html.contains("<title>Fixture</title>") && html.contains("<h1>Fixture</h1>"))
         #expect(ReportHTMLSupport.text(html).contains("- Baseline: `main`"))
         #expect(try FileManager.default.contentsOfDirectory(atPath: output) == ["BenchmarkReport.html"], "one file and nothing else")
 
         #expect(ResultsCLI.run(["report", paths[0], "--output-dir", output + "2", "--overwrite"]) != 0, "needs two inputs")
-        #expect(ResultsCLI.run(["report"] + paths + ["--baseline", "nope", "--output-dir", output + "3"]) != 0)
-        #expect(ResultsCLI.run(["report"] + paths) != 0, "needs --output-dir")
-        #expect(ResultsCLI.run(["report"] + paths + ["--output", output + "4"]) != 0, "the old option is gone")
+        #expect(ReportCLI.run(paths + ["--baseline", "nope", "--output-dir", output + "3"]) != 0)
+        #expect(ReportCLI.run(paths) != 0, "needs --output-dir")
+        #expect(ReportCLI.run(paths + ["--output", output + "4"]) != 0, "the old option is gone")
         let broken = directory.appendingPathComponent("broken.json")
         try Data("{}".utf8).write(to: broken)
         let missing = directory.appendingPathComponent("never").path
@@ -403,26 +404,26 @@ struct ReportTests {
 
     @Test
     func cliNeverOverwritesInputsOrNonEmptyOutputDirectories() throws {
-        let directory = try Support.scratchDirectory()
+        let directory = try ReportSupport.scratchDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }
         let paths = try writeInputs(directory)
         let before = try paths.map { try Data(contentsOf: URL(fileURLWithPath: $0)) }
         func inputsUntouched() throws -> Bool { try paths.map { try Data(contentsOf: URL(fileURLWithPath: $0)) } == before }
 
         // The inputs' own directory is not empty: refused without --overwrite, and the JSON files survive --overwrite.
-        #expect(ResultsCLI.run(["report"] + paths + ["--output-dir", directory.path]) != 0)
+        #expect(ReportCLI.run(paths + ["--output-dir", directory.path]) != 0)
         #expect(try inputsUntouched())
         // An input given as the output directory (a file) is refused even with --overwrite.
-        #expect(ResultsCLI.run(["report"] + paths + ["--output-dir", paths[0], "--overwrite"]) != 0)
+        #expect(ReportCLI.run(paths + ["--output-dir", paths[0], "--overwrite"]) != 0)
         let link = directory.appendingPathComponent("link")
         try FileManager.default.createSymbolicLink(atPath: link.path, withDestinationPath: paths[1])
-        #expect(ResultsCLI.run(["report"] + paths + ["--output-dir", link.path, "--overwrite"]) != 0)
+        #expect(ReportCLI.run(paths + ["--output-dir", link.path, "--overwrite"]) != 0)
         #expect(try inputsUntouched())
 
         let output = directory.appendingPathComponent("report")
         try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
         try Data("precious".utf8).write(to: output.appendingPathComponent("notes.txt"))
-        #expect(ResultsCLI.run(["report"] + paths + ["--output-dir", output.path]) != 0, "non-empty without --overwrite")
+        #expect(ReportCLI.run(paths + ["--output-dir", output.path]) != 0, "non-empty without --overwrite")
         #expect(try Data(contentsOf: output.appendingPathComponent("notes.txt")) == Data("precious".utf8))
         #expect(!FileManager.default.fileExists(atPath: output.appendingPathComponent("BenchmarkReport.html").path))
 
@@ -430,20 +431,20 @@ struct ReportTests {
         try FileManager.default.createDirectory(at: output.appendingPathComponent("workloads"), withIntermediateDirectories: true)
         try Data("old".utf8).write(to: output.appendingPathComponent("workloads/old.md"))
         try Data("old".utf8).write(to: output.appendingPathComponent("BenchmarkReport.html"))
-        #expect(ResultsCLI.run(["report"] + paths + ["--output-dir", output.path, "--overwrite"]) == 0)
+        #expect(ReportCLI.run(paths + ["--output-dir", output.path, "--overwrite"]) == 0)
         #expect(try String(contentsOf: output.appendingPathComponent("BenchmarkReport.html"), encoding: .utf8).contains("<h1>FirebladeECS benchmark comparison</h1>"))
         #expect(FileManager.default.fileExists(atPath: output.appendingPathComponent("workloads/old.md").path))
         #expect(try Data(contentsOf: output.appendingPathComponent("notes.txt")) == Data("precious".utf8))
         #expect(try inputsUntouched())
 
         // A fresh or empty directory works without the flag; an existing file is refused.
-        #expect(ResultsCLI.run(["report"] + paths + ["--output-dir", directory.appendingPathComponent("fresh").path]) == 0)
+        #expect(ReportCLI.run(paths + ["--output-dir", directory.appendingPathComponent("fresh").path]) == 0)
         let empty = directory.appendingPathComponent("empty")
         try FileManager.default.createDirectory(at: empty, withIntermediateDirectories: true)
-        #expect(ResultsCLI.run(["report"] + paths + ["--output-dir", empty.path]) == 0)
+        #expect(ReportCLI.run(paths + ["--output-dir", empty.path]) == 0)
         let file = directory.appendingPathComponent("file.txt")
         try Data("x".utf8).write(to: file)
-        #expect(ResultsCLI.run(["report"] + paths + ["--output-dir", file.path, "--overwrite"]) != 0)
+        #expect(ReportCLI.run(paths + ["--output-dir", file.path, "--overwrite"]) != 0)
         #expect(try inputsUntouched())
     }
 
@@ -549,12 +550,12 @@ struct ReportTests {
 
     @Test
     func resultsToolsLaunchNoProcess() throws {
-        // By design the renderer is a function over decoded values; this guards the whole schema target and the executable
-        // target (its main.swift) against ever acquiring a process launch.
+        // By design the renderer is a function over decoded values; this guards the schema and report targets and the executable
+        // targets (their main.swift) against ever acquiring a process launch.
         let forbidden = try Regex(#"\bProcess\b|\bNSTask\b|posix_spawn|\bsystem\(|\bpopen\(|\bexecv|\bfork\("#)
         var checked: [String] = []
-        for target in ["ECSBenchmarkResultSchema", "ECSBenchmarkResults"] {
-            let directory = Support.packageRoot.appendingPathComponent("Benchmarks/\(target)")
+        for target in ["ECSBenchmarkResultSchema", "ECSBenchmarkResults", "ECSBenchmarkReport", "ECSBenchmarkReportCLI"] {
+            let directory = ReportSupport.packageRoot.appendingPathComponent("Benchmarks/\(target)")
             let sources = try FileManager.default.contentsOfDirectory(atPath: directory.path).filter { $0.hasSuffix(".swift") }
             for source in sources {
                 let text = try String(contentsOf: directory.appendingPathComponent(source), encoding: .utf8)
@@ -562,8 +563,8 @@ struct ReportTests {
                 checked.append("\(target)/\(source)")
             }
         }
-        #expect(checked.contains("ECSBenchmarkResultSchema/BenchmarkReport.swift"))
-        #expect(checked.contains("ECSBenchmarkResults/main.swift"))
+        #expect(checked.contains("ECSBenchmarkReport/BenchmarkReport.swift"))
+        #expect(checked.contains("ECSBenchmarkResults/main.swift") && checked.contains("ECSBenchmarkReportCLI/main.swift"))
     }
 
     @Test

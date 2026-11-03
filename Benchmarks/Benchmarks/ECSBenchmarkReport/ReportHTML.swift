@@ -3,6 +3,7 @@
 // value is HTML-escaped, so text from result files cannot inject markup. Links are built only by `HTMLText.StringInterpolation.appendInterpolation(anchor:_:)`
 // and always point at an in-page `#` target.
 import Foundation
+import ECSBenchmarkResultSchema
 
 /// HTML text: trusted literal markup plus escaped interpolations.
 struct HTMLText: ExpressibleByStringInterpolation, Equatable {

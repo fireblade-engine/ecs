@@ -1,6 +1,7 @@
 import Benchmark
 import Foundation
 import Testing
+@testable import ECSBenchmarkReport
 @testable import ECSBenchmarkResultSchema
 
 /// The fast report read path must reproduce the native histogram arithmetic exactly.
@@ -32,19 +33,20 @@ struct ReportHistogramReaderTests {
             entries.append(ReportFixtures.Entry(identity: ReportFixtures.w1, backend: "default", scale: index + 1, results: [result]))
         }
         let file = ReportFixtures.file(requested: "1.4.3", shaByte: "a", model: "class", backends: ["default"], entries: entries)
-        let directory = try Support.scratchDirectory()
+        let directory = try ReportSupport.scratchDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }
         let path = directory.appendingPathComponent("file.json").path
         try BenchmarkResultFile.encoder().encode(file).write(to: URL(fileURLWithPath: path))
 
-        let loaded = try ResultValidator.loadForReport(at: path)
-        #expect(loaded.storedHistograms.count == results.count)
+        let input = try ReportInput.load(at: path)
+        let loaded = input.file
+        #expect(input.histograms.count == results.count)
         for (identifier, original) in file.baseline.results {
             let fast = try #require(loaded.baseline.results[identifier])
             #expect(fast.count == original.count)
             for (a, b) in zip(fast, original) {
                 let expected = ReportSample(b)
-                let actual = ReportSample(a, stored: loaded.storedHistograms)
+                let actual = ReportSample(a, stored: input.histograms)
                 #expect(actual.measurementCount == expected.measurementCount)
                 #expect(actual.mean == expected.mean, "\(identifier.name) mean")
                 #expect(actual.percentiles == expected.percentiles, "\(identifier.name) percentiles")

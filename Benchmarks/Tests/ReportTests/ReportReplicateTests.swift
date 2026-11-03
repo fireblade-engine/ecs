@@ -2,6 +2,7 @@ import Benchmark
 import ECSCompatSuite
 import Foundation
 import Testing
+@testable import ECSBenchmarkReport
 @testable import ECSBenchmarkResultSchema
 
 /// Synthetic multi-replicate inputs: grouping, the exact statistics wiring, BH across workloads, verdict paths, drift and the

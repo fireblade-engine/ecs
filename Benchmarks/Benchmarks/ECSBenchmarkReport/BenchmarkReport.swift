@@ -4,6 +4,7 @@
 import Benchmark
 import ECSCompatSuite
 import Foundation
+import ECSBenchmarkResultSchema
 
 public struct ReportOptions: Sendable {
     public var title: String
@@ -43,12 +44,45 @@ public enum ReportError: Error, CustomStringConvertible, Equatable {
     }
 }
 
+/// A result file read for the report: the decoded file plus the histograms lifted out of its raw bytes (see `StrippedResultFile`).
+public struct ReportInput {
+    public let file: BenchmarkResultFile
+    /// The histograms behind `file.baseline`, whose counts arrays were not decoded, keyed by the ordinal stored in each decoded
+    /// histogram's `highestTrackableValue`. Empty for a file that was not read by `load(at:)`.
+    let histograms: [UInt64: StoredHistogram]
+
+    /// Wraps an already decoded file; its native histograms must carry their counts.
+    public init(_ file: BenchmarkResultFile) {
+        self.file = file
+        histograms = [:]
+    }
+
+    /// Reads and validates a result file with the fast histogram path: the counts arrays are read by a linear scan instead of
+    /// `JSONDecoder`. The decoded file's native histograms are not usable; the report reads `histograms`.
+    public static func load(at path: String) throws -> ReportInput {
+        guard let data = FileManager.default.contents(atPath: path) else { throw ResultError("cannot read result file at \(path)") }
+        return try ReportInput(data)
+    }
+
+    init(_ data: Data) throws {
+        let stripped = try StrippedResultFile(data)
+        file = try ResultValidator.decode(stripped.data)
+        histograms = stripped.histograms
+    }
+}
+
 public enum BenchmarkReport {
     /// The one file of a report directory.
     public static let fileName = "BenchmarkReport.html"
 
     /// Renders the comparison of already validated result files.
     public static func render(_ files: [BenchmarkResultFile], options: ReportOptions = ReportOptions()) throws -> RenderedReport {
+        try render(files.map(ReportInput.init), options: options)
+    }
+
+    /// Renders the comparison of files read with `ReportInput.load(at:)`.
+    public static func render(_ inputs: [ReportInput], options: ReportOptions = ReportOptions()) throws -> RenderedReport {
+        let files = inputs.map(\.file)
         guard files.count >= 2 else { throw ResultError("a report needs at least two result files, got \(files.count)") }
         for file in files {
             var seen = Set<String>()
@@ -56,7 +90,7 @@ public enum BenchmarkReport {
                 throw ReportError.duplicateBenchmarkName(input: file.ref.requested, name: benchmark.name)
             }
         }
-        let model = try ReportModel(files: files, baseline: options.baseline)
+        let model = try ReportModel(files: files, histograms: inputs.map(\.histograms), baseline: options.baseline)
         var writer = ReportWriter(model: model, title: options.title)
         let html = try writer.render()
         return RenderedReport(html: html, warnings: model.warnings)
@@ -117,7 +151,8 @@ struct ReportModel {
     private(set) var comparisons: [ReportComparisonKey: ReportComparison] = [:]
     private(set) var drift: [ReportDriftCell] = []
 
-    init(files: [BenchmarkResultFile], baseline requested: String?) throws {
+    /// `histograms` holds one dictionary per file (empty when the files were not read with the fast path).
+    init(files: [BenchmarkResultFile], histograms: [[UInt64: StoredHistogram]] = [], baseline requested: String?) throws {
         self.files = files
         // Group by (ref SHA, component model), in order of first appearance.
         var order: [String] = []
@@ -187,7 +222,7 @@ struct ReportModel {
                         metrics[result.metric.description] = result.metric
                         let key = ReportKey(identity: benchmark.identity, scale: benchmark.scale, metric: result.metric.description)
                         perBackend[benchmark.backend]?.replicates[key, default: []].append(
-                            ReportReplicateSample(replicate: group.replicateIndices[position], round: round, sample: ReportSample(result, stored: file.storedHistograms))
+                            ReportReplicateSample(replicate: group.replicateIndices[position], round: round, sample: ReportSample(result, stored: histograms.indices.contains(fileIndex) ? histograms[fileIndex] : [:]))
                         )
                     }
                 }

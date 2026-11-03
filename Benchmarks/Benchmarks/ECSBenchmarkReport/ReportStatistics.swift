@@ -2,6 +2,7 @@
 // Double inputs: no resampling, no randomness. The replicate (one independent process) is the unit of analysis, so the
 // inputs are replicate medians. Invalid input (NaN, infinite, non-positive where a log is taken, empty) throws.
 import Foundation
+import ECSBenchmarkResultSchema
 
 enum StatisticsError: Error, Equatable {
     case invalidInput(String)

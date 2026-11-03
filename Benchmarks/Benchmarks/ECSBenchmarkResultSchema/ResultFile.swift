@@ -145,10 +145,6 @@ public struct BenchmarkResultFile: Codable {
     public var unsupported: [CompatManifest.Unsupported]
     public var benchmarks: [ResultBenchmark]
     public var baseline: NativeBaselineEnvelope
-    /// Set only by `ResultValidator.loadForReport`: the histograms behind `baseline`, whose counts arrays were not decoded (see
-    /// `StrippedResultFile`). Keyed by the ordinal stored in each decoded histogram's `highestTrackableValue`. Not part of the file.
-    var storedHistograms: [UInt64: StoredHistogram] = [:]
-
     private enum CodingKeys: String, CodingKey {
         case schema, schemaVersion, run, ref, suite, packages, toolchain, host, workloads, unsupported, benchmarks, baseline
     }

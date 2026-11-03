@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+@testable import ECSBenchmarkReport
 @testable import ECSBenchmarkResultSchema
 
 /// The single-file HTML report: self-contained, escaped, data embedded, verdicts shown by tint and symbol.

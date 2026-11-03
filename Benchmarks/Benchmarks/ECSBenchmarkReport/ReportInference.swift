@@ -3,6 +3,7 @@
 // verdicts, and the Kendall drift diagnostic. All numerics live in ReportStatistics; this file only arranges inputs and outputs.
 import Benchmark
 import Foundation
+import ECSBenchmarkResultSchema
 
 /// One series at one cell, summarised over its replicates. The replicate is the unit of analysis; iterations are never pooled.
 struct ReportCell {

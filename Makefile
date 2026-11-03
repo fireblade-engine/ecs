@@ -131,10 +131,13 @@ REPORT_BASELINE ?=
 REPORT_TITLE ?=
 REPORT_OVERWRITE ?=
 RESULTS_TOOL = Benchmarks/.build/release/ECSBenchmarkResults
+# User-supplied values reach the recipes through the environment, never pasted into the shell text, so quotes, backticks
+# and `$(...)` in a filter or title are data. (Make still expands a `$` on the make command line: write `$$`.)
+export REFS BENCHMARK_FILTER REPLICATES SEED REPORT_DIR RESULTS REPORT_BASELINE REPORT_TITLE
 
 # Runtime benchmarks live in a separate package (Benchmarks/) so the benchmark dependency stays out of FirebladeECS.
 benchmark:
-	cd Benchmarks && swift package benchmark
+	cd Benchmarks && swift package benchmark --target ECSBenchmark
 
 # Measures the shared compatibility suite at each committed ref (comma-separated tags, branches or SHAs) in isolated
 # snapshots and saves one validated result file per ref under Benchmarks/Results/<UTC timestamp>/.
@@ -142,14 +145,14 @@ benchmark:
 # recorded by default), one result file per replicate.
 # Without BENCHMARK_FILTER only the smallest scale of every workload runs; BENCHMARK_FILTER='.*' selects everything.
 benchmark-compare:
-	@if [ -z "$(REFS)" ]; then printf 'Set REFS to comma-separated Git refs, for example: make benchmark-compare REFS=1.4.3,main\n' >&2; exit 2; fi
-	./Scripts/benchmark-run-refs.sh --refs "$(REFS)" $(if $(BENCHMARK_FILTER),--filter "$(BENCHMARK_FILTER)") $(if $(REPLICATES),--replicates "$(REPLICATES)") $(if $(SEED),--seed "$(SEED)") $(if $(ALLOW_STALE_REFS),--allow-stale-refs)
+	@if [ -z "$$REFS" ]; then printf 'Set REFS to comma-separated Git refs, for example: make benchmark-compare REFS=1.4.3,main\n' >&2; exit 2; fi
+	./Scripts/benchmark-run-refs.sh --refs "$$REFS" $(if $(BENCHMARK_FILTER),--filter "$$BENCHMARK_FILTER") $(if $(REPLICATES),--replicates "$$REPLICATES") $(if $(SEED),--seed "$$SEED") $(if $(ALLOW_STALE_REFS),--allow-stale-refs)
 
 # Renders the report directory (the single file BenchmarkReport.html) from saved result files only (at least two); it never runs benchmarks.
 benchmark-report:
-	@if [ -z "$(RESULTS)" ]; then printf 'Set RESULTS to saved result files, for example: make benchmark-report RESULTS="a.json b.json"\n' >&2; exit 2; fi
+	@if [ -z "$$RESULTS" ]; then printf 'Set RESULTS to saved result files, for example: make benchmark-report RESULTS="a.json b.json"\n' >&2; exit 2; fi
 	swift build --package-path Benchmarks -c release --product ECSBenchmarkResults $(SWIFT_FLAGS)
-	$(RESULTS_TOOL) report $(RESULTS) --output-dir "$(REPORT_DIR)" $(if $(REPORT_BASELINE),--baseline "$(REPORT_BASELINE)") $(if $(REPORT_TITLE),--title "$(REPORT_TITLE)") $(if $(REPORT_OVERWRITE),--overwrite)
+	$(RESULTS_TOOL) report $$RESULTS --output-dir "$$REPORT_DIR" $(if $(REPORT_BASELINE),--baseline "$$REPORT_BASELINE") $(if $(REPORT_TITLE),--title "$$REPORT_TITLE") $(if $(REPORT_OVERWRITE),--overwrite)
 
 test-benchmarks:
 	cd Benchmarks && swift test $(SWIFT_FLAGS)

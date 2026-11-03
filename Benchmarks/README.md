@@ -71,7 +71,7 @@ Stale branches: a ref that is a local branch behind its upstream (or `origin/<br
 Selection:
 
 - **Smoke (default):** without a filter only the smallest scale of every workload runs.
-- **Full:** `BENCHMARK_FILTER='.*' make benchmark-compare REFS=...` runs every workload and scale. `BENCHMARK_FILTER` takes a regular expression that must match the whole benchmark name (the package uses `wholeMatch`, so `/ 16$` alone selects nothing; write `.* / 16$`), for example `BENCHMARK_FILTER='iteration\..* / 16'`; in a Makefile recipe or inline `make` assignment a literal `$` must be written `$$`. A filter that matches nothing fails before measuring, naming the filter.
+- **Full:** `BENCHMARK_FILTER='.*' make benchmark-compare REFS=...` runs every workload and scale. `BENCHMARK_FILTER` takes a regular expression that must match the whole benchmark name (the package uses `wholeMatch`, so `/ 16$` alone selects nothing; write `.* / 16$`), for example `BENCHMARK_FILTER='iteration\..* / 16'`; in a Makefile recipe or inline `make` assignment a literal `$` must be written `$$`. The plugin applies the filter; one that matches nothing measures nothing.
 
 Replicates:
 
@@ -115,7 +115,7 @@ The directory holds `BenchmarkReport.html`: a single file with inline style and 
 
 | Target | Purpose |
 | :--- | :--- |
-| `make benchmark` | Run the broad package benchmarks of this package |
+| `make benchmark` | Run the broad `ECSBenchmark` package benchmarks (not the compat suite, which `benchmark-compare` measures per ref) |
 | `make benchmark-compare REFS=a,b,c [BENCHMARK_FILTER=...] [REPLICATES=k] [SEED=n] [ALLOW_STALE_REFS=1]` | Measure refs and save one validated result file per ref and replicate |
 | `make benchmark-report RESULTS="a.json b.json" [REPORT_DIR=...] [REPORT_BASELINE=...] [REPORT_TITLE=...] [REPORT_OVERWRITE=1]` | Render `BenchmarkReport.html` from saved results |
 | `make test-benchmarks` | Swift tests of this package |

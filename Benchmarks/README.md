@@ -12,20 +12,24 @@ To run all the available benchmarks from the repository root:
 
 or from this directory:
 
-    swift package benchmark --format markdown
+    swift package benchmark --target ECSBenchmark --format markdown
 
 For more help on the package-benchmark SwiftPM plugin:
 
     swift package benchmark help
 
+Without `--target ECSBenchmark` the plugin also runs the `ECSCompatBenchmark` suite, which `make benchmark-compare` measures per ref.
+
 Creating a local baseline:
 
-    swift package --allow-writing-to-package-directory benchmark baseline update dev
+    swift package --allow-writing-to-package-directory benchmark baseline update dev --target ECSBenchmark
     swift package benchmark baseline list
 
 Comparing to the baseline 'dev'
 
-    swift package benchmark baseline compare dev
+    swift package benchmark baseline compare dev --target ECSBenchmark
+
+Native baselines are written to `Benchmarks/.benchmarkBaselines/` (gitignored).
 
 For more details on creating and comparing package-benchmark named baselines, read [Creating and Comparing Benchmark Baselines](https://swiftpackageindex.com/ordo-one/package-benchmark/main/documentation/benchmark/creatingandcomparingbaselines).
 
@@ -70,7 +74,7 @@ Stale branches: a ref that is a local branch behind its upstream (or `origin/<br
 
 Selection:
 
-- **Smoke (default):** without a filter only the smallest scale of every workload runs.
+- **Smoke (default):** without a filter the default filter `^(entity\.create\.no-entities .* / 0|.* / 16)$` runs every workload at 16 entities plus `entity.create.no-entities`, whose only scale is 0.
 - **Full:** `BENCHMARK_FILTER='.*' make benchmark-compare REFS=...` runs every workload and scale. `BENCHMARK_FILTER` takes a regular expression that must match the whole benchmark name (the package uses `wholeMatch`, so `/ 16$` alone selects nothing; write `.* / 16$`), for example `BENCHMARK_FILTER='iteration\..* / 16'`; in a Makefile recipe or inline `make` assignment a literal `$` must be written `$$`. The plugin applies the filter; one that matches nothing measures nothing.
 
 Replicates:
@@ -80,7 +84,7 @@ make benchmark-compare REFS=1.4.3,main REPLICATES=10 [SEED=42]
 ```
 
 - **Build once, run k times:** each ref is prepared and built once. Then `REPLICATES` interleaved rounds follow, and each round runs every ref once as a fresh process of the prepared snapshot. The order within a round is a deterministic shuffle of the seed and the round number, so the same `SEED` reproduces the same order. Without `SEED` a random seed is chosen. It is printed and recorded in every result.
-- **Files:** one self-contained result per replicate, `<ref>-<sha12>.r<NN>.json`, so a directory listing sorts by ref and then replicate. Each records `run.replicate` (`index`, `count`, `round`, `position`, `seed`); `run.startedAt` and `run.finishedAt` are that replicate's own start and end, and the batch id is shared. The host is checked before every replicate.
+- **Files:** one self-contained result per replicate, `<ref>-<sha12>.r<NN>.json`, so a directory listing sorts by ref and then replicate. Each records `run.replicate` (`index`, which is also the round, `count`, `position`, `seed`); `run.startedAt` and `run.finishedAt` are that replicate's own start and end, and the batch id is shared. The host is checked before every replicate.
 - **Failure:** the first failing build or replicate ends the run, and the replicates that finished are kept.
 - **One replicate (default):** the refs run once each in the given order (no shuffle) and files keep the `<ref>-<sha12>.json` names without replicate fields. A file without `run.replicate` counts as replicate 1 of 1.
 
@@ -88,7 +92,7 @@ The runner script offers more options (`--suite-ref`, `--out`, `--replicates`, `
 
 ## Result files
 
-Each file is self-contained JSON (`schema` `fireblade-ecs-benchmark-result`, `schemaVersion` 1) with the keys `run` (id, timestamps, batch id), `ref` (requested name, full SHA, component model, backends), `suite` (suite SHA, filter, configuration hash), `packages` (resolved pins), `toolchain`, `host`, `workloads` (identity, upstream name, parity), `unsupported`, `benchmarks` (one per benchmark name with identity, backend and scale) and `baseline`, the package-benchmark native baseline embedded unchanged with every statistic at the package's precision. A file is validated when it is written and when it is read:
+Each file is self-contained JSON (`schema` `fireblade-ecs-benchmark-result`, `schemaVersion` 2) with the keys `run` (id, timestamps, batch id), `ref` (requested name, full SHA, component model, backends), `suite` (suite SHA, filter, configuration hash), `packages` (resolved pins), `toolchain`, `host`, `workloads` (identity, upstream name, parity), `unsupported`, `benchmarks` (one per benchmark name with identity, backend and scale) and `baseline`, the package-benchmark native baseline embedded unchanged with every statistic at the package's precision. A file is validated when it is written and when it is read:
 
 ```sh
 cd Benchmarks && swift run -c release ECSBenchmarkResults validate <result.json>
@@ -107,9 +111,22 @@ make benchmark-report RESULTS="Benchmarks/Results/<run>/1.4.3-<sha>.json Benchma
 
 **Inputs and grouping.** Pass every file of a replicated run (`make benchmark-compare REPLICATES=10`). Files are grouped into series by ref SHA, component model and backend, and into replicates by the `run.replicate` provenance; a file without it counts as replicate 1 of 1. The report refuses two files with the same replicate index in one series and replicates with different configuration hashes. Incomplete replicate sets, unequal replicate counts, differing toolchains or hosts, and differing configuration hashes between refs are warnings, printed in the report and on stderr.
 
-**Statistics** (Methodology.md "Statistical design v3"; all exact, non-parametric, deterministic, in `ReportStatistics.swift`). The replicate is the unit of analysis. Per replicate and cell the median, p25, p75 and mean come from the stored histogram. Per series and cell, the centre is the median of the replicate medians and the error bar is the distribution-free order-statistic 95% CI of that median (omitted below 6 replicates; the exact coverage is in the methods section). Non-baseline series are compared with their paired baseline series on wall clock only: `speed (×)` (baseline ÷ series, above 1 is faster) is the Hodges–Lehmann estimate on the log replicate medians with its exact CI; `q` is the Benjamini–Hochberg adjusted p of an exact Mann–Whitney test across all wall-clock comparisons of the report; the `verdict` is `faster`, `slower`, `equivalent` (CI inside the ±5% zone), `inconclusive`, or `n/a (k replicates)` when a side has fewer than 2 replicates. Other metrics are descriptive only. Kendall's τ between round and replicate median is checked per series and cell with at least 3 replicates (BH-adjusted); the methods section counts and lists the flagged cells. With one replicate the report shows medians and the within-run IQR; intervals, `q` and verdicts are `n/a (1 replicate)`.
+**Statistics** (Methodology.md "Statistical design v3"; all exact, non-parametric, deterministic, in `ReportStatistics.swift`). The replicate is the unit of analysis. Per replicate and cell the median, p25, p75 and mean come from the stored histogram. Per series and cell, the centre is the median of the replicate medians and the error bar is the distribution-free order-statistic 95% CI of that median (omitted below 6 replicates; the exact coverage is in the methods section). Non-baseline series are compared with their paired baseline series on wall clock only: `speed (×)` (baseline ÷ series, above 1 is faster) is the Hodges–Lehmann estimate on the log replicate medians with its distribution-free CI (exact only when no replicate medians tie); `q` is the Benjamini–Hochberg adjusted p of an exact Mann–Whitney test across all wall-clock comparisons of the report; the `verdict` is `faster`, `slower`, `equivalent` (CI inside the ±5% zone), `inconclusive`, or `n/a (k replicates)` when a side has fewer than 2 replicates. Other metrics are descriptive only. Kendall's τ between round and replicate median is checked per series and cell with at least 3 replicates (BH-adjusted); the methods section counts and lists the flagged cells. With one replicate the report shows medians and the within-run IQR; intervals, `q` and verdicts are `n/a (1 replicate)`.
 
-The directory holds `BenchmarkReport.html`: a single file with inline style and script, no external requests, readable offline. It contains the header and notes, warnings, a summary, one section per workload with the plots (per entity, total, linear total, relative speed with CI ribbon and the ±5% zone) and the wall-clock tables, a "How to read this report" section for non-statisticians, a glossary, the methods section (protocol, estimators, tests, δ, q, seed, coverage, drift, limits), then provenance, series pairing, parity notes and the unsupported list.
+The directory holds `BenchmarkReport.html`: a single file with inline style and script, no external requests, readable offline. It contains the header and notes, warnings, a summary, one section per workload with the plots (total, per entity and relative speed with CI ribbon and the ±5% zone, each with a log/linear toggle; a workload measured only at entity count 0 has tables but no plots) and the wall-clock tables, a "How to read this report" section for non-statisticians, a glossary, the methods section (protocol, estimators, tests, δ, q, seed, coverage, drift, limits), then provenance, series pairing, parity notes and the unsupported list.
+
+## Publishing the first report
+
+The committed report compares `1.4.3` with `2.0.0` (run at the 2.0.0 tag, full selection, 10 replicates):
+
+```sh
+caffeinate -i make benchmark-compare REFS=1.4.3,2.0.0 REPLICATES=10 BENCHMARK_FILTER='.*'
+make benchmark-report RESULTS="Benchmarks/Results/<run>/*.json" REPORT_BASELINE=1.4.3 REPORT_DIR=Documentation/Benchmarks REPORT_OVERWRITE=1
+```
+
+`<run>` is the UTC timestamp directory printed by the first command. `RESULTS` is split by the shell and the glob is expanded from the repository root; it matches the finished `*.json` files only, not `.failed/` or staged `.partial` files. `REPORT_OVERWRITE=1` is needed because `Documentation/Benchmarks` already holds other files; only `BenchmarkReport.html` is replaced.
+
+Running unattended on macOS: wrap the run in `caffeinate -i` (see above) and keep the machine plugged in and otherwise idle. A sleep or a load spike in the middle of a run invalidates the timings of the affected replicates, and a failed run cannot be resumed: `--out` must be empty or absent, so start a new run.
 
 ## Make targets
 

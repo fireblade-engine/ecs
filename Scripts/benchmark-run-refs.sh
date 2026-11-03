@@ -27,7 +27,7 @@ usage() {
 Usage: Scripts/benchmark-run-refs.sh --refs <a,b,c> [options]
 
   --refs <list>       comma-separated committed refs (tags, branches or SHAs); at least one, no duplicates by SHA
-  --filter <regex>    benchmark filter (default: the snapshot script's smallest-scale smoke selection)
+  --filter <regex>    benchmark filter (default: the snapshot script's smoke selection, 16 entities of every workload plus entity.create.no-entities at 0)
   --suite-ref <rev>   commit providing the suite for every ref (default: HEAD)
   --out <dir>         run directory (must not exist or be empty; default: Benchmarks/Results/<UTC timestamp>)
   --repo <dir>        repository to read refs from (default: the repository containing this script)

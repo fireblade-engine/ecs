@@ -22,4 +22,4 @@ make benchmark-compare REFS=1.4.3,main REPLICATES=10 BENCHMARK_FILTER='.*'
 make benchmark-report RESULTS="Benchmarks/Results/<run>/1.4.3-<sha>.json Benchmarks/Results/<run>/main-<sha>.json" REPORT_BASELINE=1.4.3
 ```
 
-Without `BENCHMARK_FILTER` only the smallest scale of every workload runs. `make benchmark-report` renders the single file `BenchmarkReport.html` from saved results and never runs benchmarks. See `Benchmarks/README.md` for all options.
+Without `BENCHMARK_FILTER` only 16 entities of every workload plus `entity.create.no-entities` (which only has 0 entities) run. `make benchmark-report` renders the single file `BenchmarkReport.html` from saved results and never runs benchmarks. See `Benchmarks/README.md` for all options.

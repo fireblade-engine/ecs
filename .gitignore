@@ -60,3 +60,5 @@ conductor
 /graft/
 # Benchmark run results (Scripts/benchmark-run-refs.sh)
 Benchmarks/Results/
+# Native package-benchmark baselines (swift package benchmark baseline update)
+Benchmarks/.benchmarkBaselines/

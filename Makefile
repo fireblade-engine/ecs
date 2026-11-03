@@ -143,7 +143,7 @@ benchmark:
 # snapshots and saves one validated result file per ref under Benchmarks/Results/<UTC timestamp>/.
 # REPLICATES=k (default 1) builds each ref once and runs k interleaved rounds in a seeded shuffled order (SEED=n, random and
 # recorded by default), one result file per replicate.
-# Without BENCHMARK_FILTER only the smallest scale of every workload runs; BENCHMARK_FILTER='.*' selects everything.
+# Without BENCHMARK_FILTER only 16 entities of every workload plus entity.create.no-entities (scale 0) run; BENCHMARK_FILTER='.*' selects everything.
 benchmark-compare:
 	@if [ -z "$$REFS" ]; then printf 'Set REFS to comma-separated Git refs, for example: make benchmark-compare REFS=1.4.3,main\n' >&2; exit 2; fi
 	./Scripts/benchmark-run-refs.sh --refs "$$REFS" $(if $(BENCHMARK_FILTER),--filter "$$BENCHMARK_FILTER") $(if $(REPLICATES),--replicates "$$REPLICATES") $(if $(SEED),--seed "$$SEED") $(if $(ALLOW_STALE_REFS),--allow-stale-refs)

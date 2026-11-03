@@ -21,7 +21,7 @@ Usage: Scripts/benchmark-snapshot.sh <ref> [options]
 
   --suite-ref <rev>   commit providing the suite (default: HEAD); suite paths in the worktree must be clean
   --out <dir>         snapshot directory (must not exist or be empty; default: new temporary directory)
-  --filter <regex>    benchmark filter passed to the Benchmark plugin (default: smallest scale of every compat workload)
+  --filter <regex>    benchmark filter passed to the Benchmark plugin (default: 16 entities of every compat workload plus entity.create.no-entities at 0)
   --result <path>     write a self-contained result file for the run (must not exist; needs a full run)
   --requested <name>  name recorded as the requested ref when <ref> is a full SHA (default: <ref>)
   --batch-id <id>     batch id recorded in the result (set by the multi-ref runner)

@@ -143,6 +143,9 @@ struct ReportScriptTests {
       for (const v of s.ratioTicks(0.9, 1.3)) { assert.ok(v >= 0.9 - 1e-9 && v <= 1.3 + 1e-9); }
       for (const v of s.ratioTicks(0.3, 250)) { assert.ok(v >= 0.3 - 1e-9 && v <= 250 + 1e-9); }
     }
+    // A verdict without a symbol (n/a) reads as plain text, never "undefined".
+    assert.strictEqual(s.verdictText({ sym: "▲", verdict: "faster" }), "▲ faster");
+    assert.strictEqual(s.verdictText({ verdict: "n/a" }), "n/a");
     console.log("all ok");
     """#
 }

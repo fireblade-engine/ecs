@@ -480,6 +480,9 @@ enum ReportScript {
         this.notes.textContent = notes.join(". ") + ".";
       };
 
+      // The verdict with its symbol; a verdict without a symbol (n/a) is the bare text, never "undefined".
+      function verdictText(p) { return (p.sym ? p.sym + " " : "") + p.verdict; }
+
       Plot.prototype.describe = function (d) {
         return this.tipLines(d).join(", ");
       };
@@ -488,13 +491,13 @@ enum ReportScript {
         var lines = [s.ref + " · " + s.backend, "Entities: " + d.n.toLocaleString("en-US")];
         if (this.kind === "relative") {
           lines.push("Speed: " + p.text);
-          if (p.verdict) { lines.push("Verdict: " + p.sym + " " + p.verdict); }
+          if (p.verdict) { lines.push("Verdict: " + verdictText(p)); }
         } else {
           lines.push("Median: " + p.tMedian);
           if (p.tCI) { lines.push("95% CI: " + p.tCI); }
           if (this.kind === "perEntity" && p.tPer) { lines.push("Per entity: " + p.tPer); }
           if (p.tSpeed) { lines.push("Speed: " + p.tSpeed); }
-          if (p.verdict) { lines.push("Verdict: " + p.sym + " " + p.verdict); }
+          if (p.verdict) { lines.push("Verdict: " + verdictText(p)); }
         }
         return lines;
       };
@@ -610,7 +613,7 @@ enum ReportScript {
       if (!hasDOM) {
         module.exports = {
           collect: collect, layoutFor: layoutFor, runs: runs, unionScales: unionScales, niceTicks: niceTicks, ratioTicks: ratioTicks,
-          pickUnit: pickUnit, setData: function (value) { data = value; }
+          pickUnit: pickUnit, verdictText: verdictText, setData: function (value) { data = value; }
         };
         return;
       }

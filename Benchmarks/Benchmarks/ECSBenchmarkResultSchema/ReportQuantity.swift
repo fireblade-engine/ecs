@@ -1,6 +1,6 @@
 // Units, number formatting and statistic extraction for the comparison report. Everything here reads native `Statistics`
 // through non-mutating paths: percentiles come from a copy of the histogram, never from `percentiles()` or `units()`, which
-// write the shared caches described in Methodology.md Step 2.
+// write the shared caches described in Methodology.md "Result schema".
 import Benchmark
 import Foundation
 

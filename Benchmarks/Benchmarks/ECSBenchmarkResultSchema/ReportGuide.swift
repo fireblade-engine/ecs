@@ -118,7 +118,7 @@ struct ReportGuide {
 
     private func confidenceInterval(_ withInterval: [Example], _ all: [Example]) -> [String] {
         var lines = ["### 1. What a confidence interval is", ""]
-        lines.append("- Every number here is measured with noise, so a single speed such as 2.0× could have come out 1.9× or 2.1× in another session. The **confidence interval (CI)** is the range that, with 95% confidence (nominal; the exact coverage is in the methods), contains the true value.")
+        lines.append("- Every number here is measured with noise, so a single speed such as 2.0× could have come out 1.9× or 2.1× in another session. The **confidence interval (CI)** is the range that, with 95% confidence (nominal; the computed coverage is in the methods; speed intervals are exact only when no replicate medians tie, approximate otherwise), contains the true value.")
         lines.append("- `CI low` and `CI high` are its two ends. Read the pair as \"the truth is very likely between these\".")
         lines.append("- **Narrow** CI: the estimate is precise, you can trust the digits you see. **Wide** CI: the data cannot pin the value down; look for more replicates before drawing a conclusion.")
         if !withInterval.isEmpty {

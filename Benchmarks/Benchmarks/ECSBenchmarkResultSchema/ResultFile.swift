@@ -2,7 +2,7 @@ import Benchmark
 import ECSCompatSuite
 
 // The per-ref result file: an app-owned wrapper with full provenance around the plugin's native baseline envelope.
-// The schema is specified in Documentation/Benchmarks/Methodology.md ("Step 8 design").
+// The schema is specified in Documentation/Benchmarks/Methodology.md ("Result schema").
 import Foundation
 
 public enum ResultSchema {

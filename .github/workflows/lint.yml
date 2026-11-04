@@ -1,17 +1,27 @@
 name: Lint
 
-# Runs only when Swift sources or tests change (the files `make lint` scans).
+# Runs only when files that `make lint` scans or configures change.
 on:
   push:
     branches: [ main, master ]
     paths:
       - 'Sources/**/*.swift'
       - 'Tests/**/*.swift'
+      - '.swiftlint.yml'
+      - '.swiftformat'
+      - 'Mintfile'
+      - 'Makefile'
+      - '.github/workflows/lint.yml'
   pull_request:
     branches: [ main, master ]
     paths:
       - 'Sources/**/*.swift'
       - 'Tests/**/*.swift'
+      - '.swiftlint.yml'
+      - '.swiftformat'
+      - 'Mintfile'
+      - 'Makefile'
+      - '.github/workflows/lint.yml'
   workflow_dispatch:
 
 concurrency:

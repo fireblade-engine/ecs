@@ -34,7 +34,7 @@ lint:
 
 lint-fix:
 	mint run swiftformat --swiftversion $(SWIFT_PACKAGE_VERSION) --config .swiftformat Sources/ Tests/
-	mint run swiftlint --fix --config .swiftlint.yml --format --quiet Sources/ Tests/
+	mint run swiftlint --fix --config .swiftlint.yml --quiet Sources/ Tests/
 
 # Run tests
 test:

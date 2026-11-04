@@ -11,6 +11,9 @@
         },
         {
             "pattern": "migratingtofirebladeecs2"
+        },
+        {
+            "pattern": "^https://github\\.com/fireblade-engine/ecs/blob/main/Documentation/Benchmarks/"
         }
     ],
     "httpHeaders": [

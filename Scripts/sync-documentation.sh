@@ -268,6 +268,8 @@ with open(os.path.join(versions_html_dir, 'index.html'), 'w') as f:
 script_tag = f'<script src="/{repo_name}/version-picker.js" defer></script>'
 entries = os.listdir(output_dir)
 for entry in entries:
+    if entry == 'benchmarks':
+        continue  # the restored gh-pages copy of the self-contained benchmark report: no version picker
     version_path = os.path.join(output_dir, entry)
     if os.path.isdir(version_path):
         index_file = os.path.join(version_path, 'index.html')
@@ -282,5 +284,16 @@ for entry in entries:
                 with open(index_file, 'w') as f:
                     f.write(content)
 PYTHON_EOF
+
+# Publish the self-contained benchmark report at <site>/benchmarks/. Done after the version-picker injection above, which
+# rewrites every top-level directory's index.html, so the report stays untouched. "benchmarks" matches no version regex.
+BENCHMARK_REPORT="${ROOT}/Documentation/Benchmarks/BenchmarkReport.html"
+if [ -f "${BENCHMARK_REPORT}" ]; then
+    echo "==> Publishing benchmark report to ${OUTPUT_DIR}/benchmarks/index.html..."
+    mkdir -p "${OUTPUT_DIR}/benchmarks"
+    cp "${BENCHMARK_REPORT}" "${OUTPUT_DIR}/benchmarks/index.html"
+else
+    echo "==> Skipping benchmark report: ${BENCHMARK_REPORT} not found."
+fi
 
 echo "Documentation sync, manifest, catalog landing page, and version picker generation complete."

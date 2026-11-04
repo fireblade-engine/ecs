@@ -77,4 +77,12 @@ struct ReportHistogramReaderTests {
         #expect(tampered != original)
         #expect(throws: ResultError.self) { _ = try StrippedResultFile(Data(tampered.utf8)) }
     }
+
+    @Test
+    func countsHoldingAnythingButDigitsAndCommasAreRejected() {
+        for counts in ["1,2x,3", "1, 2", "1,2\n", "-1", "1.5", "1e3", "\"7\"", "[1]"] {
+            let text = #"{"histogram":{"counts":["# + counts + #"]}}"#
+            #expect(throws: ResultError.self, Comment(rawValue: counts)) { _ = try StrippedResultFile(Data(text.utf8)) }
+        }
+    }
 }

@@ -133,7 +133,10 @@ struct StrippedResultFile {
                 while position < end {
                     var value: UInt64 = 0
                     while position < end, bytes[position] != UInt8(ascii: ",") {
-                        value = value &* 10 &+ UInt64(bytes[position] &- UInt8(ascii: "0"))
+                        // The writer emits compact JSON: counts are bare decimal integers separated by commas.
+                        let digit = bytes[position] &- UInt8(ascii: "0")
+                        guard digit <= 9 else { throw ResultError("result file does not match the schema: histogram counts hold a character other than a digit or comma") }
+                        value = value &* 10 &+ UInt64(digit)
                         position += 1
                     }
                     if value != 0 {

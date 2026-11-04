@@ -1,19 +1,32 @@
 name: Lint
 
+# Runs only when files that `make lint` scans or configures change.
 on:
   push:
     branches: [ main, master ]
+    paths:
+      - 'Sources/**/*.swift'
+      - 'Tests/**/*.swift'
+      - '.swiftlint.yml'
+      - '.swiftformat'
+      - 'Mintfile'
+      - 'Makefile'
+      - '.github/workflows/lint.yml'
   pull_request:
     branches: [ main, master ]
+    paths:
+      - 'Sources/**/*.swift'
+      - 'Tests/**/*.swift'
+      - '.swiftlint.yml'
+      - '.swiftformat'
+      - 'Mintfile'
+      - 'Makefile'
+      - '.github/workflows/lint.yml'
   workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-
-env:
-  # Mint itself is not in the Mintfile; the linters it installs are.
-  MINT_VERSION: "0.18.0"
 
 jobs:
   lint:
@@ -22,43 +35,38 @@ jobs:
     # The image tag pins the exact toolchain; Renovate proposes patch updates.
     # renovate: datasource=docker depName=swift
     container: swift:6.2.4-noble
-    timeout-minutes: 45
+    timeout-minutes: 15
     steps:
       - name: Install System Packages
-        run: apt-get update && apt-get install -y --no-install-recommends git curl ca-certificates
+        run: apt-get update && apt-get install -y --no-install-recommends curl ca-certificates unzip
 
       - name: Checkout
         uses: actions/checkout@v7
 
-      # Tool versions are pinned only by the Mintfile; its hash keys the cache of Mint's built tools.
-      - name: Restore Mint Cache
-        id: cache
-        uses: actions/cache/restore@v6
-        with:
-          path: |
-            ~/.mint
-            /usr/local/bin/mint
-          key: mint-linux-swift6.2.4-${{ env.MINT_VERSION }}-${{ hashFiles('Mintfile') }}
-
-      - name: Build Mint
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          git clone --depth 1 --branch "$MINT_VERSION" https://github.com/yonaskolb/Mint.git "$RUNNER_TEMP/Mint"
-          swift build -c release --package-path "$RUNNER_TEMP/Mint"
-          cp "$RUNNER_TEMP/Mint/.build/release/mint" /usr/local/bin/mint
-
+      # The Mintfile is the single source of truth for the linter versions; Mint has no Linux
+      # release, so the prebuilt Linux release binaries of the same versions are used instead.
       - name: Install Linters
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: mint bootstrap
-
-      - name: Save Mint Cache
-        if: steps.cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v6
-        with:
-          path: |
-            ~/.mint
-            /usr/local/bin/mint
-          key: ${{ steps.cache.outputs.cache-primary-key }}
+        run: |
+          swiftlint_version=$(sed -n 's|^realm/SwiftLint@||p' Mintfile)
+          swiftformat_version=$(sed -n 's|^nicklockwood/SwiftFormat@||p' Mintfile)
+          test -n "$swiftlint_version" && test -n "$swiftformat_version"
+          case "$(uname -m)" in
+            x86_64) lint_asset=swiftlint_linux_amd64.zip; format_asset=swiftformat_linux.zip ;;
+            aarch64) lint_asset=swiftlint_linux_arm64.zip; format_asset=swiftformat_linux_aarch64.zip ;;
+            *) echo "::error::Unsupported architecture $(uname -m)"; exit 1 ;;
+          esac
+          mkdir -p "$RUNNER_TEMP/linters"
+          cd "$RUNNER_TEMP/linters"
+          curl -fsSL -o swiftlint.zip "https://github.com/realm/SwiftLint/releases/download/${swiftlint_version}/${lint_asset}"
+          curl -fsSL -o swiftformat.zip "https://github.com/nicklockwood/SwiftFormat/releases/download/${swiftformat_version}/${format_asset}"
+          unzip -oq swiftlint.zip -d swiftlint
+          unzip -oq swiftformat.zip -d swiftformat
+          chmod +x swiftlint/swiftlint-static swiftformat/swiftformat_linux*
+          # swiftlint-static does not depend on the toolchain's SourceKit libraries.
+          echo "SWIFTLINT=$PWD/swiftlint/swiftlint-static" >> "$GITHUB_ENV"
+          echo "SWIFTFORMAT=$(ls "$PWD"/swiftformat/swiftformat_linux*)" >> "$GITHUB_ENV"
+          [ "$("$PWD/swiftlint/swiftlint-static" --version)" = "$swiftlint_version" ]
+          [ "$("$PWD"/swiftformat/swiftformat_linux* --version)" = "$swiftformat_version" ]
 
       - name: Lint
         run: make lint

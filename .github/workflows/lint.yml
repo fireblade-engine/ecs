@@ -45,8 +45,8 @@ jobs:
     steps:
       - name: Install System Packages
         run: |
-          if ! command -v curl > /dev/null || ! command -v unzip > /dev/null; then
-            apt-get update && apt-get install -y --no-install-recommends curl ca-certificates unzip
+          if ! command -v curl > /dev/null || ! command -v unzip > /dev/null || ! command -v make > /dev/null; then
+            apt-get update && apt-get install -y --no-install-recommends curl ca-certificates unzip make
           fi
 
       - name: Checkout

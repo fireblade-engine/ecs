@@ -383,4 +383,3 @@ grep -q 'commit(s) behind' "$test_root/stale-d.err" && fail 'no warning for a ta
 :
 
 printf 'benchmark-run-refs tests passed\n'
-

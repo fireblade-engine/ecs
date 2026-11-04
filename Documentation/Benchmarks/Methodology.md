@@ -2,7 +2,7 @@
 
 Current specification of the git-ref benchmark suite: one shared ordo-one benchmark suite for committed FirebladeECS refs, one self-contained JSON result per ref and replicate, and a report command that compares saved results without rerunning benchmarks. Usage lives in [`Benchmarks/README.md`](../../Benchmarks/README.md).
 
-**Recorded results:** none on `main`. Decision 2026-11-03: no result is recorded until the 2.0.0 tag. The first real run is `make benchmark-compare REFS=1.4.3,2.0.0`; its report is then committed as `Documentation/Benchmarks/BenchmarkReport.html`. `Scripts/sync-documentation.sh` publishes that file only if it exists.
+**Recorded results:** none on `main`. Decision 2026-11-03: no result is recorded until the 2.0.0 tag. The first real run is `make benchmark-compare REFS=1.4.3,2.0.0 REPLICATES=10 BENCHMARK_FILTER='.*'` (see [`Benchmarks/README.md`](../../Benchmarks/README.md), "Publishing the first report"); its report is then committed as `Documentation/Benchmarks/BenchmarkReport.html`. `Scripts/sync-documentation.sh` publishes that file only if it exists.
 
 ## Scope and rules
 

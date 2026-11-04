@@ -54,8 +54,6 @@ struct ReportUnit {
 
 /// One statistic row of the report tables.
 enum ReportStatistic: Hashable {
-    case count
-    case mean
     case percentile(Int)
 }
 
@@ -132,8 +130,6 @@ struct ReportSample {
 
     func value(_ statistic: ReportStatistic) -> Double {
         switch statistic {
-        case .count: Double(measurementCount)
-        case .mean: mean
         case let .percentile(p): percentiles[Statistics.defaultPercentilesToCalculate.firstIndex(of: Double(p)) ?? 0]
         }
     }
@@ -201,10 +197,5 @@ enum ReportFormat {
     /// Adjusted p-value (q): three decimals, `<0.001` below.
     static func qValue(_ q: Double) -> String {
         q < 0.001 ? "<0.001" : String(format: "%.3f", q)
-    }
-
-    /// p-value with its relation: `p=0.012`, or `p<0.001` below three decimals.
-    static func probability(_ p: Double) -> String {
-        p < 0.001 ? "p<0.001" : String(format: "p=%.3f", p)
     }
 }

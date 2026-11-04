@@ -85,4 +85,14 @@ struct ReportHistogramReaderTests {
             #expect(throws: ResultError.self, Comment(rawValue: counts)) { _ = try StrippedResultFile(Data(text.utf8)) }
         }
     }
+
+    @Test
+    func magnitudesAboveSixtyTwoAreRejectedInsteadOfTrapping() throws {
+        let original = String(decoding: try BenchmarkResultFile.encoder().encode(ReportFixtures.classRef()), as: UTF8.self)
+        for key in ["subBucketHalfCountMagnitude", "unitMagnitude", "leadingZeroCountBase"] {
+            let tampered = original.replacingOccurrences(of: "\"\(key)\":\\d+", with: "\"\(key)\":65", options: .regularExpression)
+            #expect(tampered != original, Comment(rawValue: key))
+            #expect(throws: ResultError.self, Comment(rawValue: key)) { _ = try StrippedResultFile(Data(tampered.utf8)) }
+        }
+    }
 }

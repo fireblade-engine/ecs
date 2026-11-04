@@ -120,8 +120,9 @@ struct StrippedResultFile {
                     }
                     return value
                 }
+                /// A magnitude or shift base; the largest legal value is a 64 bit shift, anything above would trap the arithmetic.
                 func small(_ key: String) throws -> Int {
-                    guard let value = Int(exactly: try integer(key)) else {
+                    guard let value = Int(exactly: try integer(key)), value <= 62 || (key == "leadingZeroCountBase" && value <= 64) else {
                         throw ResultError("result file does not match the schema: histogram \(key) is out of range")
                     }
                     return value

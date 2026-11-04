@@ -1,0 +1,52 @@
+name: Lint
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  lint:
+    name: Lint (SwiftLint, SwiftFormat)
+    # macOS: the Makefile runs the linters through Mint, and SwiftLint needs SourceKit from Xcode.
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Select Xcode
+        run: |
+          DEVELOPER_DIR="/Applications/Xcode_26.3.app/Contents/Developer"
+          test -d "$DEVELOPER_DIR"
+          echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
+
+      # Tool versions are pinned only by the Mintfile; its hash keys the cache of Mint's built tools.
+      - name: Restore Mint Cache
+        id: cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/.mint
+          key: mint-macos-xcode26.3-${{ hashFiles('Mintfile') }}
+
+      - name: Install Mint
+        run: which mint > /dev/null || brew install mint
+
+      - name: Install Linters
+        run: mint bootstrap
+
+      - name: Save Mint Cache
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ~/.mint
+          key: ${{ steps.cache.outputs.cache-primary-key }}
+
+      - name: Lint
+        run: make lint

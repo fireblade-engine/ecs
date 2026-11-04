@@ -75,22 +75,22 @@ enum ReportBlock {
 }
 
 enum ReportHTML {
-    /// HTML text and attribute escaping.
+    /// HTML text and attribute escaping. Iterates Unicode scalars: a grapheme cluster such as `"` plus a combining mark is one
+    /// `Character` that equals none of the special characters and would otherwise pass through unescaped.
     static func escape(_ text: String) -> String {
-        var out = ""
-        out.reserveCapacity(text.count)
-        for character in text {
-            switch character {
-            case "&": out += "&amp;"
-            case "<": out += "&lt;"
-            case ">": out += "&gt;"
-            case "\"": out += "&quot;"
-            case "'": out += "&#39;"
-            case "\n", "\t": out += " "
-            default: out.append(character)
+        var out = String.UnicodeScalarView()
+        for scalar in text.unicodeScalars {
+            switch scalar {
+            case "&": out.append(contentsOf: "&amp;".unicodeScalars)
+            case "<": out.append(contentsOf: "&lt;".unicodeScalars)
+            case ">": out.append(contentsOf: "&gt;".unicodeScalars)
+            case "\"": out.append(contentsOf: "&quot;".unicodeScalars)
+            case "'": out.append(contentsOf: "&#39;".unicodeScalars)
+            case "\n", "\t": out.append(" ")
+            default: out.append(scalar)
             }
         }
-        return out
+        return String(out)
     }
 
     /// `<code>` span with escaped content.

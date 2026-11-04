@@ -15,6 +15,24 @@ struct ReportHTMLTextTests {
     }
 
     @Test
+    func combiningMarksDoNotHideSpecialCharacters() {
+        let cases: [(input: String, escaped: String)] = [
+            ("\"\u{301} onmouseover=x", "&quot;\u{301} onmouseover=x"),
+            ("\u{600}<script>", "\u{600}&lt;script&gt;"),
+            ("&\u{301}", "&amp;\u{301}"),
+            ("'\u{301}", "&#39;\u{301}"),
+            (">\u{301}", "&gt;\u{301}"),
+        ]
+        for (input, escaped) in cases {
+            #expect(ReportHTML.escape(input).unicodeScalars.map(\.value) == escaped.unicodeScalars.map(\.value), Comment(rawValue: input))
+            let text: HTMLText = "<code>\(input)</code>"
+            #expect(text.html.unicodeScalars.map(\.value) == "<code>\(escaped)</code>".unicodeScalars.map(\.value))
+            let attribute: HTMLText = #"<span title="\#(input)">x</span>"#
+            #expect(attribute.html.unicodeScalars.map(\.value) == #"<span title="\#(escaped)">x</span>"#.unicodeScalars.map(\.value))
+        }
+    }
+
+    @Test
     func nestedMarkupPassesOnlyAsHTMLText() {
         let inner: HTMLText = "<em>\("<b>")</em>"
         let outer: HTMLText = "x \(inner) \("<em>raw</em>")"

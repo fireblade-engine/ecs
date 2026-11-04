@@ -32,8 +32,22 @@ jobs:
   lint:
     name: Lint (SwiftLint, SwiftFormat)
     runs-on: ubuntu-latest
+    # The image tag pins the exact toolchain; Renovate proposes patch updates. SwiftLint needs the
+    # toolchain's SourceKit, otherwise it silently skips the rules that depend on it.
+    container: swift:${{ matrix.swift-full }}-noble
     timeout-minutes: 15
+    strategy:
+      matrix:
+        include:
+          # renovate: datasource=docker depName=swift
+          - swift-full: "6.2.4"
     steps:
+      - name: Install System Packages
+        run: |
+          if ! command -v curl > /dev/null || ! command -v unzip > /dev/null; then
+            apt-get update && apt-get install -y --no-install-recommends curl ca-certificates unzip
+          fi
+
       - name: Checkout
         uses: actions/checkout@v7
 
@@ -55,13 +69,21 @@ jobs:
           curl -fsSL -o swiftformat.zip "https://github.com/nicklockwood/SwiftFormat/releases/download/${swiftformat_version}/${format_asset}"
           unzip -oq swiftlint.zip -d swiftlint
           unzip -oq swiftformat.zip -d swiftformat
-          chmod +x swiftlint/swiftlint-static swiftformat/swiftformat_linux*
-          # Both binaries are statically linked: no Swift toolchain needed.
-          echo "SWIFTLINT=$PWD/swiftlint/swiftlint-static" >> "$GITHUB_ENV"
+          chmod +x swiftlint/swiftlint swiftformat/swiftformat_linux*
+          # The dynamic swiftlint binary (not swiftlint-static, which skips the SourceKit rules)
+          # loads SourceKit from the container's toolchain.
+          sourcekit=$(find /usr -name libsourcekitdInProc.so | head -1)
+          test -n "$sourcekit"
+          echo "LINUX_SOURCEKIT_LIB_PATH=$(dirname "$sourcekit")" >> "$GITHUB_ENV"
+          echo "SWIFTLINT=$PWD/swiftlint/swiftlint" >> "$GITHUB_ENV"
           echo "SWIFTFORMAT=$(ls "$PWD"/swiftformat/swiftformat_linux*)" >> "$GITHUB_ENV"
-          [ "$("$PWD/swiftlint/swiftlint-static" --version)" = "$swiftlint_version" ]
+          [ "$("$PWD/swiftlint/swiftlint" --version)" = "$swiftlint_version" ]
           [ "$("$PWD"/swiftformat/swiftformat_linux* --version)" = "$swiftformat_version" ]
 
       - name: Lint
-        # The Makefile derives the Swift version from the toolchain, which is not installed here.
-        run: make lint SWIFT_PACKAGE_VERSION="$(cat .swift-version)"
+        shell: bash
+        run: |
+          set -o pipefail
+          make lint 2>&1 | tee "$RUNNER_TEMP/lint.log"
+          # Fail if SwiftLint skipped rules (e.g. SourceKit not found): CI must enforce the local rule set.
+          ! grep -F "Skipping enabled rule" "$RUNNER_TEMP/lint.log"

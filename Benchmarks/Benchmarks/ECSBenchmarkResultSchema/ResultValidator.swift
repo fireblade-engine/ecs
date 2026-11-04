@@ -42,6 +42,9 @@ public enum ResultValidator {
         try decode(ResultWriter.readFile(path, "result file"))
     }
 
+    /// Upper bound of a run's replicate count; real runs use a handful, and readers size per-replicate work by it.
+    static let maximumReplicateCount = 10_000
+
     /// Consistency checks of a decoded file. Does not compare against the validating binary's own suite, so results of any
     /// revision's adapter validate; the writer additionally pins names and metrics to its own suite.
     public static func validate(_ file: BenchmarkResultFile) throws {
@@ -54,6 +57,9 @@ public enum ResultValidator {
         }
         if let replicate = file.run.replicate {
             guard replicate.count >= 1 else { throw ResultError("replicate count must be at least 1, got \(replicate.count)") }
+            guard replicate.count <= maximumReplicateCount else {
+                throw ResultError("replicate count \(replicate.count) exceeds the limit of \(maximumReplicateCount)")
+            }
             guard (1 ... replicate.count).contains(replicate.index) else {
                 throw ResultError("replicate index \(replicate.index) is outside 1...\(replicate.count)")
             }
@@ -100,6 +106,7 @@ public enum ResultValidator {
         for benchmark in file.benchmarks {
             guard workloadIdentities.contains(benchmark.identity) else { throw ResultError("benchmark '\(benchmark.name)' has unknown workload identity '\(benchmark.identity)'") }
             guard file.ref.backends.contains(benchmark.backend) else { throw ResultError("benchmark '\(benchmark.name)' uses backend '\(benchmark.backend)' not available for this ref") }
+            guard benchmark.scale >= 0 else { throw ResultError("benchmark '\(benchmark.name)' has a negative scale \(benchmark.scale)") }
             guard benchmark.name == "\(benchmark.identity) [\(benchmark.backend)] / \(benchmark.scale)" else {
                 throw ResultError("benchmark name '\(benchmark.name)' does not match its parsed identity, backend and scale")
             }

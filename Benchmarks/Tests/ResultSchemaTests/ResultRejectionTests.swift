@@ -95,6 +95,8 @@ struct ResultRejectionTests {
         expectRejected("replicate index 6 is outside 1...5") { _ = try ResultValidator.decode(replicateData(replicate(index: 6))) }
         expectRejected("replicate index 0 is outside 1...5") { _ = try ResultValidator.decode(replicateData(replicate(index: 0))) }
         expectRejected("replicate count must be at least 1") { _ = try ResultValidator.decode(replicateData(replicate(count: 0))) }
+        expectRejected("replicate count 10001 exceeds the limit of 10000") { _ = try ResultValidator.decode(replicateData(replicate(index: 1, count: 10_001))) }
+        _ = try ResultValidator.decode(replicateData(replicate(index: 1, count: 10_000)))
         expectRejected("replicate position must be at least 1") { _ = try ResultValidator.decode(replicateData(replicate(position: 0))) }
         expectRejected("does not match the schema") { _ = try ResultValidator.decode(replicateData(replicate(seed: -1))) }
         expectRejected("does not match the schema") { _ = try ResultValidator.decode(replicateData(["index": 1, "count": 1])) }
@@ -316,6 +318,16 @@ struct ResultRejectionTests {
         var present = try ResultValidator.decode(validFileData())
         present.benchmarks[0].unrecordedMetrics = [record]
         expectRejected("also has it") { try ResultValidator.validate(present) }
+    }
+
+    @Test
+    func validatorRejectsNegativeScale() throws {
+        let negative = try mutated { object in
+            var benchmarks = object["benchmarks"] as? [[String: Any]] ?? []
+            benchmarks[0]["scale"] = -1
+            object["benchmarks"] = benchmarks
+        }
+        expectRejected("negative scale -1") { _ = try ResultValidator.decode(negative) }
     }
 
     @Test

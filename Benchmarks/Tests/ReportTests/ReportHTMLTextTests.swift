@@ -71,3 +71,19 @@ struct ReportHTMLTextTests {
         }
     }
 }
+
+@Suite
+struct ReportPlotJSONTests {
+    @Test
+    func scriptDataKeepsNoMarkupCharactersEvenAfterCombiningMarks() throws {
+        let hostile = "<\u{301}/script>&\u{301}>\u{301}\u{2028}\u{2029}"
+        let payload = ReportPlotPayload(baseline: hostile, delta: 0.05, workloads: [])
+        let json = try payload.json()
+        for scalar in ["<", ">", "&", "\u{2028}", "\u{2029}"] as [Unicode.Scalar] {
+            #expect(!json.unicodeScalars.contains(scalar), Comment(rawValue: "U+\(String(scalar.value, radix: 16))"))
+        }
+        for escape in ["\\u003c", "\\u003e", "\\u0026", "\\u2028", "\\u2029"] {
+            #expect(json.range(of: escape, options: .literal) != nil, Comment(rawValue: escape))
+        }
+    }
+}

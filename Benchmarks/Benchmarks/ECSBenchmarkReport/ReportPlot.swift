@@ -78,10 +78,10 @@ struct ReportPlotPayload: Encodable {
         encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
         let text = String(decoding: try encoder.encode(self), as: UTF8.self)
         return text
-            .replacingOccurrences(of: "<", with: "\\u003c")
-            .replacingOccurrences(of: ">", with: "\\u003e")
-            .replacingOccurrences(of: "&", with: "\\u0026")
-            .replacingOccurrences(of: "\u{2028}", with: "\\u2028")
-            .replacingOccurrences(of: "\u{2029}", with: "\\u2029")
+            .replacingOccurrences(of: "<", with: "\\u003c", options: .literal)
+            .replacingOccurrences(of: ">", with: "\\u003e", options: .literal)
+            .replacingOccurrences(of: "&", with: "\\u0026", options: .literal)
+            .replacingOccurrences(of: "\u{2028}", with: "\\u2028", options: .literal)
+            .replacingOccurrences(of: "\u{2029}", with: "\\u2029", options: .literal)
     }
 }

@@ -1,0 +1,177 @@
+// Update population ported from ReferenceUpdatePopulation.swift in ECSBenchmark (uniform and mixed hero/monster worlds).
+import FirebladeECS
+
+struct CompatPlayerInitialization {
+    let position: CompatPositionPayload
+    let player: CompatPlayerPayload
+    let health: CompatHealthPayload
+    let damage: CompatDamagePayload
+    let sprite: CompatSpritePayload
+}
+
+struct CompatEntityFixture {
+    let removesPosition: Bool
+    let removesVelocity: Bool
+    let removesData: Bool
+    let playerInitialization: CompatPlayerInitialization?
+}
+
+enum CompatPopulation {
+    static func uniform(at index: Int) -> CompatEntityFixture {
+        makeFixture(at: index, removesPosition: false, removesVelocity: false, removesData: false, addsPlayer: true, forcedPlayerType: nil)
+    }
+
+    static func mixed(at index: Int, entityCount: Int) -> CompatEntityFixture {
+        let removalStart = entityCount < 100 ? 0 : 2 * entityCount / 4
+        let removalEnd = entityCount < 100 ? entityCount - 1 : 3 * entityCount / 4
+        let isInRemovalBand = index >= removalStart && index <= removalEnd
+        let removalOrdinal = index - removalStart
+        let removesComponents = isInRemovalBand && (entityCount < 100 || removalOrdinal % 10 == 0)
+        let playerSelection = mixedPlayerSelection(at: index, entityCount: entityCount)
+        return makeFixture(
+            at: index,
+            removesPosition: removesComponents && index % 7 == 0,
+            removesVelocity: removesComponents && index % 11 == 0,
+            removesData: removesComponents && index % 13 == 0,
+            addsPlayer: playerSelection.addsPlayer,
+            forcedPlayerType: playerSelection.forcedType
+        )
+    }
+
+    static func fixture(at index: Int, entityCount: Int, isMixed: Bool) -> CompatEntityFixture {
+        isMixed ? mixed(at: index, entityCount: entityCount) : uniform(at: index)
+    }
+
+    /// Base-only mixed world: Position, Velocity and Data on every entity with the upstream removal recipe and no player
+    /// components. Upstream's event workloads on EnTT build exactly this (`createEntitiesWithMixedComponents<EntityFactory>`,
+    /// whose `EntityFactory::create` emplaces Position, Velocity and Data only).
+    static func populateBaseMixed(nexus: Nexus, entityCount: Int) {
+        _ = createBaseEntities(nexus: nexus, entityCount: entityCount, isMixed: true)
+    }
+
+    static func populate(nexus: Nexus, entityCount: Int, isMixed: Bool) {
+        let entities = createBaseEntities(nexus: nexus, entityCount: entityCount, isMixed: isMixed)
+
+        for index in entities.indices {
+            guard let initialization = fixture(at: index, entityCount: entityCount, isMixed: isMixed).playerInitialization else { continue }
+            let entity = entities[index]
+            // `Entity.set` keeps an existing instance on 1.x, so every component is set exactly once with its final value;
+            // Position may already exist and is replaced through the adapter. The end state equals the upstream
+            // `emplace_or_replace` + `initComponents` sequence.
+            entity.set(CompatPlayer(initialization.player))
+            entity.set(CompatHealth(initialization.health))
+            entity.set(CompatDamage(initialization.damage))
+            entity.set(CompatSprite(initialization.sprite))
+            CompatSuite.replace(CompatPosition(initialization.position), on: entity)
+        }
+    }
+}
+
+extension CompatPopulation {
+    /// The reference creates every base entity and applies its removals before adding any player components.
+    fileprivate static func createBaseEntities(nexus: Nexus, entityCount: Int, isMixed: Bool) -> [Entity] {
+        var entities: [Entity] = []
+        entities.reserveCapacity(entityCount)
+        for index in 0 ..< entityCount {
+            let fixture = fixture(at: index, entityCount: entityCount, isMixed: isMixed)
+            let entity = nexus.createEntity(
+                with: CompatPosition(CompatPositionPayload()),
+                CompatVelocity(CompatVelocityPayload()),
+                CompatData(CompatDataPayload())
+            )
+            if fixture.removesPosition {
+                entity.remove(CompatPosition.self)
+            }
+            if fixture.removesVelocity {
+                entity.remove(CompatVelocity.self)
+            }
+            if fixture.removesData {
+                entity.remove(CompatData.self)
+            }
+            entities.append(entity)
+        }
+        return entities
+    }
+
+    fileprivate static func makeFixture(
+        at index: Int,
+        removesPosition: Bool,
+        removesVelocity: Bool,
+        removesData: Bool,
+        addsPlayer: Bool,
+        forcedPlayerType: CompatPlayerType?
+    ) -> CompatEntityFixture {
+        CompatEntityFixture(
+            removesPosition: removesPosition,
+            removesVelocity: removesVelocity,
+            removesData: removesData,
+            playerInitialization: addsPlayer ? initializePlayer(at: index, forcedType: forcedPlayerType) : nil
+        )
+    }
+
+    fileprivate static func mixedPlayerSelection(at index: Int, entityCount: Int) -> (addsPlayer: Bool, forcedType: CompatPlayerType?) {
+        let isEligible = entityCount >= 100 || index == 0 || index >= entityCount / 8
+        guard isEligible else { return (false, nil) }
+
+        let ordinal: Int = if entityCount < 100, entityCount / 8 > 0 {
+            index == 0 ? 0 : index - entityCount / 8 + 1
+        } else {
+            index
+        }
+        let isSelected = entityCount < 100 && index == 0 || entityCount >= 100 || ordinal % 2 == 0
+        guard isSelected else { return (false, nil) }
+
+        if index == 0 {
+            return (true, .hero)
+        }
+        if index % 6 == 0 {
+            return (true, nil)
+        }
+        if index % 4 == 0 {
+            return (true, .hero)
+        }
+        if index % 2 == 0 {
+            return (true, .monster)
+        }
+        return (false, nil)
+    }
+
+    fileprivate static func initializePlayer(at index: Int, forcedType: CompatPlayerType?) -> CompatPlayerInitialization {
+        var player = CompatPlayerPayload(rng: CompatXoshiro128(seed: playerSeed(for: index)))
+        let typeRoll = player.rng.range(1, 100)
+        let type = forcedType ?? (typeRoll <= 3 ? .npc : typeRoll <= 30 ? .hero : .monster)
+        player.type = type
+
+        var health = CompatHealthPayload()
+        var damage = CompatDamagePayload()
+        switch type {
+        case .hero:
+            health.maxhp = Int32(player.rng.range(5, 15))
+            damage.def = Int32(player.rng.range(2, 6))
+            damage.atk = Int32(player.rng.range(4, 10))
+        case .monster:
+            health.maxhp = Int32(player.rng.range(4, 12))
+            damage.def = Int32(player.rng.range(2, 8))
+            damage.atk = Int32(player.rng.range(3, 9))
+        case .npc:
+            health.maxhp = Int32(player.rng.range(6, 12))
+            damage.def = Int32(player.rng.range(3, 8))
+            damage.atk = 0
+        }
+
+        let x = Float(player.rng.range(0, 420)) - 100
+        let y = Float(player.rng.range(0, 340)) - 100
+        return CompatPlayerInitialization(
+            position: CompatPositionPayload(x: x, y: y),
+            player: player,
+            health: health,
+            damage: damage,
+            sprite: CompatSpritePayload(character: 95)
+        )
+    }
+
+    /// The reference seeds player RNGs from object addresses; ordinal seeds keep this workload reproducible instead.
+    fileprivate static func playerSeed(for index: Int) -> UInt32 {
+        0x6D2B_79F5 &+ UInt32(truncatingIfNeeded: index) &* 0x9E37_79B9
+    }
+}

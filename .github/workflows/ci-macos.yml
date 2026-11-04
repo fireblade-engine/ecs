@@ -54,6 +54,10 @@ jobs:
             exit 1
           }
 
+      # Stub-only shell tests of the benchmark scripts (no Swift build, no benchmark run).
+      - name: Test Benchmark Scripts
+        run: make test-benchmark-scripts
+
       # Caches only depend on the toolchain and the dependency graph, so they hold the expensive
       # swift-syntax build; this package's own modules are rebuilt incrementally.
       # PRs restore main's cache, only main saves it.

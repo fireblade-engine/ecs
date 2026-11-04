@@ -11,41 +11,53 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+env:
+  # Mint itself is not in the Mintfile; the linters it installs are.
+  MINT_VERSION: "0.18.0"
+
 jobs:
   lint:
     name: Lint (SwiftLint, SwiftFormat)
-    # macOS: the Makefile runs the linters through Mint, and SwiftLint needs SourceKit from Xcode.
-    runs-on: macos-26
-    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    # The image tag pins the exact toolchain; Renovate proposes patch updates.
+    # renovate: datasource=docker depName=swift
+    container: swift:6.2.4-noble
+    timeout-minutes: 45
     steps:
+      - name: Install System Packages
+        run: apt-get update && apt-get install -y --no-install-recommends git curl ca-certificates
+
       - name: Checkout
         uses: actions/checkout@v7
-
-      - name: Select Xcode
-        run: |
-          DEVELOPER_DIR="/Applications/Xcode_26.3.app/Contents/Developer"
-          test -d "$DEVELOPER_DIR"
-          echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
 
       # Tool versions are pinned only by the Mintfile; its hash keys the cache of Mint's built tools.
       - name: Restore Mint Cache
         id: cache
         uses: actions/cache/restore@v6
         with:
-          path: ~/.mint
-          key: mint-macos-xcode26.3-${{ hashFiles('Mintfile') }}
+          path: |
+            ~/.mint
+            /usr/local/bin/mint
+          key: mint-linux-swift6.2.4-${{ env.MINT_VERSION }}-${{ hashFiles('Mintfile') }}
 
-      - name: Install Mint
-        run: which mint > /dev/null || brew install mint
+      - name: Build Mint
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch "$MINT_VERSION" https://github.com/yonaskolb/Mint.git "$RUNNER_TEMP/Mint"
+          swift build -c release --package-path "$RUNNER_TEMP/Mint"
+          cp "$RUNNER_TEMP/Mint/.build/release/mint" /usr/local/bin/mint
 
       - name: Install Linters
+        if: steps.cache.outputs.cache-hit != 'true'
         run: mint bootstrap
 
       - name: Save Mint Cache
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v6
         with:
-          path: ~/.mint
+          path: |
+            ~/.mint
+            /usr/local/bin/mint
           key: ${{ steps.cache.outputs.cache-primary-key }}
 
       - name: Lint

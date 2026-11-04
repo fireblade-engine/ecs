@@ -9,6 +9,7 @@ on:
       - 'Tests/**/*.swift'
       - '.swiftlint.yml'
       - '.swiftformat'
+      - '.swift-version'
       - 'Mintfile'
       - 'Makefile'
       - '.github/workflows/lint.yml'
@@ -19,6 +20,7 @@ on:
       - 'Tests/**/*.swift'
       - '.swiftlint.yml'
       - '.swiftformat'
+      - '.swift-version'
       - 'Mintfile'
       - 'Makefile'
       - '.github/workflows/lint.yml'
@@ -32,14 +34,8 @@ jobs:
   lint:
     name: Lint (SwiftLint, SwiftFormat)
     runs-on: ubuntu-latest
-    # The image tag pins the exact toolchain; Renovate proposes patch updates.
-    # renovate: datasource=docker depName=swift
-    container: swift:6.2.4-noble
     timeout-minutes: 15
     steps:
-      - name: Install System Packages
-        run: apt-get update && apt-get install -y --no-install-recommends curl ca-certificates unzip
-
       - name: Checkout
         uses: actions/checkout@v7
 
@@ -62,11 +58,12 @@ jobs:
           unzip -oq swiftlint.zip -d swiftlint
           unzip -oq swiftformat.zip -d swiftformat
           chmod +x swiftlint/swiftlint-static swiftformat/swiftformat_linux*
-          # swiftlint-static does not depend on the toolchain's SourceKit libraries.
+          # Both binaries are statically linked: no Swift toolchain needed.
           echo "SWIFTLINT=$PWD/swiftlint/swiftlint-static" >> "$GITHUB_ENV"
           echo "SWIFTFORMAT=$(ls "$PWD"/swiftformat/swiftformat_linux*)" >> "$GITHUB_ENV"
           [ "$("$PWD/swiftlint/swiftlint-static" --version)" = "$swiftlint_version" ]
           [ "$("$PWD"/swiftformat/swiftformat_linux* --version)" = "$swiftformat_version" ]
 
       - name: Lint
-        run: make lint
+        # The Makefile derives the Swift version from the toolchain, which is not installed here.
+        run: make lint SWIFT_PACKAGE_VERSION="$(cat .swift-version)"

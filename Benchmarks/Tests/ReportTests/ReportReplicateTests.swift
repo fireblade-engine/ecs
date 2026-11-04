@@ -234,6 +234,18 @@ struct ReportReplicateTests {
         #expect(methods.contains("Benjamini–Hochberg adjusted across 2 tests"))
     }
 
+    @Test
+    func driftIsRankBasedSoAMissingMiddleReplicateDoesNotShiftTheAxis() throws {
+        // Replicate 4 of 6 is missing. Kendall's tau only compares the order of the rounds, so five present replicates with an
+        // exact monotone trend give tau 1 and the same exact p as five contiguous ones, whatever the gap in the indices.
+        let gap = ref("1.4.3", "a", model: "class", k: 6, indices: [1, 2, 3, 5, 6], workloads: [F.w1]) { _, i, _ in 1000 + 40 * i }
+        let series = ref("main", "b", k: 6, indices: [1, 2, 3, 5, 6], workloads: [F.w1]) { _, i, _ in 800 + (i % 2 == 0 ? 10 : -10) }
+        let m = try model(gap + series)
+        #expect(m.warnings.contains { $0.contains("missing 4") })
+        let trending = try #require(m.drift.first { $0.series == 0 })
+        #expect(trending.replicates == 5 && trending.tau == 1 && abs(trending.p - 2.0 / 120) < 1e-9)
+    }
+
     // MARK: Output
 
     @Test

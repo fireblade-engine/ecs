@@ -11,7 +11,8 @@ struct ReportCell {
     let prefersLarger: Bool
     /// Replicates with at least one measurement.
     let replicates: Int
-    /// Replicate medians ordered by replicate index (which is also the round each ran in).
+    /// Replicate medians ordered by replicate index (which is also the round each ran in). Only the order is used for the drift trend,
+    /// so gaps in the indices of a partial set do not matter.
     let replicateMedians: [Double]
     /// Median of the replicate medians; the centre of the series.
     let median: Double

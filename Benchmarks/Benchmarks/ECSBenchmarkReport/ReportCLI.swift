@@ -67,27 +67,28 @@ public enum ReportCLI {
         for input in paths where canonical(input) == canonical(manifestTarget) || sameFile(input, manifestTarget) {
             throw ResultError("manifest file \(manifestTarget) is the input \(input); refusing to overwrite a result file")
         }
+        // Both files are written to temporary names first and renamed together, so a failure never leaves a new page next to
+        // an old manifest.
+        let suffix = ".tmp-" + UUID().uuidString
+        let temporaries = [(target, Data(rendered.html.utf8)), (manifestTarget, rendered.manifest)].map { ($0.0, $0.0 + suffix, $0.1) }
         do {
             try FileManager.default.createDirectory(atPath: output, withIntermediateDirectories: true)
-            try Data(rendered.html.utf8).write(to: URL(fileURLWithPath: target), options: .atomic)
-            let manifest = try manifestData(baseline: options["baseline"], refs: rendered.refs)
-            try manifest.write(to: URL(fileURLWithPath: manifestTarget), options: .atomic)
+            for (_, temporary, data) in temporaries {
+                try data.write(to: URL(fileURLWithPath: temporary))
+            }
+            for (final, temporary, _) in temporaries {
+                if FileManager.default.fileExists(atPath: final) {
+                    _ = try FileManager.default.replaceItemAt(URL(fileURLWithPath: final), withItemAt: URL(fileURLWithPath: temporary))
+                } else {
+                    try FileManager.default.moveItem(atPath: temporary, toPath: final)
+                }
+            }
         } catch {
+            for (_, temporary, _) in temporaries { try? FileManager.default.removeItem(atPath: temporary) }
             throw ResultError("cannot write \(output): \(error)")
         }
         print("wrote \(target)")
         print("wrote \(manifestTarget)")
-    }
-
-    /// `{"schemaVersion":1,"baseline":<requested label or null>,"refs":[{"label":...,"sha":...}]}`; release tooling reads it to
-    /// find which commit a labelled ref was measured at.
-    static func manifestData(baseline: String?, refs: [RenderedRef]) throws -> Data {
-        let object: [String: Any] = [
-            "schemaVersion": 1,
-            "baseline": baseline.map { $0 as Any } ?? NSNull(),
-            "refs": refs.map { ["label": $0.label, "sha": $0.sha] },
-        ]
-        return try JSONSerialization.data(withJSONObject: object, options: [.sortedKeys, .prettyPrinted]) + Data("\n".utf8)
     }
 
     /// Refuses an output directory that is a file, that is (or links to) an input's directory entry, or that already holds

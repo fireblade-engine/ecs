@@ -405,6 +405,10 @@ struct ReportTests {
         var uniqueRefs: [[String: String]] = []
         for ref in expectedRefs where !uniqueRefs.contains(ref) { uniqueRefs.append(ref) }
         #expect(manifestRefs == uniqueRefs, "refs in report order with full SHAs")
+        let marker = "<script type=\"application/json\" id=\"benchmark-manifest\">"
+        let embedded = try #require(html.range(of: marker).flatMap { start in html[start.upperBound...].range(of: "</script>").map { String(html[start.upperBound ..< $0.lowerBound]) } })
+        let embeddedObject = try #require(try JSONSerialization.jsonObject(with: Data(embedded.utf8)) as? NSDictionary)
+        #expect(embeddedObject == (manifest as NSDictionary), "the page embeds the manifest it was written with")
         let noBaseline = directory.appendingPathComponent("report-nobaseline").path
         #expect(ReportCLI.run(paths + ["--output-dir", noBaseline]) == 0)
         let noBaselineManifest = try #require(try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: noBaseline + "/BenchmarkReport.manifest.json"))) as? [String: Any])

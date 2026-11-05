@@ -13,7 +13,10 @@ fi
 mkdir -p "${OUTPUT_DIR}"
 if git fetch origin gh-pages:refs/remotes/origin/gh-pages 2>/dev/null; then
     echo "==> Restoring existing documentation from gh-pages..."
-    git --work-tree="${OUTPUT_DIR}" checkout origin/gh-pages -- . || true
+    # Use a throwaway index so the repo's own index is never touched (otherwise the whole gh-pages tree gets staged).
+    TMP_INDEX_DIR="$(mktemp -d)"
+    GIT_INDEX_FILE="${TMP_INDEX_DIR}/index" git --work-tree="${OUTPUT_DIR}" checkout origin/gh-pages -- . || true
+    rm -rf "${TMP_INDEX_DIR}"
     rm -rf "${OUTPUT_DIR}/.git"
 fi
 

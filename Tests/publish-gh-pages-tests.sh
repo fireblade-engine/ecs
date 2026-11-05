@@ -108,6 +108,28 @@ snapM=$(snapshot m main)
 publish "$snapM" main "$root/outM"
 [[ $(show benchmarks/index.html) == "report v2.11.0" ]] || fail 'main must not change reports'
 
+# A final release outranks its prereleases, whatever the publish order.
+publish_with_report 3.0.0-rc1
+[[ $(show benchmarks/index.html) == "report 3.0.0-rc1" ]] || fail 'a prerelease of a newer version becomes the landing page'
+publish_with_report 3.0.0
+[[ $(show benchmarks/index.html) == "report 3.0.0" ]] || fail '3.0.0 must outrank 3.0.0-rc1'
+publish_with_report 3.0.0-rc2
+[[ $(show benchmarks/index.html) == "report 3.0.0" ]] || fail 'a later prerelease must not replace the final release'
+
+# A withheld report (drift) takes down what the same tag published earlier and recomputes the landing page.
+withheld=$root/withheld
+rm -rf "$withheld"; mkdir -p "$withheld"; : > "$withheld/3.0.0.withheld"
+publish "$(snapshot w 3.0.0)" 3.0.0 "$root/outW" REPORTS_DIR="$withheld"
+has benchmarks/3.0.0/index.html && fail 'a withheld report must be removed'
+[[ $(show benchmarks/index.html) == "report 3.0.0-rc2" ]] || fail 'the landing page must fall back to the next newest report'
+has 3.0.0/documentation/firebladeecs/index.html || fail 'the documentation is published although the report is withheld'
+has benchmarks/2.10.0/index.html || fail 'other reports must stay'
+for gone in 3.0.0-rc1 3.0.0-rc2 v2.11.0 2.10.0 2.9.0 2.0.0 1.9.0; do
+    rm -rf "$withheld"; mkdir -p "$withheld"; : > "$withheld/$gone.withheld"
+    publish "$(snapshot w "$gone")" "$gone" "$root/outW" REPORTS_DIR="$withheld"
+done
+has benchmarks/index.html && fail 'without any report the landing page must go away'
+
 # --- A real race: another publish lands between this publish's clone and its push ---
 hook=$origin/hooks/pre-receive
 snapRaceMine=$(snapshot racemine 3.0.0)

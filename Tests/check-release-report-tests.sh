@@ -54,6 +54,12 @@ commit drifted
 write_report "$(manifest_for 2.0.0 0000000000000000000000000000000000000000)"
 commit unknown-sha
 
+# A ref that names the version but has no usable SHA.
+write_report '{"schemaVersion":1,"baseline":null,"refs":[{"label":"2.0.0"}]}'
+commit no-sha
+write_report '{"schemaVersion":1,"baseline":null,"refs":[{"label":"2.0.0","sha":"not-a-sha"}]}'
+commit bad-sha
+
 # --- strict mode ---
 if out=$("$script" 2.0.0 base 2>&1); then fail 'strict: no report must fail'; fi
 if out=$("$script" 2.0.0 no-manifest 2>&1); then fail 'strict: a report without manifest must fail'; fi
@@ -87,6 +93,17 @@ status=0; "$script" --optional 2.0.0 drifted > /dev/null 2>&1 || status=$?
 status=0; "$script" --optional 2.0.0 mismatch > /dev/null 2>&1 || status=$?
 [[ $status == 1 ]] || fail "optional: a mismatching page must fail (got $status)"
 
+for broken in no-sha bad-sha; do
+    status=0; "$script" --optional 2.0.0 "$broken" > /dev/null 2>&1 || status=$?
+    [[ $status == 1 ]] || fail "optional: a ref labelled with the version but with $broken must fail hard (got $status)"
+done
+# Without jq nothing can be verified: a hard failure even in optional mode, never "nothing to publish".
+nojq=$root/nojq
+mkdir -p "$nojq"
+for tool in git grep sed dirname cat; do ln -s "$(command -v "$tool")" "$nojq/$tool"; done
+status=0; PATH=$nojq /bin/bash "$script" --optional 2.0.0 good > /dev/null 2>&1 || status=$?
+[[ $status == 1 ]] || fail "optional: missing jq must fail hard (got $status)"
+
 # --- staging ---
 staging=$root/staging
 "$stage" 2.0.0 "$staging" good > /dev/null || fail 'staging a verified report must succeed'
@@ -101,4 +118,9 @@ mkdir -p "$staging" && echo stale > "$staging/2.0.0.html"
 if out=$("$stage" 2.0.0 "$staging" drifted 2>&1); then fail 'drift must make staging fail'; fi
 [[ $out == *"::error"* ]] || fail "drift must emit an error annotation (got: $out)"
 [[ ! -e $staging/2.0.0.html ]] || fail 'drift must not leave a staged report (a stale one is removed)'
+[[ -e $staging/2.0.0.withheld ]] || fail 'drift must leave a withheld marker for the publisher'
+if out=$(STAGE_ANNOTATION=warning "$stage" 2.0.0 "$staging" drifted 2>&1); then fail 'drift must fail with a warning annotation too'; fi
+[[ $out == *"::warning"* && $out != *"::error"* ]] || fail "backfills downgrade the annotation (got: $out)"
+"$stage" 2.0.0 "$staging" good > /dev/null || fail 'a later verified stage must succeed'
+[[ ! -e $staging/2.0.0.withheld && -f $staging/2.0.0.html ]] || fail 'a verified stage clears the withheld marker'
 printf 'check-release-report tests passed\n'

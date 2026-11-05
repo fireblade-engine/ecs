@@ -34,14 +34,17 @@ nothing() {
     fail "$1 (a dedicated benchmark release needs a report labelled $version; measure with REFS=<previous>,main:$version)"
 }
 
+command -v jq > /dev/null || fail 'jq is required'
 git rev-parse --verify --quiet "$candidate^{commit}" > /dev/null || { printf 'check-release-report: invalid ref: %s\n' "$candidate" >&2; exit 2; }
 
 git cat-file -e "$candidate:$report" 2> /dev/null || nothing "no $report in $candidate"
 git cat-file -e "$candidate:$manifest" 2> /dev/null || nothing "$candidate has $report but no $manifest"
 
-sha=$(git show "$candidate:$manifest" | jq -r --arg v "$version" '[.refs[]? | select(.label == $v) | .sha][0] // empty') \
+matches=$(git show "$candidate:$manifest" | jq -r --arg v "$version" '[.refs[]? | select(.label == $v)] | length') \
     || fail "$manifest in $candidate is not valid JSON"
-[[ -n $sha ]] || nothing "$manifest in $candidate lists no ref labelled $version"
+[[ $matches -gt 0 ]] || nothing "$manifest in $candidate lists no ref labelled $version"
+# A ref that names the version must carry a usable SHA, in --optional mode too.
+sha=$(git show "$candidate:$manifest" | jq -r --arg v "$version" '[.refs[] | select(.label == $v) | .sha | strings][0] // empty')
 
 # The page embeds the manifest it was rendered with; both files must come from the same render.
 embedded=$(git show "$candidate:$report" | grep -m1 '^<script type="application/json" id="benchmark-manifest">' \

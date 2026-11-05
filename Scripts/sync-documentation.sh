@@ -332,13 +332,19 @@ PYTHON_EOF
 # benchmarks/index.html is the report of the highest version present, so out-of-order tags and backfills never regress it.
 # Done after the version-picker injection above, which rewrites every top-level version directory's index.html; "benchmarks"
 # matches no version regex and is skipped by it.
+# A final release ranks above its prereleases (2.0.0 over 2.0.0-rc1). Without any versioned report the landing page goes away.
 if [ -d "${OUTPUT_DIR}/benchmarks" ]; then
     NEWEST_REPORT=$(find "${OUTPUT_DIR}/benchmarks" -mindepth 2 -maxdepth 2 -name index.html -exec dirname {} \; \
-        | while read -r dir; do name=$(basename "$dir"); printf '%s\t%s\n' "${name#v}" "$name"; done \
-        | sort -t "$(printf '\t')" -k1,1 -V -r | head -n 1 | cut -f2)
+        | while read -r dir; do
+            name=$(basename "$dir"); bare="${name#v}"
+            if [[ $bare == *-* ]]; then printf '%s\t0%s\t%s\n' "${bare%%-*}" "${bare#*-}" "$name"; else printf '%s\t1\t%s\n' "$bare" "$name"; fi
+        done \
+        | sort -t "$(printf '\t')" -k1,1 -k2,2 -V -r | head -n 1 | cut -f3)
     if [ -n "${NEWEST_REPORT}" ]; then
         echo "==> Publishing benchmark report ${NEWEST_REPORT} to ${OUTPUT_DIR}/benchmarks/index.html..."
         cp "${OUTPUT_DIR}/benchmarks/${NEWEST_REPORT}/index.html" "${OUTPUT_DIR}/benchmarks/index.html"
+    else
+        rm -f "${OUTPUT_DIR}/benchmarks/index.html"
     fi
 fi
 

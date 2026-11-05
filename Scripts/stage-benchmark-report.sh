@@ -3,7 +3,8 @@
 # labelled with the tag and the code is unchanged since that measured commit (Scripts/check-release-report.sh --optional).
 # On success the report page is written to <staging-dir>/<tag>.html; no label or no report stages nothing and succeeds.
 # A report that names the tag but fails a check stages nothing, prints a GitHub ::error annotation and exits 1, so the
-# caller can publish the documentation anyway and fail afterwards.
+# caller can publish the documentation anyway and fail afterwards; it leaves <staging-dir>/<tag>.withheld so that publishing
+# also takes down a report of that tag published earlier. STAGE_ANNOTATION=warning downgrades the annotation (backfills).
 # Usage: Scripts/stage-benchmark-report.sh <tag> <staging-dir> [<candidate-ref>]   (default candidate: the tag)
 set -euo pipefail
 
@@ -13,7 +14,7 @@ staging=${2:-}
 candidate=${3:-$tag}
 here=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 
-rm -f "$staging/$tag.html"
+rm -f "$staging/$tag.html" "$staging/$tag.withheld"
 status=0
 "$here/check-release-report.sh" --optional "$tag" "$candidate" || status=$?
 case $status in
@@ -24,7 +25,9 @@ case $status in
         ;;
     10) ;;
     *)
-        printf '::error title=Benchmark report not published::The report that names %s failed the release check; the documentation is published without it.\n' "$tag" >&2
+        mkdir -p "$staging"
+        : > "$staging/$tag.withheld"
+        printf '::%s title=Benchmark report not published::The report that names %s failed the release check; the documentation is published without it.\n' "${STAGE_ANNOTATION:-error}" "$tag" >&2
         exit 1
         ;;
 esac

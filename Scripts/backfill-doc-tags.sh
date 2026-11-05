@@ -27,8 +27,8 @@ for TAG in $TAGS; do
             if (cd "${TMP_WT}" && swift package --disable-sandbox --allow-writing-to-directory "${OUTPUT_DIR}" generate-documentation --target FirebladeECS --disable-indexing --transform-for-static-hosting --hosting-base-path "${REPO_NAME}/${TAG}" --output-path "${OUTPUT_DIR}/${TAG}"); then
                 echo "==> Successfully built docs for ${TAG}"
                 # A tag publishes its benchmark report only when its manifest names the tag and the code is unchanged.
-                "${ROOT}/Scripts/stage-benchmark-report.sh" "${TAG}" "${REPORTS_DIR}" "${TAG}" \
-                    || echo "::warning::Benchmark report of ${TAG} failed its release check and is not published"
+                STAGE_ANNOTATION=warning "${ROOT}/Scripts/stage-benchmark-report.sh" "${TAG}" "${REPORTS_DIR}" "${TAG}" \
+                    || echo "Benchmark report of ${TAG} is not published"
             else
                 echo "::warning::Failed to build docs for ${TAG}, skipping"
                 rm -rf "${OUTPUT_DIR}/${TAG}"

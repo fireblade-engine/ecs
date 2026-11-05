@@ -14,7 +14,8 @@
 #   SNAPSHOT_DIR      built documentation (default: .build/documentation)
 #   REPORTS_DIR       staged benchmark reports (default: .build/benchmark-reports): every <version>.html in it is published as
 #                     benchmarks/<version>/index.html next to the reports of other versions, which stay untouched
-#                     (Scripts/stage-benchmark-report.sh fills it; main runs and pull requests stage nothing)
+#                     (Scripts/stage-benchmark-report.sh fills it; main runs and pull requests stage nothing). A
+#                     <version>.withheld marker there removes the version's published report instead.
 #   PUBLISH_DIR       published tree output (default: .build/gh-pages-publish)
 #   REPO_NAME         site base path (default: ecs)
 #   MAX_ATTEMPTS      push attempts (default: 3)
@@ -72,6 +73,11 @@ for ((attempt = 1; attempt <= MAX_ATTEMPTS; attempt++)); do
     for path in $PUBLISH_PATHS; do
         mkdir -p "$CLONE/$path"
         rsync -a --delete "$SNAPSHOT_DIR/$path/" "$CLONE/$path/"
+    done
+    # A tag whose report failed the release check is marked <version>.withheld: a report published earlier is taken down.
+    for marker in "$REPORTS_DIR"/*.withheld; do
+        [[ -f $marker ]] || continue
+        rm -rf "${CLONE:?}/benchmarks/$(basename "$marker" .withheld)"
     done
     for report in "$REPORTS_DIR"/*.html; do
         [[ -f $report ]] || continue

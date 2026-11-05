@@ -179,6 +179,7 @@ test-benchmark-scripts:
 	./Tests/benchmark-run-refs-tests.sh
 	./Tests/release-check-tests.sh
 	./Tests/check-release-report-tests.sh
+	./Tests/publish-gh-pages-tests.sh
 
 # --- Workflows ---
 

@@ -1,5 +1,16 @@
 #!/usr/bin/env bash
+# Builds the documentation of DOCS_VERSION_PATH into OUTPUT_DIR (restoring the published versions from gh-pages first) and
+# regenerates the shared root files: version picker, root and latest redirects, versions.json and the versions page.
+# With --index-only nothing is restored or built: only the shared root files are regenerated for the version directories
+# already present in OUTPUT_DIR (Scripts/publish-gh-pages.sh runs it against a fresh gh-pages clone).
 set -euo pipefail
+
+INDEX_ONLY="false"
+case "${1:-}" in
+    --index-only) INDEX_ONLY="true" ;;
+    "") ;;
+    *) printf 'Usage: Scripts/sync-documentation.sh [--index-only]\n' >&2; exit 64 ;;
+esac
 
 REPO_NAME="${REPO_NAME:-ecs}"
 OUTPUT_DIR="${OUTPUT_DIR:-.build/documentation}"
@@ -10,7 +21,10 @@ if [[ "$OUTPUT_DIR" != /* ]]; then
     OUTPUT_DIR="$ROOT/$OUTPUT_DIR"
 fi
 
+export OUTPUT_DIR REPO_NAME DOCS_VERSION_PATH
+
 mkdir -p "${OUTPUT_DIR}"
+if [ "$INDEX_ONLY" = "false" ]; then
 if git fetch origin gh-pages:refs/remotes/origin/gh-pages 2>/dev/null; then
     echo "==> Restoring existing documentation from gh-pages..."
     # Use a throwaway index so the repo's own index is never touched (otherwise the whole gh-pages tree gets staged).
@@ -34,6 +48,7 @@ swift package --disable-sandbox \
 if [ -f "${ROOT}/Documentation/Benchmarks/BenchmarkReport.html" ]; then
     mkdir -p "${OUTPUT_DIR}/${DOCS_VERSION_PATH}/benchmarks"
     cp "${ROOT}/Documentation/Benchmarks/BenchmarkReport.html" "${OUTPUT_DIR}/${DOCS_VERSION_PATH}/benchmarks/BenchmarkReport.html"
+fi
 fi
 
 # Copy version-picker.js
@@ -82,6 +97,10 @@ create_redirect "${OUTPUT_DIR}/latest/documentation/firebladeecs/index.html" "..
 create_redirect "${OUTPUT_DIR}/documentation/firebladeecs/index.html" "../../${LATEST_TARGET}/documentation/firebladeecs/" "Redirecting to Latest Docs"
 if [ -f "${OUTPUT_DIR}/${LATEST_TARGET}/benchmarks/BenchmarkReport.html" ]; then
   create_redirect "${OUTPUT_DIR}/latest/benchmarks/BenchmarkReport.html" "../../${LATEST_TARGET}/benchmarks/BenchmarkReport.html" "Redirecting to Latest Benchmark Report"
+else
+  # The latest target has no report: a redirect left by an earlier latest would point at the wrong version.
+  rm -f "${OUTPUT_DIR}/latest/benchmarks/BenchmarkReport.html"
+  rmdir "${OUTPUT_DIR}/latest/benchmarks" 2> /dev/null || true
 fi
 create_redirect "${OUTPUT_DIR}/versions.html" "versions/" "Redirecting to Versions"
 
@@ -297,15 +316,17 @@ for entry in entries:
                     f.write(content)
 PYTHON_EOF
 
-# Publish the self-contained benchmark report at <site>/benchmarks/. Done after the version-picker injection above, which
-# rewrites every top-level directory's index.html, so the report stays untouched. "benchmarks" matches no version regex.
-BENCHMARK_REPORT="${ROOT}/Documentation/Benchmarks/BenchmarkReport.html"
-if [ -f "${BENCHMARK_REPORT}" ]; then
+# Publish the self-contained benchmark report at <site>/benchmarks/ from the latest target's report. Done after the
+# version-picker injection above, which rewrites every top-level directory's index.html, so the report stays untouched.
+# "benchmarks" matches no version regex. Without a report for the latest target a stale copy is removed.
+LATEST_REPORT="${OUTPUT_DIR}/${LATEST_TARGET}/benchmarks/BenchmarkReport.html"
+if [ -f "${LATEST_REPORT}" ]; then
     echo "==> Publishing benchmark report to ${OUTPUT_DIR}/benchmarks/index.html..."
     mkdir -p "${OUTPUT_DIR}/benchmarks"
-    cp "${BENCHMARK_REPORT}" "${OUTPUT_DIR}/benchmarks/index.html"
+    cp "${LATEST_REPORT}" "${OUTPUT_DIR}/benchmarks/index.html"
 else
-    echo "==> Skipping benchmark report: ${BENCHMARK_REPORT} not found."
+    echo "==> Skipping benchmark report: ${LATEST_REPORT} not found."
+    rm -f "${OUTPUT_DIR}/benchmarks/index.html"
 fi
 
 echo "Documentation sync, manifest, catalog landing page, and version picker generation complete."

@@ -26,7 +26,10 @@ usage() {
     cat >&2 <<'USAGE'
 Usage: Scripts/benchmark-run-refs.sh --refs <a,b,c> [options]
 
-  --refs <list>       comma-separated committed refs (tags, branches or SHAs); at least one, no duplicates by SHA
+  --refs <list>       comma-separated committed refs (tags, branches or SHAs); at least one, no duplicates by SHA.
+                      An entry may be <ref>:<label> (split at the first ':'): <ref> is measured, <label> (letters, digits,
+                      '.', '_', '+', '-'; unique across entries) is recorded as the requested name and used in file names
+                      and the report, e.g. 1.4.3,main:2.0.0 labels main's commit as 2.0.0 before that tag exists.
   --filter <regex>    benchmark filter (default: the snapshot script's smoke selection, 16 entities of every workload plus entity.create.no-entities at 0)
   --suite-ref <rev>   commit providing the suite for every ref (default: HEAD)
   --out <dir>         run directory (must not exist or be empty; default: Benchmarks/Results/<UTC timestamp>)
@@ -89,12 +92,37 @@ fi
 # --- Validate everything before any build ---------------------------------------------------------------------------
 [[ -n $refs_arg ]] || die "--refs is empty"
 [[ $refs_arg != ,* && $refs_arg != *, && $refs_arg != *,,* ]] || die "--refs contains an empty item: '$refs_arg'"
-IFS=, read -r -a refs <<< "$refs_arg"
+IFS=, read -r -a items <<< "$refs_arg"
+
+# An item is <ref> or <ref>:<label>; git forbids ':' in ref names, so the first ':' separates the label.
+refs=()
+labels=()
+errors=()
+for item in "${items[@]}"; do
+    if [[ $item == *:* ]]; then
+        item_ref=${item%%:*}
+        item_label=${item#*:}
+        if [[ -z ${item_ref//[[:space:]]/} ]]; then
+            errors+=("empty ref in '$item'")
+        elif [[ -z $item_label ]]; then
+            errors+=("empty label in '$item'")
+        elif [[ ! $item_label =~ ^[A-Za-z0-9._+-]+$ ]]; then
+            errors+=("invalid label '$item_label' in '$item': use letters, digits, '.', '_', '+' and '-'")
+        fi
+    else
+        item_ref=$item
+        item_label=$item
+    fi
+    for existing in ${labels[@]+"${labels[@]}"}; do
+        [[ $existing != "$item_label" ]] || errors+=("duplicate label '$item_label'")
+    done
+    refs+=("$item_ref")
+    labels+=("$item_label")
+done
 
 suite_sha=$(git -C "$repo" rev-parse --verify --quiet "$suite_ref^{commit}") || die "invalid suite ref: $suite_ref"
 
 shas=()
-errors=()
 stale=0
 for ref in "${refs[@]}"; do
     if [[ -z ${ref//[[:space:]]/} ]]; then
@@ -195,7 +223,7 @@ shuffle_order() { # <seed> <round> <n> -> indices, space separated
 
 names=()
 for ((i = 0; i < ${#refs[@]}; i++)); do
-    names+=("$(printf '%s' "${refs[i]}" | tr -c 'A-Za-z0-9._\n-' '-')-${shas[i]:0:12}")
+    names+=("$(printf '%s' "${labels[i]}" | tr -c 'A-Za-z0-9._\n-' '-')-${shas[i]:0:12}")
 done
 width=${#replicates}
 ((width >= 2)) || width=2
@@ -204,9 +232,9 @@ width=${#replicates}
 if ((replicates > 1)); then
     printf 'benchmark-run-refs: %d replicates per ref, seed %s\n' "$replicates" "$seed" >&2
     for ((i = 0; i < ${#refs[@]}; i++)); do
-        printf 'benchmark-run-refs: building [%d/%d] %s (%s)\n' "$((i + 1))" "${#refs[@]}" "${refs[i]}" "${shas[i]:0:12}" >&2
-        "$snapshot" "${shas[i]}" --requested "${refs[i]}" --batch-id "$batch_id" --repo "$repo" --suite-ref "$suite_sha" --out "$scratch/snapshot-$i" --build-only ${filter_args[@]+"${filter_args[@]}"} >&2 \
-            || die "building ref ${refs[i]} failed; nothing was measured"
+        printf 'benchmark-run-refs: building [%d/%d] %s (%s)\n' "$((i + 1))" "${#refs[@]}" "${labels[i]}" "${shas[i]:0:12}" >&2
+        "$snapshot" "${shas[i]}" --requested "${labels[i]}" --batch-id "$batch_id" --repo "$repo" --suite-ref "$suite_sha" --out "$scratch/snapshot-$i" --build-only ${filter_args[@]+"${filter_args[@]}"} >&2 \
+            || die "building ref ${labels[i]} failed; nothing was measured"
     done
 fi
 
@@ -224,25 +252,25 @@ for ((round = 1; round <= replicates && !failed; round++)); do
     position=0
     for i in $order; do
         position=$((position + 1))
-        ref=${refs[i]}
+        label=${labels[i]}
         sha=${shas[i]}
         if ((replicates > 1)); then
             name="${names[i]}.r$(printf '%0*d' "$width" "$round").json"
             extra=(--reuse --replicate "$round" --replicates "$replicates" --position "$position" --seed "$seed")
-            printf 'benchmark-run-refs: round %d/%d position %d/%d: %s (%s)\n' "$round" "$replicates" "$position" "${#refs[@]}" "$ref" "${sha:0:12}" >&2
+            printf 'benchmark-run-refs: round %d/%d position %d/%d: %s (%s)\n' "$round" "$replicates" "$position" "${#refs[@]}" "$label" "${sha:0:12}" >&2
         else
             name="${names[i]}.json"
             extra=()
-            printf 'benchmark-run-refs: [%d/%d] %s (%s)\n' "$position" "${#refs[@]}" "$ref" "${sha:0:12}" >&2
+            printf 'benchmark-run-refs: [%d/%d] %s (%s)\n' "$position" "${#refs[@]}" "$label" "${sha:0:12}" >&2
         fi
         final="$out/$name"
         [[ ! -e $final ]] || die "result file already exists: $final"
         staged="$out/.$name.partial"
 
-        if ! "$snapshot" "$sha" --requested "$ref" --batch-id "$batch_id" --repo "$repo" --suite-ref "$suite_sha" --out "$scratch/snapshot-$i" --result "$staged" ${extra[@]+"${extra[@]}"} ${filter_args[@]+"${filter_args[@]}"} >&2; then
+        if ! "$snapshot" "$sha" --requested "$label" --batch-id "$batch_id" --repo "$repo" --suite-ref "$suite_sha" --out "$scratch/snapshot-$i" --result "$staged" ${extra[@]+"${extra[@]}"} ${filter_args[@]+"${filter_args[@]}"} >&2; then
             if ((replicates == 1)); then rm -rf "$scratch/snapshot-$i"; fi
             if [[ -f $staged ]]; then keep_failed "$staged" "$name"; fi
-            printf 'benchmark-run-refs: ref %s failed%s; later runs were not started\n' "$ref" "$( ((replicates > 1)) && printf ' in round %d' "$round")" >&2
+            printf 'benchmark-run-refs: ref %s failed%s; later runs were not started\n' "$label" "$( ((replicates > 1)) && printf ' in round %d' "$round")" >&2
             failed=1
             break
         fi
@@ -267,7 +295,7 @@ for ((round = 1; round <= replicates && !failed; round++)); do
         fi
         if [[ -n $problem ]]; then
             if [[ -f $staged ]]; then keep_failed "$staged" "$name"; fi
-            printf 'benchmark-run-refs: ref %s failed: %s; later runs were not started\n' "$ref" "$problem" >&2
+            printf 'benchmark-run-refs: ref %s failed: %s; later runs were not started\n' "$label" "$problem" >&2
             failed=1
             break
         fi
@@ -277,7 +305,7 @@ for ((round = 1; round <= replicates && !failed; round++)); do
             for part in toolchain host set; do
                 [[ $warned_parts != *" $part "* ]] || continue
                 if [[ $(fingerprint "$final" "$part") != "$(fingerprint "${results[0]}" "$part")" ]]; then
-                    printf 'benchmark-run-refs: warning: %s differs between %s and %s; their results may not be comparable\n' "$part" "$ref" "$(jq -r '.ref.requested' "${results[0]}")" >&2
+                    printf 'benchmark-run-refs: warning: %s differs between %s and %s; their results may not be comparable\n' "$part" "$label" "$(jq -r '.ref.requested' "${results[0]}")" >&2
                     warned_parts+="$part "
                 fi
             done

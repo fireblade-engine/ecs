@@ -339,6 +339,7 @@ fsm.changeState(name: .attack)
   ```sh
   make docs-preview
   ```
+- **Site Build:** `make docs-generate` builds the site into `.build/documentation`. It first restores the published versions from the `gh-pages` branch of `origin`, so it needs network access to `origin` and fails if that restore fails (only a missing `gh-pages` branch is tolerated).
 
 ---
 

@@ -28,8 +28,8 @@ struct ReportHTMLTests {
         for match in html.matches(of: #/(?:href|src)="([^"]*)"/#) {
             #expect(match.output.1.hasPrefix("#"), Comment(rawValue: String(match.output.1)))
         }
-        // The only scripts are the data block and the inline script.
-        #expect(html.components(separatedBy: "<script").count == 3)
+        // The only scripts are the data block, the inline script and the manifest block.
+        #expect(html.components(separatedBy: "<script").count == 4)
     }
 
     @Test
@@ -108,7 +108,7 @@ struct ReportHTMLTests {
         let object = try #require(try JSONSerialization.jsonObject(with: json) as? [String: Any])
         let workload = try #require((object["workloads"] as? [[String: Any]])?.first)
         #expect((workload["series"] as? [[String: Any]])?.contains { $0["ref"] as? String == "</script><!--&" } == true)
-        #expect(html.components(separatedBy: "</script>").count == 3, "only the two real script elements close")
+        #expect(html.components(separatedBy: "</script>").count == 4, "only the three real script elements close")
         #expect(!html.contains("</script><!--"))
     }
 

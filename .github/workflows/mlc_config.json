@@ -14,6 +14,9 @@
         },
         {
             "pattern": "^https://github\\.com/fireblade-engine/ecs/blob/main/Documentation/Benchmarks/"
+        },
+        {
+            "pattern": "^https://fireblade-engine\\.github\\.io/ecs/benchmarks/"
         }
     ],
     "httpHeaders": [

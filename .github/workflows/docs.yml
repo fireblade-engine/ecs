@@ -15,8 +15,16 @@ on:
         type: boolean
         default: false
 
+# Pull requests are grouped per ref (an unrelated label event gets its own group) and cancel older runs. Every tag has its
+# own group and every manual run gets one per run, so neither is cancelled or replaced by another run. Main pushes share one
+# group where a newer pending run may replace an older pending one (the newest main wins). Nothing is cancelled mid-publish,
+# and publishing itself is safe against overlapping runs (Scripts/publish-gh-pages.sh).
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}${{ (github.event.action == 'labeled' && github.event.label.name != 'run-docs') && format('-{0}', github.run_id) || '' }}
+  group: >-
+    ${{ github.event_name == 'pull_request'
+    && format('{0}-{1}{2}', github.workflow, github.ref, (github.event.action == 'labeled' && github.event.label.name != 'run-docs') && format('-{0}', github.run_id) || '')
+    || (github.ref_type == 'tag' && format('{0}-tag-{1}', github.workflow, github.ref)
+    || (github.event_name == 'workflow_dispatch' && format('{0}-dispatch-{1}', github.workflow, github.run_id) || format('{0}-main', github.workflow))) }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
@@ -30,6 +38,10 @@ jobs:
     if: github.event_name != 'pull_request' || (github.event.action == 'labeled' && github.event.label.name == 'run-docs') || (github.event.action != 'labeled' && contains(github.event.pull_request.labels.*.name, 'run-docs'))
     runs-on: macos-latest
     timeout-minutes: 30
+    outputs:
+      docs_version_path: ${{ steps.version.outputs.docs_version_path }}
+      report_published: ${{ steps.report.outputs.report_published }}
+      report_failed: ${{ steps.report.outputs.report_failed }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -37,11 +49,35 @@ jobs:
           fetch-depth: 0
 
       - name: Determine Version Path
+        id: version
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          if [ "${{ github.ref_type }}" = "tag" ]; then
-            echo "DOCS_VERSION_PATH=${{ github.ref_name }}" >> $GITHUB_ENV
+          if [ "$REF_TYPE" = "tag" ]; then
+            DOCS_VERSION_PATH="$REF_NAME"
           else
-            echo "DOCS_VERSION_PATH=main" >> $GITHUB_ENV
+            DOCS_VERSION_PATH=main
+          fi
+          echo "DOCS_VERSION_PATH=$DOCS_VERSION_PATH" >> "$GITHUB_ENV"
+          echo "docs_version_path=$DOCS_VERSION_PATH" >> "$GITHUB_OUTPUT"
+
+      # Reports are sporadic and belong to the version they measure. Only tag runs publish one, and only when the committed
+      # manifest names this tag. A report that fails the drift check is withheld and the job fails later (report-gate),
+      # after the documentation itself was published.
+      - name: Stage Benchmark Report
+        id: report
+        if: github.ref_type == 'tag'
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+        run: |
+          status=0
+          ./Scripts/stage-benchmark-report.sh "$REF_NAME" .build/benchmark-reports "$SHA" || status=$?
+          if [ "$status" -ne 0 ]; then
+            echo "report_failed=true" >> "$GITHUB_OUTPUT"
+          elif [ -f ".build/benchmark-reports/$REF_NAME.html" ]; then
+            echo "report_published=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Backfill Historical Tags
@@ -49,7 +85,9 @@ jobs:
         run: make docs-backfill-tags
 
       - name: Build Documentation
-        run: make docs-generate REPO_NAME=ecs DOCS_VERSION_PATH=${{ env.DOCS_VERSION_PATH }}
+        env:
+          VERSION_PATH: ${{ env.DOCS_VERSION_PATH }}
+        run: make docs-generate REPO_NAME=ecs DOCS_VERSION_PATH="$VERSION_PATH"
 
       - name: Check Documentation Quality
         run: |
@@ -58,38 +96,17 @@ jobs:
 
       - name: Persist to gh-pages
         if: github.event_name != 'pull_request'
+        env:
+          REMOTE_URL: https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          BACKFILL: ${{ github.event.inputs.backfill_tags }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          TMP_GH_PAGES=$(mktemp -d /tmp/gh-pages-XXXXXX)
-          if git fetch origin gh-pages:refs/remotes/origin/gh-pages 2>/dev/null; then
-              git clone --branch gh-pages "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" "$TMP_GH_PAGES"
-          else
-              git init "$TMP_GH_PAGES"
-              (
-                cd "$TMP_GH_PAGES"
-                git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
-                git checkout -b gh-pages
-              )
+          # Publish only the version directories this run built; the shared root files are regenerated from the fresh clone.
+          PUBLISH_PATHS="$DOCS_VERSION_PATH"
+          if [ "$BACKFILL" = "true" ]; then
+            PUBLISH_PATHS="$PUBLISH_PATHS $(find .build/documentation -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+' | tr '\n' ' ')"
           fi
-          rsync -a --delete --exclude '.git' .build/documentation/ "$TMP_GH_PAGES/"
-          (
-            cd "$TMP_GH_PAGES"
-            git add -A
-            if ! git diff-index --quiet HEAD 2>/dev/null; then
-              git commit -m "Update documentation for ${{ env.DOCS_VERSION_PATH }}"
-              git push origin gh-pages
-            else
-              echo "No changes to commit to gh-pages"
-            fi
-          )
-          rm -rf "$TMP_GH_PAGES"
-
-      - name: Upload Pages artifact
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@v5
-        with:
-          path: .build/documentation
+          export PUBLISH_PATHS
+          ./Scripts/publish-gh-pages.sh
 
       - name: Upload preview artifact
         if: github.event_name == 'pull_request'
@@ -98,22 +115,54 @@ jobs:
           name: documentation-preview
           path: .build/documentation
 
+  # Deploys whatever gh-pages holds at this moment, not what this run built, so a replaced pending deploy is harmless and
+  # a deploy can never bring back older content than another run already published.
   deploy:
     name: Deploy to GitHub Pages
     needs: build-docs
     if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-deploy
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Checkout gh-pages
+        uses: actions/checkout@v7
+        with:
+          ref: gh-pages
+          path: site
+
+      - name: Prepare Pages artifact
+        run: rm -rf site/.git
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
 
+  report-gate:
+    name: Benchmark Report Release Check
+    # Independent of deploy: a cancelled or replaced deploy must not swallow the failure.
+    needs: [build-docs]
+    if: always() && needs.build-docs.result == 'success' && needs.build-docs.outputs.report_failed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail on withheld benchmark report
+        run: |
+          echo "::error title=Benchmark report withheld::The report for this tag failed the release check (code changed since the measured commit, or manifest and page disagree). The documentation was published without it. Fix with make check-release-report, then move the tag."
+          exit 1
+
+  # Skipped when this run's deploy was replaced by a newer one: that deploy publishes the same (or newer) gh-pages HEAD.
   smoke-test:
     name: Post-Deployment Smoke Test
-    needs: deploy
+    needs: [build-docs, deploy]
     if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     steps:
@@ -127,3 +176,13 @@ jobs:
         run: |
           curl -s https://fireblade-engine.github.io/ecs/ | grep -q "Redirecting to Latest Docs"
           echo "Root redirect is live at /ecs/ and points to latest docs"
+
+      - name: Check Benchmark Report
+        if: github.ref_type == 'tag' && needs.build-docs.outputs.report_published == 'true'
+        env:
+          VERSION_PATH: ${{ needs.build-docs.outputs.docs_version_path }}
+        run: |
+          curl --fail -sSL --retry 6 --retry-delay 10 --retry-all-errors -o /dev/null "https://fireblade-engine.github.io/ecs/benchmarks/$VERSION_PATH/"
+          echo "Benchmark report is live at /ecs/benchmarks/$VERSION_PATH/"
+          curl --fail -sSL --retry 6 --retry-delay 10 --retry-all-errors -o /dev/null https://fireblade-engine.github.io/ecs/benchmarks/
+          echo "Benchmark landing page is live at /ecs/benchmarks/"

@@ -14,7 +14,7 @@ DOCS_VERSION_PATH ?= main
 # The full base path for hosting
 HOSTING_BASE_PATH ?= $(REPO_NAME)/$(DOCS_VERSION_PATH)
 
-.PHONY: setup lint lint-fix test test-coverage testReadme build-debug build-release docs docs-preview docs-generate docs-generate-all docs-coverage docs-check-coverage docs-check-links preview-analysis-docs generate-docs-githubpages pre-commit clean benchmark benchmark-compare benchmark-report test-benchmarks test-benchmark-scripts
+.PHONY: setup lint lint-fix test test-coverage testReadme build-debug build-release docs docs-preview docs-generate docs-generate-all docs-coverage docs-check-coverage docs-check-links preview-analysis-docs generate-docs-githubpages pre-commit clean benchmark benchmark-compare benchmark-report test-benchmarks test-benchmark-scripts release-check check-release-report
 
 # --- Setup ---
 
@@ -137,12 +137,13 @@ REPORT_OVERWRITE ?=
 REPORT_TOOL = Benchmarks/.build/release/ECSBenchmarkReportCLI
 # User-supplied values reach the recipes through the environment, never pasted into the shell text, so quotes, backticks
 # and `$(...)` in a filter or title are data. (Make still expands a `$` on the make command line: write `$$`.)
-export REFS BENCHMARK_FILTER REPLICATES SEED REPORT_DIR RESULTS REPORT_BASELINE REPORT_TITLE
+export RELEASE_FROM RELEASE_TO RELEASE_VERSION REFS BENCHMARK_FILTER REPLICATES SEED REPORT_DIR RESULTS REPORT_BASELINE REPORT_TITLE
 
 # Runtime benchmarks live in a separate package (Benchmarks/) so the benchmark dependency stays out of FirebladeECS.
 benchmark:
 	cd Benchmarks && swift package benchmark --target ECSBenchmark
 
+# An entry may be <ref>:<label> (REFS=1.4.3,main:2.0.0) to record a release version label before its tag exists.
 # Measures the shared compatibility suite at each committed ref (comma-separated tags, branches or SHAs) in isolated
 # snapshots and saves one validated result file per ref under Benchmarks/Results/<UTC timestamp>/.
 # REPLICATES=k (default 1) builds each ref once and runs k interleaved rounds in a seeded shuffled order (SEED=n, random and
@@ -152,11 +153,24 @@ benchmark-compare:
 	@if [ -z "$$REFS" ]; then printf 'Set REFS to comma-separated Git refs, for example: make benchmark-compare REFS=1.4.3,main\n' >&2; exit 2; fi
 	./Scripts/benchmark-run-refs.sh --refs "$$REFS" $(if $(BENCHMARK_FILTER),--filter "$$BENCHMARK_FILTER") $(if $(REPLICATES),--replicates "$$REPLICATES") $(if $(SEED),--seed "$$SEED") $(if $(ALLOW_STALE_REFS),--allow-stale-refs)
 
-# Renders the report directory (the single file BenchmarkReport.html) from saved result files only (at least two); it never runs benchmarks.
+# Renders the report directory (BenchmarkReport.html and BenchmarkReport.manifest.json) from saved result files only (at least two); it never runs benchmarks.
 benchmark-report:
 	@if [ -z "$$RESULTS" ]; then printf 'Set RESULTS to saved result files, for example: make benchmark-report RESULTS="a.json b.json"\n' >&2; exit 2; fi
 	swift build --package-path Benchmarks -c release --product ECSBenchmarkReportCLI $(SWIFT_FLAGS)
 	$(REPORT_TOOL) $$RESULTS --output-dir "$$REPORT_DIR" $(if $(REPORT_BASELINE),--baseline "$$REPORT_BASELINE") $(if $(REPORT_TITLE),--title "$$REPORT_TITLE") $(if $(REPORT_OVERWRITE),--overwrite)
+
+# Fails unless Sources (DocC catalogs excluded), Package.swift and Package.resolved are identical between the measured ref
+# (RELEASE_FROM) and the release candidate (RELEASE_TO, default HEAD), so a release tag only carries code that was benchmarked.
+release-check:
+	@if [ -z "$$RELEASE_FROM" ]; then printf 'Set RELEASE_FROM to the measured ref, for example: make release-check RELEASE_FROM=<measured-sha> RELEASE_TO=<merge-commit>\n' >&2; exit 2; fi
+	./Scripts/release-check.sh "$$RELEASE_FROM" "$${RELEASE_TO:-HEAD}"
+
+# Strict pre-tag check of a dedicated benchmark release: the committed report and its manifest must exist, agree and carry a
+# ref labelled RELEASE_VERSION, and the code at that measured commit must equal RELEASE_TO (default HEAD). CI applies the same
+# check to tag pushes, but only when the manifest names the tag (see Scripts/stage-benchmark-report.sh).
+check-release-report:
+	@if [ -z "$$RELEASE_VERSION" ]; then printf 'Set RELEASE_VERSION to the release version, for example: make check-release-report RELEASE_VERSION=2.0.0 RELEASE_TO=<merge-commit>\n' >&2; exit 2; fi
+	./Scripts/check-release-report.sh "$$RELEASE_VERSION" "$${RELEASE_TO:-HEAD}"
 
 test-benchmarks:
 	cd Benchmarks && swift test $(SWIFT_FLAGS)
@@ -164,6 +178,10 @@ test-benchmarks:
 test-benchmark-scripts:
 	./Tests/benchmark-snapshot-tests.sh
 	./Tests/benchmark-run-refs-tests.sh
+	./Tests/release-check-tests.sh
+	./Tests/check-release-report-tests.sh
+	./Tests/publish-gh-pages-tests.sh
+	./Tests/sync-documentation-tests.sh
 
 # --- Workflows ---
 

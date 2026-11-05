@@ -1,4 +1,4 @@
-// HTML rendering of a `ReportModel` into the single self-contained file `BenchmarkReport.html` (Methodology.md "Report output"
+// HTML rendering of a `ReportModel` into the self-contained file `BenchmarkReport.html` (Methodology.md "Report output"
 // and "Statistical design v3"). Statistics come from `ReportInference`; this file only formats them. The page holds inline CSS and
 // script, the tables as static HTML, and the plot data as embedded JSON; the script draws the plots in the browser.
 import Benchmark

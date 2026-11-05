@@ -100,7 +100,7 @@ cd Benchmarks && swift run -c release ECSBenchmarkResults validate <result.json>
 
 ## Reports
 
-`make benchmark-report` renders one self-contained HTML file, `BenchmarkReport.html`, from saved result files only (two or more); it builds the `ECSBenchmarkReportCLI` tool (target `ECSBenchmarkReport`, kept apart from the result writer and validator so the per-ref snapshot builds of `ECSBenchmarkResults` do not compile the report code) in release mode and never runs benchmarks. No report is committed yet; the first one, from `REFS=1.4.3,2.0.0` at the 2.0.0 tag, will be committed as `Documentation/Benchmarks/BenchmarkReport.html`, and `Scripts/sync-documentation.sh` then publishes it to the documentation site under `benchmarks/`.
+`make benchmark-report` renders one self-contained HTML file, `BenchmarkReport.html`, from saved result files only (two or more); it builds the `ECSBenchmarkReportCLI` tool (target `ECSBenchmarkReport`, kept apart from the result writer and validator so the per-ref snapshot builds of `ECSBenchmarkResults` do not compile the report code) in release mode and never runs benchmarks. No report is committed yet; the first one, from `REFS=1.4.3,main:2.0.0` (see "Publishing the first report"), will be committed as `Documentation/Benchmarks/BenchmarkReport.html`, and `Scripts/sync-documentation.sh` then publishes it to the documentation site under `benchmarks/`.
 
 ```sh
 make benchmark-report RESULTS="Benchmarks/Results/<run>/1.4.3-<sha>.json Benchmarks/Results/<run>/main-<sha>.json" \
@@ -117,12 +117,14 @@ The directory holds `BenchmarkReport.html`: a single file with inline style and 
 
 ## Publishing the first report
 
-The committed report compares `1.4.3` with `2.0.0` (full selection, 10 replicates). The `2.0.0` tag must exist and be fetched first (`git fetch --tags`). Run the commands from a checkout of `main`, or any checkout that contains the merged suite, not from a checkout of the tag: the suite is taken from `--suite-ref` (default `HEAD`) and measured against each ref.
+The committed report compares `1.4.3` with `2.0.0` (full selection, 10 replicates). The report is committed before the `2.0.0` tag exists, so `main` is measured under the label `2.0.0` (`main:2.0.0`, see "Release benchmarks" in `Documentation/Benchmarks/README.md`). Run the commands from a checkout of `main` that contains the merged suite: the suite is taken from `--suite-ref` (default `HEAD`) and measured against each ref. Freeze `main` while the run is in progress.
 
 ```sh
-caffeinate -s make benchmark-compare REFS=1.4.3,2.0.0 REPLICATES=10 BENCHMARK_FILTER='.*'
+caffeinate -s make benchmark-compare REFS=1.4.3,main:2.0.0 REPLICATES=10 BENCHMARK_FILTER='.*'
 make benchmark-report RESULTS="Benchmarks/Results/<run>/*.json" REPORT_BASELINE=1.4.3 REPORT_DIR=Documentation/Benchmarks REPORT_OVERWRITE=1
 ```
+
+Then open a PR with the report. After it merges, verify that nothing but the report, docs and tests changed since the measured commit with `make release-check FROM=<measured-sha> TO=<merge-commit>`, and only then create the `2.0.0` tag.
 
 `<run>` is the UTC timestamp directory printed by the first command. `RESULTS` is split by the shell and the glob is expanded from the repository root; it matches the finished `*.json` files only, not `.failed/` or staged `.partial` files. `REPORT_OVERWRITE=1` is needed because `Documentation/Benchmarks` already holds other files; only `BenchmarkReport.html` is replaced.
 

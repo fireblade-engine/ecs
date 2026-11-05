@@ -3,7 +3,7 @@
 Benchmark documentation of FirebladeECS.
 
 - [Methodology.md](Methodology.md): scope, workload inventory and parity, result schema, runner, statistical design and report output.
-- No benchmark result is recorded on `main` yet. The first run is `REFS=1.4.3,2.0.0 REPLICATES=10 BENCHMARK_FILTER='.*'` at the 2.0.0 tag; its report is committed as `Documentation/Benchmarks/BenchmarkReport.html`.
+- No benchmark result is recorded on `main` yet. The first run is `REFS=1.4.3,main:2.0.0 REPLICATES=10 BENCHMARK_FILTER='.*'` (measured on `main` before the 2.0.0 tag exists); its report is committed as `Documentation/Benchmarks/BenchmarkReport.html`.
 - Generate and run: `make benchmark-compare REFS=<a>,<b>` and `make benchmark-report RESULTS="..."`; the exact commands for the first report, and how to run unattended under `caffeinate -s`, are in [Benchmarks/README.md](../../Benchmarks/README.md) ("Publishing the first report").
 
 ## Release benchmarks

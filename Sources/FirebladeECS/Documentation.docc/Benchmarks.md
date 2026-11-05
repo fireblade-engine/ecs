@@ -18,7 +18,7 @@ Each revision is built once and measured in `k` independent process replicates, 
 To measure revisions locally, pass comma-separated tags, branches or commit IDs. Results are saved under `Benchmarks/Results/<UTC timestamp>/`:
 
 ```sh
-make benchmark-compare REFS=1.4.3,main REPLICATES=10 BENCHMARK_FILTER='.*'
+make benchmark-compare REFS=1.4.3,main:2.0.0 REPLICATES=10 BENCHMARK_FILTER='.*'
 make benchmark-report RESULTS="Benchmarks/Results/<run>/*.json" REPORT_BASELINE=1.4.3
 ```
 

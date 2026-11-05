@@ -14,7 +14,7 @@ DOCS_VERSION_PATH ?= main
 # The full base path for hosting
 HOSTING_BASE_PATH ?= $(REPO_NAME)/$(DOCS_VERSION_PATH)
 
-.PHONY: setup lint lint-fix test test-coverage testReadme build-debug build-release docs docs-preview docs-generate docs-generate-all docs-coverage docs-check-coverage docs-check-links preview-analysis-docs generate-docs-githubpages pre-commit clean benchmark benchmark-compare benchmark-report test-benchmarks test-benchmark-scripts
+.PHONY: setup lint lint-fix test test-coverage testReadme build-debug build-release docs docs-preview docs-generate docs-generate-all docs-coverage docs-check-coverage docs-check-links preview-analysis-docs generate-docs-githubpages pre-commit clean benchmark benchmark-compare benchmark-report test-benchmarks test-benchmark-scripts release-check
 
 # --- Setup ---
 
@@ -137,7 +137,7 @@ REPORT_OVERWRITE ?=
 REPORT_TOOL = Benchmarks/.build/release/ECSBenchmarkReportCLI
 # User-supplied values reach the recipes through the environment, never pasted into the shell text, so quotes, backticks
 # and `$(...)` in a filter or title are data. (Make still expands a `$` on the make command line: write `$$`.)
-export REFS BENCHMARK_FILTER REPLICATES SEED REPORT_DIR RESULTS REPORT_BASELINE REPORT_TITLE
+export FROM TO REFS BENCHMARK_FILTER REPLICATES SEED REPORT_DIR RESULTS REPORT_BASELINE REPORT_TITLE
 
 # Runtime benchmarks live in a separate package (Benchmarks/) so the benchmark dependency stays out of FirebladeECS.
 benchmark:
@@ -159,12 +159,19 @@ benchmark-report:
 	swift build --package-path Benchmarks -c release --product ECSBenchmarkReportCLI $(SWIFT_FLAGS)
 	$(REPORT_TOOL) $$RESULTS --output-dir "$$REPORT_DIR" $(if $(REPORT_BASELINE),--baseline "$$REPORT_BASELINE") $(if $(REPORT_TITLE),--title "$$REPORT_TITLE") $(if $(REPORT_OVERWRITE),--overwrite)
 
+# Fails unless Sources, Package.swift and Package.resolved are identical between the measured ref (FROM) and the
+# release candidate (TO, default HEAD), so a release tag only carries code that was benchmarked.
+release-check:
+	@if [ -z "$$FROM" ]; then printf 'Set FROM to the measured ref, for example: make release-check FROM=<measured-sha> TO=<merge-commit>\n' >&2; exit 2; fi
+	./Scripts/release-check.sh "$$FROM" "$${TO:-HEAD}"
+
 test-benchmarks:
 	cd Benchmarks && swift test $(SWIFT_FLAGS)
 
 test-benchmark-scripts:
 	./Tests/benchmark-snapshot-tests.sh
 	./Tests/benchmark-run-refs-tests.sh
+	./Tests/release-check-tests.sh
 
 # --- Workflows ---
 

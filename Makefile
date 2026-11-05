@@ -28,13 +28,17 @@ setup:
 
 # --- Quality Assurance ---
 
+# Linter invocations; CI overrides them with prebuilt binaries (Mint has no Linux release).
+SWIFTLINT ?= mint run swiftlint
+SWIFTFORMAT ?= mint run swiftformat
+
 lint:
-	mint run swiftlint lint --quiet Sources/ Tests/
-	mint run swiftformat --lint --config .swiftformat --swiftversion $(SWIFT_PACKAGE_VERSION) Sources/ Tests/
+	$(SWIFTLINT) lint --quiet Sources/ Tests/
+	$(SWIFTFORMAT) --lint --config .swiftformat --swiftversion $(SWIFT_PACKAGE_VERSION) Sources/ Tests/
 
 lint-fix:
-	mint run swiftformat --swiftversion $(SWIFT_PACKAGE_VERSION) --config .swiftformat Sources/ Tests/
-	mint run swiftlint --fix --config .swiftlint.yml --format --quiet Sources/ Tests/
+	$(SWIFTFORMAT) --swiftversion $(SWIFT_PACKAGE_VERSION) --config .swiftformat Sources/ Tests/
+	$(SWIFTLINT) --fix --config .swiftlint.yml --quiet Sources/ Tests/
 
 # Run tests
 test:

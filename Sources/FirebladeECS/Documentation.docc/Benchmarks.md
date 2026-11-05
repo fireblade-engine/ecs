@@ -12,7 +12,7 @@ Each revision is built once and measured in `k` independent process replicates, 
 
 ### Read and reproduce
 
-- The first published report comes with the 2.0.0 release.
+- The latest published report: [BenchmarkReport.html](https://fireblade-engine.github.io/ecs/latest/benchmarks/BenchmarkReport.html). Reports are published from 2.0.0 on.
 - The statistical design and workload parity notes: [Methodology.md](https://github.com/fireblade-engine/ecs/blob/main/Documentation/Benchmarks/Methodology.md).
 
 To measure revisions locally, pass comma-separated tags, branches or commit IDs. Results are saved under `Benchmarks/Results/<UTC timestamp>/`:

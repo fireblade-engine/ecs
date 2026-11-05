@@ -21,6 +21,10 @@ for TAG in $TAGS; do
             mkdir -p "${OUTPUT_DIR}/${TAG}"
             if (cd "${TMP_WT}" && swift package --disable-sandbox --allow-writing-to-directory "${OUTPUT_DIR}" generate-documentation --target FirebladeECS --disable-indexing --transform-for-static-hosting --hosting-base-path "${REPO_NAME}/${TAG}" --output-path "${OUTPUT_DIR}/${TAG}"); then
                 echo "==> Successfully built docs for ${TAG}"
+                if [ -f "${TMP_WT}/Documentation/Benchmarks/BenchmarkReport.html" ]; then
+                    mkdir -p "${OUTPUT_DIR}/${TAG}/benchmarks"
+                    cp "${TMP_WT}/Documentation/Benchmarks/BenchmarkReport.html" "${OUTPUT_DIR}/${TAG}/benchmarks/BenchmarkReport.html"
+                fi
             else
                 echo "::warning::Failed to build docs for ${TAG}, skipping"
                 rm -rf "${OUTPUT_DIR}/${TAG}"

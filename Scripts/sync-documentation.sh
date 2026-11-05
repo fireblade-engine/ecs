@@ -30,6 +30,12 @@ swift package --disable-sandbox \
     --hosting-base-path "${REPO_NAME}/${DOCS_VERSION_PATH}" \
     --output-path "${OUTPUT_DIR}/${DOCS_VERSION_PATH}"
 
+# Ship the committed benchmark report with this version's docs (no-op while no report is committed).
+if [ -f "${ROOT}/Documentation/Benchmarks/BenchmarkReport.html" ]; then
+    mkdir -p "${OUTPUT_DIR}/${DOCS_VERSION_PATH}/benchmarks"
+    cp "${ROOT}/Documentation/Benchmarks/BenchmarkReport.html" "${OUTPUT_DIR}/${DOCS_VERSION_PATH}/benchmarks/BenchmarkReport.html"
+fi
+
 # Copy version-picker.js
 cp "${ROOT}/Scripts/version-picker.js" "${OUTPUT_DIR}/version-picker.js"
 
@@ -74,6 +80,9 @@ create_redirect "${OUTPUT_DIR}/index.html" "latest/documentation/firebladeecs/" 
 create_redirect "${OUTPUT_DIR}/latest/index.html" "../${LATEST_TARGET}/documentation/firebladeecs/" "Redirecting to Latest Docs"
 create_redirect "${OUTPUT_DIR}/latest/documentation/firebladeecs/index.html" "../../../${LATEST_TARGET}/documentation/firebladeecs/" "Redirecting to Latest Docs"
 create_redirect "${OUTPUT_DIR}/documentation/firebladeecs/index.html" "../../${LATEST_TARGET}/documentation/firebladeecs/" "Redirecting to Latest Docs"
+if [ -f "${OUTPUT_DIR}/${LATEST_TARGET}/benchmarks/BenchmarkReport.html" ]; then
+  create_redirect "${OUTPUT_DIR}/latest/benchmarks/BenchmarkReport.html" "../../${LATEST_TARGET}/benchmarks/BenchmarkReport.html" "Redirecting to Latest Benchmark Report"
+fi
 create_redirect "${OUTPUT_DIR}/versions.html" "versions/" "Redirecting to Versions"
 
 echo "Generating version manifest and catalog landing page..."

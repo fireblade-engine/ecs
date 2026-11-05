@@ -15,8 +15,10 @@ on:
         type: boolean
         default: false
 
+# Pull requests are grouped per ref (an unrelated label event gets its own group). Every publishing run (main, tags, manual)
+# shares one group and is never cancelled mid-publish; the publish itself is also safe against overlapping runs.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}${{ (github.event.action == 'labeled' && github.event.label.name != 'run-docs') && format('-{0}', github.run_id) || '' }}
+  group: ${{ github.event_name == 'pull_request' && format('{0}-{1}{2}', github.workflow, github.ref, (github.event.action == 'labeled' && github.event.label.name != 'run-docs') && format('-{0}', github.run_id) || '') || format('{0}-publish', github.workflow) }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
@@ -30,6 +32,9 @@ jobs:
     if: github.event_name != 'pull_request' || (github.event.action == 'labeled' && github.event.label.name == 'run-docs') || (github.event.action != 'labeled' && contains(github.event.pull_request.labels.*.name, 'run-docs'))
     runs-on: macos-latest
     timeout-minutes: 30
+    outputs:
+      docs_version_path: ${{ steps.version.outputs.docs_version_path }}
+      has_benchmark_report: ${{ steps.report.outputs.has_benchmark_report }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -37,11 +42,33 @@ jobs:
           fetch-depth: 0
 
       - name: Determine Version Path
+        id: version
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          if [ "${{ github.ref_type }}" = "tag" ]; then
-            echo "DOCS_VERSION_PATH=${{ github.ref_name }}" >> $GITHUB_ENV
+          if [ "$REF_TYPE" = "tag" ]; then
+            DOCS_VERSION_PATH="$REF_NAME"
           else
-            echo "DOCS_VERSION_PATH=main" >> $GITHUB_ENV
+            DOCS_VERSION_PATH=main
+          fi
+          echo "DOCS_VERSION_PATH=$DOCS_VERSION_PATH" >> "$GITHUB_ENV"
+          echo "docs_version_path=$DOCS_VERSION_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Check Release Benchmark Report
+        if: github.ref_type == 'tag'
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+        run: make check-release-report VERSION="$REF_NAME" TO="$SHA"
+
+      - name: Detect Benchmark Report
+        id: report
+        run: |
+          if [ -f Documentation/Benchmarks/BenchmarkReport.html ]; then
+            echo "has_benchmark_report=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_benchmark_report=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Backfill Historical Tags
@@ -58,38 +85,23 @@ jobs:
 
       - name: Persist to gh-pages
         if: github.event_name != 'pull_request'
+        env:
+          REMOTE_URL: https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          BACKFILL: ${{ github.event.inputs.backfill_tags }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          TMP_GH_PAGES=$(mktemp -d /tmp/gh-pages-XXXXXX)
-          if git fetch origin gh-pages:refs/remotes/origin/gh-pages 2>/dev/null; then
-              git clone --branch gh-pages "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" "$TMP_GH_PAGES"
-          else
-              git init "$TMP_GH_PAGES"
-              (
-                cd "$TMP_GH_PAGES"
-                git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
-                git checkout -b gh-pages
-              )
+          # Publish only the version directories this run built; the shared root files are regenerated from the fresh clone.
+          PUBLISH_PATHS="$DOCS_VERSION_PATH"
+          if [ "$BACKFILL" = "true" ]; then
+            PUBLISH_PATHS="$PUBLISH_PATHS $(find .build/documentation -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+' | tr '\n' ' ')"
           fi
-          rsync -a --delete --exclude '.git' .build/documentation/ "$TMP_GH_PAGES/"
-          (
-            cd "$TMP_GH_PAGES"
-            git add -A
-            if ! git diff-index --quiet HEAD 2>/dev/null; then
-              git commit -m "Update documentation for ${{ env.DOCS_VERSION_PATH }}"
-              git push origin gh-pages
-            else
-              echo "No changes to commit to gh-pages"
-            fi
-          )
-          rm -rf "$TMP_GH_PAGES"
+          export PUBLISH_PATHS
+          ./Scripts/publish-gh-pages.sh
 
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v5
         with:
-          path: .build/documentation
+          path: .build/gh-pages-publish
 
       - name: Upload preview artifact
         if: github.event_name == 'pull_request'
@@ -113,7 +125,7 @@ jobs:
 
   smoke-test:
     name: Post-Deployment Smoke Test
-    needs: deploy
+    needs: [build-docs, deploy]
     if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     steps:
@@ -127,3 +139,17 @@ jobs:
         run: |
           curl -s https://fireblade-engine.github.io/ecs/ | grep -q "Redirecting to Latest Docs"
           echo "Root redirect is live at /ecs/ and points to latest docs"
+
+      - name: Check Benchmark Report
+        if: needs.build-docs.outputs.has_benchmark_report == 'true'
+        env:
+          DOCS_VERSION_PATH: ${{ needs.build-docs.outputs.docs_version_path }}
+        run: |
+          curl --fail -sSL --retry 6 --retry-delay 10 --retry-all-errors -o /dev/null "https://fireblade-engine.github.io/ecs/$DOCS_VERSION_PATH/benchmarks/BenchmarkReport.html"
+          echo "Benchmark report is live at /ecs/$DOCS_VERSION_PATH/benchmarks/"
+
+      - name: Check Latest Benchmark Report Redirect
+        if: github.ref_type == 'tag' && needs.build-docs.outputs.has_benchmark_report == 'true'
+        run: |
+          curl --fail -sSL --retry 6 --retry-delay 10 --retry-all-errors https://fireblade-engine.github.io/ecs/latest/benchmarks/BenchmarkReport.html | grep -q "Redirecting to Latest Benchmark Report"
+          echo "Latest benchmark redirect is live at /ecs/latest/benchmarks/"

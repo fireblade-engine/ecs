@@ -124,7 +124,7 @@ caffeinate -s make benchmark-compare REFS=1.4.3,main:2.0.0 REPLICATES=10 BENCHMA
 make benchmark-report RESULTS="Benchmarks/Results/<run>/*.json" REPORT_BASELINE=1.4.3 REPORT_DIR=Documentation/Benchmarks REPORT_OVERWRITE=1
 ```
 
-Then open a PR with the report. After it merges, verify that nothing but the report, docs and tests changed since the measured commit with `make release-check FROM=<measured-sha> TO=<merge-commit>`, and only then create the `2.0.0` tag.
+Then open a PR with the report. After it merges, verify with `make check-release-report VERSION=2.0.0 TO=<merge-commit>` that the report's `2.0.0` ref (from `BenchmarkReport.manifest.json`) was measured on the same `Sources`, `Package.swift` and `Package.resolved` as the merge commit, and only then create the `2.0.0` tag. It supersedes giving `FROM` and `TO` to `make release-check` by hand (still the underlying primitive). CI repeats the check on the tag push and publishes nothing for a failing tag; afterwards confirm that the tag's Documentation run finished.
 
 `<run>` is the UTC timestamp directory printed by the first command. `RESULTS` is split by the shell and the glob is expanded from the repository root; it matches the finished `*.json` files only, not `.failed/` or staged `.partial` files. `REPORT_OVERWRITE=1` is needed because `Documentation/Benchmarks` already holds other files; only `BenchmarkReport.html` and `BenchmarkReport.manifest.json` are replaced.
 
@@ -138,4 +138,5 @@ Running unattended on macOS: wrap the run in `caffeinate -s` (see above; it prev
 | `make benchmark-compare REFS=a,b,c [BENCHMARK_FILTER=...] [REPLICATES=k] [SEED=n] [ALLOW_STALE_REFS=1]` | Measure refs and save one validated result file per ref and replicate |
 | `make benchmark-report RESULTS="a.json b.json" [REPORT_DIR=...] [REPORT_BASELINE=...] [REPORT_TITLE=...] [REPORT_OVERWRITE=1]` | Render `BenchmarkReport.html` from saved results |
 | `make test-benchmarks` | Swift tests of this package |
-| `make test-benchmark-scripts` | Shell tests of the runner and snapshot scripts |
+| `make check-release-report VERSION=<v> [TO=<ref>]` | Pre-tag check: the committed report manifest has a ref labelled `<v>` whose measured code equals `TO` (default `HEAD`) |
+| `make test-benchmark-scripts` | Shell tests of the runner, snapshot, release check and documentation publish scripts |

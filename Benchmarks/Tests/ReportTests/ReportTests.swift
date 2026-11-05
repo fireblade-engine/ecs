@@ -395,7 +395,20 @@ struct ReportTests {
         let html = try String(contentsOfFile: output + "/BenchmarkReport.html", encoding: .utf8)
         #expect(html.contains("<title>Fixture</title>") && html.contains("<h1>Fixture</h1>"))
         #expect(html.contains("<div class=\"fact\"><dt>Baseline</dt><dd>main ("))
-        #expect(try FileManager.default.contentsOfDirectory(atPath: output) == ["BenchmarkReport.html"], "one file and nothing else")
+        #expect(try Set(FileManager.default.contentsOfDirectory(atPath: output)) == ["BenchmarkReport.html", "BenchmarkReport.manifest.json"], "the report and its manifest, nothing else")
+        let manifestData = try Data(contentsOf: URL(fileURLWithPath: output + "/BenchmarkReport.manifest.json"))
+        let manifest = try #require(try JSONSerialization.jsonObject(with: manifestData) as? [String: Any])
+        #expect(manifest["schemaVersion"] as? Int == 1)
+        #expect(manifest["baseline"] as? String == "main")
+        let manifestRefs = try #require(manifest["refs"] as? [[String: String]])
+        let expectedRefs = all.map { ["label": $0.ref.requested, "sha": $0.ref.sha] }
+        var uniqueRefs: [[String: String]] = []
+        for ref in expectedRefs where !uniqueRefs.contains(ref) { uniqueRefs.append(ref) }
+        #expect(manifestRefs == uniqueRefs, "refs in report order with full SHAs")
+        let noBaseline = directory.appendingPathComponent("report-nobaseline").path
+        #expect(ReportCLI.run(paths + ["--output-dir", noBaseline]) == 0)
+        let noBaselineManifest = try #require(try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: noBaseline + "/BenchmarkReport.manifest.json"))) as? [String: Any])
+        #expect(noBaselineManifest["baseline"] is NSNull)
 
         #expect(ResultsCLI.run(["report", paths[0], "--output-dir", output + "2", "--overwrite"]) != 0, "needs two inputs")
         #expect(ReportCLI.run(paths + ["--baseline", "nope", "--output-dir", output + "3"]) != 0)
@@ -432,6 +445,7 @@ struct ReportTests {
         #expect(ReportCLI.run(paths + ["--output-dir", output.path]) != 0, "non-empty without --overwrite")
         #expect(try Data(contentsOf: output.appendingPathComponent("notes.txt")) == Data("precious".utf8))
         #expect(!FileManager.default.fileExists(atPath: output.appendingPathComponent("BenchmarkReport.html").path))
+        #expect(!FileManager.default.fileExists(atPath: output.appendingPathComponent("BenchmarkReport.manifest.json").path))
 
         // With --overwrite only the generated file is replaced; every other file, also of an older report layout, stays.
         try FileManager.default.createDirectory(at: output.appendingPathComponent("workloads"), withIntermediateDirectories: true)

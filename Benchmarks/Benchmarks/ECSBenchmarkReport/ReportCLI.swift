@@ -63,13 +63,31 @@ public enum ReportCLI {
         for input in paths where canonical(input) == canonical(target) || sameFile(input, target) {
             throw ResultError("report file \(target) is the input \(input); refusing to overwrite a result file")
         }
+        let manifestTarget = output + "/" + BenchmarkReport.manifestFileName
+        for input in paths where canonical(input) == canonical(manifestTarget) || sameFile(input, manifestTarget) {
+            throw ResultError("manifest file \(manifestTarget) is the input \(input); refusing to overwrite a result file")
+        }
         do {
             try FileManager.default.createDirectory(atPath: output, withIntermediateDirectories: true)
             try Data(rendered.html.utf8).write(to: URL(fileURLWithPath: target), options: .atomic)
+            let manifest = try manifestData(baseline: options["baseline"], refs: rendered.refs)
+            try manifest.write(to: URL(fileURLWithPath: manifestTarget), options: .atomic)
         } catch {
             throw ResultError("cannot write \(output): \(error)")
         }
         print("wrote \(target)")
+        print("wrote \(manifestTarget)")
+    }
+
+    /// `{"schemaVersion":1,"baseline":<requested label or null>,"refs":[{"label":...,"sha":...}]}`; release tooling reads it to
+    /// find which commit a labelled ref was measured at.
+    static func manifestData(baseline: String?, refs: [RenderedRef]) throws -> Data {
+        let object: [String: Any] = [
+            "schemaVersion": 1,
+            "baseline": baseline.map { $0 as Any } ?? NSNull(),
+            "refs": refs.map { ["label": $0.label, "sha": $0.sha] },
+        ]
+        return try JSONSerialization.data(withJSONObject: object, options: [.sortedKeys, .prettyPrinted]) + Data("\n".utf8)
     }
 
     /// Refuses an output directory that is a file, that is (or links to) an input's directory entry, or that already holds

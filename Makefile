@@ -153,7 +153,7 @@ benchmark-compare:
 	@if [ -z "$$REFS" ]; then printf 'Set REFS to comma-separated Git refs, for example: make benchmark-compare REFS=1.4.3,main\n' >&2; exit 2; fi
 	./Scripts/benchmark-run-refs.sh --refs "$$REFS" $(if $(BENCHMARK_FILTER),--filter "$$BENCHMARK_FILTER") $(if $(REPLICATES),--replicates "$$REPLICATES") $(if $(SEED),--seed "$$SEED") $(if $(ALLOW_STALE_REFS),--allow-stale-refs)
 
-# Renders the report directory (the single file BenchmarkReport.html) from saved result files only (at least two); it never runs benchmarks.
+# Renders the report directory (BenchmarkReport.html and BenchmarkReport.manifest.json) from saved result files only (at least two); it never runs benchmarks.
 benchmark-report:
 	@if [ -z "$$RESULTS" ]; then printf 'Set RESULTS to saved result files, for example: make benchmark-report RESULTS="a.json b.json"\n' >&2; exit 2; fi
 	swift build --package-path Benchmarks -c release --product ECSBenchmarkReportCLI $(SWIFT_FLAGS)

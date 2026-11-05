@@ -1,5 +1,5 @@
 // Report-only N-way comparison of saved result files, specified in Methodology.md ("Report output" and "Statistical design v3"). A pure
-// function from decoded result files to the contents of a report directory (the single file BenchmarkReport.html): no
+// function from decoded result files to the contents of a report directory (BenchmarkReport.html and BenchmarkReport.manifest.json): no
 // file access, no processes, no benchmark runs, and the inputs are never mutated.
 import Benchmark
 import ECSCompatSuite
@@ -22,6 +22,13 @@ public struct RenderedReport {
     public let html: String
     /// Also printed in the report's own warnings section.
     public let warnings: [String]
+    /// The measured refs in report order: the requested label and the full SHA, one entry per distinct pair.
+    public let refs: [RenderedRef]
+}
+
+public struct RenderedRef: Equatable, Sendable {
+    public let label: String
+    public let sha: String
 }
 
 /// Errors of `BenchmarkReport.render` caused by inputs that were not validated or cannot be combined.
@@ -72,8 +79,9 @@ public struct ReportInput {
 }
 
 public enum BenchmarkReport {
-    /// The one file of a report directory.
+    /// The report page of a report directory; `manifestFileName` names its machine-readable companion.
     public static let fileName = "BenchmarkReport.html"
+    public static let manifestFileName = "BenchmarkReport.manifest.json"
 
     /// Renders the comparison of already validated result files.
     public static func render(_ files: [BenchmarkResultFile], options: ReportOptions = ReportOptions()) throws -> RenderedReport {
@@ -93,7 +101,11 @@ public enum BenchmarkReport {
         let model = try ReportModel(files: files, histograms: inputs.map(\.histograms), baseline: options.baseline)
         var writer = ReportWriter(model: model, title: options.title)
         let html = try writer.render()
-        return RenderedReport(html: html, warnings: model.warnings)
+        var seenRefs = Set<String>()
+        let refs = model.groups.compactMap { group -> RenderedRef? in
+            seenRefs.insert("\(group.requested)\n\(group.sha)").inserted ? RenderedRef(label: group.requested, sha: group.sha) : nil
+        }
+        return RenderedReport(html: html, warnings: model.warnings, refs: refs)
     }
 }
 

@@ -21,88 +21,142 @@ for v in 1.0.0 1.1.0 main; do
     echo "$v seed" > "$seed/$v/documentation/firebladeecs/index.html"
     echo "<html><head></head><body>$v</body></html>" > "$seed/$v/index.html"
 done
-mkdir -p "$seed/1.1.0/benchmarks"
-echo old-report > "$seed/1.1.0/benchmarks/BenchmarkReport.html"
 git -C "$seed" add -A
 git -C "$seed" commit -qm seed
 git -C "$seed" remote add origin "$origin"
 git -C "$seed" push -q origin gh-pages
 
-snapshot() { # name version [with-report]
+snapshot() { # name version
     local dir=$root/snap-$1
     mkdir -p "$dir/$2/documentation/firebladeecs"
     echo "$2 built by $1" > "$dir/$2/documentation/firebladeecs/index.html"
     echo "<html><head></head><body>$2</body></html>" > "$dir/$2/index.html"
-    if [[ ${3:-} == report ]]; then
-        mkdir -p "$dir/$2/benchmarks"
-        echo "report $2" > "$dir/$2/benchmarks/BenchmarkReport.html"
-    fi
     echo "$dir"
+}
+stage_report() { # staging-dir tag
+    mkdir -p "$1"
+    echo "report $2" > "$1/$2.html"
 }
 publish() { # snapshot-dir version out-dir [extra env...]
     local snap=$1 version=$2 out=$3
     shift 3
-    env REMOTE_URL="$origin" SNAPSHOT_DIR="$snap" PUBLISH_DIR="$out" DOCS_VERSION_PATH="$version" "$@" "$script" > "$root/log" 2>&1 || { cat "$root/log" >&2; return 1; }
+    env REMOTE_URL="$origin" SNAPSHOT_DIR="$snap" PUBLISH_DIR="$out" REPORTS_DIR="$root/no-reports" DOCS_VERSION_PATH="$version" "$@" "$script" > "$root/log" 2>&1 || { cat "$root/log" >&2; return 1; }
 }
 show() { git --git-dir="$origin" show "gh-pages:$1"; }
+has() { git --git-dir="$origin" cat-file -e "gh-pages:$1" 2> /dev/null; }
 
 # Both snapshots are taken before either publish: the second must not wipe the first.
-snapA=$(snapshot a 1.2.0 report)
+snapA=$(snapshot a 1.2.0)
 snapB=$(snapshot b 2.0.0)
 publish "$snapA" 1.2.0 "$root/outA"
 publish "$snapB" 2.0.0 "$root/outB"
 
 for v in 1.0.0 1.1.0 1.2.0 2.0.0 main; do
-    show "$v/documentation/firebladeecs/index.html" > /dev/null || fail "version $v is missing after both publishes"
+    has "$v/documentation/firebladeecs/index.html" || fail "version $v is missing after both publishes"
 done
 [[ $(show 1.0.0/documentation/firebladeecs/index.html) == "1.0.0 seed" ]] || fail 'an unrelated version changed'
-[[ $(show 1.1.0/benchmarks/BenchmarkReport.html) == old-report ]] || fail 'an unrelated version lost its report'
-[[ $(show 1.2.0/benchmarks/BenchmarkReport.html) == "report 1.2.0" ]] || fail 'the first publish lost its report'
 [[ $(show 2.0.0/documentation/firebladeecs/index.html) == "2.0.0 built by b" ]] || fail 'the second publish is missing'
 show versions.json | jq -e '.latest == "2.0.0" and ([.versions[].name] | index("1.2.0") != null) and ([.versions[].name] | index("main") != null)' > /dev/null || fail 'versions.json must list every version and name 2.0.0 latest'
 show latest/index.html | grep -q '../2.0.0/documentation/firebladeecs/' || fail 'latest must redirect to 2.0.0'
-show version-picker.js > /dev/null || fail 'version-picker.js missing'
-if show latest/benchmarks/BenchmarkReport.html > /dev/null 2>&1; then fail 'latest has no report: no latest/benchmarks redirect may exist'; fi
-[[ -f $root/outB/1.2.0/benchmarks/BenchmarkReport.html && -f $root/outB/2.0.0/index.html ]] || fail 'the Pages artifact tree must be the published tree'
-[[ ! -e $root/outB/.git ]] || fail 'the Pages artifact tree must not contain .git'
-
-# A report in the latest version creates the redirect; a later latest without one removes it again.
-snapC=$(snapshot c 2.1.0 report)
-publish "$snapC" 2.1.0 "$root/outC"
-show latest/benchmarks/BenchmarkReport.html | grep -q '../../2.1.0/benchmarks/BenchmarkReport.html' || fail 'latest/benchmarks must redirect to 2.1.0'
-snapD=$(snapshot d 2.2.0)
-publish "$snapD" 2.2.0 "$root/outD"
-if show latest/benchmarks/BenchmarkReport.html > /dev/null 2>&1; then fail 'a stale latest/benchmarks redirect must be removed'; fi
-show 2.1.0/benchmarks/BenchmarkReport.html > /dev/null || fail 'the report of 2.1.0 must stay'
+has version-picker.js || fail 'version-picker.js missing'
+has latest/benchmarks/BenchmarkReport.html && fail 'there is no latest/benchmarks redirect any more'
+has benchmarks/index.html && fail 'no report staged: the benchmarks section must not exist'
+[[ -f $root/outB/1.2.0/index.html && -f $root/outB/2.0.0/index.html ]] || fail 'the Pages tree must be the published tree'
+[[ ! -e $root/outB/.git ]] || fail 'the Pages tree must not contain .git'
 
 # Republishing replaces only that directory's content (--delete inside it).
-mkdir -p "$snapC/2.1.0/documentation/firebladeecs"
-rm -rf "$snapC/2.1.0/benchmarks"
-publish "$snapC" 2.1.0 "$root/outC2"
-if show 2.1.0/benchmarks/BenchmarkReport.html > /dev/null 2>&1; then fail 'files removed from a rebuilt version must be deleted'; fi
+mkdir -p "$snapA/1.2.0/extra"
+echo x > "$snapA/1.2.0/extra/file"
+publish "$snapA" 1.2.0 "$root/outA2"
+has 1.2.0/extra/file || fail 'a republish must add new files'
+rm -rf "$snapA/1.2.0/extra"
+publish "$snapA" 1.2.0 "$root/outA3"
+has 1.2.0/extra/file && fail 'files removed from a rebuilt version must be deleted'
 
-# A rejected push is retried from a fresh clone.
+# --- Benchmark reports: only staged ones publish, per version; benchmarks/index.html is the highest version ---
+reports=$root/reports
+publish_with_report() { # tag
+    local snap
+    snap=$(snapshot "r$1" "$1")
+    rm -rf "$reports"
+    stage_report "$reports" "$1"
+    publish "$snap" "$1" "$root/outR-$1" REPORTS_DIR="$reports"
+}
+publish_with_report 2.0.0
+[[ $(show benchmarks/2.0.0/index.html) == "report 2.0.0" ]] || fail 'the report must be published under benchmarks/<version>/'
+[[ $(show benchmarks/index.html) == "report 2.0.0" ]] || fail 'benchmarks/index.html must be the only report'
+[[ -f $root/outR-2.0.0/benchmarks/2.0.0/index.html ]] || fail 'the Pages tree must contain the report'
+
+publish_with_report 1.9.0   # a backfill of an older tag must not regress the landing page
+[[ $(show benchmarks/index.html) == "report 2.0.0" ]] || fail 'an older version must not replace the newest report'
+[[ $(show benchmarks/1.9.0/index.html) == "report 1.9.0" && $(show benchmarks/2.0.0/index.html) == "report 2.0.0" ]] || fail 'reports of other versions must stay'
+
+publish_with_report 2.10.0
+[[ $(show benchmarks/index.html) == "report 2.10.0" ]] || fail '2.10.0 is newer than 2.0.0 (version order, not text order)'
+publish_with_report 2.9.0
+[[ $(show benchmarks/index.html) == "report 2.10.0" ]] || fail '2.9.0 is older than 2.10.0'
+publish_with_report v2.11.0
+[[ $(show benchmarks/index.html) == "report v2.11.0" ]] || fail 'a v-prefixed tag counts by its number'
+has benchmarks/v2.11.0/index.html || fail 'the v-prefixed directory keeps the tag spelling'
+
+# A hotfix or main run with nothing staged leaves every report alone.
+snapH=$(snapshot h 2.11.1)
+publish "$snapH" 2.11.1 "$root/outH"
+[[ $(show benchmarks/index.html) == "report v2.11.0" ]] || fail 'a hotfix without a report must not change the landing page'
+has benchmarks/2.0.0/index.html || fail 'a hotfix without a report must keep older reports'
+snapM=$(snapshot m main)
+publish "$snapM" main "$root/outM"
+[[ $(show benchmarks/index.html) == "report v2.11.0" ]] || fail 'main must not change reports'
+
+# --- A real race: another publish lands between this publish's clone and its push ---
 hook=$origin/hooks/pre-receive
+snapRaceMine=$(snapshot racemine 3.0.0)
+snapRaceOther=$(snapshot raceother 3.1.0)
+cat > "$hook" <<HOOK
+#!/usr/bin/env bash
+# The first push (this publish) triggers a competing publish before it lands.
+if [ ! -e "$root/raced" ]; then
+    touch "$root/raced"
+    env -u GIT_DIR -u GIT_QUARANTINE_PATH -u GIT_OBJECT_DIRECTORY -u GIT_ALTERNATE_OBJECT_DIRECTORIES \\
+        REMOTE_URL="$origin" SNAPSHOT_DIR="$snapRaceOther" PUBLISH_DIR="$root/outRaceOther" REPORTS_DIR="$root/no-reports" \\
+        DOCS_VERSION_PATH=3.1.0 "$script" > "$root/log-competitor" 2>&1
+fi
+HOOK
+chmod +x "$hook"
+publish "$snapRaceMine" 3.0.0 "$root/outRace"
+rm "$hook"
+[[ -e $root/raced ]] || fail 'the competing publish never ran'
+grep -q 'retrying' "$root/log" || fail 'the lost race must be retried'
+[[ $(show 3.0.0/documentation/firebladeecs/index.html) == "3.0.0 built by racemine" ]] || fail 'the retried publish must land'
+[[ $(show 3.1.0/documentation/firebladeecs/index.html) == "3.1.0 built by raceother" ]] || fail 'the competing publish must survive the retry'
+show versions.json | jq -e '[.versions[].name] | index("3.0.0") != null and index("3.1.0") != null' > /dev/null || fail 'versions.json must list both racing versions'
+[[ -f $root/outRace/3.1.0/index.html ]] || fail 'the Pages tree must include the competing publish'
+
+# --- Retry and give-up on rejection ---
 cat > "$hook" <<HOOK
 #!/usr/bin/env bash
 count=\$(cat "$root/rejections" 2> /dev/null || echo 0)
 if [ "\$count" -lt 1 ]; then echo \$((count + 1)) > "$root/rejections"; echo rejected >&2; exit 1; fi
 HOOK
 chmod +x "$hook"
-snapE=$(snapshot e 2.3.0)
-publish "$snapE" 2.3.0 "$root/outE"
-show 2.3.0/index.html > /dev/null || fail 'the publish must succeed after one rejected push'
-grep -q 'retrying' "$root/log" || fail 'the retry must be logged'
-
-# Persistent rejection gives up with a failure.
+snapE=$(snapshot e 4.0.0)
+publish "$snapE" 4.0.0 "$root/outE"
+has 4.0.0/index.html || fail 'the publish must succeed after one rejected push'
 cat > "$hook" <<HOOK
 #!/usr/bin/env bash
 exit 1
 HOOK
-snapF=$(snapshot f 2.4.0)
-if publish "$snapF" 2.4.0 "$root/outF" MAX_ATTEMPTS=2 2> /dev/null; then fail 'a permanently rejected push must fail'; fi
+snapF=$(snapshot f 4.1.0)
+if publish "$snapF" 4.1.0 "$root/outF" MAX_ATTEMPTS=2 2> /dev/null; then fail 'a permanently rejected push must fail'; fi
 rm "$hook"
 
-# A missing snapshot directory is an error.
+# --- Errors ---
 if publish "$snapF" 9.9.9 "$root/outG" 2> /dev/null; then fail 'a missing version directory must fail'; fi
+# An unreachable remote is not "no gh-pages branch yet": nothing may be initialised and pushed.
+if publish "$snapF" 4.1.0 "$root/outU" REMOTE_URL="$root/does-not-exist.git" 2> /dev/null; then fail 'an unreachable remote must fail'; fi
+# A reachable remote without gh-pages starts the branch.
+fresh=$root/fresh.git
+git init -q --bare "$fresh"
+publish "$snapF" 4.1.0 "$root/outN" REMOTE_URL="$fresh"
+git --git-dir="$fresh" cat-file -e gh-pages:4.1.0/index.html || fail 'the first publish must create gh-pages'
 printf 'publish-gh-pages tests passed\n'

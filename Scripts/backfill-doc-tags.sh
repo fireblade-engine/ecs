@@ -4,7 +4,12 @@ set -euo pipefail
 REPO_NAME="${REPO_NAME:-ecs}"
 OUTPUT_DIR="${OUTPUT_DIR:-.build/documentation}"
 
+REPORTS_DIR="${REPORTS_DIR:-.build/benchmark-reports}"
+
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if [[ "$REPORTS_DIR" != /* ]]; then
+    REPORTS_DIR="$ROOT/$REPORTS_DIR"
+fi
 if [[ "$OUTPUT_DIR" != /* ]]; then
     OUTPUT_DIR="$ROOT/$OUTPUT_DIR"
 fi
@@ -21,10 +26,9 @@ for TAG in $TAGS; do
             mkdir -p "${OUTPUT_DIR}/${TAG}"
             if (cd "${TMP_WT}" && swift package --disable-sandbox --allow-writing-to-directory "${OUTPUT_DIR}" generate-documentation --target FirebladeECS --disable-indexing --transform-for-static-hosting --hosting-base-path "${REPO_NAME}/${TAG}" --output-path "${OUTPUT_DIR}/${TAG}"); then
                 echo "==> Successfully built docs for ${TAG}"
-                if [ -f "${TMP_WT}/Documentation/Benchmarks/BenchmarkReport.html" ]; then
-                    mkdir -p "${OUTPUT_DIR}/${TAG}/benchmarks"
-                    cp "${TMP_WT}/Documentation/Benchmarks/BenchmarkReport.html" "${OUTPUT_DIR}/${TAG}/benchmarks/BenchmarkReport.html"
-                fi
+                # A tag publishes its benchmark report only when its manifest names the tag and the code is unchanged.
+                "${ROOT}/Scripts/stage-benchmark-report.sh" "${TAG}" "${REPORTS_DIR}" "${TAG}" \
+                    || echo "::warning::Benchmark report of ${TAG} failed its release check and is not published"
             else
                 echo "::warning::Failed to build docs for ${TAG}, skipping"
                 rm -rf "${OUTPUT_DIR}/${TAG}"

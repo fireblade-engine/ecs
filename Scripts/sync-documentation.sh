@@ -2,14 +2,18 @@
 # Builds the documentation of DOCS_VERSION_PATH into OUTPUT_DIR (restoring the published versions from gh-pages first) and
 # regenerates the shared root files: version picker, root and latest redirects, versions.json and the versions page.
 # With --index-only nothing is restored or built: only the shared root files are regenerated for the version directories
-# already present in OUTPUT_DIR (Scripts/publish-gh-pages.sh runs it against a fresh gh-pages clone).
+# already present in OUTPUT_DIR (Scripts/publish-gh-pages.sh runs it against a fresh gh-pages clone). --restore-only stops
+# after restoring gh-pages into OUTPUT_DIR. Benchmark reports are not built here: they are published per version to
+# benchmarks/<version>/ by Scripts/publish-gh-pages.sh, and this script points benchmarks/index.html at the newest one.
 set -euo pipefail
 
 INDEX_ONLY="false"
+RESTORE_ONLY="false"
 case "${1:-}" in
     --index-only) INDEX_ONLY="true" ;;
+    --restore-only) RESTORE_ONLY="true" ;;
     "") ;;
-    *) printf 'Usage: Scripts/sync-documentation.sh [--index-only]\n' >&2; exit 64 ;;
+    *) printf 'Usage: Scripts/sync-documentation.sh [--index-only | --restore-only]\n' >&2; exit 64 ;;
 esac
 
 REPO_NAME="${REPO_NAME:-ecs}"
@@ -23,32 +27,47 @@ fi
 
 export OUTPUT_DIR REPO_NAME DOCS_VERSION_PATH
 
+restore_gh_pages() {
+    # Only a missing gh-pages branch means "nothing to restore"; any other failure must stop the run.
+    local status=0
+    git ls-remote --exit-code --heads origin gh-pages > /dev/null 2>&1 || status=$?
+    if [ "$status" -eq 2 ]; then
+        echo "==> No gh-pages branch yet, nothing to restore."
+        return 0
+    elif [ "$status" -ne 0 ]; then
+        echo "sync-documentation: cannot query origin for gh-pages (git exit ${status})" >&2
+        return 1
+    fi
+    echo "==> Restoring existing documentation from gh-pages..."
+    git fetch origin gh-pages:refs/remotes/origin/gh-pages
+    # Use a throwaway index so the repo's own index is never touched (otherwise the whole gh-pages tree gets staged).
+    local tmp_index_dir
+    tmp_index_dir="$(mktemp -d)"
+    GIT_INDEX_FILE="${tmp_index_dir}/index" git --work-tree="${OUTPUT_DIR}" checkout origin/gh-pages -- . || {
+        rm -rf "${tmp_index_dir}"
+        echo "sync-documentation: restoring gh-pages into ${OUTPUT_DIR} failed" >&2
+        return 1
+    }
+    rm -rf "${tmp_index_dir}"
+    rm -rf "${OUTPUT_DIR}/.git"
+}
+
 mkdir -p "${OUTPUT_DIR}"
 if [ "$INDEX_ONLY" = "false" ]; then
-if git fetch origin gh-pages:refs/remotes/origin/gh-pages 2>/dev/null; then
-    echo "==> Restoring existing documentation from gh-pages..."
-    # Use a throwaway index so the repo's own index is never touched (otherwise the whole gh-pages tree gets staged).
-    TMP_INDEX_DIR="$(mktemp -d)"
-    GIT_INDEX_FILE="${TMP_INDEX_DIR}/index" git --work-tree="${OUTPUT_DIR}" checkout origin/gh-pages -- . || true
-    rm -rf "${TMP_INDEX_DIR}"
-    rm -rf "${OUTPUT_DIR}/.git"
-fi
+    restore_gh_pages
+    if [ "$RESTORE_ONLY" = "true" ]; then
+        exit 0
+    fi
 
-echo "==> Building documentation for version: ${DOCS_VERSION_PATH}..."
-mkdir -p "${OUTPUT_DIR}/${DOCS_VERSION_PATH}"
-swift package --disable-sandbox \
-    --allow-writing-to-directory "${OUTPUT_DIR}" \
-    generate-documentation --target FirebladeECS \
-    --disable-indexing \
-    --transform-for-static-hosting \
-    --hosting-base-path "${REPO_NAME}/${DOCS_VERSION_PATH}" \
-    --output-path "${OUTPUT_DIR}/${DOCS_VERSION_PATH}"
-
-# Ship the committed benchmark report with this version's docs (no-op while no report is committed).
-if [ -f "${ROOT}/Documentation/Benchmarks/BenchmarkReport.html" ]; then
-    mkdir -p "${OUTPUT_DIR}/${DOCS_VERSION_PATH}/benchmarks"
-    cp "${ROOT}/Documentation/Benchmarks/BenchmarkReport.html" "${OUTPUT_DIR}/${DOCS_VERSION_PATH}/benchmarks/BenchmarkReport.html"
-fi
+    echo "==> Building documentation for version: ${DOCS_VERSION_PATH}..."
+    mkdir -p "${OUTPUT_DIR}/${DOCS_VERSION_PATH}"
+    swift package --disable-sandbox \
+        --allow-writing-to-directory "${OUTPUT_DIR}" \
+        generate-documentation --target FirebladeECS \
+        --disable-indexing \
+        --transform-for-static-hosting \
+        --hosting-base-path "${REPO_NAME}/${DOCS_VERSION_PATH}" \
+        --output-path "${OUTPUT_DIR}/${DOCS_VERSION_PATH}"
 fi
 
 # Copy version-picker.js
@@ -95,13 +114,6 @@ create_redirect "${OUTPUT_DIR}/index.html" "latest/documentation/firebladeecs/" 
 create_redirect "${OUTPUT_DIR}/latest/index.html" "../${LATEST_TARGET}/documentation/firebladeecs/" "Redirecting to Latest Docs"
 create_redirect "${OUTPUT_DIR}/latest/documentation/firebladeecs/index.html" "../../../${LATEST_TARGET}/documentation/firebladeecs/" "Redirecting to Latest Docs"
 create_redirect "${OUTPUT_DIR}/documentation/firebladeecs/index.html" "../../${LATEST_TARGET}/documentation/firebladeecs/" "Redirecting to Latest Docs"
-if [ -f "${OUTPUT_DIR}/${LATEST_TARGET}/benchmarks/BenchmarkReport.html" ]; then
-  create_redirect "${OUTPUT_DIR}/latest/benchmarks/BenchmarkReport.html" "../../${LATEST_TARGET}/benchmarks/BenchmarkReport.html" "Redirecting to Latest Benchmark Report"
-else
-  # The latest target has no report: a redirect left by an earlier latest would point at the wrong version.
-  rm -f "${OUTPUT_DIR}/latest/benchmarks/BenchmarkReport.html"
-  rmdir "${OUTPUT_DIR}/latest/benchmarks" 2> /dev/null || true
-fi
 create_redirect "${OUTPUT_DIR}/versions.html" "versions/" "Redirecting to Versions"
 
 echo "Generating version manifest and catalog landing page..."
@@ -316,17 +328,18 @@ for entry in entries:
                     f.write(content)
 PYTHON_EOF
 
-# Publish the self-contained benchmark report at <site>/benchmarks/ from the latest target's report. Done after the
-# version-picker injection above, which rewrites every top-level directory's index.html, so the report stays untouched.
-# "benchmarks" matches no version regex. Without a report for the latest target a stale copy is removed.
-LATEST_REPORT="${OUTPUT_DIR}/${LATEST_TARGET}/benchmarks/BenchmarkReport.html"
-if [ -f "${LATEST_REPORT}" ]; then
-    echo "==> Publishing benchmark report to ${OUTPUT_DIR}/benchmarks/index.html..."
-    mkdir -p "${OUTPUT_DIR}/benchmarks"
-    cp "${LATEST_REPORT}" "${OUTPUT_DIR}/benchmarks/index.html"
-else
-    echo "==> Skipping benchmark report: ${LATEST_REPORT} not found."
-    rm -f "${OUTPUT_DIR}/benchmarks/index.html"
+# Reports are sporadic and belong to the version they measure: benchmarks/<version>/index.html. The landing page
+# benchmarks/index.html is the report of the highest version present, so out-of-order tags and backfills never regress it.
+# Done after the version-picker injection above, which rewrites every top-level version directory's index.html; "benchmarks"
+# matches no version regex and is skipped by it.
+if [ -d "${OUTPUT_DIR}/benchmarks" ]; then
+    NEWEST_REPORT=$(find "${OUTPUT_DIR}/benchmarks" -mindepth 2 -maxdepth 2 -name index.html -exec dirname {} \; \
+        | while read -r dir; do name=$(basename "$dir"); printf '%s\t%s\n' "${name#v}" "$name"; done \
+        | sort -t "$(printf '\t')" -k1,1 -V -r | head -n 1 | cut -f2)
+    if [ -n "${NEWEST_REPORT}" ]; then
+        echo "==> Publishing benchmark report ${NEWEST_REPORT} to ${OUTPUT_DIR}/benchmarks/index.html..."
+        cp "${OUTPUT_DIR}/benchmarks/${NEWEST_REPORT}/index.html" "${OUTPUT_DIR}/benchmarks/index.html"
+    fi
 fi
 
 echo "Documentation sync, manifest, catalog landing page, and version picker generation complete."

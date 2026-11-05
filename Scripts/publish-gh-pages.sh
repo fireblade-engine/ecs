@@ -12,6 +12,9 @@
 #   DOCS_VERSION_PATH version directory built by this run (default: main)
 #   PUBLISH_PATHS     space separated version directories to publish (default: DOCS_VERSION_PATH; backfills list several)
 #   SNAPSHOT_DIR      built documentation (default: .build/documentation)
+#   REPORTS_DIR       staged benchmark reports (default: .build/benchmark-reports): every <version>.html in it is published as
+#                     benchmarks/<version>/index.html next to the reports of other versions, which stay untouched
+#                     (Scripts/stage-benchmark-report.sh fills it; main runs and pull requests stage nothing)
 #   PUBLISH_DIR       published tree output (default: .build/gh-pages-publish)
 #   REPO_NAME         site base path (default: ecs)
 #   MAX_ATTEMPTS      push attempts (default: 3)
@@ -24,6 +27,7 @@ DOCS_VERSION_PATH="${DOCS_VERSION_PATH:-main}"
 PUBLISH_PATHS="${PUBLISH_PATHS:-$DOCS_VERSION_PATH}"
 SNAPSHOT_DIR="${SNAPSHOT_DIR:-.build/documentation}"
 PUBLISH_DIR="${PUBLISH_DIR:-.build/gh-pages-publish}"
+REPORTS_DIR="${REPORTS_DIR:-.build/benchmark-reports}"
 REPO_NAME="${REPO_NAME:-ecs}"
 MAX_ATTEMPTS="${MAX_ATTEMPTS:-3}"
 NAME="${GIT_AUTHOR_NAME:-github-actions[bot]}"
@@ -31,6 +35,7 @@ EMAIL="${GIT_AUTHOR_EMAIL:-github-actions[bot]@users.noreply.github.com}"
 
 [[ $SNAPSHOT_DIR == /* ]] || SNAPSHOT_DIR="$PWD/$SNAPSHOT_DIR"
 [[ $PUBLISH_DIR == /* ]] || PUBLISH_DIR="$PWD/$PUBLISH_DIR"
+[[ $REPORTS_DIR == /* ]] || REPORTS_DIR="$PWD/$REPORTS_DIR"
 
 for path in $PUBLISH_PATHS; do
     [[ -d $SNAPSHOT_DIR/$path ]] || { printf 'publish-gh-pages: %s/%s does not exist\n' "$SNAPSHOT_DIR" "$path" >&2; exit 1; }
@@ -42,12 +47,18 @@ trap 'rm -rf "$CLONE"' EXIT
 git_clone() {
     rm -rf "$CLONE"
     mkdir -p "$CLONE"
-    if git ls-remote --exit-code --heads "$REMOTE_URL" gh-pages > /dev/null 2>&1; then
+    # Exit status 2 means the branch does not exist (first publish); any other failure is an error, never a reason to init.
+    local status=0
+    git ls-remote --exit-code --heads "$REMOTE_URL" gh-pages > /dev/null 2>&1 || status=$?
+    if [ "$status" -eq 0 ]; then
         git clone -q --branch gh-pages --single-branch "$REMOTE_URL" "$CLONE"
-    else
+    elif [ "$status" -eq 2 ]; then
         git init -q "$CLONE"
         git -C "$CLONE" remote add origin "$REMOTE_URL"
         git -C "$CLONE" checkout -q -b gh-pages
+    else
+        printf 'publish-gh-pages: cannot query %s (git exit %d)\n' "$REMOTE_URL" "$status" >&2
+        exit 1
     fi
     git -C "$CLONE" config user.name "$NAME"
     git -C "$CLONE" config user.email "$EMAIL"
@@ -61,6 +72,12 @@ for ((attempt = 1; attempt <= MAX_ATTEMPTS; attempt++)); do
     for path in $PUBLISH_PATHS; do
         mkdir -p "$CLONE/$path"
         rsync -a --delete "$SNAPSHOT_DIR/$path/" "$CLONE/$path/"
+    done
+    for report in "$REPORTS_DIR"/*.html; do
+        [[ -f $report ]] || continue
+        version=$(basename "$report" .html)
+        mkdir -p "$CLONE/benchmarks/$version"
+        cp "$report" "$CLONE/benchmarks/$version/index.html"
     done
     OUTPUT_DIR="$CLONE" REPO_NAME="$REPO_NAME" DOCS_VERSION_PATH="$DOCS_VERSION_PATH" "$ROOT/Scripts/sync-documentation.sh" --index-only
     git -C "$CLONE" add -A

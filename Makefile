@@ -181,6 +181,7 @@ test-benchmark-scripts:
 	./Tests/release-check-tests.sh
 	./Tests/check-release-report-tests.sh
 	./Tests/publish-gh-pages-tests.sh
+	./Tests/sync-documentation-tests.sh
 
 # --- Workflows ---
 

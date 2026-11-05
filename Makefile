@@ -137,7 +137,7 @@ REPORT_OVERWRITE ?=
 REPORT_TOOL = Benchmarks/.build/release/ECSBenchmarkReportCLI
 # User-supplied values reach the recipes through the environment, never pasted into the shell text, so quotes, backticks
 # and `$(...)` in a filter or title are data. (Make still expands a `$` on the make command line: write `$$`.)
-export FROM TO VERSION REFS BENCHMARK_FILTER REPLICATES SEED REPORT_DIR RESULTS REPORT_BASELINE REPORT_TITLE
+export RELEASE_FROM RELEASE_TO RELEASE_VERSION REFS BENCHMARK_FILTER REPLICATES SEED REPORT_DIR RESULTS REPORT_BASELINE REPORT_TITLE
 
 # Runtime benchmarks live in a separate package (Benchmarks/) so the benchmark dependency stays out of FirebladeECS.
 benchmark:
@@ -159,17 +159,18 @@ benchmark-report:
 	swift build --package-path Benchmarks -c release --product ECSBenchmarkReportCLI $(SWIFT_FLAGS)
 	$(REPORT_TOOL) $$RESULTS --output-dir "$$REPORT_DIR" $(if $(REPORT_BASELINE),--baseline "$$REPORT_BASELINE") $(if $(REPORT_TITLE),--title "$$REPORT_TITLE") $(if $(REPORT_OVERWRITE),--overwrite)
 
-# Fails unless Sources, Package.swift and Package.resolved are identical between the measured ref (FROM) and the
-# release candidate (TO, default HEAD), so a release tag only carries code that was benchmarked.
+# Fails unless Sources (DocC catalogs excluded), Package.swift and Package.resolved are identical between the measured ref
+# (RELEASE_FROM) and the release candidate (RELEASE_TO, default HEAD), so a release tag only carries code that was benchmarked.
 release-check:
-	@if [ -z "$$FROM" ]; then printf 'Set FROM to the measured ref, for example: make release-check FROM=<measured-sha> TO=<merge-commit>\n' >&2; exit 2; fi
-	./Scripts/release-check.sh "$$FROM" "$${TO:-HEAD}"
+	@if [ -z "$$RELEASE_FROM" ]; then printf 'Set RELEASE_FROM to the measured ref, for example: make release-check RELEASE_FROM=<measured-sha> RELEASE_TO=<merge-commit>\n' >&2; exit 2; fi
+	./Scripts/release-check.sh "$$RELEASE_FROM" "$${RELEASE_TO:-HEAD}"
 
-# Release gate: the committed benchmark report must carry a ref labelled VERSION (see BenchmarkReport.manifest.json) and the
-# code at that measured commit must equal TO (default HEAD). CI runs it on tag pushes before publishing the documentation.
+# Strict pre-tag check of a dedicated benchmark release: the committed report and its manifest must exist, agree and carry a
+# ref labelled RELEASE_VERSION, and the code at that measured commit must equal RELEASE_TO (default HEAD). CI applies the same
+# check to tag pushes, but only when the manifest names the tag (see Scripts/stage-benchmark-report.sh).
 check-release-report:
-	@if [ -z "$$VERSION" ]; then printf 'Set VERSION to the release version, for example: make check-release-report VERSION=2.0.0 TO=<merge-commit>\n' >&2; exit 2; fi
-	./Scripts/check-release-report.sh "$$VERSION" "$${TO:-HEAD}"
+	@if [ -z "$$RELEASE_VERSION" ]; then printf 'Set RELEASE_VERSION to the release version, for example: make check-release-report RELEASE_VERSION=2.0.0 RELEASE_TO=<merge-commit>\n' >&2; exit 2; fi
+	./Scripts/check-release-report.sh "$$RELEASE_VERSION" "$${RELEASE_TO:-HEAD}"
 
 test-benchmarks:
 	cd Benchmarks && swift test $(SWIFT_FLAGS)

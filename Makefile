@@ -143,6 +143,7 @@ export REFS BENCHMARK_FILTER REPLICATES SEED REPORT_DIR RESULTS REPORT_BASELINE 
 benchmark:
 	cd Benchmarks && swift package benchmark --target ECSBenchmark
 
+# An entry may be <ref>:<label> (REFS=1.4.3,main:2.0.0) to record a release version label before its tag exists.
 # Measures the shared compatibility suite at each committed ref (comma-separated tags, branches or SHAs) in isolated
 # snapshots and saves one validated result file per ref under Benchmarks/Results/<UTC timestamp>/.
 # REPLICATES=k (default 1) builds each ref once and runs k interleaved rounds in a seeded shuffled order (SEED=n, random and

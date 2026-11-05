@@ -117,6 +117,29 @@ if run --out "$test_root/x" > /dev/null 2>&1; then fail '--refs is required'; fi
 if run --refs t-one --suite-ref no-such --out "$test_root/x" > /dev/null 2>&1; then fail 'invalid suite ref must be rejected'; fi
 assert_eq "$(calls)" 0 'invalid options must not start snapshots'
 
+# Labels: <ref>:<label> measures <ref> but records, names and reports <label>; plain refs are unchanged.
+reset
+out_lb="$test_root/labels"
+run --refs "t-one,t-two:2.0.0+rc.1" --out "$out_lb" > /dev/null 2> "$test_root/lb.err" || fail 'a labeled ref must run'
+grep -q "^$(sha_of t-two) --requested 2.0.0+rc.1 " "$STUB_LOG" || fail 'the label must be passed as the requested name for the resolved SHA'
+grep -q "^$(sha_of t-one) --requested t-one " "$STUB_LOG" || fail 'a plain ref keeps its own name'
+[[ -f $out_lb/2.0.0-rc.1-$(sha_of t-two | cut -c1-12).json ]] || fail 'result file must be named after the label'
+assert_eq "$(jq -r '.ref.requested' "$out_lb"/2.0.0*.json)" '2.0.0+rc.1' 'the result records the label'
+[[ -f $out_lb/t-one-$(sha_of t-one | cut -c1-12).json ]] || fail 'plain ref file name unchanged'
+grep -qF 't-two' "$test_root/lb.err" && fail 'the label, not the ref, is displayed'
+for refs in "t-one:" ":lbl" "t-one:bad label" "t-one:a,t-two:a" "t-one,t-two:t-one"; do
+    reset
+    if run --refs "$refs" --out "$test_root/bad-label" > /dev/null 2> "$test_root/bad-label.err"; then fail "refs '$refs' must be rejected"; fi
+    assert_eq "$(calls)" 0 "no snapshot may start for refs '$refs'"
+    [[ ! -e $test_root/bad-label ]] || fail "refs '$refs' must not create the run directory"
+done
+err=$(run --refs "t-one:" --out "$test_root/x" 2>&1 > /dev/null || true)
+[[ $err == *'empty label'* ]] || fail 'empty label must be explained'
+err=$(run --refs ":lbl" --out "$test_root/x" 2>&1 > /dev/null || true)
+[[ $err == *'empty ref'* ]] || fail 'empty ref must be explained'
+err=$(run --refs "t-one:a,t-two:a" --out "$test_root/x" 2>&1 > /dev/null || true)
+[[ $err == *"duplicate label 'a'"* ]] || fail 'duplicate label must be explained'
+
 # Duplicates are detected by SHA (tag and SHA of the same commit) and both names are listed.
 git -C "$fixture" tag alias t-two
 dup_err=$(run --refs "t-two,t-one,alias" --out "$test_root/dup" 2>&1 > /dev/null) && fail 'duplicate commits must be rejected'

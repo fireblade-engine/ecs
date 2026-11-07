@@ -8,12 +8,13 @@
 [![WASM](https://github.com/fireblade-engine/ecs/actions/workflows/ci-wasm.yml/badge.svg)](https://github.com/fireblade-engine/ecs/actions/workflows/ci-wasm.yml)
 [![documentation](https://github.com/fireblade-engine/ecs/actions/workflows/docs.yml/badge.svg)](https://fireblade-engine.github.io/ecs)  
 [![codecov](https://codecov.io/gh/fireblade-engine/ecs/branch/main/graph/badge.svg)](https://codecov.io/gh/fireblade-engine/ecs)
+[![benchmarks](https://img.shields.io/badge/benchmarks-report-blue.svg)](https://fireblade-engine.github.io/ecs/benchmarks/)
 [![spi-swift-versions](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Ffireblade-engine%2Fecs%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/fireblade-engine/ecs)
 [![spi-swift-platforms](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Ffireblade-engine%2Fecs%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/fireblade-engine/ecs)
 
 A dependency-free, lightweight, fast, and easy-to-use [Entity-Component System](https://en.wikipedia.org/wiki/Entity_component_system) for Swift. Components are value types, identifiers are generational, and the default archetype storage iterates families linearly. Developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
 
-Coming from 1.x? Read the [migration guide](https://fireblade-engine.github.io/ecs/documentation/firebladeecs/migratingtofirebladeecs2), and see the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) or the [online documentation](https://fireblade-engine.github.io/ecs).
+Coming from 1.x? Read the [migration guide](https://fireblade-engine.github.io/ecs/documentation/firebladeecs/migratingtofirebladeecs2), see how 2.0 performs in the [benchmark report](https://fireblade-engine.github.io/ecs/benchmarks/), and see the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) or the [online documentation](https://fireblade-engine.github.io/ecs).
 
 ---
 

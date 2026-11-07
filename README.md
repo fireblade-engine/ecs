@@ -14,7 +14,7 @@
 
 A dependency-free, lightweight, fast, and easy-to-use [Entity-Component System](https://en.wikipedia.org/wiki/Entity_component_system) for Swift. Components are value types, identifiers are generational, and the default archetype storage iterates families linearly. Developed and maintained as part of the [Fireblade Game Engine project](https://github.com/fireblade-engine).
 
-Coming from 1.x? Read the [migration guide](https://fireblade-engine.github.io/ecs/documentation/firebladeecs/migratingtofirebladeecs2), see how 2.0 performs in the [benchmark report](https://fireblade-engine.github.io/ecs/benchmarks/), and see the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) or the [online documentation](https://fireblade-engine.github.io/ecs).
+Coming from 1.x? Read the [migration guide](https://fireblade-engine.github.io/ecs/2.0.0/documentation/firebladeecs/migratingtofirebladeecs2), see how 2.0 performs in the [benchmark report](https://fireblade-engine.github.io/ecs/benchmarks/), and see the [Fireblade ECS Demo App](https://github.com/fireblade-engine/ecs-demo) or the [online documentation](https://fireblade-engine.github.io/ecs).
 
 ---
 

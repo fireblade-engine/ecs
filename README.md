@@ -339,7 +339,7 @@ fsm.changeState(name: .attack)
   ```sh
   make docs-preview
   ```
-- **Benchmarks:** Read the latest [benchmark report](https://fireblade-engine.github.io/ecs/benchmarks/) and the [Benchmarks article](https://fireblade-engine.github.io/ecs/documentation/firebladeecs/benchmarks) on how it is measured. The report is committed as [Documentation/Benchmarks/BenchmarkReport.html](Documentation/Benchmarks/BenchmarkReport.html); [Benchmarks/README.md](Benchmarks/README.md) shows how to reproduce it.
+- **Benchmarks:** See the latest [benchmark report](https://fireblade-engine.github.io/ecs/benchmarks/).
 - **Site Build:** `make docs-generate` builds the site into `.build/documentation`. It first restores the published versions from the `gh-pages` branch of `origin`, so it needs network access to `origin` and fails if that restore fails (only a missing `gh-pages` branch is tolerated).
 
 ---

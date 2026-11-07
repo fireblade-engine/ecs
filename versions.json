@@ -1,15 +1,20 @@
 {
-  "latest": "1.4.3",
+  "latest": "2.0.0",
   "versions": [
     {
-      "name": "1.4.3",
-      "label": "Latest Release (1.4.3)",
-      "path": "1.4.3/documentation/firebladeecs/"
+      "name": "2.0.0",
+      "label": "Latest Release (2.0.0)",
+      "path": "2.0.0/documentation/firebladeecs/"
     },
     {
       "name": "main",
       "label": "Development (main)",
       "path": "main/documentation/firebladeecs/"
+    },
+    {
+      "name": "1.4.3",
+      "label": "1.4.3",
+      "path": "1.4.3/documentation/firebladeecs/"
     },
     {
       "name": "1.4.2",

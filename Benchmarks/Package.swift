@@ -25,7 +25,7 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "ecs", path: ".."),
-        .package(url: "https://github.com/ordo-one/benchmark", .upToNextMajor(from: "1.38.1"))
+        .package(url: "https://github.com/ordo-one/benchmark", .upToNextMajor(from: "1.39.1"))
     ],
     targets: [
         // Workload definitions, per-revision adapter and the enabled metric set. Shared by the plugin executable,
